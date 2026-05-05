@@ -397,13 +397,13 @@ func TestSchemaConformance_JSONSchemaValidator(t *testing.T) {
 
 func compileUWSSchema(t *testing.T) *jsonschema.Schema {
 	t.Helper()
-	data, err := os.ReadFile("../versions/1.1.0.json")
+	data, err := os.ReadFile(latestUWSSchemaPath)
 	require.NoError(t, err)
 	doc, err := jsonschema.UnmarshalJSON(bytes.NewReader(data))
 	require.NoError(t, err)
 	compiler := jsonschema.NewCompiler()
-	require.NoError(t, compiler.AddResource("versions/1.1.0.json", doc))
-	schema, err := compiler.Compile("versions/1.1.0.json")
+	require.NoError(t, compiler.AddResource(latestUWSSchemaResource, doc))
+	schema, err := compiler.Compile(latestUWSSchemaResource)
 	require.NoError(t, err)
 	return schema
 }

@@ -17,9 +17,9 @@ UWS is a workflow overlay for OpenAPI-backed HTTP operations. OpenAPI owns metho
 
 Three coordinated artifacts must stay in sync:
 
-1. `versions/1.0.0.json` — the canonical JSON Schema for UWS 1.0 documents.
+1. `versions/1.1.0.json` — the latest canonical JSON Schema for UWS 1.x documents. `versions/1.0.0.json` remains a published historical schema.
 2. `uws1/` — the Go model and semantic validator.
-3. `versions/1.0.0.md` — the human-readable spec. `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are comparison/background docs.
+3. `versions/1.1.0.md` — the latest human-readable spec. `versions/1.0.0.md`, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are comparison/background docs.
 
 ## Execution Model
 
@@ -65,18 +65,18 @@ Benefits of this model:
 
 ## Schema / Spec / Code Sync
 
-`uws1/schema_conformance_test.go` is the bridge between the schema and the Go validator. It reads `versions/1.0.0.json` and asserts that the schema's required fields, enums, patterns, and related rule coverage match the Go-side validation rules.
+`uws1/schema_conformance_test.go` is the bridge between the schema and the Go validator. It reads the latest `versions/1.x.y.json` schema and asserts that the schema's required fields, enums, patterns, and related rule coverage match the Go-side validation rules.
 
 When changing validation rules:
 
-1. update `versions/1.0.0.json`
+1. update the latest `versions/1.x.y.json`
 2. update `uws1/validation.go`
-3. update `versions/1.0.0.md` when the public contract changed
+3. update the matching `versions/1.x.y.md` when the public contract changed
 4. make the schema conformance and parity tests pass
 
 ## Validation Layering
 
-- `versions/1.0.0.json` covers structural and shape checks.
+- The versioned JSON Schema covers structural and shape checks.
 - `(*Document).Validate()` / `ValidateResult()` in `uws1/validation.go` cover semantic checks the schema cannot: duplicate identifiers, OpenAPI binding rules, reference integrity across operations/workflows/steps/triggers/parallel groups/sourceDescriptions, action and criterion rules, trigger routes, and standard request-binding keys.
 - Use `Validate()` when a single `error` is enough.
 - Use `ValidateResult()` when callers need path-tagged errors.

@@ -1,9 +1,6 @@
 package uws1
 
 import (
-	"encoding/json"
-	"fmt"
-	"os"
 	"reflect"
 	"sort"
 	"strings"
@@ -116,6 +113,39 @@ func TestSchemaParity_DefCoverageIsExhaustive(t *testing.T) {
 		"latest schema declares $defs that no schemaParityEntries covers: %v", untracked)
 }
 
+func TestSchemaParity_SpecFixedFieldsMatchSchema(t *testing.T) {
+	schema := loadSchemaDoc(t)
+	spec := loadSpecMarkdown(t)
+	specTables := map[string]string{
+		"":                          "Document Object",
+		"info":                      "Info Object",
+		"source-description-object": "Source Description Object",
+		"operation-object":          "Operation Object",
+		"request-binding-object":    "Request Binding Object",
+		"workflow-object":           "Workflow Object",
+		"step-object":               "Step Object",
+		"case-object":               "Case Object",
+		"trigger-object":            "Trigger Object",
+		"trigger-route-object":      "Trigger Route Object",
+		"criterion-object":          "Criterion Object",
+		"failure-action-object":     "Failure Action Object",
+		"success-action-object":     "Success Action Object",
+		"structural-result-object":  "Structural Result Object",
+		"components-object":         "Components Object",
+		"param-schema-object":       "ParamSchema Object",
+		"idempotency-object":        "Idempotency Object",
+	}
+
+	for defName, heading := range specTables {
+		t.Run(defLabel(defName), func(t *testing.T) {
+			schemaProps := dropExtensionKeys(schemaPropertyNames(t, schema, defName))
+			specFields := dropExtensionKeys(specFixedFieldNames(t, spec, heading))
+			assert.ElementsMatch(t, schemaProps, specFields,
+				"spec fixed fields for %q diverge from schema properties", heading)
+		})
+	}
+}
+
 func jsonFieldTags(t *testing.T, typ reflect.Type) []string {
 	t.Helper()
 	if typ.Kind() != reflect.Struct {
@@ -153,44 +183,47 @@ func namedFields(typ reflect.Type) []string {
 	return names
 }
 
-func loadSchemaDoc(t *testing.T) map[string]any {
+func specFixedFieldNames(t *testing.T, spec, heading string) []string {
 	t.Helper()
-	data, err := os.ReadFile("../versions/1.1.0.json")
-	require.NoError(t, err)
-	var schema map[string]any
-	require.NoError(t, json.Unmarshal(data, &schema))
-	return schema
-}
-
-// schemaPropertyNames returns the property names of a $def. When defName is
-// empty, it returns the root document's properties.
-func schemaPropertyNames(t *testing.T, schema map[string]any, defName string) []string {
-	t.Helper()
-	obj := schema
-	if defName != "" {
-		defs, ok := schema["$defs"].(map[string]any)
-		require.True(t, ok, "schema has no $defs")
-		entry, ok := defs[defName].(map[string]any)
-		require.True(t, ok, "schema $defs has no %q", defName)
-		obj = entry
+	lines := strings.Split(spec, "\n")
+	headingLine := -1
+	for i, line := range lines {
+		if strings.HasPrefix(line, "#") && strings.Contains(line, heading) {
+			headingLine = i
+			break
+		}
 	}
-	props, ok := obj["properties"].(map[string]any)
-	require.Truef(t, ok, "schema %q has no properties object", fmt.Sprintf("$defs/%s", defName))
-	names := make([]string, 0, len(props))
-	for name := range props {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	return names
-}
+	require.NotEqual(t, -1, headingLine, "spec heading %q not found", heading)
 
-func dropExtensionKeys(keys []string) []string {
-	out := make([]string, 0, len(keys))
-	for _, k := range keys {
-		if strings.HasPrefix(k, "x-") {
+	tableStart := -1
+	for i := headingLine + 1; i < len(lines); i++ {
+		line := strings.TrimSpace(lines[i])
+		if i > headingLine+1 && strings.HasPrefix(line, "#### ") && strings.Contains(line, " Object") {
+			break
+		}
+		if line == "| Field Name | Type | Description |" {
+			tableStart = i
+			break
+		}
+	}
+	require.NotEqual(t, -1, tableStart, "fixed fields table for %q not found", heading)
+
+	var fields []string
+	for i := tableStart + 2; i < len(lines); i++ {
+		line := strings.TrimSpace(lines[i])
+		if !strings.HasPrefix(line, "|") {
+			break
+		}
+		cells := strings.Split(line, "|")
+		if len(cells) < 4 {
 			continue
 		}
-		out = append(out, k)
+		field := strings.TrimSpace(cells[1])
+		field = strings.Trim(field, "`")
+		if field != "" {
+			fields = append(fields, field)
+		}
 	}
-	return out
+	sort.Strings(fields)
+	return fields
 }

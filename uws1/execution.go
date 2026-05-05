@@ -52,56 +52,24 @@ func NewOrchestrator(doc *Document, runtime Runtime) *Orchestrator {
 		inFlight:          make(map[string]chan struct{}),
 	}
 	if doc != nil {
-		for _, op := range doc.Operations {
-			if op != nil && op.OperationID != "" {
-				o.opIndex[op.OperationID] = op
-				if op.ParallelGroup != "" {
-					o.parallelGroups[op.ParallelGroup] = append(o.parallelGroups[op.ParallelGroup], op.OperationID)
-				}
-			}
+		idx := buildDocumentIndex(doc, nil)
+		for id, op := range idx.operations {
+			o.opIndex[id] = op
 		}
-		for _, wf := range doc.Workflows {
-			if wf != nil && wf.WorkflowID != "" {
-				o.workflowIndex[wf.WorkflowID] = wf
-				o.indexSteps(wf.Steps)
-				o.indexSteps(wf.Default)
-				for _, c := range wf.Cases {
-					if c != nil {
-						o.indexSteps(c.Steps)
-					}
-				}
-			}
+		for id, wf := range idx.workflows {
+			o.workflowIndex[id] = wf
 		}
-		if entry, err := executableEntryWorkflow(doc); err == nil && entry != nil {
-			for _, step := range entry.Steps {
-				if step != nil && step.StepID != "" {
-					o.topLevelStepIndex[step.StepID] = step
-				}
-			}
+		for id, step := range idx.steps {
+			o.stepIndex[id] = step
+		}
+		for id, step := range idx.topLevelSteps {
+			o.topLevelStepIndex[id] = step
+		}
+		for id, members := range idx.parallelGroupMembers {
+			o.parallelGroups[id] = append([]string(nil), members...)
 		}
 	}
 	return o
-}
-
-func (o *Orchestrator) indexSteps(steps []*Step) {
-	for _, step := range steps {
-		if step == nil {
-			continue
-		}
-		if step.StepID != "" {
-			o.stepIndex[step.StepID] = step
-			if step.ParallelGroup != "" {
-				o.parallelGroups[step.ParallelGroup] = append(o.parallelGroups[step.ParallelGroup], step.StepID)
-			}
-		}
-		o.indexSteps(step.Steps)
-		o.indexSteps(step.Default)
-		for _, c := range step.Cases {
-			if c != nil {
-				o.indexSteps(c.Steps)
-			}
-		}
-	}
 }
 
 // Execute executes the main workflow of the document.
