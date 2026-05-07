@@ -12,7 +12,7 @@ Non-OpenAPI runtimes such as command execution, function calls, file I/O, SSH, S
 
 ## Documentation
 
-- **Docs site**: [tabilet.github.io/uws](https://tabilet.github.io/uws/)
+- **Docs site**: [OpenUdon.github.io/uws](https://OpenUdon.github.io/uws/)
 - Human-readable specification: [versions/1.1.0.md](versions/1.1.0.md)
 - JSON Schema: [versions/1.1.0.json](versions/1.1.0.json)
 
