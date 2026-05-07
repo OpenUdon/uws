@@ -205,6 +205,49 @@ func TestSchemaConformance_ValidatorMatchesSelectedRules(t *testing.T) {
 		Idempotency: &Idempotency{Key: "$variables.requestId", OnConflict: "replace"},
 	}}
 	require.ErrorContains(t, doc.Validate(), "replace")
+
+	// step-object: mutual exclusivity between operationRef, workflow, and
+	// structural type. Mirrors the schema's step-object allOf clause that
+	// forbids any pairing of these three.
+	doc = validDocument()
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		Steps: []*Step{{
+			StepID:       "s",
+			OperationRef: "fetch",
+			StepExecutionFields: StepExecutionFields{
+				Workflow: "child",
+			},
+		}},
+	}}
+	require.ErrorContains(t, doc.Validate(), "operationRef and workflow")
+
+	doc = validDocument()
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		Steps: []*Step{{
+			StepID:       "s",
+			OperationRef: "fetch",
+			Type:         WorkflowTypeSequence,
+		}},
+	}}
+	require.ErrorContains(t, doc.Validate(), "operationRef cannot be combined with structural type")
+
+	doc = validDocument()
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		Steps: []*Step{{
+			StepID: "s",
+			StepExecutionFields: StepExecutionFields{
+				Workflow: "child",
+			},
+			Type: WorkflowTypeSequence,
+		}},
+	}}
+	require.ErrorContains(t, doc.Validate(), "workflow cannot be combined with structural type")
 }
 
 func TestSchemaConformance_JSONSchemaValidator(t *testing.T) {
@@ -393,6 +436,35 @@ func TestSchemaConformance_JSONSchemaValidator(t *testing.T) {
 		]
 	}`))
 	require.Error(t, schema.Validate(invalidUWS11TimeoutAndIdempotency))
+
+	// Step mutual exclusivity at the schema layer: any two of operationRef /
+	// workflow / structural type set on the same step is rejected by the
+	// step-object allOf clause.
+	stepRefAndWorkflow := decodeJSONValue(t, []byte(`{
+		"uws": "1.0.0",
+		"info": {"title": "Step", "version": "1.0.0"},
+		"sourceDescriptions": [{"name": "api", "url": "./openapi.yaml", "type": "openapi"}],
+		"operations": [{"operationId": "fetch", "sourceDescription": "api", "openapiOperationId": "getData"}],
+		"workflows": [{"workflowId": "main", "type": "sequence", "steps": [{"stepId": "s", "operationRef": "fetch", "workflow": "child"}]}]
+	}`))
+	require.Error(t, schema.Validate(stepRefAndWorkflow))
+
+	stepRefAndType := decodeJSONValue(t, []byte(`{
+		"uws": "1.0.0",
+		"info": {"title": "Step", "version": "1.0.0"},
+		"sourceDescriptions": [{"name": "api", "url": "./openapi.yaml", "type": "openapi"}],
+		"operations": [{"operationId": "fetch", "sourceDescription": "api", "openapiOperationId": "getData"}],
+		"workflows": [{"workflowId": "main", "type": "sequence", "steps": [{"stepId": "s", "operationRef": "fetch", "type": "sequence"}]}]
+	}`))
+	require.Error(t, schema.Validate(stepRefAndType))
+
+	stepWorkflowAndType := decodeJSONValue(t, []byte(`{
+		"uws": "1.0.0",
+		"info": {"title": "Step", "version": "1.0.0"},
+		"operations": [{"operationId": "build_email", "x-uws-operation-profile": "udon"}],
+		"workflows": [{"workflowId": "main", "type": "sequence", "steps": [{"stepId": "s", "workflow": "child", "type": "sequence"}]}]
+	}`))
+	require.Error(t, schema.Validate(stepWorkflowAndType))
 }
 
 func compileUWSSchema(t *testing.T) *jsonschema.Schema {
