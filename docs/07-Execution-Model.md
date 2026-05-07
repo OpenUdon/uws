@@ -86,8 +86,8 @@ import (
     "log"
     "os"
 
-    "github.com/tabilet/uws/convert"
-    "github.com/tabilet/uws/uws1"
+    "github.com/OpenUdon/uws/convert"
+    "github.com/OpenUdon/uws/uws1"
 )
 
 func main() {

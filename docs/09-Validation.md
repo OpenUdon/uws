@@ -4,7 +4,7 @@
 
 ---
 
-`github.com/tabilet/uws` layers two kinds of validation. Running both catches errors at the contract boundary — before any HTTP call leaves the machine.
+`github.com/OpenUdon/uws` layers two kinds of validation. Running both catches errors at the contract boundary — before any HTTP call leaves the machine.
 
 ## Two Layers
 
@@ -133,8 +133,8 @@ import (
     "log"
     "os"
 
-    "github.com/tabilet/uws/convert"
-    "github.com/tabilet/uws/uws1"
+    "github.com/OpenUdon/uws/convert"
+    "github.com/OpenUdon/uws/uws1"
 )
 
 func main() {

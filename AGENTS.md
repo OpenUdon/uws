@@ -9,7 +9,7 @@ go test ./convert -run TestRoundtrip       # run tests in one package
 go vet ./...
 ```
 
-Module path: `github.com/tabilet/uws` (Go 1.25.4).
+Module path: `github.com/OpenUdon/uws` (Go 1.25.4).
 
 ## Architecture
 

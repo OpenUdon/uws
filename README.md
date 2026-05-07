@@ -7,7 +7,7 @@ UWS is similar in role to Arazzo, but it is a workflow overlay for OpenAPI-backe
 Non-OpenAPI runtimes such as command execution, function calls, file I/O, SSH, SQL, or LLM calls are extension-profile concerns represented with `x-*` fields, not UWS core service types. Operations without an OpenAPI binding are extension-owned and require `x-uws-operation-profile` to name the implementation profile that can execute them.
 
 
-[![GoDoc](https://godoc.org/github.com/tabilet/uws?status.svg)](https://godoc.org/github.com/tabilet/uws)
+[![GoDoc](https://godoc.org/github.com/OpenUdon/uws?status.svg)](https://godoc.org/github.com/OpenUdon/uws)
 
 
 ## Documentation

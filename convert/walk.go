@@ -3,7 +3,7 @@ package convert
 import (
 	"fmt"
 
-	"github.com/tabilet/uws/uws1"
+	"github.com/OpenUdon/uws/uws1"
 )
 
 type documentWalkHandlers struct {

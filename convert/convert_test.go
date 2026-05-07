@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tabilet/uws/uws1"
+	"github.com/OpenUdon/uws/uws1"
 )
 
 func testDocument() *uws1.Document {

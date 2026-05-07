@@ -4,7 +4,7 @@
 
 ---
 
-UWS documents are valid JSON, YAML, or canonical HCL. The `convert` package in `github.com/tabilet/uws` moves documents between all three formats with round-trip guarantees.
+UWS documents are valid JSON, YAML, or canonical HCL. The `convert` package in `github.com/OpenUdon/uws` moves documents between all three formats with round-trip guarantees.
 
 ## Three Formats, One Document
 
@@ -171,7 +171,7 @@ workflow "route" {
 
 ## The `convert` Package
 
-All conversion helpers live in `github.com/tabilet/uws/convert`:
+All conversion helpers live in `github.com/OpenUdon/uws/convert`:
 
 ```go
 // Between byte slices (raw format conversion)
@@ -202,8 +202,8 @@ import (
     "log"
     "os"
 
-    "github.com/tabilet/uws/convert"
-    "github.com/tabilet/uws/uws1"
+    "github.com/OpenUdon/uws/convert"
+    "github.com/OpenUdon/uws/uws1"
 )
 
 func main() {

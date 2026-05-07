@@ -1,4 +1,4 @@
-module github.com/tabilet/uws
+module github.com/OpenUdon/uws
 
 go 1.25.4
 

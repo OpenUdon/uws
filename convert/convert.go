@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/genelet/horizon/dethcl"
-	"github.com/tabilet/uws/uws1"
+	"github.com/OpenUdon/uws/uws1"
 	"gopkg.in/yaml.v3"
 )
 

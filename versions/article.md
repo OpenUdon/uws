@@ -1,6 +1,6 @@
 # From Arazzo to UWS: A Client-Side Execution Contract for OpenAPI
 
-A deep dive into `github.com/tabilet/uws` — a compact, execution-oriented workflow specification that sits directly on top of the OpenAPI documents many providers already publish.
+A deep dive into `github.com/OpenUdon/uws` — a compact, execution-oriented workflow specification that sits directly on top of the OpenAPI documents many providers already publish.
 
 ## Why UWS exists
 
@@ -51,7 +51,7 @@ The UWS 1.0 spec is explicit about this narrowing. Its §2.1 lists what UWS deli
 
 ## UWS in one paragraph
 
-UWS (Udon Workflow Specification) is a compact document format for OpenAPI-backed workflows. A UWS document lists `operations` that bind by reference to OpenAPI operations, optional `workflows` that compose those operations using six structural control-flow constructs, optional `triggers` that serve as entry points, and optional `results` that name the outputs of structural constructs. Values flow between steps through a small normative expression grammar. At execution time, UWS core owns orchestration while a bound runtime owns leaf execution and expression/item evaluation. Documents are valid as JSON, YAML, or HCL, and the Go reference library — `github.com/tabilet/uws` — validates them before execution.
+UWS (Udon Workflow Specification) is a compact document format for OpenAPI-backed workflows. A UWS document lists `operations` that bind by reference to OpenAPI operations, optional `workflows` that compose those operations using six structural control-flow constructs, optional `triggers` that serve as entry points, and optional `results` that name the outputs of structural constructs. Values flow between steps through a small normative expression grammar. At execution time, UWS core owns orchestration while a bound runtime owns leaf execution and expression/item evaluation. Documents are valid as JSON, YAML, or HCL, and the Go reference library — `github.com/OpenUdon/uws` — validates them before execution.
 
 ## A minimal document
 
@@ -323,7 +323,7 @@ Spec 1.0 reserves the `x-uws-` prefix for future core evolution — `x-uws-opera
 
 ## Major feature 9 of 10: Validation that fails fast
 
-`github.com/tabilet/uws` layers two kinds of validation:
+`github.com/OpenUdon/uws` layers two kinds of validation:
 
 - **Structural**, via the published JSON Schema (`versions/1.0.0.json`). This catches shape errors, type errors, and required-field violations.
 - **Semantic**, via `(*uws1.Document).Validate()`. This catches duplicate identifiers, unknown references (an operation pointing at a missing `sourceDescription`, a step referencing an undeclared workflow), binding-rule violations, unresolved trigger-route outputs, structural-type mistakes, and `results[]` linkage errors.
@@ -338,8 +338,8 @@ import (
     "log"
     "os"
 
-    "github.com/tabilet/uws/convert"
-    "github.com/tabilet/uws/uws1"
+    "github.com/OpenUdon/uws/convert"
+    "github.com/OpenUdon/uws/uws1"
 )
 
 func main() {
@@ -506,5 +506,5 @@ For an agent, this is the difference between "the model guessed a tool call" and
 - A small normative expression grammar, formalized in ABNF, keeps workflows portable across runtimes.
 - UWS defines a real orchestrator/runtime split rather than stopping at document shape alone.
 - Triggers, structural results, and extension profiles complete the model; `x-uws-` is reserved for core evolution.
-- `github.com/tabilet/uws` ships the Go model, the JSON Schema, JSON/YAML/HCL conversion, and a semantic validator that returns structured, path-tagged errors.
+- `github.com/OpenUdon/uws` ships the Go model, the JSON Schema, JSON/YAML/HCL conversion, and a semantic validator that returns structured, path-tagged errors.
 - For AI agents, UWS is the contract between intent extraction and deterministic execution.

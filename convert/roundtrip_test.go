@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tabilet/uws/uws1"
+	"github.com/OpenUdon/uws/uws1"
 )
 
 // TestRoundTripSampleFile tests JSON-HCL-JSON round-trip with the sample testdata file.

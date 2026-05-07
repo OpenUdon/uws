@@ -76,9 +76,9 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 
 ## Reference
 
-- **Specification**: [`versions/1.1.0.md`](https://github.com/tabilet/uws/blob/main/versions/1.1.0.md)
-- **JSON Schema**: [`versions/1.1.0.json`](https://github.com/tabilet/uws/blob/main/versions/1.1.0.json)
-- **Go package**: `github.com/tabilet/uws`
+- **Specification**: [`versions/1.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.1.0.md)
+- **JSON Schema**: [`versions/1.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.1.0.json)
+- **Go package**: `github.com/OpenUdon/uws`
 - **License**: Apache 2.0
 
 ## Start Authoring
