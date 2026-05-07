@@ -68,7 +68,23 @@ func (o *Orchestrator) snapshotRecords() map[string]ExecutionRecord {
 func (o *Orchestrator) setRecord(key string, record ExecutionRecord) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
-	o.records[key] = cloneExecutionRecord(record)
+	o.writeRecordLocked(key, cloneExecutionRecord(record))
+}
+
+// writeRecordLocked writes a record and maintains the recordKeysByBase index.
+// Caller must hold o.mu. The record is stored as-is; callers that need a
+// defensive copy should clone before invoking.
+func (o *Orchestrator) writeRecordLocked(key string, record ExecutionRecord) {
+	if _, exists := o.records[key]; !exists {
+		base := baseFromCompositeKey(key)
+		set, ok := o.recordKeysByBase[base]
+		if !ok {
+			set = make(map[string]struct{}, 1)
+			o.recordKeysByBase[base] = set
+		}
+		set[key] = struct{}{}
+	}
+	o.records[key] = record
 }
 
 func (o *Orchestrator) withCurrentExecutionContext(ctx context.Context, key, id, kind, responseID string, outputs map[string]any) context.Context {
@@ -143,5 +159,5 @@ func (o *Orchestrator) keyForContext(ctx context.Context, key string) string {
 	if !ok || state == nil || state.Iteration == nil {
 		return key
 	}
-	return fmt.Sprintf("%s#iter:%d", key, state.Iteration.Index)
+	return compositeKey(key, state.Iteration.Index)
 }

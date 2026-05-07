@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const awaitPollInterval = 200 * time.Millisecond
+const defaultAwaitPollInterval = 200 * time.Millisecond
 
 // AwaitTimeoutError reports that an await construct exceeded the executor's
 // configured internal timeout.
@@ -59,12 +59,22 @@ func (o *Orchestrator) executeSteps(ctx context.Context, steps []*Step) error {
 }
 
 // executeStepsParallel executes a list of steps concurrently.
+//
+// Control signals (*endSignal, *gotoSignal) raised by a parallel branch are
+// converted into errors. Control-flow semantics across siblings would be
+// undefined — there is no obvious answer to "goto X happens while sibling Y
+// is mid-flight" — so we explicitly reject them rather than letting the
+// errgroup race decide which signal (or real error) survives.
 func (o *Orchestrator) executeStepsParallel(ctx context.Context, steps []*Step) error {
 	group, groupCtx := errgroup.WithContext(ctx)
 	for _, step := range steps {
 		step := step
 		group.Go(func() error {
-			return o.ExecuteStep(groupCtx, step)
+			err := o.ExecuteStep(groupCtx, step)
+			if isControlSignal(err) {
+				return fmt.Errorf("uws1: control signal %q is not allowed inside a parallel workflow", err.Error())
+			}
+			return err
 		})
 	}
 	return group.Wait()
@@ -99,7 +109,7 @@ func (o *Orchestrator) executeMerge(ctx context.Context, deps []string, key stri
 	record := o.records[key]
 	record.Result = result
 	record.Status = "success"
-	o.records[key] = record
+	o.writeRecordLocked(key, record)
 	o.mu.Unlock()
 	return nil
 }
@@ -151,25 +161,34 @@ func (o *Orchestrator) mergeDependencyRecords(deps []string) []map[string]any {
 	return out
 }
 
+// recordKeysForDependencyLocked returns the record keys associated with a
+// single dependency name, including any per-iteration suffixes added by
+// keyForContext. It uses o.recordKeysByBase rather than scanning all records.
+//
+// Precondition: callers must have already executed (and waited for) the
+// dependency. Merge constructs reach this through executeDependencies →
+// executeOnce, whose inFlight channel ensures the depended-on runnable's
+// close(ch) fires before the merge proceeds; there is no race against
+// concurrently writing branches.
 func (o *Orchestrator) recordKeysForDependencyLocked(dep string) []string {
-	baseKeys := make([]string, 0, 1)
+	var base string
 	switch {
 	case o.stepIndex[dep] != nil:
-		baseKeys = append(baseKeys, stepKey(dep))
+		base = stepKey(dep)
 	case o.workflowIndex[dep] != nil:
-		baseKeys = append(baseKeys, workflowKey(dep))
+		base = workflowKey(dep)
 	case o.opIndex[dep] != nil:
-		baseKeys = append(baseKeys, operationKey(dep))
+		base = operationKey(dep)
 	default:
 		return nil
 	}
-	var matches []string
-	for _, base := range baseKeys {
-		for key := range o.records {
-			if key == base || len(key) > len(base) && key[:len(base)] == base && key[len(base)] == '#' {
-				matches = append(matches, key)
-			}
-		}
+	set := o.recordKeysByBase[base]
+	if len(set) == 0 {
+		return nil
+	}
+	matches := make([]string, 0, len(set))
+	for key := range set {
+		matches = append(matches, key)
 	}
 	sort.Strings(matches)
 	return matches
@@ -215,7 +234,7 @@ func (o *Orchestrator) executeLoop(ctx context.Context, steps []*Step, itemsExpr
 	record := o.records[key]
 	record.Result = results
 	record.Status = "success"
-	o.records[key] = record
+	o.writeRecordLocked(key, record)
 	o.mu.Unlock()
 	return nil
 }
@@ -250,7 +269,11 @@ func (o *Orchestrator) resolveBatchSize(ctx context.Context, batchSizeExpr strin
 }
 
 func (o *Orchestrator) executeAwait(ctx context.Context, steps []*Step, waitExpr string) error {
-	ticker := time.NewTicker(awaitPollInterval)
+	pollInterval := defaultAwaitPollInterval
+	if o != nil && o.Document != nil && o.Document.ExecutionOptions.AwaitPollInterval > 0 {
+		pollInterval = o.Document.ExecutionOptions.AwaitPollInterval
+	}
+	ticker := time.NewTicker(pollInterval)
 	defer ticker.Stop()
 	var timeout <-chan time.Time
 	if o != nil && o.Document != nil && o.Document.ExecutionOptions.AwaitTimeout > 0 {

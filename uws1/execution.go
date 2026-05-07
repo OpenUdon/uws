@@ -35,7 +35,16 @@ type Orchestrator struct {
 	parallelGroups    map[string][]string
 	mu                sync.Mutex
 	records           map[string]ExecutionRecord
-	inFlight          map[string]chan struct{}
+	// recordKeysByBase indexes record keys by their base portion (the part
+	// before any "#iter:N" suffix added by keyForContext). It exists to keep
+	// recordKeysForDependencyLocked O(iterations-of-dep) instead of O(all
+	// records). Maintain it from every write to o.records.
+	recordKeysByBase map[string]map[string]struct{}
+	// recordErrors caches the original error returned by a runnable so a
+	// re-entrant dependency call receives the typed error rather than
+	// errors.New(record.Error). Keyed identically to o.records.
+	recordErrors map[string]error
+	inFlight     map[string]chan struct{}
 }
 
 // NewOrchestrator creates a new Orchestrator for the given document and runtime.
@@ -49,6 +58,8 @@ func NewOrchestrator(doc *Document, runtime Runtime) *Orchestrator {
 		topLevelStepIndex: make(map[string]*Step),
 		parallelGroups:    make(map[string][]string),
 		records:           make(map[string]ExecutionRecord),
+		recordKeysByBase:  make(map[string]map[string]struct{}),
+		recordErrors:      make(map[string]error),
 		inFlight:          make(map[string]chan struct{}),
 	}
 	if doc != nil {

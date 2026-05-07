@@ -12,6 +12,9 @@ type ExecutionOptions struct {
 	// AwaitTimeout bounds await polling inside the core orchestrator. Zero means
 	// no internal timeout; await still terminates when the context is canceled.
 	AwaitTimeout time.Duration `json:"-" yaml:"-" hcl:"-"`
+	// AwaitPollInterval is the interval between wait-expression evaluations in
+	// await constructs. Zero means use the default (200ms).
+	AwaitPollInterval time.Duration `json:"-" yaml:"-" hcl:"-"`
 }
 
 // Document is the root object of a UWS 1.x document.
