@@ -52,20 +52,9 @@ func (d *Document) SetRuntime(r Runtime) {
 // state and is not safe to run concurrently on the same document unless the
 // caller synchronizes access.
 func (d *Document) Execute(ctx context.Context) error {
-	if d.Runtime == nil {
-		return fmt.Errorf("uws1: document execution requires a bound runtime")
-	}
-	if err := d.Validate(); err != nil {
-		return err
-	}
-	if err := d.ValidateExecutable(); err != nil {
-		return err
-	}
-	if err := d.ValidateExecutionEntrypoint(); err != nil {
-		return err
-	}
-	orch := NewOrchestrator(d, d.Runtime)
-	return orch.Execute(ctx)
+	return d.executeEntry("document execution", true, func(orch *Orchestrator) error {
+		return orch.Execute(ctx)
+	})
 }
 
 // DispatchTrigger routes one trigger event into the document's executable
@@ -73,8 +62,25 @@ func (d *Document) Execute(ctx context.Context) error {
 // to run concurrently on the same document unless the caller synchronizes
 // access.
 func (d *Document) DispatchTrigger(ctx context.Context, triggerID string, output int, payload any) error {
+	return d.executeEntry("trigger dispatch", false, func(orch *Orchestrator) error {
+		err := orch.ExecuteTrigger(ctx, triggerID, output, payload)
+		d.setExecutionRecords(orch.snapshotRecords())
+		return err
+	})
+}
+
+// executeEntry is the shared prologue for Document/Workflow/Step/Operation
+// entry-point methods. It nil-checks the bound runtime, runs the validation
+// pipeline, and constructs an Orchestrator before handing control to run.
+// Callers are responsible for invoking the orchestrator and persisting
+// execution records for any path that needs to call setExecutionRecords
+// outside of orch.Execute.
+func (d *Document) executeEntry(kind string, requireEntrypoint bool, run func(*Orchestrator) error) error {
+	if d == nil {
+		return fmt.Errorf("uws1: %s requires a document", kind)
+	}
 	if d.Runtime == nil {
-		return fmt.Errorf("uws1: trigger dispatch requires a bound runtime")
+		return fmt.Errorf("uws1: %s requires a bound runtime", kind)
 	}
 	if err := d.Validate(); err != nil {
 		return err
@@ -82,10 +88,13 @@ func (d *Document) DispatchTrigger(ctx context.Context, triggerID string, output
 	if err := d.ValidateExecutable(); err != nil {
 		return err
 	}
+	if requireEntrypoint {
+		if err := d.ValidateExecutionEntrypoint(); err != nil {
+			return err
+		}
+	}
 	orch := NewOrchestrator(d, d.Runtime)
-	err := orch.ExecuteTrigger(ctx, triggerID, output, payload)
-	d.setExecutionRecords(orch.snapshotRecords())
-	return err
+	return run(orch)
 }
 
 type documentAlias Document

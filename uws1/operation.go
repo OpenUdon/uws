@@ -2,9 +2,13 @@ package uws1
 
 import (
 	"context"
-	"fmt"
 	"strings"
 )
+
+// ExtensionOperationProfile is the x-* extension key that names the
+// implementation profile for an extension-owned operation. Operations without
+// an OpenAPI binding must carry this extension to be executable.
+const ExtensionOperationProfile = "x-uws-operation-profile"
 
 // Operation describes a UWS-local operation bound to an OpenAPI operation.
 type Operation struct {
@@ -29,21 +33,13 @@ type Operation struct {
 
 // Execute executes the operation using the bound runtime in the document.
 func (o *Operation) Execute(ctx context.Context, d *Document) error {
-	if d == nil || d.Runtime == nil {
-		return fmt.Errorf("uws1: operation execution requires a bound runtime")
-	}
-	if err := d.Validate(); err != nil {
+	return d.executeEntry("operation execution", false, func(orch *Orchestrator) error {
+		err := orch.executeWithSignals(ctx, func(ctx context.Context) error {
+			return orch.executeOperationByID(ctx, o.OperationID)
+		})
+		d.setExecutionRecords(orch.snapshotRecords())
 		return err
-	}
-	if err := d.ValidateExecutable(); err != nil {
-		return err
-	}
-	orch := NewOrchestrator(d, d.Runtime)
-	err := orch.executeWithSignals(ctx, func(ctx context.Context) error {
-		return orch.executeOperationByID(ctx, o.OperationID)
 	})
-	d.setExecutionRecords(orch.snapshotRecords())
-	return err
 }
 
 // HasOpenAPIBinding reports whether the operation includes any OpenAPI binding

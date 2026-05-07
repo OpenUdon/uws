@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-const ExtensionOperationProfile = "x-uws-operation-profile"
-
 // extractExtensions extracts x-* extension fields from a raw JSON map.
 // It filters out known fields and returns only extension fields.
 // A malformed extension value returns an error naming the offending key

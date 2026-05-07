@@ -3,7 +3,6 @@ package uws1
 import (
 	"context"
 	"fmt"
-	"sort"
 	"strconv"
 )
 
@@ -130,27 +129,4 @@ func (o *Orchestrator) executeTriggerTarget(ctx context.Context, target string) 
 		return o.ExecuteStep(ctx, step)
 	}
 	return fmt.Errorf("uws1: trigger route target %q must reference a top-level stepId or workflowId", target)
-}
-
-func collectTopLevelStepIDs(d *Document) map[string]bool {
-	out := make(map[string]bool)
-	entry, err := executableEntryWorkflow(d)
-	if err != nil || entry == nil {
-		return out
-	}
-	for _, step := range entry.Steps {
-		if step != nil && step.StepID != "" {
-			out[step.StepID] = true
-		}
-	}
-	return out
-}
-
-func sortedTopLevelStepIDs(d *Document) []string {
-	out := make([]string, 0, len(collectTopLevelStepIDs(d)))
-	for stepID := range collectTopLevelStepIDs(d) {
-		out = append(out, stepID)
-	}
-	sort.Strings(out)
-	return out
 }
