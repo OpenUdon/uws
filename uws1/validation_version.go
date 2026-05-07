@@ -84,7 +84,7 @@ func validateVersionedIdempotency(idempotency *Idempotency, path string, support
 }
 
 func supportsUWSVersion(version string, major, minor int) bool {
-	if !versionPattern.MatchString(version) {
+	if !uws1VersionPattern.MatchString(version) {
 		return false
 	}
 	base := version

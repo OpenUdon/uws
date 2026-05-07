@@ -535,6 +535,31 @@
                     "then": {
                         "$ref": "#/$defs/structural-type-constraints"
                     }
+                },
+                {
+                    "description": "A step is at most one of: an operation reference (operationRef), a workflow reference (workflow), or a structural construct (type). Combining any two is rejected.",
+                    "not": {
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "operationRef",
+                                    "workflow"
+                                ]
+                            },
+                            {
+                                "required": [
+                                    "operationRef",
+                                    "type"
+                                ]
+                            },
+                            {
+                                "required": [
+                                    "workflow",
+                                    "type"
+                                ]
+                            }
+                        ]
+                    }
                 }
             ],
             "$ref": "#/$defs/specification-extensions",
