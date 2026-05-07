@@ -5,7 +5,7 @@ go 1.25.4
 require (
 	github.com/antchfx/xmlquery v1.5.1
 	github.com/antchfx/xpath v1.3.6
-	github.com/genelet/horizon v1.14.3-0.20260507024204-391037c28b8e
+	github.com/genelet/horizon v1.14.3
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.1
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/sync v0.18.0
