@@ -63,6 +63,57 @@ func TestRuntimeSupplementSchemaPayloadFields(t *testing.T) {
 	require.NoError(t, schema.Validate(value))
 }
 
+func TestRuntimeSupplementSchemaParamSchemaUsesUWSShape(t *testing.T) {
+	schema := compileRuntimeSupplementSchema(t)
+
+	valid := decodeRuntimeJSONValue(t, []byte(`{
+		"x-uws-runtime": {
+			"type": "http",
+			"queryPars": {
+				"type": "object",
+				"$ref": "#/$defs/Query",
+				"properties": {
+					"limit": {"type": "integer", "format": "int32"},
+					"x-field": {"type": "string"}
+				},
+				"required": ["limit"],
+				"items": {"type": "string"},
+				"allOf": [{"type": "object"}],
+				"oneOf": [{"type": "object"}],
+				"anyOf": [{"type": "object"}],
+				"x-runtime-hint": {"$expr": "$inputs.limit"}
+			},
+			"payloadPars": {
+				"type": "object",
+				"properties": {"body": {"type": "string"}}
+			}
+		}
+	}`))
+	require.NoError(t, schema.Validate(valid))
+
+	unsupportedAdditionalProperties := decodeRuntimeJSONValue(t, []byte(`{
+		"x-uws-runtime": {
+			"type": "http",
+			"payloadPars": {
+				"type": "object",
+				"additionalProperties": true
+			}
+		}
+	}`))
+	require.Error(t, schema.Validate(unsupportedAdditionalProperties))
+
+	unsupportedDescription := decodeRuntimeJSONValue(t, []byte(`{
+		"x-uws-runtime": {
+			"type": "http",
+			"payloadPars": {
+				"type": "object",
+				"description": "not part of uws1.ParamSchema"
+			}
+		}
+	}`))
+	require.Error(t, schema.Validate(unsupportedDescription))
+}
+
 func compileRuntimeSupplementSchema(t *testing.T) *jsonschema.Schema {
 	t.Helper()
 	path := filepath.Join("..", "versions", "runtime.1.0.json")

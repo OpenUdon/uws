@@ -330,67 +330,114 @@ operations:
 	}
 }
 
-func TestHCLConversionRejectsDynamicExtensionKeys(t *testing.T) {
-	cases := []struct {
-		name string
-		body string
-		want string
-	}{
-		{
-			name: "document variables",
-			body: `"variables": {"x-env": "prod"},`,
-			want: "variables.x-env contains x-* dynamic keys",
-		},
-		{
-			name: "operation request",
-			body: `"operations": [{"operationId": "op1", "sourceDescription": "api", "openapiOperationId": "getOp", "request": {"header": {"x-trace": "abc"}}}],`,
-			want: "operations[0].request.header.x-trace contains x-* dynamic keys",
-		},
-		{
-			name: "step body",
-			body: `"workflows": [{"workflowId": "wf", "type": "sequence", "steps": [{"stepId": "s", "operationRef": "op1", "body": {"x-meta": true}}]}],`,
-			want: "workflows[0].steps[0].body.x-meta contains x-* dynamic keys",
-		},
-		{
-			name: "case body",
-			body: `"workflows": [{"workflowId": "wf", "type": "switch", "cases": [{"name": "matched", "body": {"x-case": true}}]}],`,
-			want: "workflows[0].cases[0].body.x-case contains x-* dynamic keys",
-		},
-		{
-			name: "trigger options",
-			body: `"triggers": [{"triggerId": "webhook", "options": {"x-defer": true}}],`,
-			want: "triggers[0].options.x-defer contains x-* dynamic keys",
-		},
-		{
-			name: "components variables",
-			body: `"components": {"variables": {"x-component": true}},`,
-			want: "components.variables.x-component contains x-* dynamic keys",
-		},
-		{
-			name: "param schema properties",
-			body: `"workflows": [{"workflowId": "wf", "type": "sequence", "inputs": {"type": "object", "properties": {"x-field": {"type": "string"}}}}],`,
-			want: "workflows[0].inputs.properties.x-field contains x-* dynamic keys",
-		},
+func TestHCLConversionPreservesDynamicExtensionKeys(t *testing.T) {
+	jsonData := []byte(`{
+		"uws": "1.0.0",
+		"info": {"title": "Dynamic Extensions", "version": "1.0.0"},
+		"sourceDescriptions": [{"name": "api", "url": "./openapi.yaml", "type": "openapi"}],
+		"variables": {"x-env": "prod"},
+		"operations": [{
+			"operationId": "op1",
+			"sourceDescription": "api",
+			"openapiOperationId": "getOp",
+			"request": {"header": {"x-test": "abc"}}
+		}],
+		"workflows": [{
+			"workflowId": "wf",
+			"type": "switch",
+			"inputs": {"type": "object", "properties": {"x-field": {"type": "string"}}},
+			"steps": [{"stepId": "s", "operationRef": "op1", "body": {"x-meta": true}}],
+			"cases": [{"name": "matched", "body": {"x-case": true}}],
+			"default": [{"stepId": "d", "operationRef": "op1"}]
+		}],
+		"triggers": [{"triggerId": "webhook", "options": {"x-defer": true}}],
+		"components": {"variables": {"x-component": true}},
+		"results": []
+	}`)
+
+	hclData, err := JSONToHCL(jsonData)
+	if err != nil {
+		t.Fatalf("JSONToHCL failed: %v", err)
+	}
+	for _, want := range []string{"x-env", "x-test", "x-component", "x-field"} {
+		if !strings.Contains(string(hclData), want) {
+			t.Fatalf("HCL output missing dynamic key %q:\n%s", want, hclData)
+		}
 	}
 
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			operations := `"operations": [{"operationId": "op1", "sourceDescription": "api", "openapiOperationId": "getOp"}],`
-			if strings.Contains(tc.body, `"operations":`) {
-				operations = ""
-			}
-			jsonData := []byte(`{
-				"uws": "1.0.0",
-				"info": {"title": "Dynamic Extensions", "version": "1.0.0"},
-				"sourceDescriptions": [{"name": "api", "url": "./openapi.yaml", "type": "openapi"}],
-				` + operations + tc.body + `
-				"results": []
-			}`)
-			_, err := JSONToHCL(jsonData)
-			if err == nil || !strings.Contains(err.Error(), tc.want) {
-				t.Fatalf("Expected %q, got %v", tc.want, err)
-			}
-		})
+	jsonData2, err := HCLToJSON(hclData)
+	if err != nil {
+		t.Fatalf("HCLToJSON failed: %v", err)
+	}
+	var doc uws1.Document
+	if err := json.Unmarshal(jsonData2, &doc); err != nil {
+		t.Fatalf("Failed to parse JSON output: %v", err)
+	}
+	if got := doc.Variables["x-env"]; got != "prod" {
+		t.Fatalf("variables.x-env = %#v", got)
+	}
+	header := doc.Operations[0].Request["header"].(map[string]any)
+	if got := header["x-test"]; got != "abc" {
+		t.Fatalf("operation.request.header.x-test = %#v", got)
+	}
+	if got := doc.Components.Variables["x-component"]; got != true {
+		t.Fatalf("components.variables.x-component = %#v", got)
+	}
+	if got := doc.Workflows[0].Inputs.Properties["x-field"].Type; got != "string" {
+		t.Fatalf("inputs.properties.x-field.type = %q", got)
+	}
+	if got := doc.Workflows[0].Steps[0].Body["x-meta"]; got != true {
+		t.Fatalf("step.body.x-meta = %#v", got)
+	}
+	if got := doc.Workflows[0].Cases[0].Body["x-case"]; got != true {
+		t.Fatalf("case.body.x-case = %#v", got)
+	}
+	if got := doc.Triggers[0].Options["x-defer"]; got != true {
+		t.Fatalf("trigger.options.x-defer = %#v", got)
+	}
+}
+
+func TestHCLConversionPreservesIdempotencyExtensionDollarKeys(t *testing.T) {
+	jsonData := []byte(`{
+		"uws": "1.1.0",
+		"info": {"title": "Idempotency Extensions", "version": "1.0.0"},
+		"sourceDescriptions": [{"name": "api", "url": "./openapi.yaml", "type": "openapi"}],
+		"operations": [{"operationId": "op1", "sourceDescription": "api", "openapiOperationId": "getOp"}],
+		"workflows": [{
+			"workflowId": "wf",
+			"type": "sequence",
+			"idempotency": {
+				"key": "$inputs.request_id",
+				"onConflict": "reject",
+				"x-policy": {"$expr": "$inputs.request_id"}
+			},
+			"steps": [{"stepId": "s", "operationRef": "op1"}]
+		}],
+		"results": []
+	}`)
+
+	hclData, err := JSONToHCL(jsonData)
+	if err != nil {
+		t.Fatalf("JSONToHCL failed: %v", err)
+	}
+	if !strings.Contains(string(hclData), "__dollar__expr") {
+		t.Fatalf("HCL output missing transformed idempotency extension key:\n%s", hclData)
+	}
+
+	jsonData2, err := HCLToJSON(hclData)
+	if err != nil {
+		t.Fatalf("HCLToJSON failed: %v", err)
+	}
+	var doc uws1.Document
+	if err := json.Unmarshal(jsonData2, &doc); err != nil {
+		t.Fatalf("Failed to parse JSON output: %v", err)
+	}
+	policy, ok := doc.Workflows[0].Idempotency.Extensions["x-policy"].(map[string]any)
+	if !ok {
+		t.Fatalf("idempotency x-policy extension = %#v", doc.Workflows[0].Idempotency.Extensions["x-policy"])
+	}
+	if got := policy["$expr"]; got != "$inputs.request_id" {
+		t.Fatalf("idempotency extension $expr = %#v", got)
 	}
 }
 

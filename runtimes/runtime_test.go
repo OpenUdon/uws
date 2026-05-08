@@ -69,6 +69,41 @@ func TestReadSetOperationExtension(t *testing.T) {
 	require.Equal(t, []any{"input"}, got.Arguments)
 }
 
+func TestReadOperationExtensionDecodesParamSchemas(t *testing.T) {
+	extensions := map[string]any{
+		ExtensionRuntime: map[string]any{
+			"type": RuntimeTypeHTTP,
+			"queryPars": map[string]any{
+				"type":     "object",
+				"required": []any{"limit"},
+				"properties": map[string]any{
+					"limit": map[string]any{"type": "integer", "format": "int32"},
+				},
+				"x-runtime-hint": map[string]any{"$expr": "$inputs.limit"},
+			},
+			"payloadPars": map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"body": map[string]any{"type": "string"},
+				},
+			},
+		},
+	}
+
+	got, ok, err := ReadOperationExtension(extensions)
+	require.NoError(t, err)
+	require.True(t, ok)
+	require.Equal(t, RuntimeTypeHTTP, got.Type)
+	require.NotNil(t, got.QueryPars)
+	require.Equal(t, "object", got.QueryPars.Type)
+	require.Equal(t, []string{"limit"}, got.QueryPars.Required)
+	require.Equal(t, "integer", got.QueryPars.Properties["limit"].Type)
+	require.Equal(t, "int32", got.QueryPars.Properties["limit"].Format)
+	require.Equal(t, map[string]any{"$expr": "$inputs.limit"}, got.QueryPars.Extensions["x-runtime-hint"])
+	require.NotNil(t, got.PayloadPars)
+	require.Equal(t, "string", got.PayloadPars.Properties["body"].Type)
+}
+
 func TestReadConfigExtension(t *testing.T) {
 	var extensions map[string]any
 	err := SetConfigExtension(&extensions, &ConfigRuntime{

@@ -108,6 +108,11 @@ func walkHCLWorkflow(path string, wf *Workflow, h documentHCLWalkHandlers) error
 	if err := walkHCLParamSchema(path+".inputs", wf.Inputs, h); err != nil {
 		return err
 	}
+	if wf.Idempotency != nil {
+		if err := walkHCLExtensions(path+".idempotency", wf.Idempotency.Extensions, h); err != nil {
+			return err
+		}
+	}
 	if err := walkHCLSteps(path+".steps", wf.Steps, h); err != nil {
 		return err
 	}

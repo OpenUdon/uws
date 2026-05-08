@@ -240,13 +240,8 @@
         "format": {
           "type": "string"
         },
-        "description": {
+        "$ref": {
           "type": "string"
-        },
-        "default": true,
-        "enum": {
-          "type": "array",
-          "items": true
         },
         "required": {
           "type": "array",
@@ -263,7 +258,6 @@
         "items": {
           "$ref": "#/$defs/param-schema"
         },
-        "additionalProperties": true,
         "allOf": {
           "type": "array",
           "items": {
@@ -283,7 +277,10 @@
           }
         }
       },
-      "additionalProperties": true
+      "patternProperties": {
+        "^x-": true
+      },
+      "additionalProperties": false
     }
   }
 }

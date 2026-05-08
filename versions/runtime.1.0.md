@@ -66,6 +66,10 @@ The spelling is exact. `ldaps` is defined; plain `ldap` is not.
 The payload shape is intentionally descriptive. A conforming UWS parser
 preserves it. A bound runtime decides whether it can execute it.
 
+Runtime parameter schemas use the public UWS `ParamSchema` shape: `type`,
+`format`, `$ref`, `properties`, `required`, `items`, `allOf`, `oneOf`,
+`anyOf`, and `x-*` extensions.
+
 ## Runtime Config Payload
 
 `x-uws-runtime-config` is an object with optional `provider` and `security`

@@ -397,52 +397,5 @@ func validateHCLSerializable(doc *Document) error {
 	if doc == nil {
 		return fmt.Errorf("document is nil")
 	}
-	return walkDocumentHCL(doc, documentHCLWalkHandlers{
-		dynamicMap: func(path string, value *map[string]any) error {
-			return rejectDynamicExtensionsForHCL(path, *value)
-		},
-		paramSchema: func(path string, schema *ParamSchema) error {
-			for name := range schema.Properties {
-				if strings.HasPrefix(name, "x-") {
-					return fmt.Errorf("%s.properties.%s contains x-* dynamic keys; place metadata on the owning UWS object with an extensions block", path, name)
-				}
-			}
-			return nil
-		},
-	})
-}
-
-func rejectDynamicExtensionsForHCL(path string, value any) error {
-	switch v := value.(type) {
-	case nil:
-		return nil
-	case map[string]any:
-		for key, item := range v {
-			childPath := path + "." + key
-			if strings.HasPrefix(key, "x-") {
-				return fmt.Errorf("%s contains x-* dynamic keys; place metadata on the owning UWS object with an extensions block", childPath)
-			}
-			if err := rejectDynamicExtensionsForHCL(childPath, item); err != nil {
-				return err
-			}
-		}
-	case map[any]any:
-		for key, item := range v {
-			keyText := fmt.Sprint(key)
-			childPath := path + "." + keyText
-			if strings.HasPrefix(keyText, "x-") {
-				return fmt.Errorf("%s contains x-* dynamic keys; place metadata on the owning UWS object with an extensions block", childPath)
-			}
-			if err := rejectDynamicExtensionsForHCL(childPath, item); err != nil {
-				return err
-			}
-		}
-	case []any:
-		for i, item := range v {
-			if err := rejectDynamicExtensionsForHCL(fmt.Sprintf("%s[%d]", path, i), item); err != nil {
-				return err
-			}
-		}
-	}
 	return nil
 }
