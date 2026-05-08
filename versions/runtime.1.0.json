@@ -1,0 +1,289 @@
+{
+  "$id": "https://github.com/OpenUdon/uws/versions/runtime.1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UWS Runtime Supplement 1.0",
+  "description": "Wire metadata schema for the uws.runtime.1.0 extension profile supplement.",
+  "type": "object",
+  "properties": {
+    "x-uws-runtime": {
+      "$ref": "#/$defs/operation-runtime"
+    },
+    "x-uws-runtime-config": {
+      "$ref": "#/$defs/config-runtime"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "runtime-type": {
+      "type": "string",
+      "enum": [
+        "http",
+        "ssh",
+        "cmd",
+        "fnct",
+        "fileio",
+        "sql",
+        "s3",
+        "smtp",
+        "dns",
+        "ldaps",
+        "scp",
+        "sftp",
+        "llm"
+      ]
+    },
+    "operation-runtime": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/runtime-type"
+        },
+        "isJson": {
+          "type": "boolean"
+        },
+        "host": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "payloadRequired": {
+          "type": "boolean"
+        },
+        "requestMediaType": {
+          "type": "string"
+        },
+        "responseMediaType": {
+          "type": "string"
+        },
+        "responseStatusCode": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599
+        },
+        "command": {
+          "type": "string"
+        },
+        "workingDir": {
+          "type": "string"
+        },
+        "function": {
+          "type": "string"
+        },
+        "workflow": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": true
+        },
+        "provider": {
+          "$ref": "#/$defs/provider"
+        },
+        "security": {
+          "$ref": "#/$defs/security-requirements"
+        },
+        "queryPars": {
+          "$ref": "#/$defs/param-schema"
+        },
+        "pathPars": {
+          "$ref": "#/$defs/param-schema"
+        },
+        "headerPars": {
+          "$ref": "#/$defs/param-schema"
+        },
+        "cookiePars": {
+          "$ref": "#/$defs/param-schema"
+        },
+        "payloadPars": {
+          "$ref": "#/$defs/param-schema"
+        },
+        "responseBody": {
+          "$ref": "#/$defs/param-schema"
+        },
+        "responseHeaders": {
+          "$ref": "#/$defs/param-schema"
+        }
+      },
+      "additionalProperties": false
+    },
+    "config-runtime": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "$ref": "#/$defs/provider"
+        },
+        "security": {
+          "$ref": "#/$defs/security-requirements"
+        }
+      },
+      "additionalProperties": false
+    },
+    "provider": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "serverUrl": {
+          "type": "string"
+        },
+        "appendices": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "security-requirements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/security-requirement"
+      }
+    },
+    "security-requirement": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scheme": {
+          "$ref": "#/$defs/security-scheme"
+        },
+        "initialize": {
+          "type": "string"
+        },
+        "dataFile": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "security-scheme": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "in": {
+          "type": "string"
+        },
+        "scheme": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "flows": {
+          "$ref": "#/$defs/oauth-flows"
+        }
+      },
+      "additionalProperties": false
+    },
+    "oauth-flows": {
+      "type": "object",
+      "properties": {
+        "implicit": {
+          "$ref": "#/$defs/oauth-flow"
+        },
+        "password": {
+          "$ref": "#/$defs/oauth-flow"
+        },
+        "clientCredentials": {
+          "$ref": "#/$defs/oauth-flow"
+        },
+        "authorizationCode": {
+          "$ref": "#/$defs/oauth-flow"
+        }
+      },
+      "additionalProperties": false
+    },
+    "oauth-flow": {
+      "type": "object",
+      "properties": {
+        "authorizationUrl": {
+          "type": "string"
+        },
+        "tokenUrl": {
+          "type": "string"
+        },
+        "refreshUrl": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "param-schema": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "default": true,
+        "enum": {
+          "type": "array",
+          "items": true
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/param-schema"
+          }
+        },
+        "items": {
+          "$ref": "#/$defs/param-schema"
+        },
+        "additionalProperties": true,
+        "allOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/param-schema"
+          }
+        },
+        "oneOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/param-schema"
+          }
+        },
+        "anyOf": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/param-schema"
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

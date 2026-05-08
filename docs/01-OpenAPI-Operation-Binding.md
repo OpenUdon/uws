@@ -110,15 +110,15 @@ Operations without an OpenAPI binding are owned by a named runtime profile. `x-u
 
 ```yaml
 operationId: build_email
-x-uws-operation-profile: udon
-x-udon-runtime:
+x-uws-operation-profile: uws.runtime.1.0
+x-uws-runtime:
   type: fnct
   function: mail_raw
-  args:
-    from: bot@example.com
-    to: user@example.com
-    subject: Daily weather report
-    body: $steps.get_weather.outputs.summary
+  arguments:
+    - from: bot@example.com
+      to: user@example.com
+      subject: Daily weather report
+      body: $steps.get_weather.outputs.summary
 ```
 
 The validator accepts this as intentionally runtime-owned. See [Extension Profiles](08-Extension-Profiles.md) for more.

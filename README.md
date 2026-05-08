@@ -14,12 +14,14 @@ Non-OpenAPI runtimes such as command execution, function calls, file I/O, SSH, S
 
 - **Docs site**: [OpenUdon.github.io/uws](https://OpenUdon.github.io/uws/)
 - Human-readable specification: [versions/1.1.0.md](versions/1.1.0.md)
+- Runtime supplement: [versions/runtime.1.0.md](versions/runtime.1.0.md)
 - JSON Schema: [versions/1.1.0.json](versions/1.1.0.json)
 
 ## Packages
 
 - `uws1` contains the UWS 1.x Go model, structural vocabulary, and structural validation.
 - `convert` converts UWS documents between JSON, YAML, and the HCL authoring form.
+- `runtimes` contains the public UWS runtime supplement constants, wire structs, and extension helpers.
 - `versions/1.1.0.md` is the human-readable UWS 1.1 specification.
 - `versions/1.1.0.json` is the JSON Schema for UWS 1.1 documents.
 
@@ -55,7 +57,7 @@ Execution requires a bound runtime and a document that passes validation for exe
 
 The `convert` package provides JSON, YAML, and HCL helpers such as `JSONToHCL`, `HCLToJSON`, and `MarshalYAML`. `MarshalHCL` works on a deep copy and does not mutate the caller-owned document.
 
-HCL conversion preserves dynamic map keys such as `$ref` through reversible key rewriting. JSON and YAML preserve `x-*` extensions through the JSON extension model; HCL conversion rejects documents with `x-*` extensions because those fields would otherwise round-trip lossy.
+HCL conversion preserves dynamic map keys such as `$ref` through reversible key rewriting. JSON and YAML preserve `x-*` extensions through the JSON extension model; HCL represents object-level extensions with `extensions { ... }` blocks and flattens them back to `x-*` fields when converting to JSON or YAML.
 
 ## Development
 

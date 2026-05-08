@@ -22,22 +22,22 @@ Invoke a local or serverless function within the workflow:
 
 ```yaml
 operationId: format_report
-x-uws-operation-profile: udon
-x-udon-runtime:
+x-uws-operation-profile: uws.runtime.1.0
+x-uws-runtime:
   type: fnct
   function: render_markdown
-  args:
-    template: daily_report
-    data:
-      summary:    $steps.get_weather.outputs.summary
-      date:       $variables.report_date
-      recipient:  $steps.get_user.outputs.email
+  arguments:
+    - template: daily_report
+      data:
+        summary:    $steps.get_weather.outputs.summary
+        date:       $variables.report_date
+        recipient:  $steps.get_user.outputs.email
 dependsOn: [get_weather, get_user]
 outputs:
   html: $response.body.rendered
 ```
 
-The `udon` runtime resolves `render_markdown` locally. UWS core sees only `dependsOn`, `outputs`, and that the profile is `udon`.
+The bound runtime resolves `render_markdown` locally. UWS core sees only `dependsOn`, `outputs`, and that the profile is `uws.runtime.1.0`.
 
 ## Example 2: Language Model Call
 
@@ -45,14 +45,15 @@ Run a prompt through an LLM as part of the workflow:
 
 ```yaml
 operationId: summarize_feedback
-x-uws-operation-profile: udon
-x-udon-runtime:
+x-uws-operation-profile: uws.runtime.1.0
+x-uws-runtime:
   type: llm
-  model: gpt-4o
-  prompt: |
-    Summarize the following customer feedback in one sentence:
-    {{ $steps.fetch_feedback.outputs.text }}
-  temperature: 0.3
+  arguments:
+    - model: gpt-4o
+      prompt: |
+        Summarize the following customer feedback in one sentence:
+        {{ $steps.fetch_feedback.outputs.text }}
+      temperature: 0.3
 dependsOn: [fetch_feedback]
 outputs:
   summary: $response.body.content
@@ -66,15 +67,16 @@ Execute a database query as a workflow step:
 
 ```yaml
 operationId: load_pending_orders
-x-uws-operation-profile: udon
-x-udon-runtime:
+x-uws-operation-profile: uws.runtime.1.0
+x-uws-runtime:
   type: sql
-  query: |
+  command: |
     SELECT id, total, customer_id
     FROM orders
     WHERE status = 'pending'
       AND created_at > $variables.cutoff_date
-  database: orders_db
+  provider:
+    name: orders_db
 outputs:
   rows:  $response.body.rows
   count: $response.body.count
@@ -86,8 +88,8 @@ Run a remote command over SSH:
 
 ```yaml
 operationId: deploy_artifact
-x-uws-operation-profile: udon
-x-udon-runtime:
+x-uws-operation-profile: uws.runtime.1.0
+x-uws-runtime:
   type: ssh
   host:    $variables.deploy_host
   command: |
@@ -127,13 +129,13 @@ operations:
 
   # Shape 3: Extension-owned (function call)
   - operationId: build_email
-    x-uws-operation-profile: udon
-    x-udon-runtime:
+    x-uws-operation-profile: uws.runtime.1.0
+    x-uws-runtime:
       type: fnct
       function: mail_raw
-      args:
-        subject: "Weather: {{ $steps.fetch.outputs.temp_f }}°F in Los Angeles"
-        body:    $steps.fetch.outputs.summary
+      arguments:
+        - subject: "Weather: {{ $steps.fetch.outputs.temp_f }}°F in Los Angeles"
+          body:    $steps.fetch.outputs.summary
     dependsOn: [get_weather]
     outputs:
       raw: $response.body.raw
@@ -171,7 +173,7 @@ Conforming tooling MUST preserve these fields on round-trip and MUST NOT interpr
 
 | Prefix | Usage |
 |--------|-------|
-| `x-uws-` | **Reserved** — UWS core only. `x-uws-operation-profile` is the sole 1.0 occupant. |
+| `x-uws-` | **Reserved** — UWS-owned fields and supplements, including `x-uws-operation-profile`, `x-uws-runtime`, and `x-uws-runtime-config`. |
 | `x-udon-` | `udon` runtime implementation |
 | `x-<vendor>-` | Vendor-specific |
 | `x-<product>-` | Product-specific |
@@ -191,7 +193,7 @@ x-my-custom-profile:
 
 - **Validator**: accepts the document — `my_custom_profile` is a valid non-empty string. ✓
 - **Runtime**: if the runtime does not implement `my_custom_profile`, it returns an error at execution time.
-- **HCL conversion**: rejects the document — extension fields would be lost in HCL. Use JSON or YAML for documents with extension profiles.
+- **HCL conversion**: preserves extension fields inside `extensions { ... }` blocks and flattens them back to `x-*` fields when converting to JSON or YAML.
 
 ---
 

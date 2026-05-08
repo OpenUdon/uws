@@ -4,6 +4,13 @@ This changelog summarizes externally visible changes between published UWS
 versioned schemas and specification documents. The versioned `.md` files remain
 the normative human-readable specifications.
 
+## Runtime Supplement 1.0 - 2026-05-08
+
+- Added `uws.runtime.1.0` as a public runtime metadata supplement.
+- Defined `x-uws-runtime` and `x-uws-runtime-config` payload schemas.
+- Defined runtime type identifiers: `http`, `ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`,
+  `smtp`, `dns`, `ldaps`, `scp`, `sftp`, and `llm`.
+
 ## 1.1.0 - 2026-04-28
 
 - Added portable `timeout` fields on Operation, Workflow, and Step objects.

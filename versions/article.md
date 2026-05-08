@@ -304,22 +304,22 @@ Not every step is an HTTP call. Formatting a message, invoking a function, runni
 
 ```yaml
 - operationId: build_email
-  x-uws-operation-profile: udon
-  x-udon-runtime:
+  x-uws-operation-profile: uws.runtime.1.0
+  x-uws-runtime:
     type: fnct
     function: mail_raw
-    args:
-      from: bot@example.com
-      to: user@example.com
-      subject: Daily weather report
-      body: $steps.get_weather.outputs.summary
+    arguments:
+      - from: bot@example.com
+        to: user@example.com
+        subject: Daily weather report
+        body: $steps.get_weather.outputs.summary
 ```
 
 The `x-uws-operation-profile` marker tells the validator that this operation is intentionally runtime-owned, not a missing OpenAPI binding. Any runtime that understands the profile can execute it; UWS core stays small and declines to specify what `type: fnct` means.
 
 The effect is that a single UWS document can describe a complete task — an OpenAPI call, a runtime-owned formatting step, another OpenAPI call — without pretending anything is something it is not.
 
-Spec 1.0 reserves the `x-uws-` prefix for future core evolution — `x-uws-operation-profile` is the only 1.0 occupant, but anything else under that prefix belongs to UWS core. Third parties use their own prefix (`x-udon-`, `x-<vendor>-`) and their extension is governed entirely by the profile that defines it. Conforming tooling preserves unknown `x-*` fields on round-trip and must not silently drop or rename them.
+Spec 1.0 reserves the `x-uws-` prefix for UWS-owned fields and supplements. `x-uws-operation-profile` is the core profile marker, and the runtime supplement defines `x-uws-runtime` plus `x-uws-runtime-config`. Third parties use their own prefix (`x-<vendor>-` or `x-<product>-`) and their extension is governed entirely by the profile that defines it. Conforming tooling preserves unknown `x-*` fields on round-trip and must not silently drop or rename them.
 
 ## Major feature 9 of 10: Validation that fails fast
 
@@ -372,7 +372,7 @@ That is unusual for a spec of this size, and it is the mechanical reason a third
 
 ## Major feature 10 of 10: JSON, YAML, and HCL — pick the format that fits the moment
 
-The `convert` package moves documents between three formats: JSON for interchange, YAML for readability, HCL for authoring. Converters are symmetric and round-trippable, with one intentional asymmetry: HCL conversion rejects documents that carry `x-*` extensions, because HCL has no canonical place to put them. JSON and YAML preserve extensions through the round-trip.
+The `convert` package moves documents between three formats: JSON for interchange, YAML for readability, HCL for authoring. Converters are symmetric and round-trippable. JSON and YAML preserve extensions as flattened `x-*` fields, while HCL preserves them inside `extensions { ... }` blocks.
 
 Authoring the same operation in HCL:
 
@@ -387,7 +387,7 @@ operation "list_pets" {
 }
 ```
 
-Rejecting lossy conversion rather than silently dropping data is a small choice that prevents a large class of bugs.
+Preserving extensions rather than silently dropping data is a small choice that prevents a large class of bugs.
 
 ## Putting it together
 
@@ -419,15 +419,15 @@ operations:
       summary: $response.body.summary
 
   - operationId: build_email
-    x-uws-operation-profile: udon
-    x-udon-runtime:
+    x-uws-operation-profile: uws.runtime.1.0
+    x-uws-runtime:
       type: fnct
       function: mail_raw
-      args:
-        from: bot@example.com
-        to: user@example.com
-        subject: Daily weather report for Los Angeles
-        body: $steps.get_weather.outputs.summary
+      arguments:
+        - from: bot@example.com
+          to: user@example.com
+          subject: Daily weather report for Los Angeles
+          body: $steps.get_weather.outputs.summary
     dependsOn:
       - current_weather
     outputs:
@@ -468,7 +468,7 @@ In particular, the following remain runtime concerns:
 - **Expression engine implementation** — UWS fixes the meaning of the core expression grammar; the runtime still implements the evaluator.
 - **Worker sizing and resource scheduling** — UWS core owns `dependsOn`, `parallel`, `parallelGroup`, `loop`, and trigger-routing semantics, but thread pools, queues, and backpressure are executor choices.
 - **Persistence and resumption policy** — execution records and trigger state can be exposed and persisted by a runtime, but storage layout and resume mechanics are not part of the UWS wire contract.
-- **Extension profile semantics** — `x-uws-operation-profile: udon` tells the validator the operation is intentionally runtime-owned; the profile itself decides what `x-udon-runtime` means.
+- **Extension profile semantics** — `x-uws-operation-profile: uws.runtime.1.0` tells the validator the operation is intentionally runtime-owned; the bound runtime decides what `x-uws-runtime` means.
 
 The division is the whole design. The document is portable because everything portable is in the document and the executor-specific machinery stays out of it.
 
