@@ -1,0 +1,45 @@
+openapi: 3.0.0
+info:
+  title: Incident API
+  version: 1.0.0
+servers:
+  - url: https://incident.example.test
+paths:
+  /tenants/{tenantId}/incidents/{incidentId}:
+    get:
+      operationId: getIncident
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: incidentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: include
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+        - name: depth
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Incident record.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  severity:
+                    type: string
+                  status:
+                    type: string

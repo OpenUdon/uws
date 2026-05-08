@@ -1,0 +1,42 @@
+openapi: 3.0.0
+info:
+  title: CRM API
+  version: 1.0.0
+servers:
+  - url: https://crm.example.test
+paths:
+  /customers/{customerId}:
+    get:
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: X-Trace-ID
+          in: header
+          schema:
+            type: string
+        - name: X-Workflow
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customer account context.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  segment:
+                    type: string
+                  status:
+                    type: string
