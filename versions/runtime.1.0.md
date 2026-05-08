@@ -11,7 +11,6 @@ provider implementations.
 | --- | --- |
 | Profile name | `uws.runtime.1.0` |
 | Operation extension | `x-uws-runtime` |
-| Config extension | `x-uws-runtime-config` |
 | JSON Schema | `versions/runtime.1.0.json` |
 
 An extension-owned operation using this supplement sets:
@@ -28,10 +27,13 @@ x-uws-runtime:
 
 The supplement defines these runtime type identifiers:
 
-`http`, `ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`, `smtp`, `dns`, `ldaps`,
-`scp`, `sftp`, and `llm`.
+`ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`, `smtp`, `dns`, `ldaps`, `scp`,
+`sftp`, and `llm`.
 
-The spelling is exact. `ldaps` is defined; plain `ldap` is not.
+HTTP and OpenAPI-bound calls are represented by core UWS operation binding
+fields, not by `x-uws-runtime`. A payload that assigns `type: http` in
+`x-uws-runtime` is invalid. The spelling is exact. `ldaps` is defined; plain
+`ldap` is not.
 
 ## Operation Runtime Payload
 
@@ -39,43 +41,32 @@ The spelling is exact. `ldaps` is defined; plain `ldap` is not.
 
 | Field | Type | Purpose |
 | --- | --- | --- |
-| `type` | runtime type string | Runtime selector. |
-| `isJson` | boolean | Runtime-owned JSON payload hint. |
-| `host` | string | Host or remote endpoint hint. |
-| `method` | string | HTTP method or runtime method hint. |
-| `path` | string | Runtime path hint. |
-| `payloadRequired` | boolean | Request payload required marker. |
-| `requestMediaType` | string | Preferred request media type. |
-| `responseMediaType` | string | Preferred response media type. |
-| `responseStatusCode` | integer | Expected HTTP response status code. |
+| `type` | runtime type string | Non-HTTP runtime selector. |
 | `command` | string | Command text for command-like runtimes. |
 | `workingDir` | string | Working directory for command-like runtimes. |
 | `function` | string | Function name for function runtimes. |
 | `workflow` | string | Nested workflow reference. |
 | `arguments` | array | Runtime-owned argument values. |
-| `provider` | object | Provider selection metadata. |
-| `security` | array | Security requirement metadata. |
-| `queryPars` | parameter schema | Query parameter schema. |
-| `pathPars` | parameter schema | Path parameter schema. |
-| `headerPars` | parameter schema | Header parameter schema. |
-| `cookiePars` | parameter schema | Cookie parameter schema. |
-| `payloadPars` | parameter schema | Request payload schema. |
-| `responseBody` | parameter schema | Response body schema. |
-| `responseHeaders` | parameter schema | Response header schema. |
 
-The payload shape is intentionally descriptive. A conforming UWS parser
-preserves it. A bound runtime decides whether it can execute it.
+The payload shape is intentionally small. It selects a non-HTTP invocation
+surface without standardizing runtime behavior. A bound runtime decides whether
+it can execute the selected type and how to interpret the selector fields.
 
-Runtime parameter schemas use the public UWS `ParamSchema` shape: `type`,
-`format`, `$ref`, `properties`, `required`, `items`, `allOf`, `oneOf`,
-`anyOf`, and `x-*` extensions.
+HTTP/OpenAPI operation metadata is not part of `x-uws-runtime`. HTTP method,
+path, server, request/response schemas, and operation security requirements
+belong in the referenced OpenAPI document and core UWS OpenAPI binding fields.
 
-## Runtime Config Payload
+Runtime-specific credentials, provider selection, client defaults, connection
+pools, security material, and other execution configuration belong in
+runtime-private configuration or in a product-owned extension profile, not in
+public `x-uws-*` fields.
 
-`x-uws-runtime-config` is an object with optional `provider` and `security`
-fields. It is suitable for document-level, component-level, or other
-extension-bearing object metadata when tooling wants to keep runtime defaults
-near the UWS artifact without making them UWS core semantics.
+For runtime types such as `ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`, `smtp`,
+`dns`, `ldaps`, `scp`, `sftp`, and `llm`, authentication and security shapes
+vary by implementation and are difficult to standardize portably. When a
+runtime needs invocation-specific auth hints, they are runtime-owned argument
+values or private runtime configuration, not a public `x-uws-runtime-config`
+contract.
 
 ## HCL Representation
 

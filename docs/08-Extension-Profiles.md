@@ -75,12 +75,13 @@ x-uws-runtime:
     FROM orders
     WHERE status = 'pending'
       AND created_at > $variables.cutoff_date
-  provider:
-    name: orders_db
 outputs:
   rows:  $response.body.rows
   count: $response.body.count
 ```
+
+The database connection, credentials, and driver settings are runtime-private
+configuration. They are not public UWS runtime metadata.
 
 ## Example 4: SSH / Shell Command
 
@@ -91,16 +92,18 @@ operationId: deploy_artifact
 x-uws-operation-profile: uws.runtime.1.0
 x-uws-runtime:
   type: ssh
-  host:    $variables.deploy_host
   command: |
     cd /opt/app && \
     ./deploy.sh {{ $steps.build.outputs.artifact_path }}
-  timeout: 120
 dependsOn: [build]
 outputs:
   exit_code: $response.body.exitCode
   logs:      $response.body.stdout
 ```
+
+The SSH host, identity, timeout, and client behavior are selected by the bound
+runtime or a product-owned profile. The public `x-uws-runtime` payload only
+selects the non-HTTP invocation surface.
 
 ## Example 5: Mixing Core and Extension Operations
 
@@ -173,7 +176,7 @@ Conforming tooling MUST preserve these fields on round-trip and MUST NOT interpr
 
 | Prefix | Usage |
 |--------|-------|
-| `x-uws-` | **Reserved** — UWS-owned fields and supplements, including `x-uws-operation-profile`, `x-uws-runtime`, and `x-uws-runtime-config`. |
+| `x-uws-` | **Reserved** — UWS-owned fields and supplements, including `x-uws-operation-profile` and `x-uws-runtime`. |
 | `x-udon-` | `udon` runtime implementation |
 | `x-<vendor>-` | Vendor-specific |
 | `x-<product>-` | Product-specific |

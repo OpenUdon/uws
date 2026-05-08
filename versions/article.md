@@ -319,7 +319,7 @@ The `x-uws-operation-profile` marker tells the validator that this operation is 
 
 The effect is that a single UWS document can describe a complete task — an OpenAPI call, a runtime-owned formatting step, another OpenAPI call — without pretending anything is something it is not.
 
-Spec 1.0 reserves the `x-uws-` prefix for UWS-owned fields and supplements. `x-uws-operation-profile` is the core profile marker, and the runtime supplement defines `x-uws-runtime` plus `x-uws-runtime-config`. Third parties use their own prefix (`x-<vendor>-` or `x-<product>-`) and their extension is governed entirely by the profile that defines it. Conforming tooling preserves unknown `x-*` fields on round-trip and must not silently drop or rename them.
+Spec 1.0 reserves the `x-uws-` prefix for UWS-owned fields and supplements. `x-uws-operation-profile` is the core profile marker, and the runtime supplement defines `x-uws-runtime`. Third parties use their own prefix (`x-<vendor>-` or `x-<product>-`) and their extension is governed entirely by the profile that defines it. Conforming tooling preserves unknown `x-*` fields on round-trip and must not silently drop or rename them.
 
 ## Major feature 9 of 10: Validation that fails fast
 

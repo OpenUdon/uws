@@ -14,7 +14,7 @@ func TestRuntimeSupplementSchemaRuntimeTypes(t *testing.T) {
 	schema := compileRuntimeSupplementSchema(t)
 
 	for _, typ := range []string{
-		RuntimeTypeHTTP, RuntimeTypeSSH, RuntimeTypeCmd, RuntimeTypeFnct,
+		RuntimeTypeSSH, RuntimeTypeCmd, RuntimeTypeFnct,
 		RuntimeTypeFileIO, RuntimeTypeSQL, RuntimeTypeS3, RuntimeTypeSMTP,
 		RuntimeTypeDNS, RuntimeTypeLDAPS, RuntimeTypeSCP, RuntimeTypeSFTP,
 		RuntimeTypeLLM,
@@ -25,93 +25,92 @@ func TestRuntimeSupplementSchemaRuntimeTypes(t *testing.T) {
 
 	plainLDAP := decodeRuntimeJSONValue(t, []byte(`{"x-uws-runtime":{"type":"ldap"}}`))
 	require.Error(t, schema.Validate(plainLDAP))
+
+	httpRuntime := decodeRuntimeJSONValue(t, []byte(`{"x-uws-runtime":{"type":"http"}}`))
+	require.Error(t, schema.Validate(httpRuntime))
 }
 
-func TestRuntimeSupplementSchemaPayloadFields(t *testing.T) {
+func TestRuntimeSupplementSchemaSlimPayloadFields(t *testing.T) {
 	schema := compileRuntimeSupplementSchema(t)
 	value := decodeRuntimeJSONValue(t, []byte(`{
 		"x-uws-runtime": {
-			"type": "http",
-			"isJson": true,
-			"host": "api.example.test",
-			"method": "POST",
-			"path": "/items",
-			"payloadRequired": true,
-			"requestMediaType": "application/json",
-			"responseMediaType": "application/json",
-			"responseStatusCode": 201,
+			"type": "cmd",
 			"command": "echo ok",
 			"workingDir": "/tmp",
 			"function": "identity",
 			"workflow": "child.hcl",
-			"arguments": [{"id": "$inputs.id"}],
-			"provider": {"name": "api", "serverUrl": "https://api.example.test"},
-			"security": [{"name": "api_key", "scheme": {"type": "apiKey", "name": "X-API-Key", "in": "header"}}],
-			"queryPars": {"type": "object", "properties": {"limit": {"type": "integer"}}},
-			"pathPars": {"type": "object"},
-			"headerPars": {"type": "object"},
-			"cookiePars": {"type": "object"},
-			"payloadPars": {"type": "object"},
-			"responseBody": {"type": "object"},
-			"responseHeaders": {"type": "object"}
-		},
-		"x-uws-runtime-config": {
-			"provider": {"name": "api"},
-			"security": [{"name": "oauth", "scopes": ["read"]}]
+			"arguments": [{"id": "$inputs.id"}]
 		}
 	}`))
 	require.NoError(t, schema.Validate(value))
 }
 
-func TestRuntimeSupplementSchemaParamSchemaUsesUWSShape(t *testing.T) {
+func TestRuntimeSupplementSchemaAcceptsFnctAndLLMSelectors(t *testing.T) {
 	schema := compileRuntimeSupplementSchema(t)
 
-	valid := decodeRuntimeJSONValue(t, []byte(`{
+	fnct := decodeRuntimeJSONValue(t, []byte(`{
 		"x-uws-runtime": {
-			"type": "http",
-			"queryPars": {
-				"type": "object",
-				"$ref": "#/$defs/Query",
-				"properties": {
-					"limit": {"type": "integer", "format": "int32"},
-					"x-field": {"type": "string"}
-				},
-				"required": ["limit"],
-				"items": {"type": "string"},
-				"allOf": [{"type": "object"}],
-				"oneOf": [{"type": "object"}],
-				"anyOf": [{"type": "object"}],
-				"x-runtime-hint": {"$expr": "$inputs.limit"}
-			},
-			"payloadPars": {
-				"type": "object",
-				"properties": {"body": {"type": "string"}}
-			}
+			"type": "fnct",
+			"function": "render"
 		}
 	}`))
-	require.NoError(t, schema.Validate(valid))
+	require.NoError(t, schema.Validate(fnct))
 
-	unsupportedAdditionalProperties := decodeRuntimeJSONValue(t, []byte(`{
+	llm := decodeRuntimeJSONValue(t, []byte(`{
 		"x-uws-runtime": {
-			"type": "http",
-			"payloadPars": {
-				"type": "object",
-				"additionalProperties": true
-			}
+			"type": "llm",
+			"function": "summarize",
+			"arguments": [{"prompt": "$inputs.text"}]
 		}
 	}`))
-	require.Error(t, schema.Validate(unsupportedAdditionalProperties))
+	require.NoError(t, schema.Validate(llm))
+}
 
-	unsupportedDescription := decodeRuntimeJSONValue(t, []byte(`{
+func TestRuntimeSupplementSchemaRejectsRemovedFields(t *testing.T) {
+	schema := compileRuntimeSupplementSchema(t)
+
+	for _, field := range []string{
+		"isJson",
+		"host",
+		"method",
+		"path",
+		"payloadRequired",
+		"requestMediaType",
+		"responseMediaType",
+		"responseStatusCode",
+		"provider",
+		"security",
+		"queryPars",
+		"pathPars",
+		"headerPars",
+		"cookiePars",
+		"payloadPars",
+		"responseBody",
+		"responseHeaders",
+	} {
+		t.Run(field, func(t *testing.T) {
+			value := decodeRuntimeJSONValue(t, []byte(`{
+				"x-uws-runtime": {
+					"type": "cmd",
+					"`+field+`": {}
+				}
+			}`))
+			require.Error(t, schema.Validate(value))
+		})
+	}
+}
+
+func TestRuntimeSupplementSchemaRejectsRuntimeConfig(t *testing.T) {
+	schema := compileRuntimeSupplementSchema(t)
+	value := decodeRuntimeJSONValue(t, []byte(`{
 		"x-uws-runtime": {
-			"type": "http",
-			"payloadPars": {
-				"type": "object",
-				"description": "not part of uws1.ParamSchema"
-			}
+			"type": "fnct"
+		},
+		"x-uws-runtime-config": {
+			"provider": {"name": "api"}
 		}
 	}`))
-	require.Error(t, schema.Validate(unsupportedDescription))
+	require.Error(t, schema.Validate(value))
 }
 
 func compileRuntimeSupplementSchema(t *testing.T) *jsonschema.Schema {
