@@ -2,6 +2,7 @@ package runtimes
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -13,12 +14,7 @@ import (
 func TestRuntimeSupplementSchemaRuntimeTypes(t *testing.T) {
 	schema := compileRuntimeSupplementSchema(t)
 
-	for _, typ := range []string{
-		RuntimeTypeSSH, RuntimeTypeCmd, RuntimeTypeFnct,
-		RuntimeTypeFileIO, RuntimeTypeSQL, RuntimeTypeS3, RuntimeTypeSMTP,
-		RuntimeTypeDNS, RuntimeTypeLDAPS, RuntimeTypeSCP, RuntimeTypeSFTP,
-		RuntimeTypeLLM,
-	} {
+	for _, typ := range runtimeTypeConstants() {
 		value := decodeRuntimeJSONValue(t, []byte(`{"x-uws-runtime":{"type":"`+typ+`"}}`))
 		require.NoError(t, schema.Validate(value), "schema should accept runtime type %q", typ)
 	}
@@ -28,6 +24,27 @@ func TestRuntimeSupplementSchemaRuntimeTypes(t *testing.T) {
 
 	httpRuntime := decodeRuntimeJSONValue(t, []byte(`{"x-uws-runtime":{"type":"http"}}`))
 	require.Error(t, schema.Validate(httpRuntime))
+}
+
+func TestRuntimeSupplementSchemaRuntimeTypeEnumMatchesConstants(t *testing.T) {
+	var doc struct {
+		Defs map[string]struct {
+			Enum []string `json:"enum"`
+		} `json:"$defs"`
+	}
+	require.NoError(t, json.Unmarshal(readRuntimeSupplementSchema(t), &doc))
+
+	require.Equal(t, runtimeTypeConstants(), doc.Defs["runtime-type"].Enum)
+}
+
+func TestRuntimeSupplementSchemaRequiresType(t *testing.T) {
+	schema := compileRuntimeSupplementSchema(t)
+
+	emptyRuntime := decodeRuntimeJSONValue(t, []byte(`{"x-uws-runtime": {}}`))
+	require.Error(t, schema.Validate(emptyRuntime))
+
+	commandOnly := decodeRuntimeJSONValue(t, []byte(`{"x-uws-runtime": {"command": "echo ok"}}`))
+	require.Error(t, schema.Validate(commandOnly))
 }
 
 func TestRuntimeSupplementSchemaSlimPayloadFields(t *testing.T) {
@@ -115,9 +132,7 @@ func TestRuntimeSupplementSchemaRejectsRuntimeConfig(t *testing.T) {
 
 func compileRuntimeSupplementSchema(t *testing.T) *jsonschema.Schema {
 	t.Helper()
-	path := filepath.Join("..", "versions", "runtime.1.0.json")
-	data, err := os.ReadFile(path)
-	require.NoError(t, err)
+	data := readRuntimeSupplementSchema(t)
 	doc, err := jsonschema.UnmarshalJSON(bytes.NewReader(data))
 	require.NoError(t, err)
 	compiler := jsonschema.NewCompiler()
@@ -126,6 +141,23 @@ func compileRuntimeSupplementSchema(t *testing.T) *jsonschema.Schema {
 	schema, err := compiler.Compile(resource)
 	require.NoError(t, err)
 	return schema
+}
+
+func readRuntimeSupplementSchema(t *testing.T) []byte {
+	t.Helper()
+	path := filepath.Join("..", "versions", "runtime.1.0.json")
+	data, err := os.ReadFile(path)
+	require.NoError(t, err)
+	return data
+}
+
+func runtimeTypeConstants() []string {
+	return []string{
+		RuntimeTypeSSH, RuntimeTypeCmd, RuntimeTypeFnct,
+		RuntimeTypeFileIO, RuntimeTypeSQL, RuntimeTypeS3, RuntimeTypeSMTP,
+		RuntimeTypeDNS, RuntimeTypeLDAPS, RuntimeTypeSCP, RuntimeTypeSFTP,
+		RuntimeTypeLLM,
+	}
 }
 
 func decodeRuntimeJSONValue(t *testing.T, data []byte) any {

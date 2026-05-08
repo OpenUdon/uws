@@ -30,6 +30,9 @@
     },
     "operation-runtime": {
       "type": "object",
+      "required": [
+        "type"
+      ],
       "properties": {
         "type": {
           "$ref": "#/$defs/runtime-type"
