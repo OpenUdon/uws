@@ -519,4 +519,3 @@ func TestDocumentValidateExecutableAllowsOutputsAndResults(t *testing.T) {
 
 	require.NoError(t, doc.ValidateExecutable())
 }
-

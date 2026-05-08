@@ -6,7 +6,7 @@ type Components struct {
 	// allowed. Keys must match componentNamePattern (enforced by Validate);
 	// values are not inspected.
 	Variables  map[string]any `json:"variables,omitempty" yaml:"variables,omitempty" hcl:"variables,optional"`
-	Extensions map[string]any `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 type componentsAlias Components

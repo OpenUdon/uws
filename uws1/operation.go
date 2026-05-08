@@ -28,7 +28,7 @@ type Operation struct {
 
 	// Outputs map friendly names to runtime expressions.
 	Outputs    map[string]string `json:"outputs,omitempty" yaml:"outputs,omitempty" hcl:"outputs,optional"`
-	Extensions map[string]any    `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any    `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 // Execute executes the operation using the bound runtime in the document.

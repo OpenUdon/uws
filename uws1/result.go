@@ -6,7 +6,7 @@ type StructuralResult struct {
 	Kind       string         `json:"kind" yaml:"kind" hcl:"kind"`
 	From       string         `json:"from" yaml:"from" hcl:"from"`
 	Value      string         `json:"value,omitempty" yaml:"value,omitempty" hcl:"value,optional"`
-	Extensions map[string]any `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 type structuralResultAlias StructuralResult

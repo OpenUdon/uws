@@ -5,7 +5,7 @@ type Idempotency struct {
 	Key        string         `json:"key" yaml:"key" hcl:"key"`
 	OnConflict string         `json:"onConflict,omitempty" yaml:"onConflict,omitempty" hcl:"onConflict,optional"`
 	TTL        *float64       `json:"ttl,omitempty" yaml:"ttl,omitempty" hcl:"ttl,optional"`
-	Extensions map[string]any `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 type idempotencyAlias Idempotency

@@ -10,7 +10,7 @@ type FailureAction struct {
 	RetryAfter float64        `json:"retryAfter,omitempty" yaml:"retryAfter,omitempty" hcl:"retryAfter,optional"`
 	RetryLimit int            `json:"retryLimit,omitempty" yaml:"retryLimit,omitempty" hcl:"retryLimit,optional"`
 	Criteria   []*Criterion   `json:"criteria,omitempty" yaml:"criteria,omitempty" hcl:"criterion,block"`
-	Extensions map[string]any `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 type failureActionAlias FailureAction

@@ -233,31 +233,100 @@ operations:
 	}
 }
 
-func TestHCLConversionRejectsExtensions(t *testing.T) {
+func TestHCLConversionPreservesRuntimeExtensions(t *testing.T) {
 	jsonData := []byte(`{
 		"uws": "1.0.0",
 		"info": {"title": "Extension", "version": "1.0.0"},
 		"operations": [
 			{
 				"operationId": "build_email",
-				"x-uws-operation-profile": "udon",
-				"x-udon-runtime": {"type": "fnct", "function": "mail_raw"}
+				"x-uws-operation-profile": "uws.runtime.1.0",
+				"x-uws-runtime": {"type": "fnct", "function": "identity"}
 			}
 		]
 	}`)
 
-	_, err := JSONToHCL(jsonData)
-	if err == nil || !strings.Contains(err.Error(), "cannot preserve extension profiles") {
-		t.Fatalf("Expected extension-preservation error, got %v", err)
+	hclData, err := JSONToHCL(jsonData)
+	if err != nil {
+		t.Fatalf("JSONToHCL failed: %v", err)
+	}
+	hcl := string(hclData)
+	for _, want := range []string{"extensions", "x-uws-operation-profile", "x-uws-runtime", `function = "identity"`} {
+		if !strings.Contains(hcl, want) {
+			t.Fatalf("HCL output missing %q:\n%s", want, hcl)
+		}
+	}
+
+	backJSON, err := HCLToJSON(hclData)
+	if err != nil {
+		t.Fatalf("HCLToJSON failed: %v", err)
+	}
+	var roundTripped uws1.Document
+	if err := json.Unmarshal(backJSON, &roundTripped); err != nil {
+		t.Fatalf("Failed to parse round-tripped JSON: %v", err)
+	}
+	extensions := roundTripped.Operations[0].Extensions
+	if extensions["x-uws-operation-profile"] != "uws.runtime.1.0" {
+		t.Fatalf("Expected operation profile extension, got %#v", extensions)
+	}
+	runtime, ok := extensions["x-uws-runtime"].(map[string]any)
+	if !ok || runtime["type"] != "fnct" || runtime["function"] != "identity" {
+		t.Fatalf("Expected runtime extension payload, got %#v", extensions["x-uws-runtime"])
 	}
 
 	var doc uws1.Document
 	if err := json.Unmarshal(jsonData, &doc); err != nil {
 		t.Fatalf("Failed to parse JSON: %v", err)
 	}
-	_, err = MarshalHCL(&doc)
-	if err == nil || !strings.Contains(err.Error(), "cannot preserve extension profiles") {
-		t.Fatalf("Expected extension-preservation error, got %v", err)
+	marshaled, err := MarshalHCL(&doc)
+	if err != nil {
+		t.Fatalf("MarshalHCL failed: %v", err)
+	}
+	var unmarshaled uws1.Document
+	if err := UnmarshalHCL(marshaled, &unmarshaled); err != nil {
+		t.Fatalf("UnmarshalHCL failed: %v", err)
+	}
+	if !reflect.DeepEqual(doc.Operations[0].Extensions, unmarshaled.Operations[0].Extensions) {
+		t.Fatalf("MarshalHCL/UnmarshalHCL did not preserve extensions:\nwant=%#v\ngot=%#v", doc.Operations[0].Extensions, unmarshaled.Operations[0].Extensions)
+	}
+}
+
+func TestYAMLToHCLAndHCLToYAMLPreserveRuntimeExtensions(t *testing.T) {
+	yamlData := []byte(`
+uws: 1.0.0
+info:
+  title: Runtime
+  version: 1.0.0
+operations:
+  - operationId: render
+    x-uws-operation-profile: uws.runtime.1.0
+    x-uws-runtime:
+      type: fnct
+      function: identity
+`)
+
+	hclData, err := YAMLToHCL(yamlData)
+	if err != nil {
+		t.Fatalf("YAMLToHCL failed: %v", err)
+	}
+	if !strings.Contains(string(hclData), "extensions") || !strings.Contains(string(hclData), "x-uws-runtime") {
+		t.Fatalf("HCL output did not include runtime extensions:\n%s", hclData)
+	}
+
+	yamlOut, err := HCLToYAML(hclData)
+	if err != nil {
+		t.Fatalf("HCLToYAML failed: %v", err)
+	}
+	jsonOut, err := YAMLToJSON(yamlOut)
+	if err != nil {
+		t.Fatalf("YAMLToJSON failed: %v", err)
+	}
+	var doc uws1.Document
+	if err := json.Unmarshal(jsonOut, &doc); err != nil {
+		t.Fatalf("Failed to parse YAML output as JSON: %v", err)
+	}
+	if doc.Operations[0].Extensions["x-uws-operation-profile"] != "uws.runtime.1.0" {
+		t.Fatalf("YAML output did not preserve flattened extension fields:\n%s", yamlOut)
 	}
 }
 
@@ -270,37 +339,37 @@ func TestHCLConversionRejectsDynamicExtensionKeys(t *testing.T) {
 		{
 			name: "document variables",
 			body: `"variables": {"x-env": "prod"},`,
-			want: "variables.x-env contains x-* extensions",
+			want: "variables.x-env contains x-* dynamic keys",
 		},
 		{
 			name: "operation request",
 			body: `"operations": [{"operationId": "op1", "sourceDescription": "api", "openapiOperationId": "getOp", "request": {"header": {"x-trace": "abc"}}}],`,
-			want: "operations[0].request.header.x-trace contains x-* extensions",
+			want: "operations[0].request.header.x-trace contains x-* dynamic keys",
 		},
 		{
 			name: "step body",
 			body: `"workflows": [{"workflowId": "wf", "type": "sequence", "steps": [{"stepId": "s", "operationRef": "op1", "body": {"x-meta": true}}]}],`,
-			want: "workflows[0].steps[0].body.x-meta contains x-* extensions",
+			want: "workflows[0].steps[0].body.x-meta contains x-* dynamic keys",
 		},
 		{
 			name: "case body",
 			body: `"workflows": [{"workflowId": "wf", "type": "switch", "cases": [{"name": "matched", "body": {"x-case": true}}]}],`,
-			want: "workflows[0].cases[0].body.x-case contains x-* extensions",
+			want: "workflows[0].cases[0].body.x-case contains x-* dynamic keys",
 		},
 		{
 			name: "trigger options",
 			body: `"triggers": [{"triggerId": "webhook", "options": {"x-defer": true}}],`,
-			want: "triggers[0].options.x-defer contains x-* extensions",
+			want: "triggers[0].options.x-defer contains x-* dynamic keys",
 		},
 		{
 			name: "components variables",
 			body: `"components": {"variables": {"x-component": true}},`,
-			want: "components.variables.x-component contains x-* extensions",
+			want: "components.variables.x-component contains x-* dynamic keys",
 		},
 		{
 			name: "param schema properties",
 			body: `"workflows": [{"workflowId": "wf", "type": "sequence", "inputs": {"type": "object", "properties": {"x-field": {"type": "string"}}}}],`,
-			want: "workflows[0].inputs.properties.x-field contains x-* extensions",
+			want: "workflows[0].inputs.properties.x-field contains x-* dynamic keys",
 		},
 	}
 

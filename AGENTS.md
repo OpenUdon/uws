@@ -88,9 +88,10 @@ When changing validation rules:
 Key invariants:
 
 - JSON and YAML preserve `x-*` extensions through the `Extensions` map pattern.
-- HCL intentionally drops extensions. `MarshalHCL` rejects documents containing `x-*` fields rather than silently losing them.
+- HCL preserves object-level `x-*` extensions through `extensions { ... }` blocks. JSON and YAML keep extensions flattened as normal `x-*` fields.
 - HCL key rewriting preserves `$`-prefixed keys on round-trip. Legacy JSON Schema keys (`$ref`, `$id`, `$schema`, `$defs`, etc.) use the `_`-prefix form in HCL; other `$foo` keys use `__dollar__foo`.
 - `MarshalHCL` works on a deep copy and does not mutate the caller's document.
+- The `uws1.Document` wire tree and all fields/sub-structs reachable from it should carry `json` and `hcl` tags for parsing.
 
 ## Extension Pattern
 

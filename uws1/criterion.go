@@ -20,7 +20,7 @@ type Criterion struct {
 	Condition  string                  `json:"condition" yaml:"condition" hcl:"condition"`
 	Type       CriterionExpressionType `json:"type,omitempty" yaml:"type,omitempty" hcl:"type,optional"`
 	Context    string                  `json:"context,omitempty" yaml:"context,omitempty" hcl:"context,optional"`
-	Extensions map[string]any          `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any          `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 type criterionAlias Criterion

@@ -8,7 +8,7 @@ type SuccessAction struct {
 	WorkflowID string         `json:"workflowId,omitempty" yaml:"workflowId,omitempty" hcl:"workflowId,optional"`
 	StepID     string         `json:"stepId,omitempty" yaml:"stepId,omitempty" hcl:"stepId,optional"`
 	Criteria   []*Criterion   `json:"criteria,omitempty" yaml:"criteria,omitempty" hcl:"criterion,block"`
-	Extensions map[string]any `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 type successActionAlias SuccessAction

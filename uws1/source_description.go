@@ -18,7 +18,7 @@ type SourceDescription struct {
 	Name       string                `json:"name" yaml:"name" hcl:"name,label"`
 	URL        string                `json:"url" yaml:"url" hcl:"url"`
 	Type       SourceDescriptionType `json:"type,omitempty" yaml:"type,omitempty" hcl:"type,optional"`
-	Extensions map[string]any        `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any        `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 type sourceDescriptionAlias SourceDescription

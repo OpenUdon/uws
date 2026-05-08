@@ -12,7 +12,7 @@ UWS documents are valid JSON, YAML, or canonical HCL. The `convert` package in `
 |--------|----------|---------------------|
 | JSON | Machine interchange, API responses, LLM output | ✓ |
 | YAML | Human authoring, configuration files | ✓ |
-| HCL | Canonical authoring for the `udon` runtime | ✗ (rejected if present) |
+| HCL | Canonical authoring for runtime tooling | ✓ via `extensions { ... }` blocks |
 
 ## Example 1: The Same Operation in All Three Formats
 
@@ -177,13 +177,13 @@ All conversion helpers live in `github.com/OpenUdon/uws/convert`:
 // Between byte slices (raw format conversion)
 jsonOut, _ := convert.YAMLToJSON(yamlData)
 yamlOut, _ := convert.JSONToYAML(jsonData)
-hclOut,  _ := convert.JSONToHCL(jsonData)   // errors if x-* extensions present
+hclOut,  _ := convert.JSONToHCL(jsonData)
 jsonOut, _ = convert.HCLToJSON(hclData)
 
 // Marshal a Document struct to bytes
 jsonBytes, _ := convert.MarshalJSON(doc)
 yamlBytes, _ := convert.MarshalYAML(doc)
-hclBytes,  _ := convert.MarshalHCL(doc)     // errors if x-* extensions present
+hclBytes,  _ := convert.MarshalHCL(doc)
 
 // Unmarshal bytes into a Document struct
 convert.UnmarshalJSON(jsonData, &doc)
@@ -225,27 +225,24 @@ func main() {
 }
 ```
 
-## HCL Extension Rejection
+## HCL Extensions
 
-HCL is a core-only format. `MarshalHCL` rejects documents that carry `x-*` extension fields rather than silently dropping them:
+HCL represents object-level `x-*` extension fields inside an `extensions` block:
 
-```go
-// Document with an extension field
-doc := &uws1.Document{
-    Operations: []*uws1.Operation{
-        {
-            OperationID: "op1",
-            Extensions:  map[string]any{"x-timeout": 30},  // extension present
-        },
-    },
+```hcl
+operation "render" {
+  extensions {
+    x-uws-operation-profile = "uws.runtime.1.0"
+    x-uws-runtime {
+      type     = "fnct"
+      function = "identity"
+    }
+  }
 }
-
-_, err := convert.MarshalHCL(doc)
-// err: "operations[0] contains x-* extensions; UWS HCL conversion is
-//       core-only and cannot preserve extension profiles, use JSON or YAML"
 ```
 
-This is the "reject rather than silently lose" principle. If you need to author a document with extensions, use YAML or JSON.
+When converted to JSON or YAML, these fields flatten back to normal `x-*`
+properties on the owning object.
 
 ## `$`-Key Rewriting for HCL
 

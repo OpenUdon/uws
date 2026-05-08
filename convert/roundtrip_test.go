@@ -20,9 +20,7 @@ func TestRoundTripSampleFile(t *testing.T) {
 	if err := json.Unmarshal(jsonData, &doc1); err != nil {
 		t.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
-	doc1.Extensions = nil
 
-	// Re-marshal a core-only copy because UWS HCL conversion rejects x-* extensions.
 	jsonData1, err := json.Marshal(&doc1)
 	if err != nil {
 		t.Fatalf("Failed to re-marshal to JSON: %v", err)
@@ -50,9 +48,7 @@ func TestRoundTripSampleFile(t *testing.T) {
 	compareUWSDocs(t, &doc1, &doc2)
 }
 
-// stripExtensions clears every Extensions map in the document tree. Used by
-// the HCL extension-drop roundtrip test so the expected value matches what HCL
-// conversion actually preserves (core fields only).
+// stripExtensions clears every Extensions map in the document tree.
 func stripExtensions(doc *uws1.Document) {
 	if doc == nil {
 		return
@@ -151,10 +147,9 @@ func stripCasesExtensions(cases []*uws1.Case) {
 	}
 }
 
-// TestHCLRoundTripDropsExtensions locks the contract stated in AGENTS.md: HCL
-// conversion intentionally drops x-* extensions. After JSON -> strip -> HCL ->
-// JSON, the resulting document must deep-equal the stripped original.
-func TestHCLRoundTripDropsExtensions(t *testing.T) {
+// TestHCLRoundTripPreservesExtensions verifies the HCL extensions block keeps
+// x-* fields on UWS objects instead of dropping runtime profile metadata.
+func TestHCLRoundTripPreservesExtensions(t *testing.T) {
 	withExtensions := &uws1.Document{
 		UWS: "1.0.0",
 		Info: &uws1.Info{
@@ -177,26 +172,25 @@ func TestHCLRoundTripDropsExtensions(t *testing.T) {
 			},
 		},
 		Extensions: map[string]any{"x-root": "kept-in-json"},
+		Workflows: []*uws1.Workflow{
+			{
+				WorkflowID: "wf",
+				Type:       "sequence",
+				Inputs: &uws1.ParamSchema{
+					Type:       "object",
+					Extensions: map[string]any{"x-schema": "kept-in-json"},
+				},
+			},
+		},
 	}
 
-	// JSON -> struct -> strip -> JSON -> HCL -> JSON -> struct
 	jsonWith, err := json.Marshal(withExtensions)
 	if err != nil {
 		t.Fatalf("marshal with extensions: %v", err)
 	}
-	var stripped uws1.Document
-	if err := json.Unmarshal(jsonWith, &stripped); err != nil {
-		t.Fatalf("unmarshal: %v", err)
-	}
-	stripExtensions(&stripped)
-
-	jsonStripped, err := json.Marshal(&stripped)
+	hclData, err := JSONToHCL(jsonWith)
 	if err != nil {
-		t.Fatalf("marshal stripped: %v", err)
-	}
-	hclData, err := JSONToHCL(jsonStripped)
-	if err != nil {
-		t.Fatalf("JSONToHCL after strip: %v", err)
+		t.Fatalf("JSONToHCL: %v", err)
 	}
 	backJSON, err := HCLToJSON(hclData)
 	if err != nil {
@@ -207,12 +201,7 @@ func TestHCLRoundTripDropsExtensions(t *testing.T) {
 		t.Fatalf("unmarshal roundtrip: %v", err)
 	}
 
-	compareUWSDocs(t, &stripped, &back)
-
-	// And the inverse guarantee: MarshalHCL refuses to run if extensions remain.
-	if _, err := MarshalHCL(withExtensions); err == nil {
-		t.Fatal("MarshalHCL should reject documents with x-* extensions")
-	}
+	compareUWSDocs(t, withExtensions, &back)
 }
 
 // TestRoundTripRichDocument covers fields the sample fixture does not: Criterion.Type

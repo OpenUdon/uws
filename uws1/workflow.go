@@ -17,7 +17,7 @@ type Workflow struct {
 	Cases      []*Case           `json:"cases,omitempty" yaml:"cases,omitempty" hcl:"case,block"`
 	Default    []*Step           `json:"default,omitempty" yaml:"default,omitempty" hcl:"default,block"`
 	Outputs    map[string]string `json:"outputs,omitempty" yaml:"outputs,omitempty" hcl:"outputs,optional"`
-	Extensions map[string]any    `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any    `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 // Execute executes the workflow using the bound runtime in the document.
@@ -70,7 +70,7 @@ type Step struct {
 	Cases      []*Case           `json:"cases,omitempty" yaml:"cases,omitempty" hcl:"case,block"`
 	Default    []*Step           `json:"default,omitempty" yaml:"default,omitempty" hcl:"default,block"`
 	Outputs    map[string]string `json:"outputs,omitempty" yaml:"outputs,omitempty" hcl:"outputs,optional"`
-	Extensions map[string]any    `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any    `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 // Execute executes the step using the bound runtime in the document.
@@ -114,7 +114,7 @@ type Case struct {
 	CaseFields
 	Body       map[string]any `json:"body,omitempty" yaml:"body,omitempty" hcl:"body,optional"`
 	Steps      []*Step        `json:"steps,omitempty" yaml:"steps,omitempty" hcl:"step,block"`
-	Extensions map[string]any `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 type caseAlias Case

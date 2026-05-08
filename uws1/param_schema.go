@@ -15,7 +15,7 @@ type ParamSchema struct {
 	AllOf      []*ParamSchema          `json:"allOf,omitempty" yaml:"allOf,omitempty" hcl:"allOf,block"`
 	OneOf      []*ParamSchema          `json:"oneOf,omitempty" yaml:"oneOf,omitempty" hcl:"oneOf,block"`
 	AnyOf      []*ParamSchema          `json:"anyOf,omitempty" yaml:"anyOf,omitempty" hcl:"anyOf,block"`
-	Extensions map[string]any          `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any          `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 type paramSchemaAlias ParamSchema

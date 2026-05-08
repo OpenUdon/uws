@@ -31,7 +31,7 @@ type Document struct {
 	Triggers   []*Trigger          `json:"triggers,omitempty" yaml:"triggers,omitempty" hcl:"trigger,block"`
 	Results    []*StructuralResult `json:"results,omitempty" yaml:"results,omitempty" hcl:"result,block"`
 	Components *Components         `json:"components,omitempty" yaml:"components,omitempty" hcl:"components,block"`
-	Extensions map[string]any      `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any      `json:"-" yaml:"-" hcl:"extensions,block"`
 
 	// Runtime is the specialized executor bound to this document. Runtime
 	// rebinding and execution-record reads are not synchronized; callers that
@@ -130,7 +130,7 @@ type Info struct {
 	Summary     string         `json:"summary,omitempty" yaml:"summary,omitempty" hcl:"summary,optional"`
 	Description string         `json:"description,omitempty" yaml:"description,omitempty" hcl:"description,optional"`
 	Version     string         `json:"version" yaml:"version" hcl:"version"`
-	Extensions  map[string]any `json:"-" yaml:"-" hcl:"-"`
+	Extensions  map[string]any `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 type infoAlias Info

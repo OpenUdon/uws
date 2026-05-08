@@ -10,7 +10,7 @@ type Trigger struct {
 	Options    map[string]any  `json:"options,omitempty" yaml:"options,omitempty" hcl:"options,optional"`
 	Outputs    []string        `json:"outputs,omitempty" yaml:"outputs,omitempty" hcl:"outputs,optional"`
 	Routes     []*TriggerRoute `json:"routes,omitempty" yaml:"routes,omitempty" hcl:"route,block"`
-	Extensions map[string]any  `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any  `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 type triggerAlias Trigger
@@ -38,7 +38,7 @@ func (t Trigger) MarshalJSON() ([]byte, error) {
 // TriggerRoute maps a trigger output to top-level step or workflow targets.
 type TriggerRoute struct {
 	TriggerRouteFields
-	Extensions map[string]any `json:"-" yaml:"-" hcl:"-"`
+	Extensions map[string]any `json:"-" yaml:"-" hcl:"extensions,block"`
 }
 
 type triggerRouteAlias TriggerRoute
