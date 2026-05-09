@@ -231,6 +231,27 @@ doc.Execute(ctx)
 
 `ValidateResult()` returns path-tagged errors that drop straight into a corrective prompt. Two fields, two exact paths — enough for the model to fix in one pass rather than guessing from prose.
 
+## From The Big Fixture
+
+The large fixture is built from Go structs, validated, serialized, and
+round-tripped across JSON, YAML, and HCL:
+
+```go
+doc := BuildDocument()
+if err := doc.Validate(); err != nil {
+    return fmt.Errorf("validate source document: %w", err)
+}
+
+jsonData, err := convert.MarshalJSONIndent(doc, "", "  ")
+hclData, err := convert.MarshalHCL(doc)
+yamlData, err := convert.MarshalYAML(doc)
+if err := verifyRoundTrips(jsonData, hclData, yamlData); err != nil {
+    return err
+}
+```
+
+Full context: [`testdata/big/main.go`](https://github.com/OpenUdon/uws/blob/main/testdata/big/main.go).
+
 ---
 
 ← [Success Criteria and Actions](06-Success-Criteria-and-Actions.md) | [Next: Extension Profiles →](08-Extension-Profiles.md)

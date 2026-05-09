@@ -204,6 +204,39 @@ All three criteria must pass. If the token is missing or malformed, `auth_failur
 
 UWS does not provide a reusable component registry for criteria and actions. Each operation declares its own. This keeps the document self-describing and allows sibling operations to evolve independently without shared state.
 
+## From The Big Fixture
+
+The large fixture combines simple and regex criteria with retry and goto
+failure actions:
+
+```hcl
+onFailure "retry_run_llm_primary" {
+  type       = "retry"
+  retryAfter = 5
+  retryLimit = 2
+  criterion {
+    condition = "$error.transient == true"
+    type      = "simple"
+  }
+  criterion {
+    condition = "timeout|rate limit"
+    type      = "regex"
+    context   = "$error.message"
+  }
+}
+
+onFailure "review_run_llm_primary" {
+  type       = "goto"
+  workflowId = "wf_manual_review"
+  criterion {
+    condition = "$error.transient != true"
+    type      = "simple"
+  }
+}
+```
+
+Full context: [`testdata/big/big.hcl`](https://github.com/OpenUdon/uws/blob/main/testdata/big/big.hcl).
+
 ---
 
 ← [Structural Results](05-Structural-Results.md) | [Next: Execution Model →](07-Execution-Model.md)

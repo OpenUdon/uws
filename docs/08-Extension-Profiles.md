@@ -215,6 +215,34 @@ x-my-custom-profile:
 - **Runtime**: if the runtime does not implement `my_custom_profile`, it returns an error at execution time.
 - **HCL conversion**: preserves extension fields inside `extensions { ... }` blocks and flattens them back to `x-*` fields when converting to JSON or YAML.
 
+## From The Big Fixture
+
+The large fixture includes every runtime supplement selector. This excerpt shows
+one `llm` operation with all supplement fields present:
+
+```hcl
+operation "run_llm_primary" {
+  dependsOn = ["fetch_ticket", "load_customer"]
+  outputs = {
+    audit  = "$response.body.auditId"
+    result = "$response.body.result"
+  }
+  extensions {
+    x-uws-operation-profile = "uws.runtime.1.0"
+    x-uws-runtime {
+      type       = "llm"
+      command    = "llm task primary"
+      function   = "summarize_incident_primary"
+      workflow   = "runtime/llm-primary.uws.hcl"
+      workingDir = "/srv/incident-response/llm"
+      arguments = [{ incidentId = "$inputs.incidentId" }]
+    }
+  }
+}
+```
+
+Full context: [`testdata/big/big.hcl`](https://github.com/OpenUdon/uws/blob/main/testdata/big/big.hcl).
+
 ---
 
 ← [Execution Model](07-Execution-Model.md) | [Next: Validation →](09-Validation.md)

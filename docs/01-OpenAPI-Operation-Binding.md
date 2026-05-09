@@ -202,6 +202,38 @@ The following are all invalid — each produces a structured error:
   # error: requires exactly one of openapiOperationId or openapiOperationRef
 ```
 
+## From The Big Fixture
+
+The large round-trip fixture includes OpenAPI-bound operations with request
+locations, outputs, execution controls, criteria, and actions:
+
+```hcl
+operation "fetch_ticket" {
+  sourceDescription  = "incident_api"
+  openapiOperationId = "getIncident"
+  when               = "$inputs.incidentId != ''"
+  forEach            = "$variables.regions"
+  parallelGroup      = "api_fetch_group"
+  outputs = {
+    severity = "$response.body.severity"
+    ticket   = "$response.body"
+  }
+  request {
+    path {
+      incidentId = "$inputs.incidentId"
+      tenantId   = "$inputs.tenantId"
+    }
+    query {
+      depth   = "full"
+      include = ["timeline", "assets"]
+    }
+  }
+  timeout = 20
+}
+```
+
+Full context: [`testdata/big/big.hcl`](https://github.com/OpenUdon/uws/blob/main/testdata/big/big.hcl).
+
 ---
 
 ← [Home](index.md) | [Next: Six Structural Constructs →](02-Six-Structural-Constructs.md)

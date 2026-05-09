@@ -39,4 +39,5 @@ nav:
     - JSON Schema: https://github.com/OpenUdon/uws/blob/main/versions/1.1.0.json
     - Runtime Supplement: https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md
     - Runtime Supplement Schema: https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json
+    - Big Fixture: big-fixture.md
     - Repository: https://github.com/OpenUdon/uws

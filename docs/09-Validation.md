@@ -212,6 +212,26 @@ The three artifacts that define UWS are kept in sync by a reflection-driven test
 
 Adding a property to one artifact without updating the others fails the build immediately.
 
+## From The Big Fixture
+
+The large fixture is a regression fixture as much as an example. Its generator
+validates the source document and then validates every parsed interchange form:
+
+```go
+var fromHCL uws1.Document
+if err := convert.UnmarshalHCL(hclData, &fromHCL); err != nil {
+    return fmt.Errorf("unmarshal HCL: %w", err)
+}
+if err := fromHCL.Validate(); err != nil {
+    return fmt.Errorf("validate HCL document: %w", err)
+}
+if !bytes.Contains(hclRoundTrip, []byte(`"x-uws-runtime"`)) {
+    return fmt.Errorf("HCL round-trip lost x-uws-runtime payloads")
+}
+```
+
+Full context: [`testdata/big/main.go`](https://github.com/OpenUdon/uws/blob/main/testdata/big/main.go).
+
 ---
 
 ← [Extension Profiles](08-Extension-Profiles.md) | [Next: Interchange Formats →](10-Interchange-Formats.md)

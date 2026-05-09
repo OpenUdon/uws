@@ -260,6 +260,32 @@ when: $response.statusCode == 200
 when: $response.statusCode == 200 && $response.body.count > 0
 ```
 
+## From The Big Fixture
+
+The large fixture uses expressions in request bindings, controls, and outputs:
+
+```hcl
+operation "run_llm_primary" {
+  dependsOn = ["fetch_ticket", "load_customer"]
+  when      = "$steps.step_collect_context.outputs.enabled == true"
+  forEach   = "$variables.regions"
+  wait      = "$signals.runtime_slot_available"
+  outputs = {
+    audit  = "$response.body.auditId"
+    result = "$response.body.result"
+  }
+  request {
+    body {
+      incidentId = "$inputs.incidentId"
+      runtime    = "llm"
+      variant    = "primary"
+    }
+  }
+}
+```
+
+Full context: [`testdata/big/big.hcl`](https://github.com/OpenUdon/uws/blob/main/testdata/big/big.hcl).
+
 ---
 
 ← [Six Structural Constructs](02-Six-Structural-Constructs.md) | [Next: Triggers and Route Dispatch →](04-Triggers-and-Route-Dispatch.md)

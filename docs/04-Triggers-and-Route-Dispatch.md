@@ -179,6 +179,32 @@ err := doc.DispatchTrigger(ctx, "order_events", 0, map[string]any{
 
 UWS core resolves the route, validates targets, and executes them through the orchestrator. The payload becomes `$trigger` inside the routed workflows.
 
+## From The Big Fixture
+
+The large fixture includes trigger routing by output labels and multi-target
+dispatch:
+
+```hcl
+trigger "alert_webhook" {
+  path           = "/webhooks/security/alerts"
+  methods        = ["POST", "PUT"]
+  authentication = "bearer"
+  outputs        = ["alert.received", "alert.replayed"]
+
+  route {
+    output = "alert.received"
+    to     = ["main", "wf_parallel"]
+  }
+
+  route {
+    output = "alert.replayed"
+    to     = ["step_collect_context", "wf_switch"]
+  }
+}
+```
+
+Full context: [`testdata/big/big.hcl`](https://github.com/OpenUdon/uws/blob/main/testdata/big/big.hcl).
+
 ---
 
 ← [Runtime Expression Grammar](03-Runtime-Expression-Grammar.md) | [Next: Structural Results →](05-Structural-Results.md)

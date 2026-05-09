@@ -185,6 +185,33 @@ results:
 # error: results[0].kind: kind "merge" does not match "my_loop" type "loop"
 ```
 
+## From The Big Fixture
+
+The large fixture declares switch, loop, and merge results from top-level
+workflows:
+
+```hcl
+result "decision.branch" {
+  kind  = "switch"
+  from  = "wf_switch"
+  value = "$workflows.wf_switch.outputs.selectedPath"
+}
+
+result "containment.loop" {
+  kind  = "loop"
+  from  = "wf_loop"
+  value = "$workflows.wf_loop.outputs.containmentResults"
+}
+
+result "merge.summary" {
+  kind  = "merge"
+  from  = "wf_merge"
+  value = "$workflows.wf_merge.outputs.summary"
+}
+```
+
+Full context: [`testdata/big/big.hcl`](https://github.com/OpenUdon/uws/blob/main/testdata/big/big.hcl).
+
 ---
 
 ← [Triggers and Route Dispatch](04-Triggers-and-Route-Dispatch.md) | [Next: Success Criteria and Actions →](06-Success-Criteria-and-Actions.md)

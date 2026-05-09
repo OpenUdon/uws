@@ -263,6 +263,39 @@ steps:
         operationRef: process_single_item
 ```
 
+## From The Big Fixture
+
+The large fixture exercises structural workflows and nested workflow calls. This
+excerpt shows a sequence workflow step invoking another workflow:
+
+```hcl
+workflow "main" {
+  type        = "sequence"
+  description = "Coordinate enrichment, runtime checks, branching, containment, and notification."
+  dependsOn   = ["fetch_ticket", "load_customer"]
+  outputs = {
+    decision = "$steps.step_decide_path.outputs.selectedPath"
+    incident = "$steps.step_collect_context.outputs.incident"
+  }
+
+  step "step_collect_context" {
+    operationRef = "fetch_ticket"
+    dependsOn    = ["run_cmd_primary", "run_fnct_primary"]
+    outputs = {
+      audit  = "$response.body.auditId"
+      result = "$response.body.result"
+    }
+  }
+
+  step "step_parallel_checks" {
+    workflow  = "wf_parallel"
+    dependsOn = ["step_collect_context", "load_customer"]
+  }
+}
+```
+
+Full context: [`testdata/big/big.hcl`](https://github.com/OpenUdon/uws/blob/main/testdata/big/big.hcl).
+
 ---
 
 ← [OpenAPI Operation Binding](01-OpenAPI-Operation-Binding.md) | [Next: Runtime Expression Grammar →](03-Runtime-Expression-Grammar.md)

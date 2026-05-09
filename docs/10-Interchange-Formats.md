@@ -289,6 +289,36 @@ YAML → HCL → YAML  produces a structurally identical document
 
 `MarshalHCL` works on a deep copy — the caller's document is never mutated during conversion.
 
+## From The Big Fixture
+
+The large fixture keeps JSON and HCL versions of the same generated document.
+This compact JSON excerpt corresponds to the HCL operation examples on the
+feature pages:
+
+```json
+{
+  "operationId": "fetch_ticket",
+  "sourceDescription": "incident_api",
+  "openapiOperationId": "getIncident",
+  "request": {
+    "path": {
+      "incidentId": "$inputs.incidentId",
+      "tenantId": "$inputs.tenantId"
+    },
+    "query": {
+      "depth": "full",
+      "include": ["timeline", "assets"]
+    }
+  },
+  "outputs": {
+    "severity": "$response.body.severity",
+    "ticket": "$response.body"
+  }
+}
+```
+
+Full context: [`testdata/big/big.json`](https://github.com/OpenUdon/uws/blob/main/testdata/big/big.json) and [`testdata/big/big.hcl`](https://github.com/OpenUdon/uws/blob/main/testdata/big/big.hcl).
+
 ---
 
 ← [Validation](09-Validation.md) | [Home →](index.md)
