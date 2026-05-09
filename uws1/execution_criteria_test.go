@@ -64,6 +64,16 @@ func TestOrchestratorExecutesJSONPathCriterion(t *testing.T) {
 	assert.Equal(t, []string{"fetch"}, runtime.executedLeafs)
 }
 
+func TestParseCriterionIndexRejectsMalformedArrayIndexes(t *testing.T) {
+	for _, token := range []string{"", "1abc", "-1", "+1", "1.0"} {
+		t.Run(token, func(t *testing.T) {
+			_, err := parseCriterionIndex(token)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "invalid array index")
+		})
+	}
+}
+
 func TestOrchestratorExecutesXPathCriterion(t *testing.T) {
 	doc := testDocument(&Operation{
 		OperationID: "fetch",

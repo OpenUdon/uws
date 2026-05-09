@@ -53,12 +53,16 @@ func validateStructuralTypeFields(typeName, items, wait string, hasCases, hasDef
 }
 
 func validateSteps(steps []*Step, path string, idx *documentIndex, result *ValidationResult) {
-	for i, step := range steps {
-		stepPath := fmt.Sprintf("%s[%d]", path, i)
-		if step != nil {
+	_ = walkStepTree(path, steps, stepTreeWalkHandlers{
+		step: func(stepPath string, step *Step) error {
 			step.validate(stepPath, idx, result)
-		}
-	}
+			return nil
+		},
+		caseNode: func(casePath string, c *Case) error {
+			validateCase(c, casePath, result)
+			return nil
+		},
+	})
 }
 
 func (s *Step) validate(path string, idx *documentIndex, result *ValidationResult) {
@@ -103,20 +107,23 @@ func (s *Step) validate(path string, idx *documentIndex, result *ValidationResul
 	}
 	validateDependencyList(s.DependsOn, path+".dependsOn", idx, result)
 	validateOutputs(s.Outputs, path+".outputs", result)
-	validateSteps(s.Steps, path+".steps", idx, result)
-	validateCases(s.Cases, path+".cases", idx, result)
-	validateSteps(s.Default, path+".default", idx, result)
 }
 
 func validateCases(cases []*Case, path string, idx *documentIndex, result *ValidationResult) {
-	for i, c := range cases {
-		casePath := fmt.Sprintf("%s[%d]", path, i)
-		if c == nil {
-			continue
-		}
-		if c.Name == "" {
-			result.addError(casePath+".name", "is required")
-		}
-		validateSteps(c.Steps, casePath+".steps", idx, result)
+	_ = walkCaseTree(path, cases, stepTreeWalkHandlers{
+		step: func(stepPath string, step *Step) error {
+			step.validate(stepPath, idx, result)
+			return nil
+		},
+		caseNode: func(casePath string, c *Case) error {
+			validateCase(c, casePath, result)
+			return nil
+		},
+	})
+}
+
+func validateCase(c *Case, path string, result *ValidationResult) {
+	if c.Name == "" {
+		result.addError(path+".name", "is required")
 	}
 }

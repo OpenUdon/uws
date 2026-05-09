@@ -112,12 +112,8 @@ func (idx *documentIndex) collectDocumentIDs(d *Document, result *ValidationResu
 			idx.workflowTypes[wf.WorkflowID] = wf.Type
 			idx.workflowSteps[wf.WorkflowID] = make(map[string]string)
 			idx.collectWorkflowStepTypes(wf.WorkflowID, wf.Steps)
+			idx.collectWorkflowCaseStepTypes(wf.WorkflowID, wf.Cases)
 			idx.collectWorkflowStepTypes(wf.WorkflowID, wf.Default)
-			for _, c := range wf.Cases {
-				if c != nil {
-					idx.collectWorkflowStepTypes(wf.WorkflowID, c.Steps)
-				}
-			}
 			if len(wf.DependsOn) > 0 {
 				idx.dependencies[wf.WorkflowID] = append(idx.dependencies[wf.WorkflowID], wf.DependsOn...)
 			}
@@ -168,60 +164,79 @@ func selectSemanticEntryWorkflow(d *Document) *Workflow {
 // index used when resolving results[].from references. Nil and unnamed steps
 // are skipped here; collectStepIDs runs on the same tree and reports nil steps.
 func (idx *documentIndex) collectWorkflowStepTypes(workflowID string, steps []*Step) {
-	for _, step := range steps {
-		if step == nil || step.StepID == "" {
-			continue
-		}
-		idx.workflowSteps[workflowID][step.StepID] = step.Type
-		idx.collectWorkflowStepTypes(workflowID, step.Steps)
-		idx.collectWorkflowStepTypes(workflowID, step.Default)
-		for _, c := range step.Cases {
-			if c != nil {
-				idx.collectWorkflowStepTypes(workflowID, c.Steps)
+	_ = walkStepTree("", steps, stepTreeWalkHandlers{
+		step: func(_ string, step *Step) error {
+			if step.StepID != "" {
+				idx.workflowSteps[workflowID][step.StepID] = step.Type
 			}
-		}
-	}
+			return nil
+		},
+	})
+}
+
+func (idx *documentIndex) collectWorkflowCaseStepTypes(workflowID string, cases []*Case) {
+	_ = walkCaseTree("", cases, stepTreeWalkHandlers{
+		step: func(_ string, step *Step) error {
+			if step.StepID != "" {
+				idx.workflowSteps[workflowID][step.StepID] = step.Type
+			}
+			return nil
+		},
+	})
 }
 
 func (idx *documentIndex) collectStepIDs(steps []*Step, path string, result *ValidationResult) {
-	for i, step := range steps {
-		stepPath := fmt.Sprintf("%s[%d]", path, i)
-		if step == nil {
+	_ = walkStepTree(path, steps, stepTreeWalkHandlers{
+		nilStep: func(stepPath string) error {
 			addIndexError(result, stepPath, "is nil")
-			continue
-		}
-		if step.StepID != "" {
-			if idx.steps[step.StepID] != nil {
-				addIndexError(result, stepPath+".stepId", fmt.Sprintf("duplicate stepId %q", step.StepID))
-			}
-			idx.steps[step.StepID] = step
-			if len(step.DependsOn) > 0 {
-				idx.dependencies[step.StepID] = append(idx.dependencies[step.StepID], step.DependsOn...)
-			}
-		}
-		if step.ParallelGroup != "" {
-			if idx.hasExecutableID(step.ParallelGroup) {
-				addIndexError(result, stepPath+".parallelGroup", fmt.Sprintf("parallelGroup %q collides with an executable identifier", step.ParallelGroup))
-			}
-			idx.parallelGroups[step.ParallelGroup] = true
-			if step.StepID != "" {
-				idx.parallelGroupMembers[step.ParallelGroup] = append(idx.parallelGroupMembers[step.ParallelGroup], step.StepID)
-			}
-		}
-		idx.collectStepIDs(step.Steps, stepPath+".steps", result)
-		idx.collectCaseStepIDs(step.Cases, stepPath+".cases", result)
-		idx.collectStepIDs(step.Default, stepPath+".default", result)
-	}
+			return nil
+		},
+		step: func(stepPath string, step *Step) error {
+			idx.collectStepID(step, stepPath, result)
+			return nil
+		},
+		nilCase: func(casePath string) error {
+			addIndexError(result, casePath, "is nil")
+			return nil
+		},
+	})
 }
 
 func (idx *documentIndex) collectCaseStepIDs(cases []*Case, path string, result *ValidationResult) {
-	for i, c := range cases {
-		casePath := fmt.Sprintf("%s[%d]", path, i)
-		if c == nil {
+	_ = walkCaseTree(path, cases, stepTreeWalkHandlers{
+		nilStep: func(stepPath string) error {
+			addIndexError(result, stepPath, "is nil")
+			return nil
+		},
+		step: func(stepPath string, step *Step) error {
+			idx.collectStepID(step, stepPath, result)
+			return nil
+		},
+		nilCase: func(casePath string) error {
 			addIndexError(result, casePath, "is nil")
-			continue
+			return nil
+		},
+	})
+}
+
+func (idx *documentIndex) collectStepID(step *Step, path string, result *ValidationResult) {
+	if step.StepID != "" {
+		if idx.steps[step.StepID] != nil {
+			addIndexError(result, path+".stepId", fmt.Sprintf("duplicate stepId %q", step.StepID))
 		}
-		idx.collectStepIDs(c.Steps, casePath+".steps", result)
+		idx.steps[step.StepID] = step
+		if len(step.DependsOn) > 0 {
+			idx.dependencies[step.StepID] = append(idx.dependencies[step.StepID], step.DependsOn...)
+		}
+	}
+	if step.ParallelGroup != "" {
+		if idx.hasExecutableID(step.ParallelGroup) {
+			addIndexError(result, path+".parallelGroup", fmt.Sprintf("parallelGroup %q collides with an executable identifier", step.ParallelGroup))
+		}
+		idx.parallelGroups[step.ParallelGroup] = true
+		if step.StepID != "" {
+			idx.parallelGroupMembers[step.ParallelGroup] = append(idx.parallelGroupMembers[step.ParallelGroup], step.StepID)
+		}
 	}
 }
 

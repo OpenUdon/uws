@@ -7,6 +7,7 @@ import (
 	"sort"
 	"testing"
 
+	googlejsonschema "github.com/google/jsonschema-go/jsonschema"
 	"github.com/santhosh-tekuri/jsonschema/v6"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -467,6 +468,69 @@ func TestSchemaConformance_JSONSchemaValidator(t *testing.T) {
 	require.Error(t, schema.Validate(stepWorkflowAndType))
 }
 
+func TestSchemaConformance_Draft202012CrossValidator(t *testing.T) {
+	santhoshSchema := compileUWSSchema(t)
+	googleSchema := compileGoogleUWSSchema(t)
+
+	for _, tc := range []struct {
+		name  string
+		data  []byte
+		valid bool
+	}{
+		{
+			name:  "sample fixture",
+			data:  mustReadTestFile(t, "../testdata/sample.uws.json"),
+			valid: true,
+		},
+		{
+			name: "extension-only operation",
+			data: []byte(`{
+				"uws": "1.1.0",
+				"info": {"title": "Extension", "version": "1.0.0"},
+				"operations": [{"operationId": "build_email", "x-uws-operation-profile": "udon", "x-udon-runtime": {"type": "fnct"}}]
+			}`),
+			valid: true,
+		},
+		{
+			name: "root unevaluated property rejected",
+			data: []byte(`{
+				"uws": "1.1.0",
+				"info": {"title": "Extra", "version": "1.0.0"},
+				"operations": [{"operationId": "build_email", "x-uws-operation-profile": "udon"}],
+				"unexpected": true
+			}`),
+			valid: false,
+		},
+		{
+			name: "step allOf rejects operationRef plus type",
+			data: []byte(`{
+				"uws": "1.1.0",
+				"info": {"title": "Step", "version": "1.0.0"},
+				"sourceDescriptions": [{"name": "api", "url": "./openapi.yaml", "type": "openapi"}],
+				"operations": [{"operationId": "fetch", "sourceDescription": "api", "openapiOperationId": "getData"}],
+				"workflows": [{"workflowId": "main", "type": "sequence", "steps": [{"stepId": "s", "operationRef": "fetch", "type": "sequence"}]}]
+			}`),
+			valid: false,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			santhoshValue := decodeJSONValue(t, tc.data)
+			var googleValue any
+			require.NoError(t, json.Unmarshal(tc.data, &googleValue))
+
+			santhoshErr := santhoshSchema.Validate(santhoshValue)
+			googleErr := googleSchema.Validate(googleValue)
+			if tc.valid {
+				require.NoError(t, santhoshErr)
+				require.NoError(t, googleErr)
+				return
+			}
+			require.Error(t, santhoshErr)
+			require.Error(t, googleErr)
+		})
+	}
+}
+
 func compileUWSSchema(t *testing.T) *jsonschema.Schema {
 	t.Helper()
 	data, err := os.ReadFile(latestUWSSchemaPath)
@@ -478,6 +542,24 @@ func compileUWSSchema(t *testing.T) *jsonschema.Schema {
 	schema, err := compiler.Compile(latestUWSSchemaResource)
 	require.NoError(t, err)
 	return schema
+}
+
+func compileGoogleUWSSchema(t *testing.T) *googlejsonschema.Resolved {
+	t.Helper()
+	data, err := os.ReadFile(latestUWSSchemaPath)
+	require.NoError(t, err)
+	var schema googlejsonschema.Schema
+	require.NoError(t, json.Unmarshal(data, &schema))
+	resolved, err := schema.Resolve(nil)
+	require.NoError(t, err)
+	return resolved
+}
+
+func mustReadTestFile(t *testing.T, path string) []byte {
+	t.Helper()
+	data, err := os.ReadFile(path)
+	require.NoError(t, err)
+	return data
 }
 
 func decodeJSONValue(t *testing.T, data []byte) any {

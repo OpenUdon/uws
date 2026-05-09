@@ -123,18 +123,17 @@ func walkHCLWorkflow(path string, wf *Workflow, h documentHCLWalkHandlers) error
 }
 
 func walkHCLSteps(path string, steps []*Step, h documentHCLWalkHandlers) error {
-	for i, step := range steps {
-		if err := walkHCLStep(fmt.Sprintf("%s[%d]", path, i), step, h); err != nil {
-			return err
-		}
-	}
-	return nil
+	return walkStepTree(path, steps, stepTreeWalkHandlers{
+		step: func(stepPath string, step *Step) error {
+			return walkHCLStepFields(stepPath, step, h)
+		},
+		caseNode: func(casePath string, c *Case) error {
+			return walkHCLCaseFields(casePath, c, h)
+		},
+	})
 }
 
-func walkHCLStep(path string, step *Step, h documentHCLWalkHandlers) error {
-	if step == nil {
-		return nil
-	}
+func walkHCLStepFields(path string, step *Step, h documentHCLWalkHandlers) error {
 	if err := walkHCLExtensions(path, step.Extensions, h); err != nil {
 		return err
 	}
@@ -142,35 +141,28 @@ func walkHCLStep(path string, step *Step, h documentHCLWalkHandlers) error {
 	if err := walkHCLDynamicMap(path+".body", &step.Body, h); err != nil {
 		return err
 	}
-	if err := walkHCLSteps(path+".steps", step.Steps, h); err != nil {
-		return err
-	}
-	if err := walkHCLCases(path+".cases", step.Cases, h); err != nil {
-		return err
-	}
-	return walkHCLSteps(path+".default", step.Default, h)
-}
-
-func walkHCLCases(path string, cases []*Case, h documentHCLWalkHandlers) error {
-	for i, c := range cases {
-		if err := walkHCLCase(fmt.Sprintf("%s[%d]", path, i), c, h); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
-func walkHCLCase(path string, c *Case, h documentHCLWalkHandlers) error {
-	if c == nil {
-		return nil
-	}
+func walkHCLCases(path string, cases []*Case, h documentHCLWalkHandlers) error {
+	return walkCaseTree(path, cases, stepTreeWalkHandlers{
+		step: func(stepPath string, step *Step) error {
+			return walkHCLStepFields(stepPath, step, h)
+		},
+		caseNode: func(casePath string, c *Case) error {
+			return walkHCLCaseFields(casePath, c, h)
+		},
+	})
+}
+
+func walkHCLCaseFields(path string, c *Case, h documentHCLWalkHandlers) error {
 	if err := walkHCLExtensions(path, c.Extensions, h); err != nil {
 		return err
 	}
 	if err := walkHCLDynamicMap(path+".body", &c.Body, h); err != nil {
 		return err
 	}
-	return walkHCLSteps(path+".steps", c.Steps, h)
+	return nil
 }
 
 func walkHCLTrigger(path string, trigger *Trigger, h documentHCLWalkHandlers) error {

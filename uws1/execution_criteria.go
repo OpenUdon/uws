@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/antchfx/xmlquery"
@@ -205,8 +206,16 @@ func resolveCriterionJSONPointer(root any, pointer string) (any, error) {
 }
 
 func parseCriterionIndex(token string) (int, error) {
-	var index int
-	if _, err := fmt.Sscanf(token, "%d", &index); err != nil {
+	if token == "" {
+		return 0, fmt.Errorf("invalid array index %q", token)
+	}
+	for _, ch := range token {
+		if ch < '0' || ch > '9' {
+			return 0, fmt.Errorf("invalid array index %q", token)
+		}
+	}
+	index, err := strconv.Atoi(token)
+	if err != nil {
 		return 0, fmt.Errorf("invalid array index %q", token)
 	}
 	return index, nil

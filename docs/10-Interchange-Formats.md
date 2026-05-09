@@ -75,7 +75,7 @@ A complete minimal document with a workflow:
 
 **YAML** (most readable for authoring)
 ```yaml
-uws: "1.0.0"
+uws: "1.1.0"
 info:
   title: Pet Workflow
   version: 1.0.0
@@ -102,7 +102,7 @@ workflows:
 
 **HCL** (canonical authoring form)
 ```hcl
-uws  = "1.0.0"
+uws  = "1.1.0"
 
 info {
   title   = "Pet Workflow"

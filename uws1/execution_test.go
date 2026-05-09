@@ -132,6 +132,37 @@ func TestOrchestratorParallelGroupDependencyBarrier(t *testing.T) {
 	}
 }
 
+func TestOrchestratorRejectsControlSignalsInsideParallel(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		action *SuccessAction
+	}{
+		{name: "end", action: &SuccessAction{Name: "stop", Type: "end"}},
+		{name: "goto", action: &SuccessAction{Name: "jump", Type: "goto", StepID: "target"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			doc := testDocument(
+				&Operation{OperationID: "op1", OnSuccess: []*SuccessAction{tc.action}},
+				&Operation{OperationID: "op2"},
+			)
+			doc.Workflows = []*Workflow{{
+				WorkflowID: "main",
+				Type:       WorkflowTypeParallel,
+				Steps: []*Step{
+					{StepID: "branch", OperationRef: "op1"},
+					{StepID: "target", OperationRef: "op2"},
+				},
+			}}
+			doc.SetRuntime(&mockRuntime{})
+
+			err := doc.Execute(context.Background())
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "control signal")
+			assert.Contains(t, err.Error(), "parallel workflow")
+		})
+	}
+}
+
 func TestOrchestratorExecuteSwitch(t *testing.T) {
 	doc := testDocument(
 		&Operation{OperationID: "op1"},
@@ -306,7 +337,6 @@ func TestOrchestratorExecuteAwaitHonorsContextCancellation(t *testing.T) {
 	err := doc.Execute(ctx)
 	require.ErrorIs(t, err, context.DeadlineExceeded)
 }
-
 
 func TestOrchestratorForEachAggregatesOutputsAndResults(t *testing.T) {
 	doc := testDocument(&Operation{
