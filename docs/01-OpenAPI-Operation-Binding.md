@@ -4,7 +4,7 @@
 
 ---
 
-Every executable operation in UWS binds to an existing OpenAPI operation by reference. UWS never duplicates the HTTP method, path, request schema, response schema, server, or security scheme — those live in the OpenAPI document.
+Most executable operations in UWS bind to an existing OpenAPI operation by reference. Extension-owned operations are the explicit non-OpenAPI escape hatch. UWS never duplicates the HTTP method, path, request schema, response schema, server, or security scheme — those live in the OpenAPI document.
 
 ## Three Mutually Exclusive Shapes
 
@@ -16,7 +16,7 @@ Every valid UWS operation matches exactly one of three shapes:
 | OpenAPI-bound by JSON Pointer | REQUIRED | MUST NOT be set | REQUIRED | OPTIONAL |
 | Extension-owned | MUST NOT be set | MUST NOT be set | MUST NOT be set | REQUIRED |
 
-A document that mixes fields from two shapes, or omits the binding fields of every shape, is invalid.
+A document that omits the binding fields of every shape is invalid. OpenAPI-bound operations may carry profile metadata, but an extension-owned operation is selected only when all OpenAPI binding fields are absent.
 
 ## Source Descriptions
 
@@ -195,11 +195,11 @@ The following are all invalid — each produces a structured error:
 - operationId: bad_op
   # error: requires an OpenAPI binding or x-uws-operation-profile
 
-# Shape 4: extension profile but also an OpenAPI binding field
-- operationId: bad_op
+# Shape 4: sourceDescription set but no OpenAPI selector
+- operationId: also_bad
   sourceDescription: api
-  x-uws-operation-profile: udon
-  # error: extension-owned operations must not set sourceDescription
+  x-uws-operation-profile: udon   # profile metadata does not replace the missing selector
+  # error: requires exactly one of openapiOperationId or openapiOperationRef
 ```
 
 ---

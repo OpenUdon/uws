@@ -131,7 +131,7 @@ outputs:
 Common expression roots:
 
 - `$response.body`: response body from the current operation.
-- `$response.header`: response headers from the current operation.
+- `$response.headers`: response headers from the current operation.
 - `$steps.<stepId>.outputs.<name>`: output from a previous step in the same workflow.
 - `$inputs.<name>`: workflow input.
 - `$variables.<name>`: reusable document variable.
@@ -173,31 +173,30 @@ workflows:
     type: switch
     cases:
       - name: closed
-        when: "$steps.verify.outputs.status == 'closed'"
-        workflow: archive_ticket
-      - name: open
-        when: "$steps.verify.outputs.status == 'open'"
-        workflow: notify_owner
+        when: "$steps.verify.outputs.status == \"closed\""
+        steps:
+          - stepId: archive
+            operationRef: archive_ticket
     default:
-      workflow: notify_owner
+      - stepId: notify_owner
+        operationRef: notify_owner
 ```
 
-Switch cases route to workflows. Keep branch conditions in the core expression grammar when portability matters.
+Switch cases contain branch steps. Keep branch conditions in the core expression grammar when portability matters.
 
 ## Add A Trigger
 
 ```yaml
 triggers:
   - triggerId: new_ticket
-    type: webhook
     outputs:
-      subject: "$trigger.body.subject"
+      - accepted
     routes:
-      - when: "$outputs.subject != ''"
+      - output: accepted
         to: [main]
 ```
 
-Trigger ingress, authentication, hosting, and persistence are runtime-owned. UWS only describes output extraction and route dispatch after a trigger event has been accepted.
+Trigger ingress, authentication, hosting, output classification, and persistence are runtime-owned. UWS only describes declared output labels and route dispatch after a trigger event has been accepted.
 
 ## Extension-Owned Operations
 
@@ -206,13 +205,17 @@ If a step is not an OpenAPI operation, make that explicit with an extension prof
 ```yaml
 operations:
   - operationId: render_message
-    x-uws-operation-profile: "example.message_renderer.v1"
-    request:
-      body:
-        template: "Ticket {{ticket_id}} is ready"
+    x-uws-operation-profile: uws.runtime.1.0
+    x-uws-runtime:
+      type: fnct
+      function: render_message
+      arguments:
+        - template: "Ticket {{ticket_id}} is ready"
 ```
 
 UWS validates the shape and references. The bound runtime decides whether it supports the named extension profile.
+
+When you use the public `uws.runtime.1.0` supplement, `x-uws-runtime.type` is required and must be one of the supplement's non-HTTP runtime selectors. Use OpenAPI operation bindings for HTTP calls; do not model HTTP as `x-uws-runtime.type: http`.
 
 ## Validation Checklist
 
@@ -225,6 +228,7 @@ Before handing a workflow to a runtime:
 - Request values do not contain secrets.
 - Credentials and endpoint policy are supplied by the runtime, not embedded in UWS.
 - Extension-owned operations declare an explicit `x-uws-operation-profile`.
+- `uws.runtime.1.0` operations include `x-uws-runtime.type`; HTTP calls remain OpenAPI-bound.
 
 ## Where To Go Next
 

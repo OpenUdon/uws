@@ -208,21 +208,22 @@ steps:
     outputs:
       job_id: $response.body.jobId
 
-  - stepId: poll
-    type: await
-    wait: $steps.check_status.outputs.status == "complete"
-
   - stepId: check_status
     operationRef: get_job_status
     request:
       path:
         jobId: $steps.submit.outputs.job_id
 
+  - stepId: wait_until_complete
+    type: await
+    wait: $steps.check_status.outputs.status == "complete"
+    timeout: 300
+
   - stepId: download
     operationRef: fetch_report_result
 ```
 
-Any timeout applied to `await` is an executor option, not a serialized UWS field. `cases`, `default`, and `items` MUST NOT be set.
+`timeout` is a serialized UWS 1.1 field on operations, workflows, and steps. Runtime polling behavior remains executor-owned. `cases`, `default`, and `items` MUST NOT be set on `await`.
 
 ## Field Constraints Summary
 

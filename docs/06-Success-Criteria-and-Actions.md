@@ -78,9 +78,9 @@ successCriteria:
 | `stepId` | REQUIRED for `goto` (exactly one of `workflowId`/`stepId`) | Target step |
 | `criteria` | optional | Additional conditions that scope this action |
 
-## Example 1: Retry with Fallback
+## Example 1: Retry and Failure Routing
 
-Retry on server errors up to 3 times; give up and end on client errors; branch to an error handler on total failure.
+Retry server errors up to 3 times; end cleanly on client errors; route unmatched failures to an error handler.
 
 ```yaml
 operationId: charge_payment
@@ -108,7 +108,7 @@ onFailure:
     workflowId: payment_error_handler
 ```
 
-`retry_on_5xx` only activates when status ≥ 500. `skip_on_4xx` activates for 4xx. `escalate` catches anything else (applies when no scoping criteria are set, acting as the default fallback).
+`retry_on_5xx` only activates when status ≥ 500. If the retry limit is exhausted, the operation returns the failure; later actions do not run as retry fallbacks. `skip_on_4xx` activates for 4xx. `escalate` catches failures not matched by the scoped actions.
 
 ## Example 2: `goto` to a Specific Step
 

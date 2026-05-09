@@ -164,9 +164,9 @@ for key, record := range records {
 
 Example output:
 ```
-operations/list_pets           status=success    kind=operation
-operations/send_report         status=success    kind=operation
-workflows/main                 status=success    kind=workflow
+op:list_pets                   status=success    kind=operation
+op:send_report                 status=success    kind=operation
+wf:main                        status=success    kind=workflow
 ```
 
 The keying scheme is implementation-defined. UWS 1.0 does not standardize a serialized record store.

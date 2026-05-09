@@ -1,10 +1,10 @@
 site_name: Udon Workflow Specification
 site_description: A compact, execution-oriented workflow specification for OpenAPI-backed HTTP operations
-site_url: https://tabilet.github.io/uws/
+site_url: https://openudon.github.io/uws/
 repo_url: https://github.com/OpenUdon/uws
-repo_name: tabilet/uws
+repo_name: OpenUdon/uws
 docs_dir: docs
-copyright: "© 2026 tabilet/uws · Udon Workflow Specification v1.1.0 · Apache 2.0"
+copyright: "© 2026 OpenUdon/uws · Udon Workflow Specification v1.1.0 · Apache 2.0"
 
 theme:
   name: material
@@ -33,9 +33,10 @@ nav:
     - 8. Extension Profiles: 08-Extension-Profiles.md
     - 9. Validation: 09-Validation.md
     - 10. Interchange Formats: 10-Interchange-Formats.md
+  - Runtimes: runtimes.md
   - Reference:
     - Specification: https://github.com/OpenUdon/uws/blob/main/versions/1.1.0.md
     - JSON Schema: https://github.com/OpenUdon/uws/blob/main/versions/1.1.0.json
-    - Proposals:
-      - XRD-003 Timeout and Idempotency: proposals/xrd-003-timeout-idempotency.md
+    - Runtime Supplement: https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md
+    - Runtime Supplement Schema: https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json
     - Repository: https://github.com/OpenUdon/uws

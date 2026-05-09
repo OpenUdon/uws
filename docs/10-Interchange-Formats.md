@@ -1,6 +1,6 @@
 # Feature 10: Interchange Formats
 
-← [Validation](09-Validation) | [Home →](Home)
+← [Validation](09-Validation.md) | [Home →](index.md)
 
 ---
 
@@ -244,6 +244,13 @@ operation "render" {
 When converted to JSON or YAML, these fields flatten back to normal `x-*`
 properties on the owning object.
 
+The same rule applies to the public runtime supplement. A JSON/YAML
+`x-uws-runtime` object becomes an HCL block inside `extensions`, and conversion
+back to JSON/YAML restores the flattened extension field. The runtime supplement
+payload itself still follows its schema: `type` is required, and HTTP/OpenAPI
+calls are represented by core OpenAPI binding fields rather than
+`x-uws-runtime`.
+
 ## `$`-Key Rewriting for HCL
 
 JSON Schema keys like `$ref`, `$id`, `$defs` are not valid HCL identifiers. The package rewrites them symmetrically in both directions:
@@ -284,4 +291,4 @@ YAML → HCL → YAML  produces a structurally identical document
 
 ---
 
-← [Validation](09-Validation) | [Home →](Home)
+← [Validation](09-Validation.md) | [Home →](index.md)

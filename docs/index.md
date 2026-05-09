@@ -19,6 +19,8 @@ UWS answers exactly those questions and nothing else.
 
 Beyond document shape, UWS also defines a normative **execution model**: a clean split between an orchestrator that owns structural workflow execution (dependency resolution, control flow, retry, output propagation) and a bound runtime that owns leaf execution (HTTP calls, expression evaluation, item resolution). This split is what makes UWS portable — any compliant runtime shares the same orchestration semantics while bringing its own transport, credentials, and extension-profile logic.
 
+For non-HTTP leaf work, UWS keeps the core document narrow. Extension-owned operations declare `x-uws-operation-profile`; the public `uws.runtime.1.0` supplement optionally adds a small `x-uws-runtime` payload with a required non-HTTP `type` selector such as `fnct`, `cmd`, `sql`, or `llm`. HTTP calls still use OpenAPI binding fields, not `x-uws-runtime`.
+
 ## A Minimal Document
 
 ```json
@@ -72,12 +74,14 @@ if err := doc.Execute(ctx); err != nil {
 records := doc.ExecutionRecords()  // inspect what ran
 ```
 
-The orchestrator owns all structural concerns: dependency resolution, parallel scheduling, conditional branching, loop iteration, retry counting, and trigger routing. The bound runtime owns only leaf work: making the actual HTTP call, evaluating expressions, and resolving iteration items. This split means the same UWS document runs identically on any compliant runtime.
+The orchestrator owns all structural concerns: dependency resolution, parallel scheduling, conditional branching, loop iteration, retry counting, and trigger routing. The bound runtime owns only leaf work: making the actual HTTP call, evaluating expressions, and resolving iteration items. This split gives compliant runtimes the same orchestration semantics while leaving transport and provider behavior runtime-owned.
 
 ## Reference
 
 - **Specification**: [`versions/1.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.1.0.md)
 - **JSON Schema**: [`versions/1.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.1.0.json)
+- **Runtime supplement**: [`versions/runtime.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md)
+- **Runtime supplement schema**: [`versions/runtime.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json)
 - **Go package**: `github.com/OpenUdon/uws`
 - **License**: Apache 2.0
 

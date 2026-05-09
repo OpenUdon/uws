@@ -16,6 +16,23 @@ An operation without an OpenAPI binding is extension-owned. It MUST include `x-u
 
 The validator accepts extension-owned operations as intentionally runtime-owned — it does not flag the absent OpenAPI binding as an error.
 
+## Public Runtime Supplement
+
+UWS also publishes the optional `uws.runtime.1.0` supplement for common non-HTTP runtime selectors. It defines one UWS-owned operation extension, `x-uws-runtime`, whose payload is intentionally small:
+
+| Field | Meaning |
+|-------|---------|
+| `type` | REQUIRED non-HTTP runtime selector. |
+| `command` | Command text for command-like runtimes. |
+| `workingDir` | Working directory for command-like runtimes. |
+| `function` | Function name for function runtimes. |
+| `workflow` | Nested workflow reference. |
+| `arguments` | Runtime-owned argument values. |
+
+Valid `type` values are `ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`, `smtp`, `dns`, `ldaps`, `scp`, `sftp`, and `llm`. HTTP is intentionally absent: HTTP/OpenAPI calls use `sourceDescription` plus `openapiOperationId` or `openapiOperationRef`.
+
+The supplement does not standardize credentials, clients, hosts, provider selection, process management, or result schemas. Those remain runtime-private configuration or product-owned extension fields.
+
 ## Example 1: Function Call
 
 Invoke a local or serverless function within the workflow:
