@@ -1,7 +1,7 @@
 # UWS
 
 <p align="center">
-  <img src="docs/assets/uws3.png" alt="UWS logo" width="128">
+  <img src="docs/assets/uws2.png" alt="UWS logo" width="520">
 </p>
 
 UWS is the Udon Workflow Specification Go package. It defines the UWS 1.x document model, JSON Schema, validation helpers, and JSON/YAML/HCL conversion helpers.
