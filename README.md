@@ -1,5 +1,9 @@
 # UWS
 
+<p align="center">
+  <img src="docs/assets/uws3.png" alt="UWS logo" width="128">
+</p>
+
 UWS is the Udon Workflow Specification Go package. It defines the UWS 1.x document model, JSON Schema, validation helpers, and JSON/YAML/HCL conversion helpers.
 
 UWS is similar in role to Arazzo and complements OpenAPI and AsyncAPI, but it is a smaller workflow overlay for OpenAPI-backed HTTP operations only. OpenAPI owns methods, paths, schemas, servers, and security. UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow.

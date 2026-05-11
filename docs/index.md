@@ -1,5 +1,9 @@
 # UWS — Udon Workflow Specification
 
+<p align="center">
+  <img src="assets/uws3.png" alt="UWS logo" width="140">
+</p>
+
 UWS is a compact, execution-oriented workflow specification that sits directly on top of OpenAPI. A UWS document describes *how* to orchestrate HTTP API operations that OpenAPI already describes — without duplicating methods, paths, schemas, servers, or security schemes.
 
 > OpenAPI owns the API contract. UWS owns the workflow overlay.
