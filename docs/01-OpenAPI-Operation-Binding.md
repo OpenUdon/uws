@@ -22,6 +22,8 @@ A document that omits the binding fields of every shape is invalid. OpenAPI-boun
 
 `sourceDescriptions[]` declares every OpenAPI document the workflow uses. Every source entry must have a unique `name` matching `^[A-Za-z0-9_-]+$`, a `url`, and optionally `type: openapi`.
 
+Google Discovery and AWS Smithy inputs are not separate `sourceDescriptions.type` values in UWS 1.1. Compliant tooling may lower those source model families into OpenAPI-bound operations and preserve native source metadata in `x-*` extensions.
+
 ```yaml
 sourceDescriptions:
   - name: petstore_api

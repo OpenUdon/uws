@@ -8,6 +8,8 @@ UWS is a compact, execution-oriented workflow specification that sits directly o
 
 > OpenAPI owns the API contract. UWS owns the workflow overlay.
 
+UWS core remains OpenAPI-first. Google Discovery and AWS Smithy are recognized source model families that compliant tooling may lower into UWS/OpenAPI-bound operations, preserving native protocol metadata in `x-*` extensions. First-class native source binding is reserved for a future minor version if interoperability demands it.
+
 ## Why UWS?
 
 Many API providers already publish OpenAPI. Once those documents exist, a workflow layer should stay focused on workflow concerns:
@@ -82,8 +84,8 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 
 ## Reference
 
-- **Specification**: [`versions/1.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.1.0.md)
-- **JSON Schema**: [`versions/1.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.1.0.json)
+- **Specification**: [`versions/1.1.1.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.1.1.md)
+- **JSON Schema**: [`versions/1.1.1.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.1.1.json)
 - **Runtime supplement**: [`versions/runtime.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md)
 - **Runtime supplement schema**: [`versions/runtime.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json)
 - **Go package**: `github.com/OpenUdon/uws`

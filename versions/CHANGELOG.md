@@ -13,6 +13,14 @@ the normative human-readable specifications.
 - Kept HTTP/OpenAPI metadata, provider configuration, credentials, security configuration,
   and request/response schemas outside the public runtime supplement.
 
+## 1.1.1 - 2026-05-20
+
+- Clarified the long-term source model position: UWS core remains OpenAPI-first.
+- Recognized Google Discovery and AWS Smithy as source model families that compliant tooling may
+  lower into UWS/OpenAPI-bound operations.
+- Reserved first-class native Discovery/Smithy source binding for a future minor version if
+  interoperability demands it.
+
 ## 1.1.0 - 2026-04-28
 
 - Added portable `timeout` fields on Operation, Workflow, and Step objects.
