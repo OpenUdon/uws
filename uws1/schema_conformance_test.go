@@ -57,7 +57,7 @@ func schemaDefCoverage() map[string]schemaDefRules {
 		},
 		"operation-object": {
 			required:     []string{"operationId"},
-			patternProps: []string{"openapiOperationRef", "x-uws-operation-profile"},
+			patternProps: []string{"sourceOperationRef", "openapiOperationRef", "x-uws-operation-profile"},
 		},
 		"request-binding-object": {},
 		"workflow-object": {

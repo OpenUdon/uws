@@ -8,13 +8,13 @@ Not every step in a workflow is an HTTP call. Formatting a message, invoking a f
 
 ## Extension-Owned Operations
 
-An operation without an OpenAPI binding is extension-owned. It MUST include `x-uws-operation-profile` naming the profile that can execute it:
+An operation without an API source binding is extension-owned. It MUST include `x-uws-operation-profile` naming the profile that can execute it:
 
 - `x-uws-operation-profile` MUST contain at least one non-whitespace character.
-- `sourceDescription`, `openapiOperationId`, and `openapiOperationRef` MUST NOT be set.
+- `sourceDescription`, `sourceOperationId`, `sourceOperationRef`, `openapiOperationId`, and `openapiOperationRef` MUST NOT be set.
 - Additional `x-*` fields carry profile-specific configuration and are not interpreted by UWS core.
 
-The validator accepts extension-owned operations as intentionally runtime-owned — it does not flag the absent OpenAPI binding as an error.
+The validator accepts extension-owned operations as intentionally runtime-owned — it does not flag the absent API source binding as an error.
 
 ## Public Runtime Supplement
 
@@ -29,7 +29,7 @@ UWS also publishes the optional `uws.runtime.1.0` supplement for common non-HTTP
 | `workflow` | Nested workflow reference. |
 | `arguments` | Runtime-owned argument values. |
 
-Valid `type` values are `ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`, `smtp`, `dns`, `ldaps`, `scp`, `sftp`, and `llm`. HTTP is intentionally absent: HTTP/OpenAPI calls use `sourceDescription` plus `openapiOperationId` or `openapiOperationRef`.
+Valid `type` values are `ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`, `smtp`, `dns`, `ldaps`, `scp`, `sftp`, and `llm`. HTTP is intentionally absent: HTTP/API calls use `sourceDescription` plus `sourceOperationId` or `sourceOperationRef`. OpenAPI sources may also use legacy `openapiOperationId` or `openapiOperationRef`.
 
 The supplement does not standardize credentials, clients, hosts, provider selection, process management, or result schemas. Those remain runtime-private configuration or product-owned extension fields.
 
@@ -124,7 +124,7 @@ selects the non-HTTP invocation surface.
 
 ## Example 5: Mixing Core and Extension Operations
 
-A single document with three operation kinds — OpenAPI-bound, function call, and OpenAPI-bound:
+A single document with three operation kinds — OpenAPI-bound, function call, and native API-source-bound:
 
 ```yaml
 sourceDescriptions:
@@ -132,11 +132,11 @@ sourceDescriptions:
     url: ./weather.openapi.yaml
     type: openapi
   - name: gmail_api
-    url: ./gmail.openapi.yaml
-    type: openapi
+    url: ./google-discovery/gmail.json
+    type: google-discovery
 
 operations:
-  # Shape 1: OpenAPI-bound
+  # Shape 1: OpenAPI-bound with the legacy selector
   - operationId: get_weather
     sourceDescription: weather_api
     openapiOperationId: getCurrentWeather
@@ -160,10 +160,10 @@ operations:
     outputs:
       raw: $response.body.raw
 
-  # Shape 1: OpenAPI-bound
+  # Shape 2: API-source-bound with the generic selector
   - operationId: send_report
     sourceDescription: gmail_api
-    openapiOperationId: sendMessage
+    sourceOperationId: gmail_users_messages_send
     dependsOn: [build_email]
     request:
       body:
@@ -171,7 +171,7 @@ operations:
         raw:    $steps.compose.outputs.raw
 ```
 
-Weather and Gmail stay fully OpenAPI-bound. Email formatting is runtime-owned. The document validates before any execution begins.
+Weather and Gmail stay API-source-bound. Email formatting is runtime-owned. The document validates before any execution begins.
 
 ## Specification Extensions on Non-Operation Objects
 

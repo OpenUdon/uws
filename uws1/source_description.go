@@ -8,7 +8,9 @@ import (
 type SourceDescriptionType string
 
 const (
-	SourceDescriptionTypeOpenAPI SourceDescriptionType = "openapi"
+	SourceDescriptionTypeOpenAPI         SourceDescriptionType = "openapi"
+	SourceDescriptionTypeGoogleDiscovery SourceDescriptionType = "google-discovery"
+	SourceDescriptionTypeAWSSmithy       SourceDescriptionType = "aws-smithy"
 )
 
 var sourceDescriptionNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
@@ -19,6 +21,15 @@ type SourceDescription struct {
 	URL        string                `json:"url" yaml:"url" hcl:"url"`
 	Type       SourceDescriptionType `json:"type,omitempty" yaml:"type,omitempty" hcl:"type,optional"`
 	Extensions map[string]any        `json:"-" yaml:"-" hcl:"extensions,block"`
+}
+
+// EffectiveType returns the source type used for validation and execution.
+// Omitted sourceDescription.type defaults to openapi for backward compatibility.
+func (s *SourceDescription) EffectiveType() SourceDescriptionType {
+	if s == nil || s.Type == "" {
+		return SourceDescriptionTypeOpenAPI
+	}
+	return s.Type
 }
 
 type sourceDescriptionAlias SourceDescription

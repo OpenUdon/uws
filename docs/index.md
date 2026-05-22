@@ -4,11 +4,11 @@
   <img src="assets/uws2.png" alt="UWS logo" width="520">
 </p>
 
-UWS is a compact, execution-oriented workflow specification that sits directly on top of OpenAPI. A UWS document describes *how* to orchestrate HTTP API operations that OpenAPI already describes — without duplicating methods, paths, schemas, servers, or security schemes.
+UWS is a compact, execution-oriented workflow specification that sits directly on top of API source documents such as OpenAPI, Google Discovery, and AWS Smithy. A UWS document describes *how* to orchestrate HTTP API operations that source documents already describe — without duplicating methods, paths, schemas, servers, or security schemes.
 
-> OpenAPI owns the API contract. UWS owns the workflow overlay.
+> API source documents own the API contract. UWS owns the workflow overlay.
 
-UWS core remains OpenAPI-first. Google Discovery and AWS Smithy are recognized source model families that compliant tooling may lower into UWS/OpenAPI-bound operations, preserving native protocol metadata in `x-*` extensions. First-class native source binding is reserved for a future minor version if interoperability demands it.
+UWS 1.2 keeps OpenAPI compatibility and adds first-class source descriptions for `openapi`, `google-discovery`, and `aws-smithy`. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources.
 
 ## Why UWS?
 
@@ -25,7 +25,7 @@ UWS answers exactly those questions and nothing else.
 
 Beyond document shape, UWS also defines a normative **execution model**: a clean split between an orchestrator that owns structural workflow execution (dependency resolution, control flow, retry, output propagation) and a bound runtime that owns leaf execution (HTTP calls, expression evaluation, item resolution). This split is what makes UWS portable — any compliant runtime shares the same orchestration semantics while bringing its own transport, credentials, and extension-profile logic.
 
-For non-HTTP leaf work, UWS keeps the core document narrow. Extension-owned operations declare `x-uws-operation-profile`; the public `uws.runtime.1.0` supplement optionally adds a small `x-uws-runtime` payload with a required non-HTTP `type` selector such as `fnct`, `cmd`, `sql`, or `llm`. HTTP calls still use OpenAPI binding fields, not `x-uws-runtime`.
+For non-HTTP leaf work, UWS keeps the core document narrow. Extension-owned operations declare `x-uws-operation-profile`; the public `uws.runtime.1.0` supplement optionally adds a small `x-uws-runtime` payload with a required non-HTTP `type` selector such as `fnct`, `cmd`, `sql`, or `llm`. HTTP calls still use API source binding fields, not `x-uws-runtime`.
 
 ## A Minimal Document
 
@@ -41,14 +41,14 @@ For non-HTTP leaf work, UWS keeps the core document narrow. Extension-owned oper
     {
       "operationId": "current_weather",
       "sourceDescription": "weather_api",
-      "openapiOperationId": "getCurrentWeather",
+      "sourceOperationId": "getCurrentWeather",
       "request": { "query": { "q": "Los Angeles", "units": "imperial" } },
       "outputs": { "summary": "$response.body.summary" }
     },
     {
       "operationId": "send_report",
       "sourceDescription": "gmail_api",
-      "openapiOperationId": "sendMessage",
+      "sourceOperationId": "sendMessage",
       "dependsOn": ["current_weather"],
       "request": { "body": { "userId": "me", "text": "$steps.get_weather.outputs.summary" } }
     }
@@ -66,7 +66,7 @@ For non-HTTP leaf work, UWS keeps the core document narrow. Extension-owned oper
 }
 ```
 
-No HTTP method, no path, no server URL, no response schema — those live in the referenced OpenAPI documents. UWS points at the operations and describes how the workflow uses them.
+No HTTP method, no path, no server URL, no response schema — those live in the referenced API source documents. UWS points at the operations and describes how the workflow uses them.
 
 ## Executing a Document
 
@@ -84,8 +84,8 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 
 ## Reference
 
-- **Specification**: [`versions/1.1.1.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.1.1.md)
-- **JSON Schema**: [`versions/1.1.1.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.1.1.json)
+- **Specification**: [`versions/1.2.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.2.0.md)
+- **JSON Schema**: [`versions/1.2.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.2.0.json)
 - **Runtime supplement**: [`versions/runtime.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md)
 - **Runtime supplement schema**: [`versions/runtime.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json)
 - **Go package**: `github.com/OpenUdon/uws`
@@ -99,7 +99,7 @@ If you need to hand-write a workflow, start with the practical [workflow authori
 
 | # | Feature | Summary |
 |---|---------|---------|
-| 1 | [OpenAPI Operation Binding](01-OpenAPI-Operation-Binding.md) | Strict three-shape binding to OpenAPI operations |
+| 1 | [API Source Operation Binding](01-OpenAPI-Operation-Binding.md) | Strict binding to OpenAPI, Google Discovery, AWS Smithy, or extension-owned operations |
 | 2 | [Six Structural Constructs](02-Six-Structural-Constructs.md) | sequence · parallel · switch · loop · merge · await |
 | 3 | [Runtime Expression Grammar](03-Runtime-Expression-Grammar.md) | Normative ABNF expression language for value flow |
 | 4 | [Triggers and Route Dispatch](04-Triggers-and-Route-Dispatch.md) | Typed entry points with output-based routing |

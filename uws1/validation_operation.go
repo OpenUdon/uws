@@ -20,25 +20,52 @@ func (op *Operation) validate(path string, idx *documentIndex, result *Validatio
 	}
 
 	hasSource := op.SourceDescription != ""
+	hasSourceOperationID := op.SourceOperationID != ""
+	hasSourceOperationRef := op.SourceOperationRef != ""
 	hasOpenAPIOperationID := op.OpenAPIOperationID != ""
 	hasOpenAPIOperationRef := op.OpenAPIOperationRef != ""
+	hasGenericSelector := hasSourceOperationID || hasSourceOperationRef
+	hasLegacySelector := hasOpenAPIOperationID || hasOpenAPIOperationRef
 	switch {
+	case hasSourceOperationID && hasSourceOperationRef:
+		result.addError(path, "cannot specify both sourceOperationId and sourceOperationRef")
 	case hasOpenAPIOperationID && hasOpenAPIOperationRef:
 		result.addError(path, "cannot specify both openapiOperationId and openapiOperationRef")
-	case op.HasOpenAPIBinding():
+	case hasGenericSelector && hasLegacySelector:
+		result.addError(path, "cannot mix sourceOperationId/sourceOperationRef with openapiOperationId/openapiOperationRef")
+	case op.HasSourceBinding():
 		if !hasSource {
-			result.addError(path+".sourceDescription", "is required for OpenAPI-bound operations")
-		} else if !idx.sourceDescriptions[op.SourceDescription] {
+			if hasLegacySelector && !hasGenericSelector {
+				result.addError(path+".sourceDescription", "is required for OpenAPI-bound operations")
+			} else {
+				result.addError(path+".sourceDescription", "is required for source-bound operations")
+			}
+		} else if _, ok := idx.sourceDescriptions[op.SourceDescription]; !ok {
 			result.addError(path+".sourceDescription", fmt.Sprintf("references unknown sourceDescription %q", op.SourceDescription))
+		} else {
+			sourceType := idx.sourceDescriptions[op.SourceDescription]
+			switch sourceType {
+			case "", SourceDescriptionTypeOpenAPI:
+				if !hasGenericSelector && !hasLegacySelector {
+					result.addError(path, "requires exactly one of openapiOperationId or openapiOperationRef for OpenAPI-bound operations")
+				}
+			case SourceDescriptionTypeGoogleDiscovery, SourceDescriptionTypeAWSSmithy:
+				if hasLegacySelector {
+					result.addError(path, fmt.Sprintf("%s sourceDescriptions require sourceOperationId or sourceOperationRef, not openapiOperationId or openapiOperationRef", sourceType))
+				}
+				if !hasGenericSelector {
+					result.addError(path, fmt.Sprintf("%s sourceDescriptions require exactly one of sourceOperationId or sourceOperationRef", sourceType))
+				}
+			}
 		}
-		if !hasOpenAPIOperationID && !hasOpenAPIOperationRef {
-			result.addError(path, "requires exactly one of openapiOperationId or openapiOperationRef for OpenAPI-bound operations")
+		if hasSourceOperationRef && !strings.HasPrefix(op.SourceOperationRef, "#/") {
+			result.addError(path+".sourceOperationRef", "must be a JSON Pointer fragment beginning with #/")
 		}
 		if hasOpenAPIOperationRef && !strings.HasPrefix(op.OpenAPIOperationRef, "#/") {
 			result.addError(path+".openapiOperationRef", "must be a JSON Pointer fragment beginning with #/")
 		}
 	case !op.IsExtensionOwned():
-		result.addError(path, "requires an OpenAPI binding or x-uws-operation-profile for extension-owned operations")
+		result.addError(path, "requires an API source binding or x-uws-operation-profile for extension-owned operations")
 	}
 	validateRequest(op.Request, path+".request", result)
 	validateDependencyList(op.DependsOn, path+".dependsOn", idx, result)

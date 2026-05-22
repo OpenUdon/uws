@@ -17,9 +17,9 @@ UWS is a workflow overlay for OpenAPI-backed HTTP operations. OpenAPI owns metho
 
 Three coordinated artifacts must stay in sync:
 
-1. `versions/1.1.1.json` — the latest canonical JSON Schema for UWS 1.x documents. `versions/1.0.0.json` and `versions/1.1.0.json` remain published historical schemas.
+1. `versions/1.2.0.json` — the latest canonical JSON Schema for UWS 1.x documents. `versions/1.0.0.json`, `versions/1.1.0.json`, and `versions/1.1.1.json` remain published historical schemas.
 2. `uws1/` — the Go model and semantic validator.
-3. `versions/1.1.1.md` — the latest human-readable spec. `versions/1.0.0.md`, `versions/1.1.0.md`, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are comparison/background docs.
+3. `versions/1.2.0.md` — the latest human-readable spec. `versions/1.0.0.md`, `versions/1.1.0.md`, `versions/1.1.1.md`, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are comparison/background docs.
 
 ## Execution Model
 

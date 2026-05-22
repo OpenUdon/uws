@@ -7,13 +7,15 @@ import (
 
 // ExtensionOperationProfile is the x-* extension key that names the
 // implementation profile for an extension-owned operation. Operations without
-// an OpenAPI binding must carry this extension to be executable.
+// an API source binding must carry this extension to be executable.
 const ExtensionOperationProfile = "x-uws-operation-profile"
 
-// Operation describes a UWS-local operation bound to an OpenAPI operation.
+// Operation describes a UWS-local operation bound to an API source operation.
 type Operation struct {
 	OperationID         string         `json:"operationId" yaml:"operationId" hcl:"operationId,label"`
 	SourceDescription   string         `json:"sourceDescription,omitempty" yaml:"sourceDescription,omitempty" hcl:"sourceDescription,optional"`
+	SourceOperationID   string         `json:"sourceOperationId,omitempty" yaml:"sourceOperationId,omitempty" hcl:"sourceOperationId,optional"`
+	SourceOperationRef  string         `json:"sourceOperationRef,omitempty" yaml:"sourceOperationRef,omitempty" hcl:"sourceOperationRef,optional"`
 	OpenAPIOperationID  string         `json:"openapiOperationId,omitempty" yaml:"openapiOperationId,omitempty" hcl:"openapiOperationId,optional"`
 	OpenAPIOperationRef string         `json:"openapiOperationRef,omitempty" yaml:"openapiOperationRef,omitempty" hcl:"openapiOperationRef,optional"`
 	Description         string         `json:"description,omitempty" yaml:"description,omitempty" hcl:"description,optional"`
@@ -45,7 +47,13 @@ func (o *Operation) Execute(ctx context.Context, d *Document) error {
 // HasOpenAPIBinding reports whether the operation includes any OpenAPI binding
 // field. A partial binding is still a binding and will be rejected by validation.
 func (o *Operation) HasOpenAPIBinding() bool {
-	return o != nil && (o.SourceDescription != "" || o.OpenAPIOperationID != "" || o.OpenAPIOperationRef != "")
+	return o != nil && (o.OpenAPIOperationID != "" || o.OpenAPIOperationRef != "")
+}
+
+// HasSourceBinding reports whether the operation includes any source binding
+// field. A partial binding is still a binding and will be rejected by validation.
+func (o *Operation) HasSourceBinding() bool {
+	return o != nil && (o.SourceDescription != "" || o.SourceOperationID != "" || o.SourceOperationRef != "" || o.OpenAPIOperationID != "" || o.OpenAPIOperationRef != "")
 }
 
 // HasCompleteOpenAPIBinding reports whether the operation has a source
@@ -56,6 +64,17 @@ func (o *Operation) HasCompleteOpenAPIBinding() bool {
 	}
 	hasID := o.OpenAPIOperationID != ""
 	hasRef := o.OpenAPIOperationRef != ""
+	return hasID != hasRef
+}
+
+// HasCompleteSourceBinding reports whether the operation has a source
+// description and exactly one generic source operation selector.
+func (o *Operation) HasCompleteSourceBinding() bool {
+	if o == nil || o.SourceDescription == "" {
+		return false
+	}
+	hasID := o.SourceOperationID != ""
+	hasRef := o.SourceOperationRef != ""
 	return hasID != hasRef
 }
 
@@ -77,17 +96,17 @@ func (o *Operation) ExtensionProfile() string {
 }
 
 // IsExtensionOwned reports whether this operation is intentionally owned by an
-// extension profile rather than an OpenAPI operation binding. OpenAPI-bound
+// extension profile rather than an API source operation binding. Source-bound
 // operations may still carry profile metadata, but this is true only for
-// extension-owned operations with no OpenAPI binding.
+// extension-owned operations with no source binding.
 func (o *Operation) IsExtensionOwned() bool {
-	return o != nil && !o.HasOpenAPIBinding() && o.ExtensionProfile() != ""
+	return o != nil && !o.HasSourceBinding() && o.ExtensionProfile() != ""
 }
 
 type operationAlias Operation
 
 var operationKnownFields = []string{
-	"operationId", "sourceDescription", "openapiOperationId", "openapiOperationRef",
+	"operationId", "sourceDescription", "sourceOperationId", "sourceOperationRef", "openapiOperationId", "openapiOperationRef",
 	"description", "request",
 	"dependsOn", "when", "forEach", "wait", "timeout", "parallelGroup",
 	"successCriteria", "onFailure", "onSuccess",

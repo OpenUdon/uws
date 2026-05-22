@@ -8,11 +8,23 @@ import (
 
 func (d *Document) validateVersionedFields(result *ValidationResult) {
 	supports11 := supportsUWSVersion(d.UWS, 1, 1)
+	supports12 := supportsUWSVersion(d.UWS, 1, 2)
+	for i, sd := range d.SourceDescriptions {
+		if sd == nil {
+			continue
+		}
+		if sd.EffectiveType() != SourceDescriptionTypeOpenAPI && !supports12 {
+			result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "requires UWS 1.2.0 or later")
+		}
+	}
 	for i, op := range d.Operations {
 		if op == nil {
 			continue
 		}
 		validateVersionedTimeout(op.Timeout, fmt.Sprintf("operations[%d].timeout", i), supports11, result)
+		if (op.SourceOperationID != "" || op.SourceOperationRef != "") && !supports12 {
+			result.addError(fmt.Sprintf("operations[%d]", i), "sourceOperationId and sourceOperationRef require UWS 1.2.0 or later")
+		}
 	}
 	for i, wf := range d.Workflows {
 		if wf == nil {

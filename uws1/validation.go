@@ -180,7 +180,9 @@ func (s *SourceDescription) validate(path string, result *ValidationResult) {
 	if s.URL == "" {
 		result.addError(path+".url", "is required")
 	}
-	if s.Type != "" && s.Type != SourceDescriptionTypeOpenAPI {
-		result.addError(path+".type", fmt.Sprintf("%q is not valid (must be openapi)", s.Type))
+	switch s.Type {
+	case "", SourceDescriptionTypeOpenAPI, SourceDescriptionTypeGoogleDiscovery, SourceDescriptionTypeAWSSmithy:
+	default:
+		result.addError(path+".type", fmt.Sprintf("%q is not valid (must be openapi, google-discovery, or aws-smithy)", s.Type))
 	}
 }

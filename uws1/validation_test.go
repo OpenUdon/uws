@@ -103,6 +103,7 @@ func TestValidate_UWS11FieldsRequireVersionAndPositiveValues(t *testing.T) {
 func TestOperationBindingHelpers(t *testing.T) {
 	var nilOp *Operation
 	assert.False(t, nilOp.HasOpenAPIBinding())
+	assert.False(t, nilOp.HasSourceBinding())
 	assert.False(t, nilOp.HasCompleteOpenAPIBinding())
 	assert.Empty(t, nilOp.ExtensionProfile())
 	assert.False(t, nilOp.IsExtensionOwned())
@@ -112,12 +113,14 @@ func TestOperationBindingHelpers(t *testing.T) {
 		OpenAPIOperationID: "getData",
 	}
 	assert.True(t, openAPIBound.HasOpenAPIBinding())
+	assert.True(t, openAPIBound.HasSourceBinding())
 	assert.True(t, openAPIBound.HasCompleteOpenAPIBinding())
 	assert.Empty(t, openAPIBound.ExtensionProfile())
 	assert.False(t, openAPIBound.IsExtensionOwned())
 
 	partialOpenAPIBinding := &Operation{OpenAPIOperationID: "getData"}
 	assert.True(t, partialOpenAPIBinding.HasOpenAPIBinding())
+	assert.True(t, partialOpenAPIBinding.HasSourceBinding())
 	assert.False(t, partialOpenAPIBinding.HasCompleteOpenAPIBinding())
 	assert.False(t, partialOpenAPIBinding.IsExtensionOwned())
 
@@ -127,12 +130,22 @@ func TestOperationBindingHelpers(t *testing.T) {
 		OpenAPIOperationRef: "#/paths/~1data/get",
 	}
 	assert.True(t, conflictingOpenAPIBinding.HasOpenAPIBinding())
+	assert.True(t, conflictingOpenAPIBinding.HasSourceBinding())
 	assert.False(t, conflictingOpenAPIBinding.HasCompleteOpenAPIBinding())
+
+	sourceBound := &Operation{
+		SourceDescription: "api",
+		SourceOperationID: "getData",
+	}
+	assert.False(t, sourceBound.HasOpenAPIBinding())
+	assert.True(t, sourceBound.HasSourceBinding())
+	assert.True(t, sourceBound.HasCompleteSourceBinding())
 
 	extensionOwned := &Operation{
 		Extensions: map[string]any{ExtensionOperationProfile: " udon "},
 	}
 	assert.False(t, extensionOwned.HasOpenAPIBinding())
+	assert.False(t, extensionOwned.HasSourceBinding())
 	assert.False(t, extensionOwned.HasCompleteOpenAPIBinding())
 	assert.Equal(t, "udon", extensionOwned.ExtensionProfile())
 	assert.True(t, extensionOwned.IsExtensionOwned())
@@ -233,7 +246,7 @@ func TestValidate_OperationBindingRules(t *testing.T) {
 			Info:       &Info{Title: "Invalid", Version: "1.0.0"},
 			Operations: []*Operation{{OperationID: "op"}},
 		}
-		assert.ErrorContains(t, doc.Validate(), "requires an OpenAPI binding or x-uws-operation-profile")
+		assert.ErrorContains(t, doc.Validate(), "requires an API source binding or x-uws-operation-profile")
 	})
 
 	t.Run("extension-owned operation requires profile marker", func(t *testing.T) {
@@ -249,7 +262,7 @@ func TestValidate_OperationBindingRules(t *testing.T) {
 				},
 			},
 		}
-		assert.ErrorContains(t, doc.Validate(), "requires an OpenAPI binding or x-uws-operation-profile")
+		assert.ErrorContains(t, doc.Validate(), "requires an API source binding or x-uws-operation-profile")
 	})
 
 	t.Run("extension-owned operation requires non-whitespace profile marker", func(t *testing.T) {
@@ -266,7 +279,7 @@ func TestValidate_OperationBindingRules(t *testing.T) {
 				},
 			},
 		}
-		assert.ErrorContains(t, doc.Validate(), "requires an OpenAPI binding or x-uws-operation-profile")
+		assert.ErrorContains(t, doc.Validate(), "requires an API source binding or x-uws-operation-profile")
 	})
 
 	t.Run("non pointer operation ref", func(t *testing.T) {
@@ -299,6 +312,63 @@ func TestValidate_OperationBindingRules(t *testing.T) {
 		doc := validDocument()
 		doc.Operations[0].Request = map[string]any{"query": "limit=10"}
 		assert.ErrorContains(t, doc.Validate(), "request.query must be an object")
+	})
+}
+
+func TestValidate_UWS12SourceOperationBindings(t *testing.T) {
+	t.Run("openapi accepts generic selector", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.2.0"
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationID = "getData"
+		assert.NoError(t, doc.Validate())
+	})
+
+	t.Run("google discovery requires generic selector", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.2.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeGoogleDiscovery
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationID = "gmail.users.messages.send"
+		assert.NoError(t, doc.Validate())
+	})
+
+	t.Run("aws smithy accepts source operation ref", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.2.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAWSSmithy
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationRef = "#/shapes/com.amazonaws.s3#PutObject"
+		assert.NoError(t, doc.Validate())
+	})
+
+	t.Run("uws 1.1 rejects sourceOperation selector", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.1.1"
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationID = "getData"
+		assert.ErrorContains(t, doc.Validate(), "sourceOperationId and sourceOperationRef require UWS 1.2.0 or later")
+	})
+
+	t.Run("uws 1.1 rejects native source type", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.1.1"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeGoogleDiscovery
+		assert.ErrorContains(t, doc.Validate(), "requires UWS 1.2.0 or later")
+	})
+
+	t.Run("native source rejects legacy openapi selector", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.2.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeGoogleDiscovery
+		assert.ErrorContains(t, doc.Validate(), "google-discovery sourceDescriptions require sourceOperationId or sourceOperationRef, not openapiOperationId or openapiOperationRef")
+	})
+
+	t.Run("cannot mix generic and legacy selectors", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.2.0"
+		doc.Operations[0].SourceOperationID = "getData"
+		assert.ErrorContains(t, doc.Validate(), "cannot mix sourceOperationId/sourceOperationRef with openapiOperationId/openapiOperationRef")
 	})
 }
 
@@ -390,7 +460,6 @@ func TestValidate_SourceDescriptionsRequiredWhenBound(t *testing.T) {
 	})
 }
 
-
 func TestCriterionUnmarshalRejectsExplicitEmptyType(t *testing.T) {
 	var criterion Criterion
 	require.ErrorContains(t, json.Unmarshal([]byte(`{"condition":"true","type":""}`), &criterion), "criterion.type must be omitted")
@@ -398,8 +467,6 @@ func TestCriterionUnmarshalRejectsExplicitEmptyType(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(`{"condition":"true"}`), &criterion))
 	assert.Empty(t, criterion.Type)
 }
-
-
 
 func TestValidate_OpenAPIOperationRefRequiresPointer(t *testing.T) {
 	doc := validDocument()

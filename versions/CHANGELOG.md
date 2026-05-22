@@ -13,6 +13,15 @@ the normative human-readable specifications.
 - Kept HTTP/OpenAPI metadata, provider configuration, credentials, security configuration,
   and request/response schemas outside the public runtime supplement.
 
+## 1.2.0 - 2026-05-22
+
+- Added first-class `sourceDescription.type` values for `openapi`, `google-discovery`, and
+  `aws-smithy`; omitted type remains `openapi`.
+- Added canonical operation selectors `sourceOperationId` and `sourceOperationRef`.
+- Kept `openapiOperationId` and `openapiOperationRef` as backward-compatible selectors for
+  OpenAPI source descriptions only.
+- Required generic selectors for Google Discovery and AWS Smithy sources.
+
 ## 1.1.1 - 2026-05-20
 
 - Clarified the long-term source model position: UWS core remains OpenAPI-first.

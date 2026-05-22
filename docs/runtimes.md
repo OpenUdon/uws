@@ -23,8 +23,9 @@ x-uws-runtime:
 
 `ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`, `smtp`, `dns`, `ldaps`, `scp`, `sftp`, and `llm`.
 
-HTTP is intentionally not a runtime type. HTTP/OpenAPI operations use core UWS operation binding
-fields: `sourceDescription` plus `openapiOperationId` or `openapiOperationRef`.
+HTTP is intentionally not a runtime type. HTTP/API source operations use core UWS operation binding
+fields: `sourceDescription` plus generic `sourceOperationId` / `sourceOperationRef`, or the legacy
+OpenAPI selectors for OpenAPI sources.
 
 ## Payload Fields
 

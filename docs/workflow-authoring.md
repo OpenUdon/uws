@@ -1,8 +1,8 @@
 # Quick Start: Author Your First UWS Workflow
 
-This guide is for authors who need to hand-write a UWS document without reading the full specification first. It focuses on the common path: bind existing OpenAPI operations, put them in a workflow, pass values between steps, and leave concrete credentials to the runtime.
+This guide is for authors who need to hand-write a UWS document without reading the full specification first. It focuses on the common path: bind existing API source operations, put them in a workflow, pass values between steps, and leave concrete credentials to the runtime.
 
-UWS is a workflow overlay. OpenAPI owns HTTP methods, paths, schemas, servers, and security. UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow.
+UWS is a workflow overlay. API source documents such as OpenAPI, Google Discovery, and AWS Smithy own HTTP methods, paths, schemas, servers, and security. UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow.
 
 ## Start With Three Files
 
@@ -11,16 +11,18 @@ Keep the API contract, workflow, and runtime configuration separate:
 ```text
 openapi/
   support.yaml
+google-discovery/
+  gmail.json
 workflow.uws.yaml
 runtime-config.json       # runtime-owned, not UWS core
 ```
 
-The UWS document points to OpenAPI. It does not copy endpoint URLs, schemas, or credentials out of the OpenAPI document.
+The UWS document points to API source documents. It does not copy endpoint URLs, schemas, or credentials out of the source document.
 
 ## Minimal Workflow
 
 ```yaml
-uws: "1.1.0"
+uws: "1.2.0"
 info:
   title: Support Ticket Workflow
   version: "1.0.0"
@@ -33,7 +35,7 @@ sourceDescriptions:
 operations:
   - operationId: create_ticket
     sourceDescription: support_api
-    openapiOperationId: createTicket
+    sourceOperationId: createTicket
     request:
       body:
         subject: "Example ticket"
@@ -43,7 +45,7 @@ operations:
 
   - operationId: get_ticket
     sourceDescription: support_api
-    openapiOperationId: getTicket
+    sourceOperationId: getTicket
     dependsOn: [create_ticket]
     request:
       path:
@@ -68,9 +70,9 @@ This document declares:
 - One workflow named `main`.
 - Two sequence steps, where `verify` can refer to the output of step `create`.
 
-## Step 1: Declare OpenAPI Sources
+## Step 1: Declare API Sources
 
-Use `sourceDescriptions` for every OpenAPI document the workflow references:
+Use `sourceDescriptions` for every API source document the workflow references:
 
 ```yaml
 sourceDescriptions:
@@ -83,26 +85,26 @@ Rules of thumb:
 
 - `name` is the stable local handle used by operations.
 - `url` can be a local path or reviewed remote location, depending on the runtime.
-- `type: openapi` keeps the source explicit.
+- `type` may be `openapi`, `google-discovery`, or `aws-smithy`. Missing `type` defaults to `openapi`.
 
 ## Step 2: Bind Operations
 
-The most common operation binding uses `sourceDescription` plus `openapiOperationId`:
+The preferred operation binding uses `sourceDescription` plus the generic `sourceOperationId`:
 
 ```yaml
 operations:
   - operationId: create_ticket
     sourceDescription: support_api
-    openapiOperationId: createTicket
+    sourceOperationId: createTicket
 ```
 
-`operationId` is local to the UWS file. `openapiOperationId` is the operation ID from the referenced OpenAPI document.
+`operationId` is local to the UWS file. `sourceOperationId` is the operation ID from the referenced source document. OpenAPI sources may also use legacy `openapiOperationId`.
 
-Do not add HTTP method, path, server URL, or security configuration here. Those belong to OpenAPI and the bound runtime.
+Do not add HTTP method, path, server URL, or security configuration here. Those belong to the API source document and the bound runtime.
 
 ## Step 3: Add Request Values
 
-Request values are grouped by OpenAPI location:
+Request values are grouped by API request location:
 
 ```yaml
 request:
@@ -200,7 +202,7 @@ Trigger ingress, authentication, hosting, output classification, and persistence
 
 ## Extension-Owned Operations
 
-If a step is not an OpenAPI operation, make that explicit with an extension profile:
+If a step is not an API source operation, make that explicit with an extension profile:
 
 ```yaml
 operations:
@@ -215,20 +217,20 @@ operations:
 
 UWS validates the shape and references. The bound runtime decides whether it supports the named extension profile.
 
-When you use the public `uws.runtime.1.0` supplement, `x-uws-runtime.type` is required and must be one of the supplement's non-HTTP runtime selectors. Use OpenAPI operation bindings for HTTP calls; do not model HTTP as `x-uws-runtime.type: http`.
+When you use the public `uws.runtime.1.0` supplement, `x-uws-runtime.type` is required and must be one of the supplement's non-HTTP runtime selectors. Use API source operation bindings for HTTP calls; do not model HTTP as `x-uws-runtime.type: http`.
 
 ## Validation Checklist
 
 Before handing a workflow to a runtime:
 
 - Every `sourceDescription` name is unique.
-- Every OpenAPI-bound operation names an existing source.
+- Every API-source-bound operation names an existing source.
 - Every local `operationId`, `workflowId`, and step `stepId` is unique where required.
 - Every `operationRef`, `workflow`, trigger route, and dependency target resolves.
 - Request values do not contain secrets.
 - Credentials and endpoint policy are supplied by the runtime, not embedded in UWS.
 - Extension-owned operations declare an explicit `x-uws-operation-profile`.
-- `uws.runtime.1.0` operations include `x-uws-runtime.type`; HTTP calls remain OpenAPI-bound.
+- `uws.runtime.1.0` operations include `x-uws-runtime.type`; HTTP calls remain API-source-bound.
 
 ## Where To Go Next
 

@@ -1,28 +1,28 @@
-# Feature 1: OpenAPI Operation Binding
+# Feature 1: API Source Operation Binding
 
 ← [Home](index.md) | [Next: Six Structural Constructs →](02-Six-Structural-Constructs.md)
 
 ---
 
-Most executable operations in UWS bind to an existing OpenAPI operation by reference. Extension-owned operations are the explicit non-OpenAPI escape hatch. UWS never duplicates the HTTP method, path, request schema, response schema, server, or security scheme — those live in the OpenAPI document.
+Most executable operations in UWS bind to an operation in an API source document by reference. UWS 1.2 supports `openapi`, `google-discovery`, and `aws-smithy` source descriptions directly. Extension-owned operations are the explicit non-API-source escape hatch. UWS never duplicates the HTTP method, path, request schema, response schema, server, security scheme, or protocol metadata; those live in the source document or executor-owned configuration.
 
 ## Three Mutually Exclusive Shapes
 
 Every valid UWS operation matches exactly one of three shapes:
 
-| Shape | `sourceDescription` | `openapiOperationId` | `openapiOperationRef` | `x-uws-operation-profile` |
+| Shape | `sourceDescription` | Generic selector | Legacy OpenAPI selector | `x-uws-operation-profile` |
 |---|---|---|---|---|
-| OpenAPI-bound by operationId | REQUIRED | REQUIRED | MUST NOT be set | OPTIONAL |
-| OpenAPI-bound by JSON Pointer | REQUIRED | MUST NOT be set | REQUIRED | OPTIONAL |
+| Source-bound by `sourceOperationId` or `sourceOperationRef` | REQUIRED | Exactly one REQUIRED | MUST NOT be set | OPTIONAL |
+| OpenAPI-compatible by `openapiOperationId` or `openapiOperationRef` | REQUIRED to an `openapi` source | MUST NOT be set | Exactly one REQUIRED | OPTIONAL |
 | Extension-owned | MUST NOT be set | MUST NOT be set | MUST NOT be set | REQUIRED |
 
-A document that omits the binding fields of every shape is invalid. OpenAPI-bound operations may carry profile metadata, but an extension-owned operation is selected only when all OpenAPI binding fields are absent.
+A document that omits the binding fields of every shape is invalid. Source-bound operations may carry profile metadata, but an extension-owned operation is selected only when all API source binding fields are absent.
 
 ## Source Descriptions
 
-`sourceDescriptions[]` declares every OpenAPI document the workflow uses. Every source entry must have a unique `name` matching `^[A-Za-z0-9_-]+$`, a `url`, and optionally `type: openapi`.
+`sourceDescriptions[]` declares every API source document the workflow uses. Every source entry must have a unique `name` matching `^[A-Za-z0-9_-]+$`, a `url`, and optionally `type`.
 
-Google Discovery and AWS Smithy inputs are not separate `sourceDescriptions.type` values in UWS 1.1. Compliant tooling may lower those source model families into OpenAPI-bound operations and preserve native source metadata in `x-*` extensions.
+Missing `type` defaults to `openapi`. In UWS 1.2, Google Discovery and AWS Smithy inputs may be declared directly as `type: google-discovery` and `type: aws-smithy`. UWS 1.1 documents remain OpenAPI-bound and can only consume those source families after tooling lowers them to OpenAPI.
 
 ```yaml
 sourceDescriptions:
@@ -30,24 +30,24 @@ sourceDescriptions:
     url: ./petstore.yaml
     type: openapi
   - name: gmail_api
-    url: https://raw.githubusercontent.com/example/gmail-openapi/main/openapi.yaml
-    type: openapi
-  - name: stripe_api
-    url: ./stripe.openapi.json
-    type: openapi
+    url: ./google-discovery/gmail.json
+    type: google-discovery
+  - name: lambda_api
+    url: ./aws-smithy/lambda.json
+    type: aws-smithy
 ```
 
 `sourceDescriptions` is REQUIRED whenever any operation declares `sourceDescription`. A document where every operation is extension-owned may omit it.
 
 ## Binding by `operationId`
 
-The most common form: name the source description and the OpenAPI `operationId`. UWS resolves the full operation — method, path, server, security — from the OpenAPI document.
+The most common form: name the source description and the source operation identifier. UWS resolves the full operation from the source document.
 
 ```json
 {
   "operationId": "list_pets",
   "sourceDescription": "petstore_api",
-  "openapiOperationId": "listPets",
+  "sourceOperationId": "listPets",
   "request": {
     "query": { "limit": 10 }
   },
@@ -73,7 +73,7 @@ sourceDescriptions:
 operations:
   - operationId: get_weather
     sourceDescription: weather_api
-    openapiOperationId: getCurrentWeather
+    sourceOperationId: getCurrentWeather
     request:
       query:
         q: Los Angeles
@@ -82,7 +82,7 @@ operations:
 
   - operationId: send_report
     sourceDescription: gmail_api
-    openapiOperationId: sendMessage
+    sourceOperationId: gmail_users_messages_send
     dependsOn: [get_weather]
     request:
       body:
@@ -94,21 +94,21 @@ Each operation points at a different source. UWS orchestrates them; neither Open
 
 ## Binding by JSON Pointer
 
-When an OpenAPI document does not assign a stable `operationId`, use a JSON Pointer fragment (`openapiOperationRef`) resolved against the named source:
+When a source document does not assign a stable operation identifier, use a JSON Pointer fragment (`sourceOperationRef`) resolved against the named source:
 
 ```json
 {
   "operationId": "get_pet_by_id",
   "sourceDescription": "petstore_api",
-  "openapiOperationRef": "#/paths/~1pets~1{petId}/get"
+  "sourceOperationRef": "#/paths/~1pets~1{petId}/get"
 }
 ```
 
-The pointer MUST begin with `#/`. Slashes in path segments are escaped as `~1` per RFC 6901. `openapiOperationRef` and `openapiOperationId` MUST NOT be set together on the same operation.
+The pointer MUST begin with `#/`. Slashes in path segments are escaped as `~1` per RFC 6901. `sourceOperationRef` and `sourceOperationId` MUST NOT be set together on the same operation. For OpenAPI sources only, legacy `openapiOperationId` and `openapiOperationRef` remain valid backward-compatible selectors.
 
 ## Extension-Owned Operations
 
-Operations without an OpenAPI binding are owned by a named runtime profile. `x-uws-operation-profile` names the profile; additional `x-*` fields carry profile-specific configuration.
+Operations without an API source binding are owned by a named runtime profile. `x-uws-operation-profile` names the profile; additional `x-*` fields carry profile-specific configuration.
 
 ```yaml
 operationId: build_email
@@ -127,7 +127,7 @@ The validator accepts this as intentionally runtime-owned. See [Extension Profil
 
 ## Request Binding
 
-The `request` object maps values into the OpenAPI operation's parameters and body. Keys map to OpenAPI parameter locations:
+The `request` object maps values into the referenced API operation's parameters and body. Keys map to API request locations:
 
 ```yaml
 request:
@@ -188,25 +188,25 @@ The following are all invalid — each produces a structured error:
   openapiOperationRef: "#/paths/~1foo/get"
   # error: cannot specify both openapiOperationId and openapiOperationRef
 
-# Shape 2: sourceDescription set but no selector
+# Shape 2: OpenAPI sourceDescription set but no selector
 - operationId: bad_op
   sourceDescription: api
-  # error: requires exactly one of openapiOperationId or openapiOperationRef
+  # error: requires exactly one OpenAPI selector or generic source selector
 
 # Shape 3: no binding at all, no profile
 - operationId: bad_op
-  # error: requires an OpenAPI binding or x-uws-operation-profile
+  # error: requires an API source binding or x-uws-operation-profile
 
-# Shape 4: sourceDescription set but no OpenAPI selector
+# Shape 4: sourceDescription set but no source selector
 - operationId: also_bad
   sourceDescription: api
   x-uws-operation-profile: udon   # profile metadata does not replace the missing selector
-  # error: requires exactly one of openapiOperationId or openapiOperationRef
+  # error: requires exactly one source operation selector
 ```
 
 ## From The Big Fixture
 
-The large round-trip fixture includes OpenAPI-bound operations with request
+The large round-trip fixture includes OpenAPI-bound compatibility operations with request
 locations, outputs, execution controls, criteria, and actions:
 
 ```hcl

@@ -16,7 +16,7 @@ type documentIndex struct {
 	triggers             map[string]bool
 	parallelGroups       map[string]bool
 	parallelGroupMembers map[string][]string
-	sourceDescriptions   map[string]bool
+	sourceDescriptions   map[string]SourceDescriptionType
 	dependencies         map[string][]string
 }
 
@@ -32,7 +32,7 @@ func newDocumentIndex() *documentIndex {
 		triggers:             make(map[string]bool),
 		parallelGroups:       make(map[string]bool),
 		parallelGroupMembers: make(map[string][]string),
-		sourceDescriptions:   make(map[string]bool),
+		sourceDescriptions:   make(map[string]SourceDescriptionType),
 		dependencies:         make(map[string][]string),
 	}
 }
@@ -65,10 +65,10 @@ func (idx *documentIndex) collectDocumentIDs(d *Document, result *ValidationResu
 			continue
 		}
 		if sd.Name != "" {
-			if idx.sourceDescriptions[sd.Name] {
+			if _, ok := idx.sourceDescriptions[sd.Name]; ok {
 				addIndexError(result, path+".name", fmt.Sprintf("duplicate sourceDescription name %q", sd.Name))
 			}
-			idx.sourceDescriptions[sd.Name] = true
+			idx.sourceDescriptions[sd.Name] = sd.EffectiveType()
 		}
 	}
 

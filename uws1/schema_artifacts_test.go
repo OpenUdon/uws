@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	latestUWSSchemaPath     = "../versions/1.1.1.json"
-	latestUWSSchemaResource = "versions/1.1.1.json"
-	latestUWSSpecPath       = "../versions/1.1.1.md"
+	latestUWSSchemaPath     = "../versions/1.2.0.json"
+	latestUWSSchemaResource = "versions/1.2.0.json"
+	latestUWSSpecPath       = "../versions/1.2.0.md"
 )
 
 func loadSchemaDoc(t *testing.T) map[string]any {
