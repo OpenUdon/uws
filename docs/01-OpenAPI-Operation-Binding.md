@@ -87,7 +87,16 @@ operations:
     request:
       body:
         userId: me
-        text: $steps.fetch.outputs.summary
+        text: $steps.get_weather.outputs.summary
+
+workflows:
+  - workflowId: main
+    type: sequence
+    steps:
+      - stepId: get_weather
+        operationRef: get_weather
+      - stepId: send_report
+        operationRef: send_report
 ```
 
 Each operation points at a different source. UWS orchestrates them; neither OpenAPI document needs to know about the other.
@@ -197,11 +206,11 @@ The following are all invalid — each produces a structured error:
 - operationId: bad_op
   # error: requires an API source binding or x-uws-operation-profile
 
-# Shape 4: sourceDescription set but no source selector
+# Shape 4: sourceDescription set but no operation selector
 - operationId: also_bad
   sourceDescription: api
   x-uws-operation-profile: udon   # profile metadata does not replace the missing selector
-  # error: requires exactly one source operation selector
+  # error: requires exactly one source operation selector or OpenAPI selector
 ```
 
 ## From The Big Fixture

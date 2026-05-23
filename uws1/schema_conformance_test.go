@@ -273,6 +273,23 @@ func TestSchemaConformance_JSONSchemaValidator(t *testing.T) {
 	require.NoError(t, json.Unmarshal(duplicateOperationID, &duplicateDoc))
 	require.ErrorContains(t, duplicateDoc.Validate(), `duplicate operationId "fetch"`)
 
+	nativeSourceBindings := []byte(`{
+		"uws": "1.2.0",
+		"info": {"title": "Native Sources", "version": "1.0.0"},
+		"sourceDescriptions": [
+			{"name": "gmail_api", "url": "./google-discovery/gmail.json", "type": "google-discovery"},
+			{"name": "s3_api", "url": "./aws-smithy/s3.json", "type": "aws-smithy"}
+		],
+		"operations": [
+			{"operationId": "send_mail", "sourceDescription": "gmail_api", "sourceOperationId": "gmail_users_messages_send"},
+			{"operationId": "put_object", "sourceDescription": "s3_api", "sourceOperationRef": "#/shapes/com.amazonaws.s3#PutObject"}
+		]
+	}`)
+	require.NoError(t, schema.Validate(decodeJSONValue(t, nativeSourceBindings)))
+	var nativeDoc Document
+	require.NoError(t, json.Unmarshal(nativeSourceBindings, &nativeDoc))
+	require.NoError(t, nativeDoc.Validate())
+
 	extensionOnly := decodeJSONValue(t, []byte(`{
 		"uws": "1.0.0",
 		"info": {"title": "Extension", "version": "1.0.0"},
@@ -490,6 +507,36 @@ func TestSchemaConformance_Draft202012CrossValidator(t *testing.T) {
 				"operations": [{"operationId": "build_email", "x-uws-operation-profile": "udon", "x-udon-runtime": {"type": "fnct"}}]
 			}`),
 			valid: true,
+		},
+		{
+			name: "google discovery source binding",
+			data: []byte(`{
+				"uws": "1.2.0",
+				"info": {"title": "Discovery", "version": "1.0.0"},
+				"sourceDescriptions": [{"name": "gmail_api", "url": "./google-discovery/gmail.json", "type": "google-discovery"}],
+				"operations": [{"operationId": "send_mail", "sourceDescription": "gmail_api", "sourceOperationId": "gmail_users_messages_send"}]
+			}`),
+			valid: true,
+		},
+		{
+			name: "aws smithy source binding by ref",
+			data: []byte(`{
+				"uws": "1.2.0",
+				"info": {"title": "Smithy", "version": "1.0.0"},
+				"sourceDescriptions": [{"name": "s3_api", "url": "./aws-smithy/s3.json", "type": "aws-smithy"}],
+				"operations": [{"operationId": "put_object", "sourceDescription": "s3_api", "sourceOperationRef": "#/shapes/com.amazonaws.s3#PutObject"}]
+			}`),
+			valid: true,
+		},
+		{
+			name: "mixed generic and legacy selectors rejected",
+			data: []byte(`{
+				"uws": "1.2.0",
+				"info": {"title": "Mixed", "version": "1.0.0"},
+				"sourceDescriptions": [{"name": "api", "url": "./openapi.yaml", "type": "openapi"}],
+				"operations": [{"operationId": "fetch", "sourceDescription": "api", "sourceOperationId": "getData", "openapiOperationId": "getData"}]
+			}`),
+			valid: false,
 		},
 		{
 			name: "root unevaluated property rejected",

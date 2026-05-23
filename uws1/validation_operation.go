@@ -47,7 +47,7 @@ func (op *Operation) validate(path string, idx *documentIndex, result *Validatio
 			switch sourceType {
 			case "", SourceDescriptionTypeOpenAPI:
 				if !hasGenericSelector && !hasLegacySelector {
-					result.addError(path, "requires exactly one of openapiOperationId or openapiOperationRef for OpenAPI-bound operations")
+					result.addError(path, "requires exactly one of sourceOperationId, sourceOperationRef, openapiOperationId, or openapiOperationRef for OpenAPI-bound operations")
 				}
 			case SourceDescriptionTypeGoogleDiscovery, SourceDescriptionTypeAWSSmithy:
 				if hasLegacySelector {

@@ -397,26 +397,26 @@
             "unevaluatedProperties": false
         },
         "request-binding-object": {
-            "description": "Request values grouped by OpenAPI parameter location and body",
+            "description": "Request values grouped by API source parameter location and body",
             "type": "object",
             "properties": {
                 "path": {
-                    "description": "Values for OpenAPI path parameters",
+                    "description": "Values for source path parameters",
                     "type": "object",
                     "additionalProperties": true
                 },
                 "query": {
-                    "description": "Values for OpenAPI query parameters",
+                    "description": "Values for source query parameters",
                     "type": "object",
                     "additionalProperties": true
                 },
                 "header": {
-                    "description": "Values for OpenAPI header parameters",
+                    "description": "Values for source header parameters",
                     "type": "object",
                     "additionalProperties": true
                 },
                 "cookie": {
-                    "description": "Values for OpenAPI cookie parameters",
+                    "description": "Values for source cookie parameters",
                     "type": "object",
                     "additionalProperties": true
                 },

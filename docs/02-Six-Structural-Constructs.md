@@ -1,6 +1,6 @@
 # Feature 2: Six Structural Constructs
 
-← [OpenAPI Operation Binding](01-OpenAPI-Operation-Binding.md) | [Next: Runtime Expression Grammar →](03-Runtime-Expression-Grammar.md)
+← [API Source Operation Binding](01-OpenAPI-Operation-Binding.md) | [Next: Runtime Expression Grammar →](03-Runtime-Expression-Grammar.md)
 
 ---
 
@@ -298,4 +298,4 @@ Full context: [`testdata/big/big.hcl`](https://github.com/OpenUdon/uws/blob/main
 
 ---
 
-← [OpenAPI Operation Binding](01-OpenAPI-Operation-Binding.md) | [Next: Runtime Expression Grammar →](03-Runtime-Expression-Grammar.md)
+← [API Source Operation Binding](01-OpenAPI-Operation-Binding.md) | [Next: Runtime Expression Grammar →](03-Runtime-Expression-Grammar.md)

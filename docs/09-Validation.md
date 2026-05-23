@@ -88,7 +88,7 @@ Each error names the exact field and what is wrong — directly actionable.
 Runtime supplement payloads have their own schema. If an operation uses
 `x-uws-operation-profile: uws.runtime.1.0`, validate its `x-uws-runtime` object
 against `versions/runtime.1.0.json`: the `type` field is required, only the
-published non-HTTP runtime selectors are allowed, and HTTP/OpenAPI metadata is
+published non-HTTP runtime selectors are allowed, and HTTP/API source metadata is
 not accepted there.
 
 ## Example 2: Reference Integrity Errors

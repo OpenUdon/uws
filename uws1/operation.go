@@ -44,8 +44,13 @@ func (o *Operation) Execute(ctx context.Context, d *Document) error {
 	})
 }
 
-// HasOpenAPIBinding reports whether the operation includes any OpenAPI binding
-// field. A partial binding is still a binding and will be rejected by validation.
+// HasOpenAPIBinding reports whether the operation includes any legacy
+// openapiOperation* selector field. A partial legacy binding is still a binding
+// and will be rejected by validation.
+//
+// OpenAPI sources that use the UWS 1.2 sourceOperation* selectors are source
+// bindings, but this compatibility helper intentionally reports only the legacy
+// OpenAPI selector fields.
 func (o *Operation) HasOpenAPIBinding() bool {
 	return o != nil && (o.OpenAPIOperationID != "" || o.OpenAPIOperationRef != "")
 }
@@ -57,25 +62,31 @@ func (o *Operation) HasSourceBinding() bool {
 }
 
 // HasCompleteOpenAPIBinding reports whether the operation has a source
-// description and exactly one OpenAPI operation selector.
+// description, exactly one legacy openapiOperation* selector, and no generic
+// sourceOperation* selector.
 func (o *Operation) HasCompleteOpenAPIBinding() bool {
 	if o == nil || o.SourceDescription == "" {
 		return false
 	}
 	hasID := o.OpenAPIOperationID != ""
 	hasRef := o.OpenAPIOperationRef != ""
-	return hasID != hasRef
+	hasGenericID := o.SourceOperationID != ""
+	hasGenericRef := o.SourceOperationRef != ""
+	return hasID != hasRef && !hasGenericID && !hasGenericRef
 }
 
 // HasCompleteSourceBinding reports whether the operation has a source
-// description and exactly one generic source operation selector.
+// description, exactly one generic source operation selector, and no legacy
+// OpenAPI selector.
 func (o *Operation) HasCompleteSourceBinding() bool {
 	if o == nil || o.SourceDescription == "" {
 		return false
 	}
 	hasID := o.SourceOperationID != ""
 	hasRef := o.SourceOperationRef != ""
-	return hasID != hasRef
+	hasLegacyID := o.OpenAPIOperationID != ""
+	hasLegacyRef := o.OpenAPIOperationRef != ""
+	return hasID != hasRef && !hasLegacyID && !hasLegacyRef
 }
 
 // ExtensionProfile returns the normalized operation profile marker used by

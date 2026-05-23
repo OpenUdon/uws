@@ -66,6 +66,64 @@ func TestJSONToHCL(t *testing.T) {
 	}
 }
 
+func TestJSONToHCLPreservesNativeSourceBindings(t *testing.T) {
+	jsonData := []byte(`{
+		"uws": "1.2.0",
+		"info": {"title": "Native Sources", "version": "1.0.0"},
+		"sourceDescriptions": [
+			{"name": "gmail_api", "url": "./google-discovery/gmail.json", "type": "google-discovery"},
+			{"name": "s3_api", "url": "./aws-smithy/s3.json", "type": "aws-smithy"}
+		],
+		"operations": [
+			{
+				"operationId": "send_mail",
+				"sourceDescription": "gmail_api",
+				"sourceOperationId": "gmail_users_messages_send"
+			},
+			{
+				"operationId": "put_object",
+				"sourceDescription": "s3_api",
+				"sourceOperationRef": "#/shapes/com.amazonaws.s3#PutObject"
+			}
+		]
+	}`)
+
+	hclData, err := JSONToHCL(jsonData)
+	if err != nil {
+		t.Fatalf("JSONToHCL failed: %v", err)
+	}
+	hclStr := string(hclData)
+	for _, want := range []string{"google-discovery", "aws-smithy", "sourceOperationId", "sourceOperationRef"} {
+		if !strings.Contains(hclStr, want) {
+			t.Fatalf("HCL output missing %q:\n%s", want, hclStr)
+		}
+	}
+
+	backJSON, err := HCLToJSON(hclData)
+	if err != nil {
+		t.Fatalf("HCLToJSON failed: %v", err)
+	}
+	var doc uws1.Document
+	if err := json.Unmarshal(backJSON, &doc); err != nil {
+		t.Fatalf("Failed to parse JSON output: %v", err)
+	}
+	if err := doc.Validate(); err != nil {
+		t.Fatalf("round-tripped native source document did not validate: %v", err)
+	}
+	if got := doc.SourceDescriptions[0].Type; got != uws1.SourceDescriptionTypeGoogleDiscovery {
+		t.Fatalf("first source type = %q, want google-discovery", got)
+	}
+	if got := doc.SourceDescriptions[1].Type; got != uws1.SourceDescriptionTypeAWSSmithy {
+		t.Fatalf("second source type = %q, want aws-smithy", got)
+	}
+	if got := doc.Operations[0].SourceOperationID; got != "gmail_users_messages_send" {
+		t.Fatalf("sourceOperationId = %q", got)
+	}
+	if got := doc.Operations[1].SourceOperationRef; got != "#/shapes/com.amazonaws.s3#PutObject" {
+		t.Fatalf("sourceOperationRef = %q", got)
+	}
+}
+
 func TestMarshalHCLDoesNotMutateDocument(t *testing.T) {
 	doc := testDocument()
 	original, err := json.Marshal(doc)

@@ -31,7 +31,7 @@ For non-HTTP leaf work, UWS keeps the core document narrow. Extension-owned oper
 
 ```json
 {
-  "uws": "1.1.0",
+  "uws": "1.2.0",
   "info": { "title": "Weather Report", "version": "1.1.0" },
   "sourceDescriptions": [
     { "name": "weather_api", "url": "./weather.openapi.yaml", "type": "openapi" },

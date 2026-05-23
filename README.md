@@ -68,7 +68,7 @@ The `convert` package provides JSON, YAML, and HCL helpers such as `JSONToHCL`, 
 
 HCL conversion preserves dynamic map keys such as `$ref` through reversible key rewriting. JSON and YAML preserve `x-*` extensions through the JSON extension model; HCL represents object-level extensions with `extensions { ... }` blocks and flattens them back to `x-*` fields when converting to JSON or YAML.
 
-Large round-trip fixtures under `testdata/big/` exercise the HCL/JSON converter with runtime supplement metadata and multi-file OpenAPI references.
+Large round-trip fixtures under `testdata/big/` exercise the HCL/JSON converter with runtime supplement metadata and multi-file API source references.
 
 ## Development
 

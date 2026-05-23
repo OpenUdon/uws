@@ -13,7 +13,7 @@ Module path: `github.com/OpenUdon/uws` (Go 1.25.4).
 
 ## Architecture
 
-UWS is a workflow overlay for OpenAPI-backed HTTP operations. OpenAPI owns methods, paths, schemas, servers, and security; UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow. Non-HTTP runtimes (command exec, SSH, SQL, LLM, etc.) are extension-profile concerns expressed via `x-*` fields and `x-uws-operation-profile`, not built-in service types.
+UWS is a workflow overlay for API-source-backed HTTP operations. API source documents such as OpenAPI, Google Discovery, and AWS Smithy own methods, paths, schemas, servers, and security; UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow. Non-HTTP runtimes (command exec, SSH, SQL, LLM, etc.) are extension-profile concerns expressed via `x-*` fields and `x-uws-operation-profile`, not built-in service types.
 
 Three coordinated artifacts must stay in sync:
 
@@ -77,7 +77,7 @@ When changing validation rules:
 ## Validation Layering
 
 - The versioned JSON Schema covers structural and shape checks.
-- `(*Document).Validate()` / `ValidateResult()` in `uws1/validation.go` cover semantic checks the schema cannot: duplicate identifiers, OpenAPI binding rules, reference integrity across operations/workflows/steps/triggers/parallel groups/sourceDescriptions, action and criterion rules, trigger routes, and standard request-binding keys.
+- `(*Document).Validate()` / `ValidateResult()` in `uws1/validation.go` cover semantic checks the schema cannot: duplicate identifiers, API source binding rules, reference integrity across operations/workflows/steps/triggers/parallel groups/sourceDescriptions, action and criterion rules, trigger routes, and standard request-binding keys.
 - Use `Validate()` when a single `error` is enough.
 - Use `ValidateResult()` when callers need path-tagged errors.
 

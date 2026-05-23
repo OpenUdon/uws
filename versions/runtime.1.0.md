@@ -30,7 +30,7 @@ The supplement defines these runtime type identifiers:
 `ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`, `smtp`, `dns`, `ldaps`, `scp`,
 `sftp`, and `llm`.
 
-HTTP and OpenAPI-bound calls are represented by core UWS operation binding
+HTTP/API-source-bound calls are represented by core UWS operation binding
 fields, not by `x-uws-runtime`. A payload that assigns `type: http` in
 `x-uws-runtime` is invalid. The spelling is exact. `ldaps` is defined; plain
 `ldap` is not.
@@ -52,9 +52,9 @@ The payload shape is intentionally small. It selects a non-HTTP invocation
 surface without standardizing runtime behavior. A bound runtime decides whether
 it can execute the selected type and how to interpret the selector fields.
 
-HTTP/OpenAPI operation metadata is not part of `x-uws-runtime`. HTTP method,
+HTTP/API source operation metadata is not part of `x-uws-runtime`. HTTP method,
 path, server, request/response schemas, and operation security requirements
-belong in the referenced OpenAPI document and core UWS OpenAPI binding fields.
+belong in the referenced API source document and core UWS API source binding fields.
 
 Runtime-specific credentials, provider selection, client defaults, connection
 pools, security material, and other execution configuration belong in

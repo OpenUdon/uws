@@ -234,7 +234,7 @@ Before handing a workflow to a runtime:
 
 ## Where To Go Next
 
-- [OpenAPI Operation Binding](01-OpenAPI-Operation-Binding.md)
+- [API Source Operation Binding](01-OpenAPI-Operation-Binding.md)
 - [Six Structural Constructs](02-Six-Structural-Constructs.md)
 - [Runtime Expression Grammar](03-Runtime-Expression-Grammar.md)
 - [Triggers and Route Dispatch](04-Triggers-and-Route-Dispatch.md)

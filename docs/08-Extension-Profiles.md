@@ -154,8 +154,8 @@ operations:
       type: fnct
       function: mail_raw
       arguments:
-        - subject: "Weather: {{ $steps.fetch.outputs.temp_f }}°F in Los Angeles"
-          body:    $steps.fetch.outputs.summary
+        - subject: "Weather: {{ $steps.get_weather.outputs.temp_f }}°F in Los Angeles"
+          body:    $steps.get_weather.outputs.summary
     dependsOn: [get_weather]
     outputs:
       raw: $response.body.raw
@@ -168,7 +168,18 @@ operations:
     request:
       body:
         userId: me
-        raw:    $steps.compose.outputs.raw
+        raw:    $steps.build_email.outputs.raw
+
+workflows:
+  - workflowId: main
+    type: sequence
+    steps:
+      - stepId: get_weather
+        operationRef: get_weather
+      - stepId: build_email
+        operationRef: build_email
+      - stepId: send_report
+        operationRef: send_report
 ```
 
 Weather and Gmail stay API-source-bound. Email formatting is runtime-owned. The document validates before any execution begins.

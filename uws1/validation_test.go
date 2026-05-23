@@ -141,6 +141,16 @@ func TestOperationBindingHelpers(t *testing.T) {
 	assert.True(t, sourceBound.HasSourceBinding())
 	assert.True(t, sourceBound.HasCompleteSourceBinding())
 
+	mixedSelectors := &Operation{
+		SourceDescription:  "api",
+		SourceOperationID:  "getData",
+		OpenAPIOperationID: "getData",
+	}
+	assert.True(t, mixedSelectors.HasOpenAPIBinding())
+	assert.True(t, mixedSelectors.HasSourceBinding())
+	assert.False(t, mixedSelectors.HasCompleteOpenAPIBinding())
+	assert.False(t, mixedSelectors.HasCompleteSourceBinding())
+
 	extensionOwned := &Operation{
 		Extensions: map[string]any{ExtensionOperationProfile: " udon "},
 	}
@@ -214,7 +224,7 @@ func TestValidate_OperationBindingRules(t *testing.T) {
 	t.Run("missing OpenAPI binding", func(t *testing.T) {
 		doc := validDocument()
 		doc.Operations[0].OpenAPIOperationID = ""
-		assert.ErrorContains(t, doc.Validate(), "requires exactly one of openapiOperationId or openapiOperationRef for OpenAPI-bound operations")
+		assert.ErrorContains(t, doc.Validate(), "requires exactly one of sourceOperationId, sourceOperationRef, openapiOperationId, or openapiOperationRef for OpenAPI-bound operations")
 	})
 
 	t.Run("conflicting OpenAPI bindings", func(t *testing.T) {
@@ -533,7 +543,7 @@ func TestValidateResult_AccumulatesErrors(t *testing.T) {
 		{Path: "info.title", Message: "is required"},
 		{Path: "info.version", Message: "is required"},
 		{Path: "operations[1].operationId", Message: `duplicate operationId "op"`},
-		{Path: "operations[0]", Message: "requires exactly one of openapiOperationId or openapiOperationRef for OpenAPI-bound operations"},
+		{Path: "operations[0]", Message: "requires exactly one of sourceOperationId, sourceOperationRef, openapiOperationId, or openapiOperationRef for OpenAPI-bound operations"},
 		{Path: "operations[1].sourceDescription", Message: `references unknown sourceDescription "missing"`},
 	}
 	assert.Equal(t, want, result.Errors)
@@ -884,7 +894,7 @@ func TestValidate_InvalidFixtures(t *testing.T) {
 		{
 			name:    "missing openapi binding",
 			file:    "missing_openapi_binding.json",
-			wantErr: ValidationError{Path: "operations[0]", Message: "requires exactly one of openapiOperationId or openapiOperationRef for OpenAPI-bound operations"},
+			wantErr: ValidationError{Path: "operations[0]", Message: "requires exactly one of sourceOperationId, sourceOperationRef, openapiOperationId, or openapiOperationRef for OpenAPI-bound operations"},
 		},
 		{
 			name:    "regex criterion without context",

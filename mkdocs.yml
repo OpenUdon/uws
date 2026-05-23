@@ -1,5 +1,5 @@
 site_name: Udon Workflow Specification
-site_description: A compact, execution-oriented workflow specification for OpenAPI-backed HTTP operations
+site_description: A compact, execution-oriented workflow specification for API-source-backed HTTP operations
 site_url: https://openudon.github.io/uws/
 repo_url: https://github.com/OpenUdon/uws
 repo_name: OpenUdon/uws
@@ -23,7 +23,7 @@ nav:
   - Home: index.md
   - Quick Start: workflow-authoring.md
   - Features:
-    - 1. OpenAPI Operation Binding: 01-OpenAPI-Operation-Binding.md
+    - 1. API Source Operation Binding: 01-OpenAPI-Operation-Binding.md
     - 2. Six Structural Constructs: 02-Six-Structural-Constructs.md
     - 3. Runtime Expression Grammar: 03-Runtime-Expression-Grammar.md
     - 4. Triggers and Route Dispatch: 04-Triggers-and-Route-Dispatch.md
