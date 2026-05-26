@@ -88,6 +88,7 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 - **JSON Schema**: [`versions/1.2.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.2.0.json)
 - **Runtime supplement**: [`versions/runtime.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md)
 - **Runtime supplement schema**: [`versions/runtime.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json)
+- **Future source profiles**: [AsyncAPI and browser capability profiles](future-source-profiles.md)
 - **Go package**: `github.com/OpenUdon/uws`
 - **License**: Apache 2.0
 

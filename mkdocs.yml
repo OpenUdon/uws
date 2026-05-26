@@ -34,6 +34,7 @@ nav:
     - 9. Validation: 09-Validation.md
     - 10. Interchange Formats: 10-Interchange-Formats.md
   - Runtimes: runtimes.md
+  - Future Source Profiles: future-source-profiles.md
   - Reference:
     - Specification: https://github.com/OpenUdon/uws/blob/main/versions/1.2.0.md
     - JSON Schema: https://github.com/OpenUdon/uws/blob/main/versions/1.2.0.json
