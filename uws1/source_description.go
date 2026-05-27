@@ -12,6 +12,10 @@ const (
 	SourceDescriptionTypeGoogleDiscovery SourceDescriptionType = "google-discovery"
 	SourceDescriptionTypeAWSSmithy       SourceDescriptionType = "aws-smithy"
 	SourceDescriptionTypeAsyncAPI        SourceDescriptionType = "asyncapi"
+	SourceDescriptionTypeGraphQL         SourceDescriptionType = "graphql"
+	SourceDescriptionTypeOpenRPC         SourceDescriptionType = "openrpc"
+	SourceDescriptionTypeGRPCProtobuf    SourceDescriptionType = "grpc-protobuf"
+	SourceDescriptionTypeOData           SourceDescriptionType = "odata"
 )
 
 var sourceDescriptionNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)

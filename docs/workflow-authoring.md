@@ -2,7 +2,7 @@
 
 This guide is for authors who need to hand-write a UWS document without reading the full specification first. It focuses on the common path: bind existing source operations, put them in a workflow, pass values between steps, and leave concrete credentials to the runtime.
 
-UWS is a workflow overlay. Source documents such as OpenAPI, Google Discovery, AWS Smithy, and AsyncAPI own HTTP methods, paths, channels, messages, schemas, servers, and security. UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow.
+UWS is a workflow overlay. Source documents such as OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, and OData own HTTP methods, paths, channels, messages, schemas, RPC methods, services, metadata, servers, and security. UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow.
 
 ## Start With Three Files
 
@@ -15,6 +15,14 @@ google-discovery/
   gmail.json
 asyncapi/
   billing-events.yaml
+graphql/
+  issue-tracker.graphql
+openrpc/
+  pet-rpc.json
+protobuf/
+  inventory.proto
+odata/
+  service-metadata.xml
 workflow.uws.yaml
 runtime-config.json       # runtime-owned, not UWS core
 ```
@@ -24,7 +32,7 @@ The UWS document points to source documents. It does not copy endpoint URLs, cha
 ## Minimal Workflow
 
 ```yaml
-uws: "1.3.0"
+uws: "1.4.0"
 info:
   title: Support Ticket Workflow
   version: "1.0.0"
@@ -87,7 +95,7 @@ Rules of thumb:
 
 - `name` is the stable local handle used by operations.
 - `url` can be a local path or reviewed remote location, depending on the runtime.
-- `type` may be `openapi`, `google-discovery`, `aws-smithy`, or `asyncapi`. Missing `type` defaults to `openapi`.
+- `type` may be `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, or `odata`. Missing `type` defaults to `openapi`.
 
 ## Step 2: Bind Operations
 
@@ -100,7 +108,7 @@ operations:
     sourceOperationId: createTicket
 ```
 
-`operationId` is local to the UWS file. `sourceOperationId` is the operation ID from the referenced source document. For AsyncAPI sources, it names a root AsyncAPI Operation Object. OpenAPI sources may also use legacy `openapiOperationId`.
+`operationId` is local to the UWS file. `sourceOperationId` is the operation ID from the referenced source document. For AsyncAPI sources, it names a root AsyncAPI Operation Object. For GraphQL, OpenRPC, gRPC/protobuf, and OData sources, source-aware tooling defines stable operation identifiers or refs. OpenAPI sources may also use legacy `openapiOperationId`.
 
 Do not add HTTP method, path, channel, server URL, or security configuration here. Those belong to the source document and the bound runtime.
 
@@ -122,6 +130,8 @@ request:
 
 Use runtime expressions when a value comes from a previous step, workflow input, trigger, variable, or response.
 For AsyncAPI source operations, use `body` for the message payload or operation input values and `header` for AsyncAPI Message Object `headers` values when the source operation defines them.
+
+For GraphQL, OpenRPC, gRPC/protobuf, and OData source operations, use the same request binding object and leave protocol-specific serialization to source-aware tooling and the bound runtime.
 
 ## Step 4: Name Outputs
 

@@ -7,25 +7,26 @@ specification and JSON Schema.
 
 ## Status And Normativity
 
-This document is not part of the normative UWS 1.3 wire contract. The published
-UWS 1.3 source description types are `openapi`, `google-discovery`,
-`aws-smithy`, and `asyncapi`; missing `sourceDescriptions[].type` still defaults
-to `openapi`.
+This document is not part of the normative UWS 1.4 wire contract. The published
+UWS 1.4 source description types are `openapi`, `google-discovery`,
+`aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, and `odata`;
+missing `sourceDescriptions[].type` still defaults to `openapi`.
 
 The `v0.1.x` labels below are implementation-roadmap labels. They do not define
 released UWS versions, JSON Schema changes, Go model changes, or new validator
-behavior by themselves. AsyncAPI has graduated into UWS 1.3; `browser-profile`
-is not a valid UWS 1.3 `sourceDescriptions[].type` value.
+behavior by themselves. AsyncAPI has graduated into UWS 1.3, and GraphQL,
+OpenRPC, gRPC/protobuf, and OData have graduated into UWS 1.4.
+`browser-profile` is not a valid UWS 1.4 `sourceDescriptions[].type` value.
 
 Examples in this note are illustrative future shapes unless a section explicitly
-labels them as valid today. Current UWS 1.3 documents that need non-core,
+labels them as valid today. Current UWS 1.4 documents that need non-core,
 runtime-owned work, including browser/UI work, use extension-owned operations
 with `x-uws-operation-profile`.
 
 The current UWS model remains source-document-first:
 
-- OpenAPI, Google Discovery, AWS Smithy, and AsyncAPI describe API or event
-  source contracts.
+- OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC,
+  gRPC/protobuf, and OData describe API, RPC, or event source contracts.
 - UWS describes workflow structure, operation binding, request values, outputs,
   triggers, and control flow.
 - Non-HTTP behavior is represented by extension-owned operations and named
@@ -37,7 +38,7 @@ Future source-profile tracks are listed separately:
 | --- | --- | --- |
 | UWS 1.1-compatible tooling | Import and advisory evidence | Use Dropbox Stone, Postman Collection, RAML, and API Blueprint as local source evidence only after conversion to OpenAPI or as review-only metadata. |
 | `v0.1.3` | AsyncAPI source profiles | Graduated in UWS 1.3 for event, message, and subscription contracts when a provider publishes AsyncAPI. |
-| UWS 1.4 candidates | Formal API source families | Strictly evaluate `graphql`, `openrpc`, `grpc-protobuf`, and `odata` as the next normative source-type candidates. |
+| UWS 1.4 source profiles | Formal API source families | Graduated `graphql`, `openrpc`, `grpc-protobuf`, and `odata` as normative source type values. |
 | Later candidate | Browser capability profiles | Reuse reviewed browser/UI capability maps when no sufficient API source document exists. |
 
 Browser capability profiles become UWS source profiles only if a future UWS
@@ -65,13 +66,12 @@ description enum. The executable UWS package still binds to OpenAPI after
 conversion, or it treats the artifact as advisory review evidence outside the
 wire contract.
 
-## Candidate UWS 1.4 Source Family Queue
+## Adopted in UWS 1.4: Source Family Baseline
 
-UWS 1.4 should be strict: the candidate source families are `graphql`,
-`openrpc`, `grpc-protobuf`, and `odata`. Each new source type should graduate
-only when the format has a clear operation selector model, source-owned
-request/response or message metadata, parser/index evidence in source-aware
-tooling, and at least one trusted runtime path that can consume the source
+UWS 1.4 is strict: the adopted source families are `graphql`, `openrpc`,
+`grpc-protobuf`, and `odata`. Each source type has a clear operation selector
+model, source-owned request/response or message metadata, parser/index evidence
+or a bounded tooling path, and a runtime path that can consume the source
 semantics without flattening important behavior into a weaker OpenAPI-shaped
 approximation.
 
@@ -91,14 +91,13 @@ UWS 1.1-compatible tooling path unless a later roadmap explicitly reopens them.
 Browser profiles remain useful for UI-only workflows, but they are weaker than
 formal API source documents and should not lead the next source-type expansion.
 
-### Possible UWS 1.4 Shape
+### UWS 1.4 Shape
 
-At a high level, UWS 1.4 should be a source-family expansion, not a replacement
-for the UWS 1.3 model. The likely shape is:
+At a high level, UWS 1.4 is a source-family expansion, not a replacement for
+the UWS 1.3 model. The shape is:
 
 - Add narrowly scoped source description types for the graduating formats:
-  `graphql`, `openrpc`, `grpc-protobuf`, and `odata`. Exact names remain
-  schema/spec decisions until the versioned specification and schema are cut.
+  `graphql`, `openrpc`, `grpc-protobuf`, and `odata`.
 - Keep source documents authoritative for protocol-specific semantics: GraphQL
   owns schemas and variables, OpenRPC owns JSON-RPC methods and params,
   protobuf owns services and messages, and OData owns entity/action/query
@@ -120,23 +119,23 @@ This keeps the public contract incremental: UWS gains stronger source bindings
 for well-known API families while avoiding a generic "anything captured from a
 tool becomes a workflow contract" model.
 
-### Candidate Source-Type Notes
+### Source-Type Notes
 
-GraphQL would need selectors for a named or embedded query, mutation, or
+GraphQL needs selectors for a named or embedded query, mutation, or
 subscription and request bindings for variables. The GraphQL schema owns object
 types, input types, enum values, nullability, and field selection constraints;
 UWS owns workflow structure, variable values, dependencies, and output routing.
 
-OpenRPC would need selectors for JSON-RPC method names or refs. The OpenRPC
+OpenRPC needs selectors for JSON-RPC method names or refs. The OpenRPC
 document owns method params, result schemas, errors, servers, and security
 metadata when available; UWS owns param values and workflow orchestration.
 
-gRPC/protobuf would need selectors for service/method names or descriptors. The
+gRPC/protobuf needs selectors for service/method names or descriptors. The
 protobuf descriptor owns services, methods, messages, streaming shape, and field
 types; UWS owns request values, step dependencies, and outputs. Runtime
 implementations own channel credentials, transport configuration, and invocation.
 
-OData would need selectors for entity-set operations, functions, and actions.
+OData needs selectors for entity-set operations, functions, and actions.
 The OData metadata document owns entity types, navigation properties, functions,
 actions, and query semantics; UWS owns selected action/query inputs and workflow
 structure.
@@ -345,7 +344,7 @@ actions:
 ## Possible UWS Binding
 
 A future UWS version could model browser profiles as source descriptions. This
-shape is not valid UWS 1.3:
+shape is not valid UWS 1.4:
 
 ```yaml
 sourceDescriptions:
@@ -369,7 +368,7 @@ workflow structure.
 
 ## Valid Today: Extension-Owned Browser Work
 
-Before browser profiles become a source type, current UWS 1.3 documents
+Before browser profiles become a source type, current UWS 1.4 documents
 represent browser work as extension-owned operations:
 
 ```yaml

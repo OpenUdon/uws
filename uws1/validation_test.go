@@ -2,8 +2,10 @@ package uws1
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -443,6 +445,48 @@ func TestValidate_UWS13AsyncAPISourceOperationBindings(t *testing.T) {
 		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAsyncAPI
 		assert.ErrorContains(t, doc.Validate(), "asyncapi sourceDescriptions require sourceOperationId or sourceOperationRef, not openapiOperationId or openapiOperationRef")
 	})
+}
+
+func TestValidate_UWS14SourceOperationBindings(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		sourceType SourceDescriptionType
+		selector   string
+	}{
+		{name: "graphql", sourceType: SourceDescriptionTypeGraphQL, selector: "mutation.createIssue"},
+		{name: "openrpc", sourceType: SourceDescriptionTypeOpenRPC, selector: "#/methods/pet.get"},
+		{name: "grpc protobuf", sourceType: SourceDescriptionTypeGRPCProtobuf, selector: "inventory.InventoryService/Reserve"},
+		{name: "odata", sourceType: SourceDescriptionTypeOData, selector: "#/entitySets/ContinuousPerformanceGoals"},
+	} {
+		t.Run(tc.name+" accepts generic selector", func(t *testing.T) {
+			doc := validDocument()
+			doc.UWS = "1.4.0"
+			doc.SourceDescriptions[0].Type = tc.sourceType
+			doc.Operations[0].OpenAPIOperationID = ""
+			if strings.HasPrefix(tc.selector, "#/") {
+				doc.Operations[0].SourceOperationRef = tc.selector
+			} else {
+				doc.Operations[0].SourceOperationID = tc.selector
+			}
+			assert.NoError(t, doc.Validate())
+		})
+
+		t.Run(tc.name+" rejects pre-1.4 document", func(t *testing.T) {
+			doc := validDocument()
+			doc.UWS = "1.3.0"
+			doc.SourceDescriptions[0].Type = tc.sourceType
+			doc.Operations[0].OpenAPIOperationID = ""
+			doc.Operations[0].SourceOperationID = "operation"
+			assert.ErrorContains(t, doc.Validate(), "requires UWS 1.4.0 or later")
+		})
+
+		t.Run(tc.name+" rejects legacy openapi selector", func(t *testing.T) {
+			doc := validDocument()
+			doc.UWS = "1.4.0"
+			doc.SourceDescriptions[0].Type = tc.sourceType
+			assert.ErrorContains(t, doc.Validate(), fmt.Sprintf("%s sourceDescriptions require sourceOperationId or sourceOperationRef, not openapiOperationId or openapiOperationRef", tc.sourceType))
+		})
+	}
 }
 
 func TestValidate_DuplicateIDs(t *testing.T) {

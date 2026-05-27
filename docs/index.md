@@ -4,11 +4,11 @@
   <img src="assets/uws2.png" alt="UWS logo" width="520">
 </p>
 
-UWS is a compact, execution-oriented workflow specification that sits directly on top of source documents such as OpenAPI, Google Discovery, AWS Smithy, and AsyncAPI. A UWS document describes *how* to orchestrate API and event operations that source documents already describe without duplicating methods, paths, channels, messages, schemas, servers, or security schemes.
+UWS is a compact, execution-oriented workflow specification that sits directly on top of source documents such as OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, Protocol Buffers, and OData. A UWS document describes *how* to orchestrate API, RPC, and event operations that source documents already describe without duplicating methods, paths, channels, messages, schemas, servers, or security schemes.
 
 > Source documents own the API or event contract. UWS owns the workflow overlay.
 
-UWS 1.3 keeps OpenAPI compatibility and adds first-class source descriptions for `openapi`, `google-discovery`, `aws-smithy`, and `asyncapi`. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources.
+UWS 1.4 keeps OpenAPI compatibility and adds first-class source descriptions for `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, and `odata`. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources.
 
 ## Why UWS?
 
@@ -31,7 +31,7 @@ For non-source leaf work, UWS keeps the core document narrow. Extension-owned op
 
 ```json
 {
-  "uws": "1.3.0",
+  "uws": "1.4.0",
   "info": { "title": "Weather Report", "version": "1.1.0" },
   "sourceDescriptions": [
     { "name": "weather_api", "url": "./weather.openapi.yaml", "type": "openapi" },
@@ -84,11 +84,11 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 
 ## Reference
 
-- **Specification**: [`versions/1.3.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.3.0.md)
-- **JSON Schema**: [`versions/1.3.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.3.0.json)
+- **Specification**: [`versions/1.4.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.4.0.md)
+- **JSON Schema**: [`versions/1.4.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.4.0.json)
 - **Runtime supplement**: [`versions/runtime.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md)
 - **Runtime supplement schema**: [`versions/runtime.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json)
-- **Future source profiles**: [UWS 1.1 import/advisory features and UWS 1.4 source candidates](future-source-profiles.md)
+- **Future source profiles**: [UWS 1.1 import/advisory features and UWS 1.4 source profiles](future-source-profiles.md)
 - **Go package**: `github.com/OpenUdon/uws`
 - **License**: Apache 2.0
 
@@ -100,7 +100,7 @@ If you need to hand-write a workflow, start with the practical [workflow authori
 
 | # | Feature | Summary |
 |---|---------|---------|
-| 1 | [Source Operation Binding](01-OpenAPI-Operation-Binding.md) | Strict binding to OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, or extension-owned operations |
+| 1 | [Source Operation Binding](01-OpenAPI-Operation-Binding.md) | Strict binding to OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, OData, or extension-owned operations |
 | 2 | [Six Structural Constructs](02-Six-Structural-Constructs.md) | sequence · parallel · switch · loop · merge · await |
 | 3 | [Runtime Expression Grammar](03-Runtime-Expression-Grammar.md) | Normative ABNF expression language for value flow |
 | 4 | [Triggers and Route Dispatch](04-Triggers-and-Route-Dispatch.md) | Typed entry points with output-based routing |

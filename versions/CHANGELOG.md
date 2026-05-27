@@ -4,6 +4,16 @@ This changelog summarizes externally visible changes between published UWS
 versioned schemas and specification documents. The versioned `.md` files remain
 the normative human-readable specifications.
 
+## 1.4.0 - 2026-05-27
+
+- Added first-class `sourceDescription.type` values for `graphql`, `openrpc`,
+  `grpc-protobuf`, and `odata`.
+- Required generic `sourceOperationId` or `sourceOperationRef` selectors for
+  those source families and kept legacy OpenAPI selectors limited to
+  `openapi` sources.
+- Kept source parsing, selector resolution, transport, authentication,
+  credentials, and runtime invocation source-aware or runtime-owned.
+
 ## 1.3.0 - 2026-05-27
 
 - Added `asyncapi` as a first-class `sourceDescription.type` for AsyncAPI source documents.

@@ -274,17 +274,25 @@ func TestSchemaConformance_JSONSchemaValidator(t *testing.T) {
 	require.ErrorContains(t, duplicateDoc.Validate(), `duplicate operationId "fetch"`)
 
 	nativeSourceBindings := []byte(`{
-		"uws": "1.3.0",
+		"uws": "1.4.0",
 		"info": {"title": "Native Sources", "version": "1.0.0"},
 		"sourceDescriptions": [
 			{"name": "gmail_api", "url": "./google-discovery/gmail.json", "type": "google-discovery"},
 			{"name": "s3_api", "url": "./aws-smithy/s3.json", "type": "aws-smithy"},
-			{"name": "billing_events", "url": "./asyncapi/billing-events.yaml", "type": "asyncapi"}
+			{"name": "billing_events", "url": "./asyncapi/billing-events.yaml", "type": "asyncapi"},
+			{"name": "linear_api", "url": "./graphql/linear.graphql", "type": "graphql"},
+			{"name": "pet_rpc", "url": "./openrpc/pet-rpc.json", "type": "openrpc"},
+			{"name": "inventory_grpc", "url": "./protobuf/inventory.proto", "type": "grpc-protobuf"},
+			{"name": "successfactors_api", "url": "./odata/successfactors.xml", "type": "odata"}
 		],
 		"operations": [
 			{"operationId": "send_mail", "sourceDescription": "gmail_api", "sourceOperationId": "gmail_users_messages_send"},
 			{"operationId": "put_object", "sourceDescription": "s3_api", "sourceOperationRef": "#/shapes/com.amazonaws.s3#PutObject"},
-			{"operationId": "wait_for_invoice_paid", "sourceDescription": "billing_events", "sourceOperationRef": "#/operations/invoicePaid"}
+			{"operationId": "wait_for_invoice_paid", "sourceDescription": "billing_events", "sourceOperationRef": "#/operations/invoicePaid"},
+			{"operationId": "create_issue", "sourceDescription": "linear_api", "sourceOperationId": "mutation.createIssue"},
+			{"operationId": "get_pet", "sourceDescription": "pet_rpc", "sourceOperationRef": "#/methods/pet.get"},
+			{"operationId": "reserve_inventory", "sourceDescription": "inventory_grpc", "sourceOperationId": "inventory.InventoryService/Reserve"},
+			{"operationId": "list_goals", "sourceDescription": "successfactors_api", "sourceOperationRef": "#/entitySets/ContinuousPerformanceGoals"}
 		]
 	}`)
 	require.NoError(t, schema.Validate(decodeJSONValue(t, nativeSourceBindings)))

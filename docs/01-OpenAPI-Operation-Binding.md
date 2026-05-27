@@ -4,7 +4,7 @@
 
 ---
 
-Most executable operations in UWS bind to an operation in a source document by reference. UWS 1.3 supports `openapi`, `google-discovery`, `aws-smithy`, and `asyncapi` source descriptions directly. Extension-owned operations are the explicit non-source escape hatch. UWS never duplicates HTTP methods, paths, AsyncAPI channels, messages, schemas, servers, security schemes, or protocol metadata; those live in the source document or executor-owned configuration.
+Most executable operations in UWS bind to an operation in a source document by reference. UWS 1.4 supports `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, and `odata` source descriptions directly. Extension-owned operations are the explicit non-source escape hatch. UWS never duplicates HTTP methods, paths, AsyncAPI channels, messages, GraphQL schemas, JSON-RPC method metadata, protobuf descriptors, OData metadata, schemas, servers, security schemes, or protocol metadata; those live in the source document or executor-owned configuration.
 
 ## Three Mutually Exclusive Shapes
 
@@ -22,7 +22,7 @@ A document that omits the binding fields of every shape is invalid. Source-bound
 
 `sourceDescriptions[]` declares every API or event source document the workflow uses. Every source entry must have a unique `name` matching `^[A-Za-z0-9_-]+$`, a `url`, and optionally `type`.
 
-Missing `type` defaults to `openapi`. In UWS 1.3, Google Discovery, AWS Smithy, and AsyncAPI inputs may be declared directly as `type: google-discovery`, `type: aws-smithy`, and `type: asyncapi`. UWS 1.2 documents remain limited to OpenAPI, Google Discovery, and AWS Smithy sources. UWS 1.1 documents remain OpenAPI-bound: Discovery, Smithy, Stone, Postman Collection, RAML, API Blueprint, and similar non-OpenAPI artifacts can participate only after tooling lowers or converts them into reviewed OpenAPI, or as advisory evidence outside `sourceDescriptions`.
+Missing `type` defaults to `openapi`. In UWS 1.4, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, and OData inputs may be declared directly as `type: google-discovery`, `type: aws-smithy`, `type: asyncapi`, `type: graphql`, `type: openrpc`, `type: grpc-protobuf`, and `type: odata`. UWS 1.3 documents remain limited to OpenAPI, Google Discovery, AWS Smithy, and AsyncAPI sources. UWS 1.2 documents remain limited to OpenAPI, Google Discovery, and AWS Smithy sources. UWS 1.1 documents remain OpenAPI-bound: Discovery, Smithy, Stone, Postman Collection, RAML, API Blueprint, and similar non-OpenAPI artifacts can participate only after tooling lowers or converts them into reviewed OpenAPI, or as advisory evidence outside `sourceDescriptions`.
 
 ```yaml
 sourceDescriptions:
@@ -38,6 +38,18 @@ sourceDescriptions:
   - name: billing_events
     url: ./asyncapi/billing-events.yaml
     type: asyncapi
+  - name: issue_tracker
+    url: ./graphql/linear.graphql
+    type: graphql
+  - name: pet_rpc
+    url: ./openrpc/pets.json
+    type: openrpc
+  - name: inventory_service
+    url: ./protobuf/inventory.proto
+    type: grpc-protobuf
+  - name: successfactors
+    url: ./odata/successfactors.xml
+    type: odata
 ```
 
 `sourceDescriptions` is REQUIRED whenever any operation declares `sourceDescription`. A document where every operation is extension-owned may omit it.
@@ -120,6 +132,8 @@ The pointer MUST begin with `#/`. Slashes in path segments are escaped as `~1` p
 
 For AsyncAPI sources, `sourceOperationId` names a root AsyncAPI Operation Object. UWS core validates `sourceOperationRef` as a JSON Pointer fragment; source-aware tooling and runtimes validate whether it resolves to a supported AsyncAPI target. `sourceOperationRef` should point to `#/operations/<name>` when possible; `#/channels/<name>` and `#/channels/<name>/messages/<name>` are compatibility targets for runtimes that can resolve them unambiguously.
 
+For GraphQL, OpenRPC, gRPC/protobuf, and OData sources, UWS core validates only the source type, selector exclusivity, and JSON Pointer fragment shape. Source-aware tooling and runtimes validate whether a selector resolves to a supported GraphQL operation, JSON-RPC method, protobuf service method, OData entity operation, OData function, or OData action.
+
 ## Extension-Owned Operations
 
 Operations without a source binding are owned by a named runtime profile. `x-uws-operation-profile` names the profile; additional `x-*` fields carry profile-specific configuration.
@@ -164,6 +178,8 @@ request:
 Only `path`, `query`, `header`, `cookie`, `body`, and `^x-` extension keys are permitted at the top level of `request`. Any other key is rejected:
 
 For AsyncAPI source operations, use `request.body` for message payload or operation input values and `request.header` for AsyncAPI Message Object `headers` values when the source operation defines them. Channel parameter serialization and protocol binding behavior remain owned by the AsyncAPI document and runtime.
+
+For GraphQL, OpenRPC, gRPC/protobuf, and OData source operations, request binding remains UWS-owned but interpretation of variable names, RPC params, protobuf fields, OData query options, and protocol-specific serialization remains source-aware and runtime-owned.
 
 ```
 # This fails validation:
