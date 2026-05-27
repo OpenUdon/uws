@@ -13,13 +13,13 @@ Module path: `github.com/OpenUdon/uws` (Go 1.25.4).
 
 ## Architecture
 
-UWS is a workflow overlay for API-source-backed HTTP operations. API source documents such as OpenAPI, Google Discovery, and AWS Smithy own methods, paths, schemas, servers, and security; UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow. Non-HTTP runtimes (command exec, SSH, SQL, LLM, etc.) are extension-profile concerns expressed via `x-*` fields and `x-uws-operation-profile`, not built-in service types.
+UWS is a workflow overlay for API- and event-source-backed operations. Source documents such as OpenAPI, Google Discovery, AWS Smithy, and AsyncAPI own methods, paths, channels, messages, schemas, servers, and security; UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow. Non-HTTP runtimes (command exec, SSH, SQL, LLM, browser automation, etc.) are extension-profile concerns expressed via `x-*` fields and `x-uws-operation-profile`, not built-in service types.
 
 Three coordinated artifacts must stay in sync:
 
-1. `versions/1.2.0.json` — the latest canonical JSON Schema for UWS 1.x documents. `versions/1.0.0.json`, `versions/1.1.0.json`, and `versions/1.1.1.json` remain published historical schemas.
+1. `versions/1.3.0.json` — the latest canonical JSON Schema for UWS 1.x documents. `versions/1.0.0.json`, `versions/1.1.0.json`, `versions/1.1.1.json`, and `versions/1.2.0.json` remain published historical schemas.
 2. `uws1/` — the Go model and semantic validator.
-3. `versions/1.2.0.md` — the latest human-readable spec. `versions/1.0.0.md`, `versions/1.1.0.md`, `versions/1.1.1.md`, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are comparison/background docs.
+3. `versions/1.3.0.md` — the latest human-readable spec. `versions/1.0.0.md`, `versions/1.1.0.md`, `versions/1.1.1.md`, `versions/1.2.0.md`, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are comparison/background docs.
 
 ## Execution Model
 
@@ -77,7 +77,7 @@ When changing validation rules:
 ## Validation Layering
 
 - The versioned JSON Schema covers structural and shape checks.
-- `(*Document).Validate()` / `ValidateResult()` in `uws1/validation.go` cover semantic checks the schema cannot: duplicate identifiers, API source binding rules, reference integrity across operations/workflows/steps/triggers/parallel groups/sourceDescriptions, action and criterion rules, trigger routes, and standard request-binding keys.
+- `(*Document).Validate()` / `ValidateResult()` in `uws1/validation.go` cover semantic checks the schema cannot: duplicate identifiers, source binding rules, reference integrity across operations/workflows/steps/triggers/parallel groups/sourceDescriptions, action and criterion rules, trigger routes, and standard request-binding keys.
 - Use `Validate()` when a single `error` is enough.
 - Use `ValidateResult()` when callers need path-tagged errors.
 

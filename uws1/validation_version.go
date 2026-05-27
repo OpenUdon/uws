@@ -9,12 +9,20 @@ import (
 func (d *Document) validateVersionedFields(result *ValidationResult) {
 	supports11 := supportsUWSVersion(d.UWS, 1, 1)
 	supports12 := supportsUWSVersion(d.UWS, 1, 2)
+	supports13 := supportsUWSVersion(d.UWS, 1, 3)
 	for i, sd := range d.SourceDescriptions {
 		if sd == nil {
 			continue
 		}
-		if sd.EffectiveType() != SourceDescriptionTypeOpenAPI && !supports12 {
-			result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "requires UWS 1.2.0 or later")
+		switch sd.EffectiveType() {
+		case SourceDescriptionTypeGoogleDiscovery, SourceDescriptionTypeAWSSmithy:
+			if !supports12 {
+				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "requires UWS 1.2.0 or later")
+			}
+		case SourceDescriptionTypeAsyncAPI:
+			if !supports13 {
+				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "requires UWS 1.3.0 or later")
+			}
 		}
 	}
 	for i, op := range d.Operations {

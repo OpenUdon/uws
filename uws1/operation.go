@@ -7,10 +7,10 @@ import (
 
 // ExtensionOperationProfile is the x-* extension key that names the
 // implementation profile for an extension-owned operation. Operations without
-// an API source binding must carry this extension to be executable.
+// a source binding must carry this extension to be executable.
 const ExtensionOperationProfile = "x-uws-operation-profile"
 
-// Operation describes a UWS-local operation bound to an API source operation.
+// Operation describes a UWS-local operation bound to a source operation.
 type Operation struct {
 	OperationID         string         `json:"operationId" yaml:"operationId" hcl:"operationId,label"`
 	SourceDescription   string         `json:"sourceDescription,omitempty" yaml:"sourceDescription,omitempty" hcl:"sourceDescription,optional"`
@@ -107,7 +107,7 @@ func (o *Operation) ExtensionProfile() string {
 }
 
 // IsExtensionOwned reports whether this operation is intentionally owned by an
-// extension profile rather than an API source operation binding. Source-bound
+// extension profile rather than a source operation binding. Source-bound
 // operations may still carry profile metadata, but this is true only for
 // extension-owned operations with no source binding.
 func (o *Operation) IsExtensionOwned() bool {

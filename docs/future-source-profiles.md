@@ -1,32 +1,49 @@
 # Future Source Profiles
 
-This note records candidate source-profile work beyond the current UWS 1.2
-contract. It is intentionally roadmap material, not a normative schema change.
+This note records source-profile roadmap material around UWS 1.3 and later. It
+is explanatory documentation; the normative wire contract lives in the versioned
+specification and JSON Schema.
 
-The current UWS model remains API-source-first:
+## Status And Normativity
 
-- OpenAPI, Google Discovery, and AWS Smithy describe HTTP API contracts.
+This document is not part of the normative UWS 1.3 wire contract. The published
+UWS 1.3 source description types are `openapi`, `google-discovery`,
+`aws-smithy`, and `asyncapi`; missing `sourceDescriptions[].type` still defaults
+to `openapi`.
+
+The `v0.1.x` labels below are implementation-roadmap labels. They do not define
+released UWS versions, JSON Schema changes, Go model changes, or new validator
+behavior by themselves. AsyncAPI has graduated into UWS 1.3; `browser-profile`
+is not a valid UWS 1.3 `sourceDescriptions[].type` value.
+
+Examples in this note are illustrative future shapes unless a section explicitly
+labels them as valid today. Current UWS 1.3 documents that need non-core,
+runtime-owned work, including browser/UI work, use extension-owned operations
+with `x-uws-operation-profile`.
+
+The current UWS model remains source-document-first:
+
+- OpenAPI, Google Discovery, AWS Smithy, and AsyncAPI describe API or event
+  source contracts.
 - UWS describes workflow structure, operation binding, request values, outputs,
   triggers, and control flow.
 - Non-HTTP behavior is represented by extension-owned operations and named
   operation profiles.
 
-Two future source families are worth tracking separately:
+Two source-profile tracks are listed separately:
 
-| Candidate | Theme | Purpose |
+| Track | Theme | Purpose |
 | --- | --- | --- |
-| `v0.1.3` | AsyncAPI source profiles | Bind UWS workflows to event, message, and subscription contracts when a provider publishes AsyncAPI. |
+| `v0.1.3` | AsyncAPI source profiles | Graduated in UWS 1.3 for event, message, and subscription contracts when a provider publishes AsyncAPI. |
 | `v0.1.4` | Browser capability profiles | Reuse reviewed browser/UI capability maps when no sufficient API source document exists. |
 
-The `v0.1.x` labels are implementation-roadmap labels. They do not change the
-current published UWS 1.2 wire contract until a future version explicitly adopts
-the feature.
+Browser capability profiles become UWS source profiles only if a future UWS
+version explicitly adopts them.
 
-## Candidate v0.1.3: AsyncAPI Source Profiles
+## Adopted in UWS 1.3: AsyncAPI Source Profiles
 
-AsyncAPI should be the next source-profile candidate because it covers a class
-of provider contracts that OpenAPI does not model well: events, subscriptions,
-message channels, and asynchronous request/reply flows.
+AsyncAPI covers a class of provider contracts that OpenAPI does not model well:
+events, subscriptions, message channels, and asynchronous request/reply flows.
 
 The design goal is to keep the same source-document boundary:
 
@@ -36,7 +53,7 @@ The design goal is to keep the same source-document boundary:
   between steps, what trigger starts execution, and how structural control flow
   proceeds.
 
-Possible future source description:
+UWS 1.3 source description:
 
 ```yaml
 sourceDescriptions:
@@ -50,9 +67,31 @@ operations:
     sourceOperationId: invoicePaid
 ```
 
-AsyncAPI should not be collapsed into a generic runtime function call. It is a
-published provider contract, so UWS should treat it as a source profile rather
-than an extension-owned runtime action.
+AsyncAPI is not collapsed into a generic runtime function call. It is a
+published provider contract, so UWS treats it as a source profile rather than an
+extension-owned runtime action.
+
+### AsyncAPI Graduation Result
+
+AsyncAPI graduated to UWS 1.3 with the following settled scope:
+
+- Source ownership remains clean: AsyncAPI owns channels, messages, protocol
+  bindings, payload schemas, and security; UWS does not duplicate them.
+- UWS operations select AsyncAPI work with existing generic selectors:
+  `sourceOperationId` for root AsyncAPI Operation Object keys and
+  `sourceOperationRef` for JSON Pointer fragments.
+- `sourceOperationRef` is validated by UWS core as a JSON Pointer fragment.
+  Source-aware tooling and runtimes validate whether it resolves to a supported
+  AsyncAPI target. `#/operations/<name>` is preferred; `#/channels/<name>` and
+  `#/channels/<name>/messages/<name>` are compatibility targets when runtimes
+  can resolve them unambiguously.
+- Existing trigger and `await` constructs remain the structural UWS way to model
+  event entry and waits; protocol-level subscription behavior remains runtime
+  and source owned.
+- Security and credential handling remain source-derived or runtime-private, not
+  embedded in UWS core fields.
+- Validation rules and conformance fixtures cover source description types,
+  selector exclusivity, and invalid mixed OpenAPI/AsyncAPI binding shapes.
 
 ## Candidate v0.1.4: Browser Capability Profiles
 
@@ -75,6 +114,23 @@ The proposed pattern is:
 This separates understanding from commitment. The LLM may help understand an
 unknown UI, but the committed workflow should execute against a reviewed,
 bounded capability description.
+
+### Browser Profile Graduation Criteria
+
+Browser capability profiles should graduate from roadmap candidate to UWS source
+profile only after the following design points are settled:
+
+- The profile format is portable across runtimes and records reviewed evidence,
+  not a runtime-specific browser command trace.
+- Target resolution semantics are defined well enough for runtimes to detect
+  missing, duplicated, expired, renamed, or semantically changed targets.
+- Side-effect and confirmation policies are explicit and can be reviewed before
+  execution.
+- Expiration and revalidation rules are part of the profile contract.
+- The profile does not carry secrets, credentials, cookies, session state, or
+  product-private runtime configuration.
+- Multiple runtimes need interoperable browser-capability interchange rather
+  than product-owned extension fields.
 
 ## Standards Relationship
 
@@ -110,7 +166,7 @@ It should be weaker than OpenAPI, Discovery, Smithy, or AsyncAPI.
 
 Use a browser profile when:
 
-- no sufficient API source document is available
+- no sufficient API or event source document is available
 - the task is only exposed through a web UI
 - the UI has stable accessible roles, names, labels, URLs, or selectors
 - the profile can be reviewed before side-effectful execution
@@ -143,7 +199,7 @@ A future profile should record at least:
 | `confidence` | `low`, `medium`, or `high` based on target stability and verification. |
 | `expiresAfter` | Revalidation window. |
 
-Example profile:
+Illustrative future profile:
 
 ```yaml
 profile: uws.browser.0.1
@@ -182,7 +238,8 @@ actions:
 
 ## Possible UWS Binding
 
-A future UWS version could model browser profiles as source descriptions:
+A future UWS version could model browser profiles as source descriptions. This
+shape is not valid UWS 1.3:
 
 ```yaml
 sourceDescriptions:
@@ -200,12 +257,14 @@ operations:
         report_body: $steps.render_report.outputs.body
 ```
 
-This mirrors the API-source pattern: the profile owns UI targets and action
+This mirrors the source-document pattern: the profile owns UI targets and action
 capabilities; UWS owns operation selection, request values, dependencies, and
 workflow structure.
 
-Before this becomes a source type, current UWS documents can still represent
-browser work as extension-owned operations:
+## Valid Today: Extension-Owned Browser Work
+
+Before browser profiles become a source type, current UWS 1.3 documents
+represent browser work as extension-owned operations:
 
 ```yaml
 operationId: send_weather_report_with_browser
@@ -219,28 +278,64 @@ request:
     report_body: $steps.render_report.outputs.body
 ```
 
-The extension-owned form is valid today. The future source-profile form would
-become useful only after multiple runtimes need portable browser-profile
-interchange.
+This form is valid today because the operation has no source binding. It uses
+`x-uws-operation-profile` to name the implementation profile, and product-owned
+`x-*` fields carry the browser profile path and action name.
+
+Extension-owned browser operations must not set `sourceDescription`,
+`sourceOperationId`, `sourceOperationRef`, `openapiOperationId`, or
+`openapiOperationRef`. Those fields remain reserved for source-bound operations.
+OpenUdon-like authoring tools should use this extension-owned shape today and
+must not emit `sourceDescriptions[].type: browser-profile` until a future UWS
+version adopts that source type.
+
+The future source-profile form becomes useful only after multiple runtimes need
+portable browser-profile interchange.
 
 ## Safety Requirements
 
 Browser profiles must be stricter than normal read-only scraping flows because
 browser actions commonly create side effects.
 
-Recommended requirements:
+Minimum future requirements:
 
+- Profiles must declare an origin allowlist and runtime execution must fail
+  closed outside those origins.
+- Profiles must declare whether login state is required, but must not contain
+  credentials, session cookies, tokens, or raw login state.
+- Profiles must declare the observation method used to learn or validate the UI.
+- Profiles must declare named actions, action inputs, observable outputs, stable
+  targets, side effects, confirmation policy, review evidence, confidence, and
+  expiry.
 - Side-effectful actions must declare side effects explicitly.
 - Send, create, update, delete, post, upload, purchase, approve, invite, and
-  notify actions should require explicit confirmation unless a trusted policy
+  notify actions must require explicit confirmation unless a trusted policy
   has pre-approved the exact action.
 - Runtime execution must fail closed when stable targets are missing,
-  duplicated, renamed, or visually/semantically inconsistent.
-- Profiles should expire and require revalidation.
-- Secrets must not be embedded in the profile. Login state and credentials
-  remain runtime-private.
+  duplicated, renamed, expired, visually inconsistent, or semantically
+  inconsistent.
+- Profiles must expire and require revalidation.
 - Profiles should retain evidence about the observation method, last review,
   and last successful validation.
+
+## Non-Goals
+
+UWS should not become a browser automation language. Browser capability profiles
+are intended to let a workflow reference reviewed UI capabilities, not to encode
+browser mechanics directly in UWS.
+
+Future UWS source-profile work should not standardize:
+
+- DOM snapshot, accessibility snapshot, screenshot OCR, CSS selector, XPath, or
+  computer-vision output formats.
+- Playwright, Puppeteer, Chrome DevTools Protocol, WebDriver, or WebDriver BiDi
+  command streams.
+- Login flows, credential storage, session management, captcha handling, or
+  provider-specific browser client configuration.
+- Repeated live LLM browsing loops as the committed execution path.
+- Browser profiles as a substitute for stronger provider contracts when
+  OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, or another reviewed API/event
+  source can support the task.
 
 ## Compatibility Goal
 
@@ -248,10 +343,9 @@ The compatibility goal is not to make UWS a browser automation language. The
 goal is to let UWS reference reviewed browser capabilities in the same disciplined
 way it references API operations:
 
-- published API source when available
+- published API or event source when available
 - AsyncAPI for event/message contracts
 - browser capability profile only when the workflow target is UI-only or API
   coverage is insufficient
 - extension-owned operation profiles while the browser profile contract is still
   experimental
-

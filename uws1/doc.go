@@ -3,7 +3,7 @@
 //
 // The types in this package are standalone data-interchange types
 // with JSON serialization and struct tags for YAML/HCL conversion helpers. They support
-// API-source-bound workflow operations, execution control (depends_on,
+// source-bound workflow operations, execution control (depends_on,
 // when, for_each, wait, workflow, parallel_group), structural
 // constructs (parallel, switch, merge, loop), triggers, and JSON
 // specification extensions (x-* fields). Use the convert package for

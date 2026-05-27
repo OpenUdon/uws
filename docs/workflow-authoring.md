@@ -1,28 +1,30 @@
 # Quick Start: Author Your First UWS Workflow
 
-This guide is for authors who need to hand-write a UWS document without reading the full specification first. It focuses on the common path: bind existing API source operations, put them in a workflow, pass values between steps, and leave concrete credentials to the runtime.
+This guide is for authors who need to hand-write a UWS document without reading the full specification first. It focuses on the common path: bind existing source operations, put them in a workflow, pass values between steps, and leave concrete credentials to the runtime.
 
-UWS is a workflow overlay. API source documents such as OpenAPI, Google Discovery, and AWS Smithy own HTTP methods, paths, schemas, servers, and security. UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow.
+UWS is a workflow overlay. Source documents such as OpenAPI, Google Discovery, AWS Smithy, and AsyncAPI own HTTP methods, paths, channels, messages, schemas, servers, and security. UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow.
 
 ## Start With Three Files
 
-Keep the API contract, workflow, and runtime configuration separate:
+Keep the source contract, workflow, and runtime configuration separate:
 
 ```text
 openapi/
   support.yaml
 google-discovery/
   gmail.json
+asyncapi/
+  billing-events.yaml
 workflow.uws.yaml
 runtime-config.json       # runtime-owned, not UWS core
 ```
 
-The UWS document points to API source documents. It does not copy endpoint URLs, schemas, or credentials out of the source document.
+The UWS document points to source documents. It does not copy endpoint URLs, channels, schemas, or credentials out of the source document.
 
 ## Minimal Workflow
 
 ```yaml
-uws: "1.2.0"
+uws: "1.3.0"
 info:
   title: Support Ticket Workflow
   version: "1.0.0"
@@ -70,9 +72,9 @@ This document declares:
 - One workflow named `main`.
 - Two sequence steps, where `verify` can refer to the output of step `create`.
 
-## Step 1: Declare API Sources
+## Step 1: Declare Sources
 
-Use `sourceDescriptions` for every API source document the workflow references:
+Use `sourceDescriptions` for every API or event source document the workflow references:
 
 ```yaml
 sourceDescriptions:
@@ -85,7 +87,7 @@ Rules of thumb:
 
 - `name` is the stable local handle used by operations.
 - `url` can be a local path or reviewed remote location, depending on the runtime.
-- `type` may be `openapi`, `google-discovery`, or `aws-smithy`. Missing `type` defaults to `openapi`.
+- `type` may be `openapi`, `google-discovery`, `aws-smithy`, or `asyncapi`. Missing `type` defaults to `openapi`.
 
 ## Step 2: Bind Operations
 
@@ -98,13 +100,13 @@ operations:
     sourceOperationId: createTicket
 ```
 
-`operationId` is local to the UWS file. `sourceOperationId` is the operation ID from the referenced source document. OpenAPI sources may also use legacy `openapiOperationId`.
+`operationId` is local to the UWS file. `sourceOperationId` is the operation ID from the referenced source document. For AsyncAPI sources, it names a root AsyncAPI Operation Object. OpenAPI sources may also use legacy `openapiOperationId`.
 
-Do not add HTTP method, path, server URL, or security configuration here. Those belong to the API source document and the bound runtime.
+Do not add HTTP method, path, channel, server URL, or security configuration here. Those belong to the source document and the bound runtime.
 
 ## Step 3: Add Request Values
 
-Request values are grouped by API request location:
+Request values are grouped by common source request location:
 
 ```yaml
 request:
@@ -119,6 +121,7 @@ request:
 ```
 
 Use runtime expressions when a value comes from a previous step, workflow input, trigger, variable, or response.
+For AsyncAPI source operations, use `body` for the message payload or operation input values and `header` for AsyncAPI Message Object `headers` values when the source operation defines them.
 
 ## Step 4: Name Outputs
 
@@ -202,7 +205,7 @@ Trigger ingress, authentication, hosting, output classification, and persistence
 
 ## Extension-Owned Operations
 
-If a step is not an API source operation, make that explicit with an extension profile:
+If a step is not a source-bound operation, make that explicit with an extension profile:
 
 ```yaml
 operations:
@@ -217,24 +220,24 @@ operations:
 
 UWS validates the shape and references. The bound runtime decides whether it supports the named extension profile.
 
-When you use the public `uws.runtime.1.0` supplement, `x-uws-runtime.type` is required and must be one of the supplement's non-HTTP runtime selectors. Use API source operation bindings for HTTP calls; do not model HTTP as `x-uws-runtime.type: http`.
+When you use the public `uws.runtime.1.0` supplement, `x-uws-runtime.type` is required and must be one of the supplement's non-HTTP runtime selectors. Use source operation bindings for HTTP and event calls; do not model HTTP as `x-uws-runtime.type: http`.
 
 ## Validation Checklist
 
 Before handing a workflow to a runtime:
 
 - Every `sourceDescription` name is unique.
-- Every API-source-bound operation names an existing source.
+- Every source-bound operation names an existing source.
 - Every local `operationId`, `workflowId`, and step `stepId` is unique where required.
 - Every `operationRef`, `workflow`, trigger route, and dependency target resolves.
 - Request values do not contain secrets.
 - Credentials and endpoint policy are supplied by the runtime, not embedded in UWS.
 - Extension-owned operations declare an explicit `x-uws-operation-profile`.
-- `uws.runtime.1.0` operations include `x-uws-runtime.type`; HTTP calls remain API-source-bound.
+- `uws.runtime.1.0` operations include `x-uws-runtime.type`; HTTP and event calls remain source-bound.
 
 ## Where To Go Next
 
-- [API Source Operation Binding](01-OpenAPI-Operation-Binding.md)
+- [Source Operation Binding](01-OpenAPI-Operation-Binding.md)
 - [Six Structural Constructs](02-Six-Structural-Constructs.md)
 - [Runtime Expression Grammar](03-Runtime-Expression-Grammar.md)
 - [Triggers and Route Dispatch](04-Triggers-and-Route-Dispatch.md)

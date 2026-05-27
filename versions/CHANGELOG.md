@@ -4,6 +4,15 @@ This changelog summarizes externally visible changes between published UWS
 versioned schemas and specification documents. The versioned `.md` files remain
 the normative human-readable specifications.
 
+## 1.3.0 - 2026-05-27
+
+- Added `asyncapi` as a first-class `sourceDescription.type` for AsyncAPI source documents.
+- Reused generic `sourceOperationId` and `sourceOperationRef` selectors for AsyncAPI operations.
+- Defined `sourceOperationId` for AsyncAPI as a root AsyncAPI Operation Object key.
+- Defined `sourceOperationRef` compatibility targets for `#/operations/...`, `#/channels/...`,
+  and `#/channels/.../messages/...`.
+- Kept browser capability profiles outside UWS core as extension-owned operations.
+
 ## Runtime Supplement 1.0 - 2026-05-08
 
 - Added `uws.runtime.1.0` as a public runtime metadata supplement.

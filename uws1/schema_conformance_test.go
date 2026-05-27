@@ -274,15 +274,17 @@ func TestSchemaConformance_JSONSchemaValidator(t *testing.T) {
 	require.ErrorContains(t, duplicateDoc.Validate(), `duplicate operationId "fetch"`)
 
 	nativeSourceBindings := []byte(`{
-		"uws": "1.2.0",
+		"uws": "1.3.0",
 		"info": {"title": "Native Sources", "version": "1.0.0"},
 		"sourceDescriptions": [
 			{"name": "gmail_api", "url": "./google-discovery/gmail.json", "type": "google-discovery"},
-			{"name": "s3_api", "url": "./aws-smithy/s3.json", "type": "aws-smithy"}
+			{"name": "s3_api", "url": "./aws-smithy/s3.json", "type": "aws-smithy"},
+			{"name": "billing_events", "url": "./asyncapi/billing-events.yaml", "type": "asyncapi"}
 		],
 		"operations": [
 			{"operationId": "send_mail", "sourceDescription": "gmail_api", "sourceOperationId": "gmail_users_messages_send"},
-			{"operationId": "put_object", "sourceDescription": "s3_api", "sourceOperationRef": "#/shapes/com.amazonaws.s3#PutObject"}
+			{"operationId": "put_object", "sourceDescription": "s3_api", "sourceOperationRef": "#/shapes/com.amazonaws.s3#PutObject"},
+			{"operationId": "wait_for_invoice_paid", "sourceDescription": "billing_events", "sourceOperationRef": "#/operations/invoicePaid"}
 		]
 	}`)
 	require.NoError(t, schema.Validate(decodeJSONValue(t, nativeSourceBindings)))
@@ -525,6 +527,16 @@ func TestSchemaConformance_Draft202012CrossValidator(t *testing.T) {
 				"info": {"title": "Smithy", "version": "1.0.0"},
 				"sourceDescriptions": [{"name": "s3_api", "url": "./aws-smithy/s3.json", "type": "aws-smithy"}],
 				"operations": [{"operationId": "put_object", "sourceDescription": "s3_api", "sourceOperationRef": "#/shapes/com.amazonaws.s3#PutObject"}]
+			}`),
+			valid: true,
+		},
+		{
+			name: "asyncapi source binding",
+			data: []byte(`{
+				"uws": "1.3.0",
+				"info": {"title": "AsyncAPI", "version": "1.0.0"},
+				"sourceDescriptions": [{"name": "billing_events", "url": "./asyncapi/billing-events.yaml", "type": "asyncapi"}],
+				"operations": [{"operationId": "wait_for_invoice_paid", "sourceDescription": "billing_events", "sourceOperationRef": "#/operations/invoicePaid"}]
 			}`),
 			valid: true,
 		},

@@ -1,7 +1,7 @@
 # Runtimes
 
 UWS core defines workflow orchestration. Concrete runtimes bind at execution time and own leaf work:
-HTTP calls, expression evaluation, item resolution, credentials, clients, provider configuration,
+HTTP/event calls, expression evaluation, item resolution, credentials, clients, provider configuration,
 process management, storage, and product-specific behavior.
 
 ## Runtime Supplement 1.0
@@ -23,7 +23,7 @@ x-uws-runtime:
 
 `ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`, `smtp`, `dns`, `ldaps`, `scp`, `sftp`, and `llm`.
 
-HTTP is intentionally not a runtime type. HTTP/API source operations use core UWS operation binding
+HTTP is intentionally not a runtime type. HTTP/API/event source operations use core UWS operation binding
 fields: `sourceDescription` plus generic `sourceOperationId` / `sourceOperationRef`, or the legacy
 OpenAPI selectors for OpenAPI sources.
 

@@ -1,10 +1,10 @@
-# Feature 1: API Source Operation Binding
+# Feature 1: Source Operation Binding
 
 ← [Home](index.md) | [Next: Six Structural Constructs →](02-Six-Structural-Constructs.md)
 
 ---
 
-Most executable operations in UWS bind to an operation in an API source document by reference. UWS 1.2 supports `openapi`, `google-discovery`, and `aws-smithy` source descriptions directly. Extension-owned operations are the explicit non-API-source escape hatch. UWS never duplicates the HTTP method, path, request schema, response schema, server, security scheme, or protocol metadata; those live in the source document or executor-owned configuration.
+Most executable operations in UWS bind to an operation in a source document by reference. UWS 1.3 supports `openapi`, `google-discovery`, `aws-smithy`, and `asyncapi` source descriptions directly. Extension-owned operations are the explicit non-source escape hatch. UWS never duplicates HTTP methods, paths, AsyncAPI channels, messages, schemas, servers, security schemes, or protocol metadata; those live in the source document or executor-owned configuration.
 
 ## Three Mutually Exclusive Shapes
 
@@ -16,13 +16,13 @@ Every valid UWS operation matches exactly one of three shapes:
 | OpenAPI-compatible by `openapiOperationId` or `openapiOperationRef` | REQUIRED to an `openapi` source | MUST NOT be set | Exactly one REQUIRED | OPTIONAL |
 | Extension-owned | MUST NOT be set | MUST NOT be set | MUST NOT be set | REQUIRED |
 
-A document that omits the binding fields of every shape is invalid. Source-bound operations may carry profile metadata, but an extension-owned operation is selected only when all API source binding fields are absent.
+A document that omits the binding fields of every shape is invalid. Source-bound operations may carry profile metadata, but an extension-owned operation is selected only when all source binding fields are absent.
 
 ## Source Descriptions
 
-`sourceDescriptions[]` declares every API source document the workflow uses. Every source entry must have a unique `name` matching `^[A-Za-z0-9_-]+$`, a `url`, and optionally `type`.
+`sourceDescriptions[]` declares every API or event source document the workflow uses. Every source entry must have a unique `name` matching `^[A-Za-z0-9_-]+$`, a `url`, and optionally `type`.
 
-Missing `type` defaults to `openapi`. In UWS 1.2, Google Discovery and AWS Smithy inputs may be declared directly as `type: google-discovery` and `type: aws-smithy`. UWS 1.1 documents remain OpenAPI-bound and can only consume those source families after tooling lowers them to OpenAPI.
+Missing `type` defaults to `openapi`. In UWS 1.3, Google Discovery, AWS Smithy, and AsyncAPI inputs may be declared directly as `type: google-discovery`, `type: aws-smithy`, and `type: asyncapi`. UWS 1.2 documents remain limited to OpenAPI, Google Discovery, and AWS Smithy sources; UWS 1.1 documents remain OpenAPI-bound and can only consume those source families after tooling lowers them to OpenAPI.
 
 ```yaml
 sourceDescriptions:
@@ -35,6 +35,9 @@ sourceDescriptions:
   - name: lambda_api
     url: ./aws-smithy/lambda.json
     type: aws-smithy
+  - name: billing_events
+    url: ./asyncapi/billing-events.yaml
+    type: asyncapi
 ```
 
 `sourceDescriptions` is REQUIRED whenever any operation declares `sourceDescription`. A document where every operation is extension-owned may omit it.
@@ -115,9 +118,11 @@ When a source document does not assign a stable operation identifier, use a JSON
 
 The pointer MUST begin with `#/`. Slashes in path segments are escaped as `~1` per RFC 6901. `sourceOperationRef` and `sourceOperationId` MUST NOT be set together on the same operation. For OpenAPI sources only, legacy `openapiOperationId` and `openapiOperationRef` remain valid backward-compatible selectors.
 
+For AsyncAPI sources, `sourceOperationId` names a root AsyncAPI Operation Object. UWS core validates `sourceOperationRef` as a JSON Pointer fragment; source-aware tooling and runtimes validate whether it resolves to a supported AsyncAPI target. `sourceOperationRef` should point to `#/operations/<name>` when possible; `#/channels/<name>` and `#/channels/<name>/messages/<name>` are compatibility targets for runtimes that can resolve them unambiguously.
+
 ## Extension-Owned Operations
 
-Operations without an API source binding are owned by a named runtime profile. `x-uws-operation-profile` names the profile; additional `x-*` fields carry profile-specific configuration.
+Operations without a source binding are owned by a named runtime profile. `x-uws-operation-profile` names the profile; additional `x-*` fields carry profile-specific configuration.
 
 ```yaml
 operationId: build_email
@@ -136,7 +141,7 @@ The validator accepts this as intentionally runtime-owned. See [Extension Profil
 
 ## Request Binding
 
-The `request` object maps values into the referenced API operation's parameters and body. Keys map to API request locations:
+The `request` object maps values into the referenced source operation's parameters and body. Keys map to common request locations:
 
 ```yaml
 request:
@@ -157,6 +162,8 @@ request:
 ```
 
 Only `path`, `query`, `header`, `cookie`, `body`, and `^x-` extension keys are permitted at the top level of `request`. Any other key is rejected:
+
+For AsyncAPI source operations, use `request.body` for message payload or operation input values and `request.header` for AsyncAPI Message Object `headers` values when the source operation defines them. Channel parameter serialization and protocol binding behavior remain owned by the AsyncAPI document and runtime.
 
 ```
 # This fails validation:
@@ -204,7 +211,7 @@ The following are all invalid — each produces a structured error:
 
 # Shape 3: no binding at all, no profile
 - operationId: bad_op
-  # error: requires an API source binding or x-uws-operation-profile
+  # error: requires a source binding or x-uws-operation-profile
 
 # Shape 4: sourceDescription set but no operation selector
 - operationId: also_bad

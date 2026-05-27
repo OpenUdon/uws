@@ -68,11 +68,12 @@ func TestJSONToHCL(t *testing.T) {
 
 func TestJSONToHCLPreservesNativeSourceBindings(t *testing.T) {
 	jsonData := []byte(`{
-		"uws": "1.2.0",
+		"uws": "1.3.0",
 		"info": {"title": "Native Sources", "version": "1.0.0"},
 		"sourceDescriptions": [
 			{"name": "gmail_api", "url": "./google-discovery/gmail.json", "type": "google-discovery"},
-			{"name": "s3_api", "url": "./aws-smithy/s3.json", "type": "aws-smithy"}
+			{"name": "s3_api", "url": "./aws-smithy/s3.json", "type": "aws-smithy"},
+			{"name": "billing_events", "url": "./asyncapi/billing-events.yaml", "type": "asyncapi"}
 		],
 		"operations": [
 			{
@@ -84,6 +85,11 @@ func TestJSONToHCLPreservesNativeSourceBindings(t *testing.T) {
 				"operationId": "put_object",
 				"sourceDescription": "s3_api",
 				"sourceOperationRef": "#/shapes/com.amazonaws.s3#PutObject"
+			},
+			{
+				"operationId": "wait_for_invoice_paid",
+				"sourceDescription": "billing_events",
+				"sourceOperationRef": "#/operations/invoicePaid"
 			}
 		]
 	}`)
@@ -93,7 +99,7 @@ func TestJSONToHCLPreservesNativeSourceBindings(t *testing.T) {
 		t.Fatalf("JSONToHCL failed: %v", err)
 	}
 	hclStr := string(hclData)
-	for _, want := range []string{"google-discovery", "aws-smithy", "sourceOperationId", "sourceOperationRef"} {
+	for _, want := range []string{"google-discovery", "aws-smithy", "asyncapi", "sourceOperationId", "sourceOperationRef"} {
 		if !strings.Contains(hclStr, want) {
 			t.Fatalf("HCL output missing %q:\n%s", want, hclStr)
 		}
@@ -116,11 +122,17 @@ func TestJSONToHCLPreservesNativeSourceBindings(t *testing.T) {
 	if got := doc.SourceDescriptions[1].Type; got != uws1.SourceDescriptionTypeAWSSmithy {
 		t.Fatalf("second source type = %q, want aws-smithy", got)
 	}
+	if got := doc.SourceDescriptions[2].Type; got != uws1.SourceDescriptionTypeAsyncAPI {
+		t.Fatalf("third source type = %q, want asyncapi", got)
+	}
 	if got := doc.Operations[0].SourceOperationID; got != "gmail_users_messages_send" {
 		t.Fatalf("sourceOperationId = %q", got)
 	}
 	if got := doc.Operations[1].SourceOperationRef; got != "#/shapes/com.amazonaws.s3#PutObject" {
 		t.Fatalf("sourceOperationRef = %q", got)
+	}
+	if got := doc.Operations[2].SourceOperationRef; got != "#/operations/invoicePaid" {
+		t.Fatalf("asyncapi sourceOperationRef = %q", got)
 	}
 }
 

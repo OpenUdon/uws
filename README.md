@@ -6,11 +6,11 @@
 
 UWS is the Udon Workflow Specification Go package. It defines the UWS 1.x document model, JSON Schema, validation helpers, and JSON/YAML/HCL conversion helpers.
 
-UWS is similar in role to Arazzo and complements OpenAPI and AsyncAPI, but it is a smaller workflow overlay for API-backed operations. Source documents own methods, paths, schemas, servers, and security. UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow.
+UWS is similar in role to Arazzo and complements OpenAPI and AsyncAPI, but it is a smaller workflow overlay for API- and event-backed operations. Source documents own methods, paths, channels, messages, schemas, servers, and security. UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow.
 
-UWS 1.2 keeps OpenAPI compatibility and adds first-class API source descriptions for `openapi`, `google-discovery`, and `aws-smithy`. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
+UWS 1.3 keeps OpenAPI compatibility and adds first-class AsyncAPI source descriptions alongside `openapi`, `google-discovery`, and `aws-smithy`. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
 
-Non-API-source runtimes such as command execution, function calls, file I/O, SSH, SQL, or LLM calls are extension-profile concerns represented with `x-*` fields, not UWS core service types. Operations without an API source binding are extension-owned and require `x-uws-operation-profile` to name the implementation profile that can execute them. The optional `uws.runtime.1.0` supplement standardizes a small `x-uws-runtime` selector payload for those extension-owned operations.
+Non-source runtimes such as command execution, function calls, file I/O, SSH, SQL, browser automation, or LLM calls are extension-profile concerns represented with `x-*` fields, not UWS core service types. Operations without a source binding are extension-owned and require `x-uws-operation-profile` to name the implementation profile that can execute them. The optional `uws.runtime.1.0` supplement standardizes a small `x-uws-runtime` selector payload for those extension-owned operations.
 
 
 [![GoDoc](https://godoc.org/github.com/OpenUdon/uws?status.svg)](https://godoc.org/github.com/OpenUdon/uws)
@@ -19,18 +19,18 @@ Non-API-source runtimes such as command execution, function calls, file I/O, SSH
 ## Documentation
 
 - **Docs site**: [openudon.github.io/uws](https://openudon.github.io/uws/)
-- Human-readable specification: [versions/1.2.0.md](versions/1.2.0.md)
+- Human-readable specification: [versions/1.3.0.md](versions/1.3.0.md)
 - Runtime supplement: [versions/runtime.1.0.md](versions/runtime.1.0.md)
 - Runtime supplement schema: [versions/runtime.1.0.json](versions/runtime.1.0.json)
-- JSON Schema: [versions/1.2.0.json](versions/1.2.0.json)
+- JSON Schema: [versions/1.3.0.json](versions/1.3.0.json)
 
 ## Packages
 
 - `uws1` contains the UWS 1.x Go model, structural vocabulary, and structural validation.
 - `convert` converts UWS documents between JSON, YAML, and the HCL authoring form.
 - `runtimes` contains the public `uws.runtime.1.0` supplement constants, wire structs, and extension helpers.
-- `versions/1.2.0.md` is the human-readable UWS 1.2 specification.
-- `versions/1.2.0.json` is the JSON Schema for UWS 1.2 documents.
+- `versions/1.3.0.md` is the human-readable UWS 1.3 specification.
+- `versions/1.3.0.json` is the JSON Schema for UWS 1.3 documents.
 
 ## Validation
 
@@ -43,11 +43,11 @@ if !result.Valid() {
 }
 ```
 
-Validation checks required root fields, API source operation bindings, extension-owned operation profiles, duplicate identifiers, standard request-binding keys, known structural types, selected reference integrity, action/criterion rules, and trigger routes.
+Validation checks required root fields, source operation bindings, extension-owned operation profiles, duplicate identifiers, standard request-binding keys, known structural types, selected reference integrity, action/criterion rules, and trigger routes.
 
-`versions/1.2.0.json` provides structural JSON Schema validation. Use the Go validator for semantic checks such as duplicate identifiers and reference integrity.
+`versions/1.3.0.json` provides structural JSON Schema validation. Use the Go validator for semantic checks such as duplicate identifiers and reference integrity.
 
-The separate `versions/runtime.1.0.json` schema validates the public runtime supplement payload. It requires `x-uws-runtime.type`, accepts only the non-HTTP runtime identifiers defined by the supplement, and rejects HTTP/API source metadata because HTTP calls are represented by core API source operation binding fields.
+The separate `versions/runtime.1.0.json` schema validates the public runtime supplement payload. It requires `x-uws-runtime.type`, accepts only the non-HTTP runtime identifiers defined by the supplement, and rejects HTTP/API/event source metadata because HTTP and event calls are represented by core source operation binding fields.
 
 ## Execution
 
@@ -68,7 +68,7 @@ The `convert` package provides JSON, YAML, and HCL helpers such as `JSONToHCL`, 
 
 HCL conversion preserves dynamic map keys such as `$ref` through reversible key rewriting. JSON and YAML preserve `x-*` extensions through the JSON extension model; HCL represents object-level extensions with `extensions { ... }` blocks and flattens them back to `x-*` fields when converting to JSON or YAML.
 
-Large round-trip fixtures under `testdata/big/` exercise the HCL/JSON converter with runtime supplement metadata and multi-file API source references.
+Large round-trip fixtures under `testdata/big/` exercise the HCL/JSON converter with runtime supplement metadata and multi-file source references.
 
 ## Development
 

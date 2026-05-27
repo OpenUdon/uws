@@ -49,7 +49,7 @@ func (op *Operation) validate(path string, idx *documentIndex, result *Validatio
 				if !hasGenericSelector && !hasLegacySelector {
 					result.addError(path, "requires exactly one of sourceOperationId, sourceOperationRef, openapiOperationId, or openapiOperationRef for OpenAPI-bound operations")
 				}
-			case SourceDescriptionTypeGoogleDiscovery, SourceDescriptionTypeAWSSmithy:
+			case SourceDescriptionTypeGoogleDiscovery, SourceDescriptionTypeAWSSmithy, SourceDescriptionTypeAsyncAPI:
 				if hasLegacySelector {
 					result.addError(path, fmt.Sprintf("%s sourceDescriptions require sourceOperationId or sourceOperationRef, not openapiOperationId or openapiOperationRef", sourceType))
 				}
@@ -65,7 +65,7 @@ func (op *Operation) validate(path string, idx *documentIndex, result *Validatio
 			result.addError(path+".openapiOperationRef", "must be a JSON Pointer fragment beginning with #/")
 		}
 	case !op.IsExtensionOwned():
-		result.addError(path, "requires an API source binding or x-uws-operation-profile for extension-owned operations")
+		result.addError(path, "requires a source binding or x-uws-operation-profile for extension-owned operations")
 	}
 	validateRequest(op.Request, path+".request", result)
 	validateDependencyList(op.DependsOn, path+".dependsOn", idx, result)

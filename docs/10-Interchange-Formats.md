@@ -247,8 +247,8 @@ properties on the owning object.
 The same rule applies to the public runtime supplement. A JSON/YAML
 `x-uws-runtime` object becomes an HCL block inside `extensions`, and conversion
 back to JSON/YAML restores the flattened extension field. The runtime supplement
-payload itself still follows its schema: `type` is required, and HTTP/API
-source calls are represented by core API source binding fields rather than
+payload itself still follows its schema: `type` is required, and HTTP/API/event
+source calls are represented by core source binding fields rather than
 `x-uws-runtime`.
 
 ## `$`-Key Rewriting for HCL

@@ -11,6 +11,7 @@ const (
 	SourceDescriptionTypeOpenAPI         SourceDescriptionType = "openapi"
 	SourceDescriptionTypeGoogleDiscovery SourceDescriptionType = "google-discovery"
 	SourceDescriptionTypeAWSSmithy       SourceDescriptionType = "aws-smithy"
+	SourceDescriptionTypeAsyncAPI        SourceDescriptionType = "asyncapi"
 )
 
 var sourceDescriptionNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)

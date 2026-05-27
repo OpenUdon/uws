@@ -181,8 +181,8 @@ func (s *SourceDescription) validate(path string, result *ValidationResult) {
 		result.addError(path+".url", "is required")
 	}
 	switch s.Type {
-	case "", SourceDescriptionTypeOpenAPI, SourceDescriptionTypeGoogleDiscovery, SourceDescriptionTypeAWSSmithy:
+	case "", SourceDescriptionTypeOpenAPI, SourceDescriptionTypeGoogleDiscovery, SourceDescriptionTypeAWSSmithy, SourceDescriptionTypeAsyncAPI:
 	default:
-		result.addError(path+".type", fmt.Sprintf("%q is not valid (must be openapi, google-discovery, or aws-smithy)", s.Type))
+		result.addError(path+".type", fmt.Sprintf("%q is not valid (must be openapi, google-discovery, aws-smithy, or asyncapi)", s.Type))
 	}
 }

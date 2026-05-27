@@ -256,7 +256,7 @@ func TestValidate_OperationBindingRules(t *testing.T) {
 			Info:       &Info{Title: "Invalid", Version: "1.0.0"},
 			Operations: []*Operation{{OperationID: "op"}},
 		}
-		assert.ErrorContains(t, doc.Validate(), "requires an API source binding or x-uws-operation-profile")
+		assert.ErrorContains(t, doc.Validate(), "requires a source binding or x-uws-operation-profile")
 	})
 
 	t.Run("extension-owned operation requires profile marker", func(t *testing.T) {
@@ -272,7 +272,7 @@ func TestValidate_OperationBindingRules(t *testing.T) {
 				},
 			},
 		}
-		assert.ErrorContains(t, doc.Validate(), "requires an API source binding or x-uws-operation-profile")
+		assert.ErrorContains(t, doc.Validate(), "requires a source binding or x-uws-operation-profile")
 	})
 
 	t.Run("extension-owned operation requires non-whitespace profile marker", func(t *testing.T) {
@@ -289,7 +289,7 @@ func TestValidate_OperationBindingRules(t *testing.T) {
 				},
 			},
 		}
-		assert.ErrorContains(t, doc.Validate(), "requires an API source binding or x-uws-operation-profile")
+		assert.ErrorContains(t, doc.Validate(), "requires a source binding or x-uws-operation-profile")
 	})
 
 	t.Run("non pointer operation ref", func(t *testing.T) {
@@ -379,6 +379,69 @@ func TestValidate_UWS12SourceOperationBindings(t *testing.T) {
 		doc.UWS = "1.2.0"
 		doc.Operations[0].SourceOperationID = "getData"
 		assert.ErrorContains(t, doc.Validate(), "cannot mix sourceOperationId/sourceOperationRef with openapiOperationId/openapiOperationRef")
+	})
+}
+
+func TestValidate_UWS13AsyncAPISourceOperationBindings(t *testing.T) {
+	t.Run("asyncapi accepts source operation id", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.3.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAsyncAPI
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationID = "invoicePaid"
+		assert.NoError(t, doc.Validate())
+	})
+
+	t.Run("asyncapi accepts operation ref", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.3.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAsyncAPI
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationRef = "#/operations/invoicePaid"
+		assert.NoError(t, doc.Validate())
+	})
+
+	t.Run("asyncapi accepts channel ref compatibility target", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.3.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAsyncAPI
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationRef = "#/channels/invoices"
+		assert.NoError(t, doc.Validate())
+	})
+
+	t.Run("asyncapi accepts message ref compatibility target", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.3.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAsyncAPI
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationRef = "#/channels/invoices/messages/paid"
+		assert.NoError(t, doc.Validate())
+	})
+
+	t.Run("asyncapi core validation accepts any json pointer fragment", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.3.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAsyncAPI
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationRef = "#/components/messages/invoicePaid"
+		assert.NoError(t, doc.Validate())
+	})
+
+	t.Run("uws 1.2 rejects asyncapi source type", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.2.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAsyncAPI
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationID = "invoicePaid"
+		assert.ErrorContains(t, doc.Validate(), "requires UWS 1.3.0 or later")
+	})
+
+	t.Run("asyncapi rejects legacy openapi selector", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.3.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAsyncAPI
+		assert.ErrorContains(t, doc.Validate(), "asyncapi sourceDescriptions require sourceOperationId or sourceOperationRef, not openapiOperationId or openapiOperationRef")
 	})
 }
 
