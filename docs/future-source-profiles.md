@@ -30,15 +30,101 @@ The current UWS model remains source-document-first:
 - Non-HTTP behavior is represented by extension-owned operations and named
   operation profiles.
 
-Two source-profile tracks are listed separately:
+Future source-profile tracks are listed separately:
 
 | Track | Theme | Purpose |
 | --- | --- | --- |
 | `v0.1.3` | AsyncAPI source profiles | Graduated in UWS 1.3 for event, message, and subscription contracts when a provider publishes AsyncAPI. |
-| `v0.1.4` | Browser capability profiles | Reuse reviewed browser/UI capability maps when no sufficient API source document exists. |
+| UWS 1.4 candidates | Formal API source families | Evaluate additional provider-owned or protocol-owned API contracts before browser-derived profiles. |
+| Later candidate | Browser capability profiles | Reuse reviewed browser/UI capability maps when no sufficient API source document exists. |
 
 Browser capability profiles become UWS source profiles only if a future UWS
 version explicitly adopts them.
+
+## Candidate UWS 1.4 Source Family Queue
+
+UWS 1.4 should not automatically standardize every known API description format
+in one release. Each new source type should graduate only when the format has a
+clear operation selector model, source-owned request/response or message
+metadata, parser/index evidence in source-aware tooling, and at least one
+trusted runtime path that can consume the source semantics without flattening
+important behavior into a weaker OpenAPI-shaped approximation.
+
+The preferred evaluation order is:
+
+| Priority | Candidate | UWS posture |
+| --- | --- | --- |
+| 1 | GraphQL SDL or introspection | Strong first-class candidate. GraphQL has operation, type, variable, query, mutation, and subscription semantics that are not well represented by pretending every operation is REST. |
+| 2 | OpenRPC | Strong first-class candidate for JSON-RPC services. Method names, params, and result schemas map cleanly to source operations and request bindings. |
+| 3 | gRPC / Protocol Buffers | Strong first-class candidate for service/method/message contracts, especially internal service automation. Runtime execution remains implementation-owned. |
+| 4 | OData CSDL | Enterprise candidate for entity sets, actions, functions, query semantics, and metadata-driven application APIs. It should preserve OData semantics instead of hiding them behind generic REST overlays. |
+| 5 | Postman Collection, RAML, API Blueprint | Import or conversion candidates. Prefer source-aware conversion into OpenAPI or another stronger source type when semantics survive. Do not treat them as normative UWS source types before a specific need is proven. |
+| 6 | Browser or network capture | Advisory evidence only until a portable browser capability profile contract exists. Captures are learned evidence, not provider-owned API contracts. |
+
+This ordering keeps UWS source-document-first. Provider-owned or protocol-owned
+contracts should come before inferred browser/network traces. Browser profiles
+remain useful for UI-only workflows, but they are weaker than formal API source
+documents and should not lead the next source-type expansion.
+
+### Possible UWS 1.4 Shape
+
+At a high level, UWS 1.4 should be a source-family expansion, not a replacement
+for the UWS 1.3 model. The likely shape is:
+
+- Add narrowly scoped source description types for the formats that graduate,
+  such as `graphql`, `openrpc`, `grpc-protobuf`, or `odata`. Exact names remain
+  schema/spec decisions, not commitments from this note.
+- Keep source documents authoritative for protocol-specific semantics: GraphQL
+  owns schemas and variables, OpenRPC owns JSON-RPC methods and params,
+  protobuf owns services and messages, and OData owns entity/action/query
+  metadata.
+- Keep UWS operations bound through the existing selector pattern where
+  possible: `sourceDescription` plus `sourceOperationId` or
+  `sourceOperationRef`, with source-aware tooling validating whether a selector
+  resolves to a supported operation/method/action.
+- Keep request values in UWS. The source profile describes where values belong
+  and what shapes they may take; the workflow supplies inputs, dependencies,
+  constants, and data flow.
+- Keep runtime transport, authentication, credential lookup, channel setup, and
+  side-effect execution outside the UWS wire contract.
+- Treat Postman/RAML/API Blueprint importers and browser/network capture as
+  advisory or conversion evidence unless a later specification explicitly
+  promotes one of them to a source profile.
+
+This keeps the public contract incremental: UWS gains stronger source bindings
+for well-known API families while avoiding a generic "anything captured from a
+tool becomes a workflow contract" model.
+
+### Candidate Source-Type Notes
+
+GraphQL would need selectors for a named or embedded query, mutation, or
+subscription and request bindings for variables. The GraphQL schema owns object
+types, input types, enum values, nullability, and field selection constraints;
+UWS owns workflow structure, variable values, dependencies, and output routing.
+
+OpenRPC would need selectors for JSON-RPC method names or refs. The OpenRPC
+document owns method params, result schemas, errors, servers, and security
+metadata when available; UWS owns param values and workflow orchestration.
+
+gRPC/protobuf would need selectors for service/method names or descriptors. The
+protobuf descriptor owns services, methods, messages, streaming shape, and field
+types; UWS owns request values, step dependencies, and outputs. Runtime
+implementations own channel credentials, transport configuration, and invocation.
+
+OData would need selectors for entity-set operations, functions, and actions.
+The OData metadata document owns entity types, navigation properties, functions,
+actions, and query semantics; UWS owns selected action/query inputs and workflow
+structure.
+
+Postman, RAML, and API Blueprint can still be valuable as import paths. Their
+first target should be `apitools` import/conversion or advisory review evidence,
+not new UWS wire semantics, unless later work proves a durable source type is
+needed.
+
+Browser and network capture should record provenance and review evidence only.
+It may help produce or validate an API source document, but UWS should not treat
+captured requests as a provider contract unless a future profile format defines
+portable target, action, safety, expiry, and revalidation semantics.
 
 ## Adopted in UWS 1.3: AsyncAPI Source Profiles
 
