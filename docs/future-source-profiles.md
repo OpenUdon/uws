@@ -1,6 +1,7 @@
 # Future Source Profiles
 
-This note records source-profile roadmap material around UWS 1.3 and later. It
+This note records source-profile roadmap material around UWS 1.3 and later, and
+separates import/advisory tooling features from normative UWS source types. It
 is explanatory documentation; the normative wire contract lives in the versioned
 specification and JSON Schema.
 
@@ -34,21 +35,45 @@ Future source-profile tracks are listed separately:
 
 | Track | Theme | Purpose |
 | --- | --- | --- |
+| UWS 1.1-compatible tooling | Import and advisory evidence | Use Dropbox Stone, Postman Collection, RAML, and API Blueprint as local source evidence only after conversion to OpenAPI or as review-only metadata. |
 | `v0.1.3` | AsyncAPI source profiles | Graduated in UWS 1.3 for event, message, and subscription contracts when a provider publishes AsyncAPI. |
-| UWS 1.4 candidates | Formal API source families | Evaluate additional provider-owned or protocol-owned API contracts before browser-derived profiles. |
+| UWS 1.4 candidates | Formal API source families | Strictly evaluate `graphql`, `openrpc`, `grpc-protobuf`, and `odata` as the next normative source-type candidates. |
 | Later candidate | Browser capability profiles | Reuse reviewed browser/UI capability maps when no sufficient API source document exists. |
 
 Browser capability profiles become UWS source profiles only if a future UWS
 version explicitly adopts them.
 
+## UWS 1.1-Compatible Import And Advisory Features
+
+UWS 1.1 remains OpenAPI-bound at the wire level. That makes Dropbox Stone,
+Postman Collection, RAML, and API Blueprint useful UWS 1.1-compatible tooling
+features only when they are converted or lowered into reviewed OpenAPI, or when
+they remain non-executable review evidence next to a UWS package. They are not
+UWS 1.1 `sourceDescriptions[].type` values.
+
+The intended posture is:
+
+| Source family | UWS 1.1-compatible posture |
+| --- | --- |
+| Dropbox Stone | Official Dropbox source metadata and advisory-overlay provenance. Use reviewed Stone-derived OpenAPI-shaped output when available; do not treat Stone itself as an OpenAPI document. |
+| Postman Collection | Local client/workspace evidence. Convert only when provenance proves provider ownership and useful API completeness; otherwise keep advisory. |
+| RAML | Local API description evidence. Convert to OpenAPI when methods, resources, parameters, bodies, schemas/examples, auth hints, and provenance survive review. |
+| API Blueprint | Local documentation-oriented API description evidence. Convert only when Markdown ambiguity and missing schema/auth detail do not make the OpenAPI output misleading. |
+
+This keeps UWS 1.1 useful for import workflows without changing its source
+description enum. The executable UWS package still binds to OpenAPI after
+conversion, or it treats the artifact as advisory review evidence outside the
+wire contract.
+
 ## Candidate UWS 1.4 Source Family Queue
 
-UWS 1.4 should not automatically standardize every known API description format
-in one release. Each new source type should graduate only when the format has a
-clear operation selector model, source-owned request/response or message
-metadata, parser/index evidence in source-aware tooling, and at least one
-trusted runtime path that can consume the source semantics without flattening
-important behavior into a weaker OpenAPI-shaped approximation.
+UWS 1.4 should be strict: the candidate source families are `graphql`,
+`openrpc`, `grpc-protobuf`, and `odata`. Each new source type should graduate
+only when the format has a clear operation selector model, source-owned
+request/response or message metadata, parser/index evidence in source-aware
+tooling, and at least one trusted runtime path that can consume the source
+semantics without flattening important behavior into a weaker OpenAPI-shaped
+approximation.
 
 The preferred evaluation order is:
 
@@ -58,22 +83,22 @@ The preferred evaluation order is:
 | 2 | OpenRPC | Strong first-class candidate for JSON-RPC services. Method names, params, and result schemas map cleanly to source operations and request bindings. |
 | 3 | gRPC / Protocol Buffers | Strong first-class candidate for service/method/message contracts, especially internal service automation. Runtime execution remains implementation-owned. |
 | 4 | OData CSDL | Enterprise candidate for entity sets, actions, functions, query semantics, and metadata-driven application APIs. It should preserve OData semantics instead of hiding them behind generic REST overlays. |
-| 5 | Postman Collection, RAML, API Blueprint | Import or conversion candidates. Prefer source-aware conversion into OpenAPI or another stronger source type when semantics survive. Do not treat them as normative UWS source types before a specific need is proven. |
-| 6 | Browser or network capture | Advisory evidence only until a portable browser capability profile contract exists. Captures are learned evidence, not provider-owned API contracts. |
 
 This ordering keeps UWS source-document-first. Provider-owned or protocol-owned
-contracts should come before inferred browser/network traces. Browser profiles
-remain useful for UI-only workflows, but they are weaker than formal API source
-documents and should not lead the next source-type expansion.
+contracts should come before inferred browser/network traces. Import/advisory
+formats such as Stone, Postman Collection, RAML, and API Blueprint stay on the
+UWS 1.1-compatible tooling path unless a later roadmap explicitly reopens them.
+Browser profiles remain useful for UI-only workflows, but they are weaker than
+formal API source documents and should not lead the next source-type expansion.
 
 ### Possible UWS 1.4 Shape
 
 At a high level, UWS 1.4 should be a source-family expansion, not a replacement
 for the UWS 1.3 model. The likely shape is:
 
-- Add narrowly scoped source description types for the formats that graduate,
-  such as `graphql`, `openrpc`, `grpc-protobuf`, or `odata`. Exact names remain
-  schema/spec decisions, not commitments from this note.
+- Add narrowly scoped source description types for the graduating formats:
+  `graphql`, `openrpc`, `grpc-protobuf`, and `odata`. Exact names remain
+  schema/spec decisions until the versioned specification and schema are cut.
 - Keep source documents authoritative for protocol-specific semantics: GraphQL
   owns schemas and variables, OpenRPC owns JSON-RPC methods and params,
   protobuf owns services and messages, and OData owns entity/action/query
@@ -87,8 +112,8 @@ for the UWS 1.3 model. The likely shape is:
   constants, and data flow.
 - Keep runtime transport, authentication, credential lookup, channel setup, and
   side-effect execution outside the UWS wire contract.
-- Treat Postman/RAML/API Blueprint importers and browser/network capture as
-  advisory or conversion evidence unless a later specification explicitly
+- Treat Stone, Postman/RAML/API Blueprint importers, and browser/network
+  capture as advisory or conversion evidence unless a later roadmap explicitly
   promotes one of them to a source profile.
 
 This keeps the public contract incremental: UWS gains stronger source bindings
@@ -115,11 +140,6 @@ OData would need selectors for entity-set operations, functions, and actions.
 The OData metadata document owns entity types, navigation properties, functions,
 actions, and query semantics; UWS owns selected action/query inputs and workflow
 structure.
-
-Postman, RAML, and API Blueprint can still be valuable as import paths. Their
-first target should be `apitools` import/conversion or advisory review evidence,
-not new UWS wire semantics, unless later work proves a durable source type is
-needed.
 
 Browser and network capture should record provenance and review evidence only.
 It may help produce or validate an API source document, but UWS should not treat

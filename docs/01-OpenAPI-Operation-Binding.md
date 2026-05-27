@@ -22,7 +22,7 @@ A document that omits the binding fields of every shape is invalid. Source-bound
 
 `sourceDescriptions[]` declares every API or event source document the workflow uses. Every source entry must have a unique `name` matching `^[A-Za-z0-9_-]+$`, a `url`, and optionally `type`.
 
-Missing `type` defaults to `openapi`. In UWS 1.3, Google Discovery, AWS Smithy, and AsyncAPI inputs may be declared directly as `type: google-discovery`, `type: aws-smithy`, and `type: asyncapi`. UWS 1.2 documents remain limited to OpenAPI, Google Discovery, and AWS Smithy sources; UWS 1.1 documents remain OpenAPI-bound and can only consume those source families after tooling lowers them to OpenAPI.
+Missing `type` defaults to `openapi`. In UWS 1.3, Google Discovery, AWS Smithy, and AsyncAPI inputs may be declared directly as `type: google-discovery`, `type: aws-smithy`, and `type: asyncapi`. UWS 1.2 documents remain limited to OpenAPI, Google Discovery, and AWS Smithy sources. UWS 1.1 documents remain OpenAPI-bound: Discovery, Smithy, Stone, Postman Collection, RAML, API Blueprint, and similar non-OpenAPI artifacts can participate only after tooling lowers or converts them into reviewed OpenAPI, or as advisory evidence outside `sourceDescriptions`.
 
 ```yaml
 sourceDescriptions:
