@@ -326,6 +326,12 @@ func transformExtensionsFromHCL(extensions map[string]any) {
 }
 
 func escapeForHCL(s string) string {
+	// Escape HCL template interpolation/directive introducers so literal
+	// "${...}" / "%{...}" values are not evaluated when the HCL is parsed back.
+	// The HCL parser reverses "$${"->"${" and "%%{"->"%{", so the round trip is
+	// symmetric without an explicit unescape step.
+	s = strings.ReplaceAll(s, "${", "$${")
+	s = strings.ReplaceAll(s, "%{", "%%{")
 	s = strings.ReplaceAll(s, "\\n", "\x00ESCAPED_N\x00")
 	s = strings.ReplaceAll(s, "\\\"", "\x00ESCAPED_Q\x00")
 	s = strings.ReplaceAll(s, "\n", "\\n")

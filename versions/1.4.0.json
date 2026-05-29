@@ -1,7 +1,7 @@
 {
     "$id": "https://github.com/OpenUdon/uws/versions/1.4.0.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "description": "The description of Udon Workflow Specification (UWS) v1.3.x documents with first-class API and event source types",
+    "description": "The description of Udon Workflow Specification (UWS) v1.4.x documents with first-class API, RPC, and event source types",
     "type": "object",
     "properties": {
         "uws": {
