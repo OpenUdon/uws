@@ -60,7 +60,7 @@ func (w Workflow) MarshalJSON() ([]byte, error) {
 // Step describes a nested step within a structural workflow.
 type Step struct {
 	StepID       string         `json:"stepId" yaml:"stepId" hcl:"stepId,label"`
-	Type         string         `json:"type" yaml:"type" hcl:"type,optional"`
+	Type         string         `json:"type,omitempty" yaml:"type,omitempty" hcl:"type,optional"`
 	Description  string         `json:"description,omitempty" yaml:"description,omitempty" hcl:"description,optional"`
 	OperationRef string         `json:"operationRef,omitempty" yaml:"operationRef,omitempty" hcl:"operationRef,optional"`
 	Body         map[string]any `json:"body,omitempty" yaml:"body,omitempty" hcl:"body,optional"`
