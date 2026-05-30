@@ -11,6 +11,7 @@ func (d *Document) validateVersionedFields(result *ValidationResult) {
 	supports12 := supportsUWSVersion(d.UWS, 1, 2)
 	supports13 := supportsUWSVersion(d.UWS, 1, 3)
 	supports14 := supportsUWSVersion(d.UWS, 1, 4)
+	supports15 := supportsUWSVersion(d.UWS, 1, 5)
 	for i, sd := range d.SourceDescriptions {
 		if sd == nil {
 			continue
@@ -27,6 +28,10 @@ func (d *Document) validateVersionedFields(result *ValidationResult) {
 		case SourceDescriptionTypeGraphQL, SourceDescriptionTypeOpenRPC, SourceDescriptionTypeGRPCProtobuf, SourceDescriptionTypeOData:
 			if !supports14 {
 				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "requires UWS 1.4.0 or later")
+			}
+		case SourceDescriptionTypeBrowserProfile:
+			if !supports15 {
+				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "requires UWS 1.5.0 or later")
 			}
 		}
 	}

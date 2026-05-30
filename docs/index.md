@@ -8,7 +8,7 @@ UWS is a compact, execution-oriented workflow specification that sits directly o
 
 > Source documents own the API or event contract. UWS owns the workflow overlay.
 
-UWS 1.4 keeps OpenAPI compatibility and adds first-class source descriptions for `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, and `odata`. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources.
+UWS 1.5 keeps OpenAPI compatibility and adds first-class source descriptions for `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources. The browser profile sub-spec is published separately as `versions/browser.1.5.{json,md}`.
 
 ## Why UWS?
 
@@ -31,7 +31,7 @@ For non-source leaf work, UWS keeps the core document narrow. Extension-owned op
 
 ```json
 {
-  "uws": "1.4.0",
+  "uws": "1.5.0",
   "info": { "title": "Weather Report", "version": "1.1.0" },
   "sourceDescriptions": [
     { "name": "weather_api", "url": "./weather.openapi.yaml", "type": "openapi" },
@@ -84,11 +84,11 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 
 ## Reference
 
-- **Specification**: [`versions/1.4.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.4.0.md)
-- **JSON Schema**: [`versions/1.4.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.4.0.json)
+- **Specification**: [`versions/1.5.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.5.0.md)
+- **JSON Schema**: [`versions/1.5.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.5.0.json)
 - **Runtime supplement**: [`versions/runtime.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md)
 - **Runtime supplement schema**: [`versions/runtime.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json)
-- **Future source profiles**: [UWS 1.1 import/advisory features and UWS 1.4 source profiles](future-source-profiles.md)
+- **Future source profiles**: [UWS 1.1 import/advisory features, UWS 1.4 source profiles, and UWS 1.5 browser capability profiles](future-source-profiles.md)
 - **Go package**: `github.com/OpenUdon/uws`
 - **License**: Apache 2.0
 

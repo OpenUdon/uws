@@ -49,7 +49,7 @@ func (op *Operation) validate(path string, idx *documentIndex, result *Validatio
 				if !hasGenericSelector && !hasLegacySelector {
 					result.addError(path, "requires exactly one of sourceOperationId, sourceOperationRef, openapiOperationId, or openapiOperationRef for OpenAPI-bound operations")
 				}
-			case SourceDescriptionTypeGoogleDiscovery, SourceDescriptionTypeAWSSmithy, SourceDescriptionTypeAsyncAPI, SourceDescriptionTypeGraphQL, SourceDescriptionTypeOpenRPC, SourceDescriptionTypeGRPCProtobuf, SourceDescriptionTypeOData:
+			case SourceDescriptionTypeGoogleDiscovery, SourceDescriptionTypeAWSSmithy, SourceDescriptionTypeAsyncAPI, SourceDescriptionTypeGraphQL, SourceDescriptionTypeOpenRPC, SourceDescriptionTypeGRPCProtobuf, SourceDescriptionTypeOData, SourceDescriptionTypeBrowserProfile:
 				if hasLegacySelector {
 					result.addError(path, fmt.Sprintf("%s sourceDescriptions require sourceOperationId or sourceOperationRef, not openapiOperationId or openapiOperationRef", sourceType))
 				}

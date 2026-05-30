@@ -4,7 +4,7 @@
 
 ---
 
-Most executable operations in UWS bind to an operation in a source document by reference. UWS 1.4 supports `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, and `odata` source descriptions directly. Extension-owned operations are the explicit non-source escape hatch. UWS never duplicates HTTP methods, paths, AsyncAPI channels, messages, GraphQL schemas, JSON-RPC method metadata, protobuf descriptors, OData metadata, schemas, servers, security schemes, or protocol metadata; those live in the source document or executor-owned configuration.
+Most executable operations in UWS bind to an operation in a source document by reference. UWS 1.5 supports `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile` source descriptions directly. Extension-owned operations are the explicit non-source escape hatch. UWS never duplicates HTTP methods, paths, AsyncAPI channels, messages, GraphQL schemas, JSON-RPC method metadata, protobuf descriptors, OData metadata, browser profile locator/action/output details, schemas, servers, security schemes, or protocol metadata; those live in the source document (or, for `browser-profile`, the separate sub-spec `versions/browser.1.5.{json,md}`) or executor-owned configuration.
 
 ## Three Mutually Exclusive Shapes
 
@@ -22,7 +22,7 @@ A document that omits the binding fields of every shape is invalid. Source-bound
 
 `sourceDescriptions[]` declares every API or event source document the workflow uses. Every source entry must have a unique `name` matching `^[A-Za-z0-9_-]+$`, a `url`, and optionally `type`.
 
-Missing `type` defaults to `openapi`. In UWS 1.4, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, and OData inputs may be declared directly as `type: google-discovery`, `type: aws-smithy`, `type: asyncapi`, `type: graphql`, `type: openrpc`, `type: grpc-protobuf`, and `type: odata`. UWS 1.3 documents remain limited to OpenAPI, Google Discovery, AWS Smithy, and AsyncAPI sources. UWS 1.2 documents remain limited to OpenAPI, Google Discovery, and AWS Smithy sources. UWS 1.1 documents remain OpenAPI-bound: Discovery, Smithy, Stone, Postman Collection, RAML, API Blueprint, and similar non-OpenAPI artifacts can participate only after tooling lowers or converts them into reviewed OpenAPI, or as advisory evidence outside `sourceDescriptions`.
+Missing `type` defaults to `openapi`. In UWS 1.5, browser capability profiles may be declared directly as `type: browser-profile` (with the heavier profile schema published separately as `versions/browser.1.5.{json,md}`). UWS 1.4 added direct declarations for Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, and OData via `type: google-discovery`, `type: aws-smithy`, `type: asyncapi`, `type: graphql`, `type: openrpc`, `type: grpc-protobuf`, and `type: odata`. UWS 1.3 documents remain limited to OpenAPI, Google Discovery, AWS Smithy, and AsyncAPI sources. UWS 1.2 documents remain limited to OpenAPI, Google Discovery, and AWS Smithy sources. UWS 1.1 documents remain OpenAPI-bound: Discovery, Smithy, Stone, Postman Collection, RAML, API Blueprint, and similar non-OpenAPI artifacts can participate only after tooling lowers or converts them into reviewed OpenAPI, or as advisory evidence outside `sourceDescriptions`.
 
 ```yaml
 sourceDescriptions:

@@ -16,6 +16,7 @@ const (
 	SourceDescriptionTypeOpenRPC         SourceDescriptionType = "openrpc"
 	SourceDescriptionTypeGRPCProtobuf    SourceDescriptionType = "grpc-protobuf"
 	SourceDescriptionTypeOData           SourceDescriptionType = "odata"
+	SourceDescriptionTypeBrowserProfile  SourceDescriptionType = "browser-profile"
 )
 
 var sourceDescriptionNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)

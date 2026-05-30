@@ -7,21 +7,23 @@ specification and JSON Schema.
 
 ## Status And Normativity
 
-This document is not part of the normative UWS 1.4 wire contract. The published
-UWS 1.4 source description types are `openapi`, `google-discovery`,
-`aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, and `odata`;
-missing `sourceDescriptions[].type` still defaults to `openapi`.
+This document is not part of the normative UWS 1.5 wire contract. The published
+UWS 1.5 source description types are `openapi`, `google-discovery`,
+`aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and
+`browser-profile`; missing `sourceDescriptions[].type` still defaults to
+`openapi`.
 
 The `v0.1.x` labels below are implementation-roadmap labels. They do not define
 released UWS versions, JSON Schema changes, Go model changes, or new validator
-behavior by themselves. AsyncAPI has graduated into UWS 1.3, and GraphQL,
-OpenRPC, gRPC/protobuf, and OData have graduated into UWS 1.4.
-`browser-profile` is not a valid UWS 1.4 `sourceDescriptions[].type` value.
+behavior by themselves. AsyncAPI has graduated into UWS 1.3; GraphQL, OpenRPC,
+gRPC/protobuf, and OData have graduated into UWS 1.4; and browser capability
+profiles have graduated into UWS 1.5 (`browser-profile`) with a separate
+published sub-spec at `versions/browser.1.5.{json,md}`.
 
 Examples in this note are illustrative future shapes unless a section explicitly
-labels them as valid today. Current UWS 1.4 documents that need non-core,
-runtime-owned work, including browser/UI work, use extension-owned operations
-with `x-uws-operation-profile`.
+labels them as valid today. Pre-1.5 documents that need browser/UI work used
+extension-owned operations with `x-uws-operation-profile`; UWS 1.5+ documents
+should use the first-class `browser-profile` source type instead.
 
 The current UWS model remains source-document-first:
 
@@ -39,10 +41,7 @@ Future source-profile tracks are listed separately:
 | UWS 1.1-compatible tooling | Import and advisory evidence | Use Dropbox Stone, Postman Collection, RAML, and API Blueprint as local source evidence only after conversion to OpenAPI or as review-only metadata. |
 | `v0.1.3` | AsyncAPI source profiles | Graduated in UWS 1.3 for event, message, and subscription contracts when a provider publishes AsyncAPI. |
 | UWS 1.4 source profiles | Formal API source families | Graduated `graphql`, `openrpc`, `grpc-protobuf`, and `odata` as normative source type values. |
-| Later candidate | Browser capability profiles | Reuse reviewed browser/UI capability maps when no sufficient API source document exists. |
-
-Browser capability profiles become UWS source profiles only if a future UWS
-version explicitly adopts them.
+| UWS 1.5 source profiles | Browser capability profiles | Graduated `browser-profile` as a normative source type, with the heavier sub-spec published separately as `versions/browser.1.5.{json,md}`. |
 
 ## UWS 1.1-Compatible Import And Advisory Features
 
@@ -198,12 +197,51 @@ AsyncAPI graduated to UWS 1.3 with the following settled scope:
 - Validation rules and conformance fixtures cover source description types,
   selector exclusivity, and invalid mixed OpenAPI/AsyncAPI binding shapes.
 
-## Candidate v0.1.4: Browser Capability Profiles
+## Adopted in UWS 1.5: Browser Capability Profiles
 
-Browser capability profiles address a different problem: many useful workflow
-targets expose a web UI before they expose a complete API specification. A
-browser agent can often complete the task, but repeated LLM-driven browsing is
-expensive, difficult to review, and risky for side-effectful actions.
+Browser capability profiles graduated in UWS 1.5. They address a class of
+workflow targets exposed through a web UI before (or instead of) a complete API
+specification. A browser agent can often complete the task, but repeated
+LLM-driven browsing is expensive, difficult to review, and risky for
+side-effectful actions; a reviewed capability profile lets later runs execute
+against a bounded, audited contract instead.
+
+### Browser Profile Graduation Result
+
+UWS 1.5 added `browser-profile` as a first-class `sourceDescriptions[].type`,
+reusing the existing generic `sourceOperationId` / `sourceOperationRef`
+selectors from UWS 1.2. The substantive profile schema (locator vocabulary,
+declarative action vocabulary, output extraction methods, safety controls,
+verification metadata) is published separately as
+`versions/browser.1.5.{json,md}` so UWS core stays thin (mirrors the
+`runtime.1.0` split).
+
+Settled scope:
+
+- Locators are accessibility-tree only (role + accessible name + value). CSS,
+  XPath, DOM-structure paths, and pixel/coordinate references are not permitted
+  as locator forms.
+- The macro action vocabulary is a closed enumeration (`navigate`, `click`,
+  `type_text`, `check_radio`, `uncheck`, `select_option`, `wait_for`).
+  Extensions require a `browser.x.y` schema bump and a corresponding UWS minor
+  bump, not vendor `x-` opt-ins.
+- Output extraction primary methods are `a11y` and `jsonld`/`microdata`; CSS is
+  permitted as a last-resort, schema-validated fallback with a recorded
+  `fallbackReason`.
+- Origin allowlist + fail-closed-on-ambiguity + no embedded credentials +
+  declared side effects + confirmation policy + expiration/revalidation
+  metadata are mandatory profile fields enforced at the sub-spec layer.
+- Browser execution, session contexts, credentials, cookies, rendering, and
+  any specific automation protocol (WebDriver, WebDriver BiDi, CDP,
+  Playwright, Puppeteer) remain runtime-private — UWS 1.5 standardizes none of
+  them.
+- `browser-profile` is the *weakest* first-class source type by intent;
+  tooling SHOULD prefer a published API source when one covers the task.
+
+### Earlier Roadmap (Historical)
+
+The pre-1.5 candidate framing for browser capability profiles is preserved
+below for context. The proposed pattern was:
 
 The proposed pattern is:
 
@@ -410,12 +448,12 @@ Minimum future requirements:
   credentials, session cookies, tokens, or raw login state.
 - Profiles must declare the observation method used to learn or validate the UI.
 - Profiles must declare named actions, action inputs, observable outputs, stable
-  targets, side effects, confirmation policy, review evidence, confidence, and
-  expiry.
-- Side-effectful actions must declare side effects explicitly.
+  targets, side effects, confirmation policy, review evidence, confidence,
+  expiry, and last verification.
+- Side-effectful actions must declare side effects explicitly, and `read_only`
+  must not be combined with state-changing side effects.
 - Send, create, update, delete, post, upload, purchase, approve, invite, and
-  notify actions must require explicit confirmation unless a trusted policy
-  has pre-approved the exact action.
+  notify actions must require explicit confirmation in the profile.
 - Runtime execution must fail closed when stable targets are missing,
   duplicated, renamed, expired, visually inconsistent, or semantically
   inconsistent.

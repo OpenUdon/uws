@@ -32,7 +32,7 @@ The UWS document points to source documents. It does not copy endpoint URLs, cha
 ## Minimal Workflow
 
 ```yaml
-uws: "1.4.0"
+uws: "1.5.0"
 info:
   title: Support Ticket Workflow
   version: "1.0.0"
@@ -95,7 +95,7 @@ Rules of thumb:
 
 - `name` is the stable local handle used by operations.
 - `url` can be a local path or reviewed remote location, depending on the runtime.
-- `type` may be `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, or `odata`. Missing `type` defaults to `openapi`.
+- `type` may be `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, or `browser-profile`. Missing `type` defaults to `openapi`. The `browser-profile` sub-spec is published separately as `versions/browser.1.5.{json,md}`.
 
 ## Step 2: Bind Operations
 

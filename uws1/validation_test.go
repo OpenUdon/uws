@@ -489,6 +489,42 @@ func TestValidate_UWS14SourceOperationBindings(t *testing.T) {
 	}
 }
 
+func TestValidate_UWS15BrowserProfileSourceOperationBindings(t *testing.T) {
+	t.Run("browser-profile accepts sourceOperationId action key", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.5.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeBrowserProfile
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationID = "approve_pr"
+		assert.NoError(t, doc.Validate())
+	})
+
+	t.Run("browser-profile accepts sourceOperationRef #/actions/<name>", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.5.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeBrowserProfile
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationRef = "#/actions/approve_pr"
+		assert.NoError(t, doc.Validate())
+	})
+
+	t.Run("browser-profile rejects pre-1.5 document", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.4.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeBrowserProfile
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationID = "approve_pr"
+		assert.ErrorContains(t, doc.Validate(), "requires UWS 1.5.0 or later")
+	})
+
+	t.Run("browser-profile rejects legacy openapi selector", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.5.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeBrowserProfile
+		assert.ErrorContains(t, doc.Validate(), "browser-profile sourceDescriptions require sourceOperationId or sourceOperationRef, not openapiOperationId or openapiOperationRef")
+	})
+}
+
 func TestValidate_DuplicateIDs(t *testing.T) {
 	doc := validDocument()
 	doc.SourceDescriptions = append(doc.SourceDescriptions, &SourceDescription{Name: "api", URL: "./other.yaml"})

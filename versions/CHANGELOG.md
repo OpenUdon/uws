@@ -4,6 +4,21 @@ This changelog summarizes externally visible changes between published UWS
 versioned schemas and specification documents. The versioned `.md` files remain
 the normative human-readable specifications.
 
+## 1.5.0 - 2026-05-30
+
+- Added `browser-profile` as a first-class `sourceDescription.type` for browser
+  capability profile source documents.
+- Reused generic `sourceOperationId` and `sourceOperationRef` selectors;
+  `sourceOperationId` identifies an action key in the profile's `actions`
+  object, `sourceOperationRef` preferred form is `#/actions/<name>`.
+- Published the browser profile sub-spec separately as
+  `versions/browser.1.5.{json,md}` so UWS core stays thin (mirrors the
+  `runtime.1.0` split): UWS core only references the type name and selector
+  rules; locator vocabulary, macro action vocabulary, output extraction methods,
+  and safety controls live in the sub-spec.
+- Kept browser session contexts, credentials, cookies, rendering, and
+  interaction protocols runtime-private.
+
 ## 1.4.0 - 2026-05-27
 
 - Added first-class `sourceDescription.type` values for `graphql`, `openrpc`,

@@ -68,12 +68,13 @@ func TestJSONToHCL(t *testing.T) {
 
 func TestJSONToHCLPreservesNativeSourceBindings(t *testing.T) {
 	jsonData := []byte(`{
-		"uws": "1.3.0",
+		"uws": "1.5.0",
 		"info": {"title": "Native Sources", "version": "1.0.0"},
 		"sourceDescriptions": [
 			{"name": "gmail_api", "url": "./google-discovery/gmail.json", "type": "google-discovery"},
 			{"name": "s3_api", "url": "./aws-smithy/s3.json", "type": "aws-smithy"},
-			{"name": "billing_events", "url": "./asyncapi/billing-events.yaml", "type": "asyncapi"}
+			{"name": "billing_events", "url": "./asyncapi/billing-events.yaml", "type": "asyncapi"},
+			{"name": "github_pr_manager", "url": "./profiles/github_pr_manager.yaml", "type": "browser-profile"}
 		],
 		"operations": [
 			{
@@ -90,6 +91,11 @@ func TestJSONToHCLPreservesNativeSourceBindings(t *testing.T) {
 				"operationId": "wait_for_invoice_paid",
 				"sourceDescription": "billing_events",
 				"sourceOperationRef": "#/operations/invoicePaid"
+			},
+			{
+				"operationId": "submit_approval",
+				"sourceDescription": "github_pr_manager",
+				"sourceOperationId": "approve_pr"
 			}
 		]
 	}`)
@@ -99,7 +105,7 @@ func TestJSONToHCLPreservesNativeSourceBindings(t *testing.T) {
 		t.Fatalf("JSONToHCL failed: %v", err)
 	}
 	hclStr := string(hclData)
-	for _, want := range []string{"google-discovery", "aws-smithy", "asyncapi", "sourceOperationId", "sourceOperationRef"} {
+	for _, want := range []string{"google-discovery", "aws-smithy", "asyncapi", "browser-profile", "sourceOperationId", "sourceOperationRef"} {
 		if !strings.Contains(hclStr, want) {
 			t.Fatalf("HCL output missing %q:\n%s", want, hclStr)
 		}
@@ -133,6 +139,12 @@ func TestJSONToHCLPreservesNativeSourceBindings(t *testing.T) {
 	}
 	if got := doc.Operations[2].SourceOperationRef; got != "#/operations/invoicePaid" {
 		t.Fatalf("asyncapi sourceOperationRef = %q", got)
+	}
+	if got := doc.SourceDescriptions[3].Type; got != uws1.SourceDescriptionTypeBrowserProfile {
+		t.Fatalf("fourth source type = %q, want browser-profile", got)
+	}
+	if got := doc.Operations[3].SourceOperationID; got != "approve_pr" {
+		t.Fatalf("browser-profile sourceOperationId = %q, want approve_pr", got)
 	}
 }
 

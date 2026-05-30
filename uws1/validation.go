@@ -181,8 +181,8 @@ func (s *SourceDescription) validate(path string, result *ValidationResult) {
 		result.addError(path+".url", "is required")
 	}
 	switch s.Type {
-	case "", SourceDescriptionTypeOpenAPI, SourceDescriptionTypeGoogleDiscovery, SourceDescriptionTypeAWSSmithy, SourceDescriptionTypeAsyncAPI, SourceDescriptionTypeGraphQL, SourceDescriptionTypeOpenRPC, SourceDescriptionTypeGRPCProtobuf, SourceDescriptionTypeOData:
+	case "", SourceDescriptionTypeOpenAPI, SourceDescriptionTypeGoogleDiscovery, SourceDescriptionTypeAWSSmithy, SourceDescriptionTypeAsyncAPI, SourceDescriptionTypeGraphQL, SourceDescriptionTypeOpenRPC, SourceDescriptionTypeGRPCProtobuf, SourceDescriptionTypeOData, SourceDescriptionTypeBrowserProfile:
 	default:
-		result.addError(path+".type", fmt.Sprintf("%q is not valid (must be openapi, google-discovery, aws-smithy, asyncapi, graphql, openrpc, grpc-protobuf, or odata)", s.Type))
+		result.addError(path+".type", fmt.Sprintf("%q is not valid (must be openapi, google-discovery, aws-smithy, asyncapi, graphql, openrpc, grpc-protobuf, odata, or browser-profile)", s.Type))
 	}
 }
