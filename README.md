@@ -12,6 +12,19 @@ This is what distinguishes UWS from full client-side workflow tools such as Araz
 
 UWS 1.5 keeps OpenAPI compatibility and adds first-class `browser-profile` source descriptions alongside `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, and `odata`. The browser capability profile sub-spec is published separately as `versions/browser.1.5.{json,md}`. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
 
+### Version highlights
+
+| Version | Adds |
+|---|---|
+| **1.0** | Initial spec: OpenAPI-bound operations, workflow structure, request binding, structural control flow (sequence/parallel/switch/loop/merge/await), triggers, results, success criteria, success/failure actions, runtime expressions, and the `x-uws-` extension prefix with `x-uws-operation-profile`. |
+| **1.1** | Portable `timeout` on operations/workflows/steps; workflow-level `idempotency` metadata for run de-duplication. |
+| **1.2** | First-class `sourceDescription.type` for `openapi`, `google-discovery`, `aws-smithy`; canonical `sourceOperationId` / `sourceOperationRef` selectors. Legacy `openapiOperationId` / `openapiOperationRef` kept for OpenAPI sources. |
+| **1.3** | First-class `asyncapi` source type; AsyncAPI operation selector rules including `#/operations/...`, `#/channels/...`, and `#/channels/.../messages/...` ref forms. |
+| **1.4** | First-class `graphql`, `openrpc`, `grpc-protobuf`, and `odata` source types; generic selectors required for those families. |
+| **1.5** | First-class `browser-profile` source type; capability profile sub-spec published separately as `versions/browser.1.5.{json,md}`. |
+
+See [`versions/CHANGELOG.md`](versions/CHANGELOG.md) for the full changelog.
+
 Non-source runtimes such as command execution, function calls, file I/O, SSH, SQL, browser automation, or LLM calls are extension-profile concerns represented with `x-*` fields, not UWS core service types. Operations without a source binding are extension-owned and require `x-uws-operation-profile` to name the implementation profile that can execute them. The optional `uws.runtime.1.0` supplement standardizes a small `x-uws-runtime` selector payload for those extension-owned operations.
 
 
