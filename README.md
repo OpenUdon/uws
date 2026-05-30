@@ -6,7 +6,9 @@
 
 UWS is the Udon Workflow Specification Go package. It defines the UWS 1.x document model, JSON Schema, validation helpers, and JSON/YAML/HCL conversion helpers.
 
-UWS is similar in role to Arazzo and complements source formats such as OpenAPI, AsyncAPI, GraphQL, OpenRPC, Protocol Buffers, and OData, but it is a smaller workflow overlay for API-, RPC-, and event-backed operations. Source documents own methods, paths, channels, messages, schemas, servers, and security. UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow.
+UWS is a workflow **overlay** over source documents — OpenAPI, AsyncAPI, GraphQL, OpenRPC, Protocol Buffers, OData, and the like. The source document owns the operations: methods, paths, channels, messages, schemas, servers, and security are all defined server-side and authoritative. UWS adds only what the source cannot express: operation binding, workflow structure, request values, outputs, triggers, and control flow.
+
+This is what distinguishes UWS from Arazzo. Arazzo describes full client-side action sequences and treats each step as a bespoke client action — it does not assume that the underlying operations are already defined by a server contract. UWS takes the opposite position: server actions are pre-defined by the source document, and UWS workflows reference those operations by ID rather than re-describing them. The result is a much smaller overlay: UWS does not duplicate request/response shapes, does not redeclare endpoints, and does not encode anything the source document already specifies.
 
 UWS 1.5 keeps OpenAPI compatibility and adds first-class `browser-profile` source descriptions alongside `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, and `odata`. The browser capability profile sub-spec is published separately as `versions/browser.1.5.{json,md}`. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
 

@@ -8,6 +8,8 @@ UWS is a compact, execution-oriented workflow specification that sits directly o
 
 > Source documents own the API or event contract. UWS owns the workflow overlay.
 
+This is what distinguishes UWS from Arazzo. Arazzo describes full client-side action sequences and treats each step as a bespoke client action — it does not assume the underlying operations are already defined by a server contract. UWS takes the opposite position: server actions are pre-defined by the source document, and UWS workflows reference those operations by ID rather than re-describing them. The result is a much smaller overlay: UWS does not duplicate request/response shapes, does not redeclare endpoints, and does not encode anything the source document already specifies.
+
 UWS 1.5 keeps OpenAPI compatibility and adds first-class source descriptions for `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources. The browser profile sub-spec is published separately as `versions/browser.1.5.{json,md}`.
 
 ## Why UWS?
