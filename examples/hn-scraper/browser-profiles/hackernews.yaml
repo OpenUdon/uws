@@ -1,0 +1,107 @@
+profile: uws.browser.1.5
+info:
+  title: Hacker News
+  origin: https://news.ycombinator.com
+  loginStateRequired: false
+
+observationKind: accessibility_snapshot
+
+evidence:
+  learnedAt: "2026-05-31T00:00:00Z"
+  source: reviewed_browser_session
+
+confidence: high
+expiresAfter: P90D
+
+verification:
+  lastVerifiedAt: "2026-05-31T00:00:00Z"
+  successfulRuns: 4
+  uiStabilityScore: 0.94
+
+actions:
+  list_stories:
+    description: >
+      Navigates to a numbered page of the front page and extracts the rank,
+      title, URL, score, comment count, and age of every story listed. Also
+      captures whether a "More" pagination link is present so callers can
+      determine if there are additional pages.
+    parameters:
+      type: object
+      required: [page]
+      properties:
+        page:
+          type: integer
+          description: 1-based page number (e.g. 1 for the top front page).
+    sequence:
+      - navigate: "/?p={{page}}"
+      - wait_for: { navigation: domcontentloaded }
+    outputs:
+      stories:
+        type: array
+        source: microdata
+        property: name
+      story_ids:
+        type: array
+        source: microdata
+        property: identifier
+      scores:
+        type: array
+        source: microdata
+        property: interactionCount
+      comment_counts:
+        type: array
+        source: microdata
+        property: commentCount
+      story_urls:
+        type: array
+        source: css
+        selector: ".titleline > a"
+        attribute: href
+        fallbackReason: no_structured_data
+        validation:
+          type: array
+          items: { type: string }
+      has_more:
+        type: boolean
+        source: a11y
+        locator: { role: link, name: "More" }
+        presence: true
+    sideEffects: [read_only]
+    confirmationPolicy:
+      required: false
+
+  get_story_comments:
+    description: >
+      Opens the comment thread for a single story by item id and extracts the
+      top-level comment texts and their authors. Falls back to CSS when the
+      accessibility tree does not expose comment regions.
+    parameters:
+      type: object
+      required: [item_id]
+      properties:
+        item_id:
+          type: string
+          description: Numeric HN item id, e.g. "40123456".
+    sequence:
+      - navigate: "/item?id={{item_id}}"
+      - wait_for: { navigation: domcontentloaded }
+    outputs:
+      comments:
+        type: array
+        source: css
+        selector: ".comment-tree .commtext"
+        fallbackReason: no_a11y_region
+        validation:
+          type: array
+          items: { type: string }
+      authors:
+        type: array
+        source: css
+        selector: ".comment-tree .hnuser"
+        fallbackReason: no_a11y_region
+        validation:
+          type: array
+          items: { type: string }
+    sideEffects: [read_only]
+    confirmationPolicy:
+      required: false

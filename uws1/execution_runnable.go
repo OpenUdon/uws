@@ -81,6 +81,7 @@ func (o *Orchestrator) executeForEach(ctx context.Context, execKey, key, id, kin
 		itemKey := o.keyForContext(itemCtx, key)
 		o.setRecord(itemKey, ExecutionRecord{ID: id, Kind: kind, Status: "running"})
 		if err := run(itemCtx); err != nil {
+			o.setRecord(itemKey, ExecutionRecord{ID: id, Kind: kind, Status: "error", Error: err.Error()})
 			return err
 		}
 		var resolved map[string]any
@@ -88,6 +89,7 @@ func (o *Orchestrator) executeForEach(ctx context.Context, execKey, key, id, kin
 			outputsCtx := o.withRecordContext(itemCtx)
 			resolved, err = o.resolveOutputs(outputsCtx, itemKey, id, kind, responseID, outputs)
 			if err != nil {
+				o.setRecord(itemKey, ExecutionRecord{ID: id, Kind: kind, Status: "error", Error: err.Error()})
 				return err
 			}
 		}

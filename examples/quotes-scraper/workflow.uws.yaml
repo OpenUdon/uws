@@ -1,0 +1,196 @@
+uws: "1.5.0"
+info:
+  title: Quotes Scraper (Authenticated)
+  summary: >
+    Scrapes quotes.toscrape.com using a pre-authenticated browser session.
+    Workflow 1 pages through the full quote listing and collects author bios
+    in parallel. Workflow 2 filters by a chosen tag and optionally submits a
+    new quote via the login-gated /quote/add form.
+  version: "1.0.0"
+
+sourceDescriptions:
+  - name: quotes_toscrape
+    type: browser-profile
+    url: ./browser-profiles/quotes-toscrape.yaml
+
+# ---------------------------------------------------------------------------
+# Operations
+# ---------------------------------------------------------------------------
+
+operations:
+  - operationId: fetch_quotes_page
+    description: Scrape one page of the global quote listing.
+    sourceDescription: quotes_toscrape
+    sourceOperationId: list_quotes
+    request:
+      body:
+        page: "$inputs.page"
+    successCriteria:
+      - condition: "$response.body.quotes != null"
+    outputs:
+      quotes: "$response.body.quotes"
+      authors: "$response.body.authors"
+      tags: "$response.body.tags"
+      has_next: "$response.body.has_next"
+
+  - operationId: fetch_quotes_by_tag
+    description: Scrape the first page of quotes for a specific tag.
+    sourceDescription: quotes_toscrape
+    sourceOperationId: list_quotes_by_tag
+    request:
+      body:
+        tag: "$inputs.tag"
+        page: 1
+    successCriteria:
+      - condition: "$response.body.quotes != null"
+    outputs:
+      quotes: "$response.body.quotes"
+      authors: "$response.body.authors"
+      has_next: "$response.body.has_next"
+
+  - operationId: fetch_author_bio
+    description: >
+      Fetch biography for each author slug returned by a listing operation.
+      Uses forEach to fan out one request per author.
+    sourceDescription: quotes_toscrape
+    sourceOperationId: get_author_detail
+    forEach: "$inputs.author_slugs[*]"
+    request:
+      body:
+        author_slug: "$item"
+    successCriteria:
+      - condition: "$response.body.name != null"
+    outputs:
+      name: "$response.body.name"
+      born: "$response.body.born"
+      location: "$response.body.location"
+      description: "$response.body.description"
+
+  - operationId: submit_new_quote
+    description: >
+      Post a new quote via the authenticated add-quote form. Runtime will
+      prompt for confirmation before submitting (confirmationPolicy in
+      profile requires it).
+    sourceDescription: quotes_toscrape
+    sourceOperationId: add_quote
+    request:
+      body:
+        author: "$inputs.author"
+        text: "$inputs.text"
+        tags: "$inputs.tags"
+    successCriteria:
+      - condition: "$response.statusCode == 200"
+
+# ---------------------------------------------------------------------------
+# Workflows
+# ---------------------------------------------------------------------------
+
+workflows:
+  - workflowId: collect_all_quotes
+    type: sequence
+    description: >
+      Pages through the full quote listing (pages 1–3) sequentially, then
+      fans out to author bios in a parallel sub-workflow.
+    inputs:
+      type: object
+      properties:
+        max_pages:
+          type: integer
+    steps:
+      - stepId: page1
+        operationRef: fetch_quotes_page
+        inputs:
+          page: 1
+        outputs:
+          quotes: "$response.body.quotes"
+          authors: "$response.body.authors"
+
+      - stepId: page2
+        operationRef: fetch_quotes_page
+        dependsOn: [page1]
+        inputs:
+          page: 2
+        outputs:
+          quotes: "$response.body.quotes"
+          authors: "$response.body.authors"
+
+      - stepId: page3
+        operationRef: fetch_quotes_page
+        dependsOn: [page2]
+        inputs:
+          page: 3
+        outputs:
+          quotes: "$response.body.quotes"
+          authors: "$response.body.authors"
+
+      - stepId: author_bios
+        operationRef: fetch_author_bio
+        dependsOn: [page1, page2, page3]
+        inputs:
+          author_slugs: "$steps.page1.outputs.authors"
+        outputs:
+          bios: "$response.body"
+
+      - stepId: collect
+        type: merge
+        description: Merge all quote pages and bios into a single result.
+        dependsOn: [page3, author_bios]
+
+    outputs:
+      all_quotes: "$steps.collect.outputs"
+
+  - workflowId: tag_and_add_quote
+    type: sequence
+    description: >
+      Fetches quotes for a given tag, then — if enabled — submits a new
+      quote under the same tag via the authenticated add form.
+    inputs:
+      type: object
+      required: [tag]
+      properties:
+        tag:
+          type: string
+        new_quote_author:
+          type: string
+        new_quote_text:
+          type: string
+        submit_new:
+          type: boolean
+    steps:
+      - stepId: tag_listing
+        operationRef: fetch_quotes_by_tag
+        inputs:
+          tag: "$inputs.tag"
+        outputs:
+          quotes: "$response.body.quotes"
+
+      - stepId: add_quote
+        operationRef: submit_new_quote
+        dependsOn: [tag_listing]
+        when: "$inputs.submit_new == true"
+        inputs:
+          author: "$inputs.new_quote_author"
+          text: "$inputs.new_quote_text"
+          tags: "$inputs.tag"
+
+      - stepId: collect_tagged
+        type: merge
+        dependsOn: [tag_listing, add_quote]
+
+    outputs:
+      tag_quotes: "$steps.tag_listing.outputs.quotes"
+
+# ---------------------------------------------------------------------------
+# Results
+# ---------------------------------------------------------------------------
+
+results:
+  - name: full_quote_collection
+    kind: merge
+    from: collect_all_quotes.collect
+    value: "$steps.collect.outputs"
+
+  - name: tag_quote_collection
+    kind: merge
+    from: tag_and_add_quote.collect_tagged
+    value: "$steps.tag_listing.outputs.quotes"

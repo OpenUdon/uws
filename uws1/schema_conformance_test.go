@@ -56,14 +56,16 @@ func schemaDefCoverage() map[string]schemaDefRules {
 			patternProps: []string{"name"},
 		},
 		"operation-object": {
-			required:     []string{"operationId"},
-			patternProps: []string{"sourceOperationRef", "openapiOperationRef", "x-uws-operation-profile"},
+			required:                 []string{"operationId"},
+			patternProps:             []string{"sourceOperationRef", "openapiOperationRef", "x-uws-operation-profile"},
+			propertyNamePatternProps: []string{"outputs"},
 		},
 		"request-binding-object": {},
 		"workflow-object": {
-			required:     []string{"workflowId", "type"},
-			enumProps:    []string{"type"},
-			patternProps: []string{"workflowId"},
+			required:                 []string{"workflowId", "type"},
+			enumProps:                []string{"type"},
+			patternProps:             []string{"workflowId"},
+			propertyNamePatternProps: []string{"outputs"},
 		},
 		"idempotency-object": {
 			required:     []string{"key"},
@@ -71,9 +73,10 @@ func schemaDefCoverage() map[string]schemaDefRules {
 			patternProps: []string{"key"},
 		},
 		"step-object": {
-			required:     []string{"stepId"},
-			enumProps:    []string{"type"},
-			patternProps: []string{"stepId"},
+			required:                 []string{"stepId"},
+			enumProps:                []string{"type"},
+			patternProps:             []string{"stepId"},
+			propertyNamePatternProps: []string{"outputs"},
 		},
 		"case-object": {
 			required: []string{"name"},

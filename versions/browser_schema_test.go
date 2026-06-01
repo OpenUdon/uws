@@ -102,6 +102,33 @@ func TestBrowserProfileSchemaRejectsUnsafeOutputs(t *testing.T) {
 			require.Error(t, validateBrowserProfile(t, schema, profile))
 		})
 	}
+
+	t.Run("css output allows attribute", func(t *testing.T) {
+		profile := profileWithOutput(map[string]any{
+			"type":           "string",
+			"source":         "css",
+			"selector":       ".titleline > a",
+			"attribute":      "href",
+			"fallbackReason": "no_structured_data",
+			"validation":     map[string]any{"type": "string"},
+		})
+		require.NoError(t, validateBrowserProfile(t, schema, profile))
+	})
+
+	for _, source := range []string{"a11y", "jsonld", "microdata"} {
+		t.Run(source+" output forbids attribute", func(t *testing.T) {
+			out := map[string]any{
+				"type":      "string",
+				"source":    source,
+				"attribute": "href",
+			}
+			if source == "a11y" {
+				out["locator"] = map[string]any{"role": "link"}
+			}
+			profile := profileWithOutput(out)
+			require.Error(t, validateBrowserProfile(t, schema, profile))
+		})
+	}
 }
 
 func TestBrowserProfileSchemaRejectsUnsafeSideEffects(t *testing.T) {
@@ -149,6 +176,30 @@ func TestBrowserProfileSchemaRejectsEmptyDurations(t *testing.T) {
 			require.Error(t, validateBrowserProfile(t, schema, profile))
 		})
 	}
+}
+
+func TestBrowserProfileSchemaAcceptsExpandedRoles(t *testing.T) {
+	schema := compileBrowserProfileSchema(t)
+
+	for _, role := range []string{"heading", "img", "list", "listitem", "combobox", "option", "tab", "table", "row", "cell", "region", "navigation", "article", "switch", "group"} {
+		t.Run(role, func(t *testing.T) {
+			profile := profileWithOutput(map[string]any{
+				"type":    "string",
+				"source":  "a11y",
+				"locator": map[string]any{"role": role},
+			})
+			require.NoError(t, validateBrowserProfile(t, schema, profile))
+		})
+	}
+
+	t.Run("unknown role rejected", func(t *testing.T) {
+		profile := profileWithOutput(map[string]any{
+			"type":    "string",
+			"source":  "a11y",
+			"locator": map[string]any{"role": "spreadsheet"},
+		})
+		require.Error(t, validateBrowserProfile(t, schema, profile))
+	})
 }
 
 func compileBrowserProfileSchema(t *testing.T) *jsonschema.Schema {

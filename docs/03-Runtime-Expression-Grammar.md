@@ -4,7 +4,7 @@
 
 ---
 
-UWS uses runtime expression strings in control-flow fields (`when`, `forEach`, `wait`, `items`, `batchSize`), in criterion conditions, and in the string values of `outputs` maps. The expression language is deliberately small and normative — a runtime that implements it verbatim is portable by construction.
+UWS uses runtime expression strings in control-flow fields (`when`, `forEach`, `wait`, `items`, `batchSize`), in criterion conditions, in the string values of `outputs` maps, in a step's `inputs` values, and in `request` binding values. The expression language is deliberately small and normative — a runtime that implements it verbatim is portable by construction.
 
 ## Expression Sources
 
@@ -24,6 +24,10 @@ Every expression references data through a leading `$` sigil. A dotted suffix `.
 | `$variables.<name>.<path>` | Dot-walk into a structured variable value |
 | `$trigger` | The payload delivered by the enclosing trigger |
 | `$trigger.<path>` | Dot-walk into the trigger payload |
+| `$inputs` | The current scope's input bindings. In a workflow step's `inputs` values: the enclosing workflow's inputs. In an operation's `request` fields: the calling step's `inputs` bindings. |
+| `$inputs.<path>` | Dot-walk into the current scope's inputs |
+| `$item` | The current iteration value. Valid only inside a `forEach` context. Resolves to the element at the current index of the items collection. Supports dot-walk: `$item.name`. |
+| `$index` | The 0-based integer index of the current iteration. Valid only inside a `forEach` context. |
 
 A resolved value may be any JSON type: string, number, boolean, null, object, or array.
 
@@ -131,6 +135,49 @@ operations:
         region:   $variables.config.region
 ```
 
+## Step Inputs and `$inputs`
+
+Workflow steps can pass explicit input bindings to the operation they call. These are declared under the step's `inputs` map — keys are binding names, values are literal JSON values or runtime expression strings:
+
+```yaml
+workflows:
+  - workflowId: lookup_article
+    type: sequence
+    inputs:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string }
+    steps:
+      - stepId: navigate
+        operationRef: go_to_article
+        inputs:
+          # $inputs.title here resolves to the workflow's runtime-provided input
+          title: "$inputs.title"
+```
+
+Inside the called operation's `request` fields, `$inputs.<name>` resolves to the step's input bindings:
+
+```yaml
+operations:
+  - operationId: go_to_article
+    sourceDescription: wikipedia
+    sourceOperationId: navigate_to_article
+    request:
+      body:
+        # $inputs.title resolves to the calling step's inputs.title binding
+        title: "$inputs.title"
+    outputs:
+      is_disambiguation: "$response.body.is_disambiguation"
+```
+
+**Scope resolution:**
+
+| Context | `$inputs.<name>` resolves to |
+|---------|------------------------------|
+| In a workflow step's `inputs` values | The enclosing workflow's runtime-provided inputs |
+| In an operation's `request` fields | The calling step's `inputs` bindings |
+
 ## Trigger Payload Access with `$trigger`
 
 Inside workflows started by a trigger dispatch, `$trigger` holds the inbound payload:
@@ -233,7 +280,8 @@ condition      = source-expr SP op SP operand
 op             = "==" / "!=" / "<=" / ">=" / "<" / ">"
 operand        = source-expr / literal
 
-source-expr    = response-expr / outputs-expr / steps-expr / variables-expr / trigger-expr
+source-expr    = response-expr / outputs-expr / steps-expr / variables-expr
+               / trigger-expr / inputs-expr / item-expr / index-expr
 response-expr  = "$response.statusCode"
                / "$response.body" [ json-pointer ]
                / "$response.headers." header-name
@@ -241,6 +289,9 @@ outputs-expr   = "$outputs." name [ "." path ]
 steps-expr     = "$steps." identifier ".outputs." name [ "." path ]
 variables-expr = "$variables." name [ "." path ]
 trigger-expr   = "$trigger" [ "." path ]
+inputs-expr    = "$inputs" [ "." path ]
+item-expr      = "$item" [ "." path ]
+index-expr     = "$index"
 
 path           = segment *( "." segment )
 segment        = 1*id-char

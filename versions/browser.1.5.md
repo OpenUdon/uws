@@ -101,7 +101,7 @@ coordinate references are NOT permitted as locator forms.
 
 | Field | Type | Purpose |
 | --- | --- | --- |
-| `role` | enum | REQUIRED. One of `button`, `link`, `textbox`, `checkbox`, `radio`, `dialog`, `status`, `alert`. |
+| `role` | enum | REQUIRED. One of `button`, `link`, `textbox`, `checkbox`, `radio`, `dialog`, `status`, `alert`, `heading`, `img`, `list`, `listitem`, `combobox`, `option`, `menu`, `menuitem`, `tab`, `tabpanel`, `table`, `row`, `cell`, `region`, `navigation`, `article`, `form`, `search`, `switch`, `group`. |
 | `name` | string | Accessible name (label / `aria-label` / computed name). |
 | `text` | string | Accessible inner text for `status`/`alert` matching. |
 | `value` | string | Current value/state (checked, selected, etc.). |
@@ -138,9 +138,12 @@ field and how to extract it:
 
 | Field | Type | Purpose |
 | --- | --- | --- |
-| `type` | string | Declared JSON type for the extracted value (string, integer, boolean, …). |
+| `type` | enum | REQUIRED. Declared JSON type: `string`, `integer`, `number`, `boolean`, `array`, `object`, or `null`. |
 | `source` | enum | REQUIRED. `a11y` \| `jsonld` \| `microdata` \| `css`. |
 | `locator` | locator object | REQUIRED only when `source: a11y`; forbidden for other sources. |
+| `presence` | boolean | When `true` and `source: a11y`, the runtime returns `true`/`false` based on whether the locator resolves rather than extracting accessible text. Only valid with `source: a11y`. |
+| `property` | string | The itemprop (microdata) or JSON-LD property name to extract. When absent, the output key name is used. Only valid with `source: microdata` or `source: jsonld`. |
+| `attribute` | string | DOM attribute name to extract from the matched element (e.g. `href`, `src`, `datetime`) instead of its text content. Only valid with `source: css`. |
 | `selector` | string | REQUIRED only when `source: css`; forbidden for other sources. |
 | `fallbackReason` | enum | REQUIRED only when `source: css`; forbidden for other sources. One of `no_a11y_region`, `no_structured_data`, `ambiguous_a11y`, `other`. |
 | `validation` | inline JSON Schema | REQUIRED when `source: css`; optional constraints for other extracted values (e.g. `enum`, `pattern`). |
@@ -150,6 +153,35 @@ a **tightly-constrained fallback** that MUST: (a) be paired with a typed
 `validation` schema; (b) record a `fallbackReason`; (c) be surfaced as
 lower-confidence evidence in runtime reports. CSS is permitted for outputs only
 — never as a *locator*.
+
+When `presence: true` is set on an `a11y` output, `type` MUST be `boolean`.
+Runtimes MUST NOT extract accessible text for presence-typed outputs — the sole
+result is whether the locator matched at least one accessibility-tree element.
+
+When `property` is set on a `microdata` or `jsonld` output, it names the
+itemprop attribute value or JSON-LD property key to extract. When absent,
+tooling SHOULD match the output key name to an itemprop or property of the same
+name; runtimes that cannot match fall back to returning `null`.
+
+When `attribute` is set on a `css` output, the runtime extracts the named DOM
+attribute of the matched element (for example `href` from a link or `src` from
+an image) instead of the element's text content. `attribute` is valid only with
+`source: css`; the output still MUST carry `fallbackReason` and a typed
+`validation` schema like any other css output. Attribute extraction does not
+apply to `a11y`, `jsonld`, or `microdata` outputs — accessible state is exposed
+through the locator's `value`, and structured-data values through `property`.
+
+## Parameters and Default Substitution
+
+Each action's `parameters` field is an inline JSON Schema describing the
+templatable inputs. Parameter values are substituted into sequence steps via
+`{{paramName}}` placeholders.
+
+If a parameter carries a JSON Schema `default`, runtimes MUST substitute that
+default into `{{paramName}}` placeholders when the caller omits the parameter.
+A parameter that is neither supplied by the caller nor has a `default` MUST
+cause the runtime to fail the action with a missing-parameter error before any
+sequence steps execute.
 
 ## Side Effects and Confirmation
 

@@ -171,7 +171,27 @@
                         "radio",
                         "dialog",
                         "status",
-                        "alert"
+                        "alert",
+                        "heading",
+                        "img",
+                        "list",
+                        "listitem",
+                        "combobox",
+                        "option",
+                        "menu",
+                        "menuitem",
+                        "tab",
+                        "tabpanel",
+                        "table",
+                        "row",
+                        "cell",
+                        "region",
+                        "navigation",
+                        "article",
+                        "form",
+                        "search",
+                        "switch",
+                        "group"
                     ]
                 },
                 "name": {
@@ -372,7 +392,17 @@
             ],
             "properties": {
                 "type": {
-                    "type": "string"
+                    "description": "Declared JSON type for the extracted value.",
+                    "type": "string",
+                    "enum": [
+                        "string",
+                        "integer",
+                        "number",
+                        "boolean",
+                        "array",
+                        "object",
+                        "null"
+                    ]
                 },
                 "source": {
                     "type": "string",
@@ -403,6 +433,18 @@
                 "validation": {
                     "description": "Inline JSON Schema for the extracted value.",
                     "type": "object"
+                },
+                "presence": {
+                    "description": "When true and source is a11y, the runtime returns a boolean indicating whether the locator resolves rather than the element's accessible text. Only valid with source: a11y.",
+                    "type": "boolean"
+                },
+                "property": {
+                    "description": "The itemprop (microdata) or JSON-LD property name to extract. When absent, the output key name is used. Only valid with source: microdata or source: jsonld.",
+                    "type": "string"
+                },
+                "attribute": {
+                    "description": "DOM attribute name to extract from the matched element (e.g. href, src, datetime) instead of its text content. Only valid with source: css.",
+                    "type": "string"
                 }
             },
             "allOf": [
@@ -424,8 +466,22 @@
                             "validation"
                         ],
                         "not": {
-                            "required": [
-                                "locator"
+                            "anyOf": [
+                                {
+                                    "required": [
+                                        "locator"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "presence"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "property"
+                                    ]
+                                }
                             ]
                         }
                     }
@@ -457,6 +513,16 @@
                                 {
                                     "required": [
                                         "fallbackReason"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "property"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "attribute"
                                     ]
                                 }
                             ]
@@ -493,6 +559,16 @@
                                 {
                                     "required": [
                                         "fallbackReason"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "presence"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "attribute"
                                     ]
                                 }
                             ]

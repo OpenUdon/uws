@@ -1,0 +1,95 @@
+uws: "1.5.0"
+info:
+  title: Book Catalogue Scraper
+  summary: >
+    Scrapes a full category listing from books.toscrape.com using the UWS 1.5
+    browser-profile source type. For every book in the Mystery category it
+    fetches the listing summary and then the detail page, collecting title,
+    price, rating, UPC, tax, and stock count.
+  version: "1.0.0"
+
+sourceDescriptions:
+  - name: books_toscrape
+    type: browser-profile
+    url: ./browser-profiles/books-toscrape.yaml
+
+operations:
+  - operationId: scrape_mystery_listing
+    description: Fetch the first page of the Mystery category listing.
+    sourceDescription: books_toscrape
+    sourceOperationId: list_books_by_category
+    request:
+      body:
+        category_path: "catalogue/category/books/mystery_3/index.html"
+    successCriteria:
+      - condition: "$response.body.book_paths != null"
+    outputs:
+      book_paths: "$response.body.book_paths"
+      prices: "$response.body.prices"
+      ratings: "$response.body.ratings"
+
+  - operationId: scrape_next_page
+    description: >
+      Advance to the second page of results. Depends on the listing having
+      loaded so pagination state is established.
+    sourceDescription: books_toscrape
+    sourceOperationId: go_to_next_page
+    dependsOn: [scrape_mystery_listing]
+    successCriteria:
+      - condition: "$response.statusCode == 200"
+
+  - operationId: scrape_book_detail
+    description: >
+      Fetch the full detail page for a single book. Called once per book
+      path via forEach on the workflow step.
+    sourceDescription: books_toscrape
+    sourceOperationId: get_book_detail
+    request:
+      body:
+        book_path: "$inputs.book_path"
+    successCriteria:
+      - condition: "$response.body.upc != null"
+    outputs:
+      title: "$response.body.title"
+      upc: "$response.body.upc"
+      price_excl_tax: "$response.body.price_excl_tax"
+      price_incl_tax: "$response.body.price_incl_tax"
+      tax: "$response.body.tax"
+      availability: "$response.body.availability"
+      stock_count: "$response.body.stock_count"
+
+workflows:
+  - workflowId: scrape_mystery_books
+    type: sequence
+    description: >
+      Runs the listing scrape, then fans out via forEach over each book path
+      to fetch detail pages. The merge step aggregates per-book records into
+      a single output.
+    steps:
+      - stepId: listing
+        operationRef: scrape_mystery_listing
+        outputs:
+          book_paths: "$response.body.book_paths"
+
+      - stepId: detail
+        operationRef: scrape_book_detail
+        dependsOn: [listing]
+        forEach: "$steps.listing.outputs.book_paths"
+        inputs:
+          book_path: "$item"
+        outputs:
+          books: "$response.body"
+
+      - stepId: collect
+        type: merge
+        description: Combine all per-book detail records.
+        dependsOn: [detail]
+
+    outputs:
+      all_books: "$steps.collect.outputs"
+
+results:
+  - name: mystery_books
+    kind: merge
+    from: scrape_mystery_books.collect
+    value: "$steps.collect.outputs"
