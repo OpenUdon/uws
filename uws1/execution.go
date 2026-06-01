@@ -142,8 +142,11 @@ func (o *Orchestrator) ExecuteStep(ctx context.Context, step *Step) error {
 		responseID = strings.TrimSpace(step.Workflow)
 	}
 	return o.executeRunnable(ctx, stepKey(step.StepID), step.StepID, "step:"+step.Type, responseID, step.DependsOn, step.When, step.ForEach, step.Outputs, func(ctx context.Context) error {
+		if step.Inputs != nil {
+			ctx = withInputsContext(ctx, step.Inputs)
+		}
 		if step.OperationRef != "" {
-			return o.executeOperationByID(ctx, step.OperationRef)
+			return o.executeOperationByIDForStep(ctx, step.OperationRef, step.StepID)
 		}
 		if step.Workflow != "" {
 			return o.executeWorkflowByID(ctx, step.Workflow)
@@ -161,11 +164,19 @@ func (o *Orchestrator) executeWorkflowByID(ctx context.Context, workflowID strin
 }
 
 func (o *Orchestrator) executeOperationByID(ctx context.Context, operationID string) error {
+	return o.executeOperationByIDWithKey(ctx, operationID, operationKey(operationID))
+}
+
+func (o *Orchestrator) executeOperationByIDForStep(ctx context.Context, operationID, stepID string) error {
+	return o.executeOperationByIDWithKey(ctx, operationID, stepOperationKey(stepID, operationID))
+}
+
+func (o *Orchestrator) executeOperationByIDWithKey(ctx context.Context, operationID, key string) error {
 	op := o.opIndex[operationID]
 	if op == nil {
 		return fmt.Errorf("uws1: operation %q not found", operationID)
 	}
-	return o.executeRunnable(ctx, operationKey(op.OperationID), op.OperationID, "operation", op.OperationID, op.DependsOn, op.When, op.ForEach, op.Outputs, func(ctx context.Context) error {
-		return o.executeOperation(ctx, op)
+	return o.executeRunnable(ctx, key, op.OperationID, "operation", op.OperationID, op.DependsOn, op.When, op.ForEach, op.Outputs, func(ctx context.Context) error {
+		return o.executeOperation(ctx, op, key)
 	})
 }

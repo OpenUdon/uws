@@ -14,6 +14,7 @@ func (o *Orchestrator) withRecordContext(ctx context.Context) context.Context {
 	}
 	state.Iteration = cloneIteration(state.Iteration)
 	state.Trigger = cloneTriggerContext(state.Trigger)
+	state.Inputs = cloneInputs(state.Inputs)
 	state.Records = o.snapshotRecords()
 	state.Current = cloneCurrentExecution(state.Current)
 	return WithExecutionContext(ctx, state)
@@ -27,6 +28,7 @@ func (o *Orchestrator) withIterationContext(ctx context.Context, item any, index
 		state = &ExecutionContext{
 			Iteration: cloneIteration(state.Iteration),
 			Trigger:   cloneTriggerContext(state.Trigger),
+			Inputs:    cloneInputs(state.Inputs),
 			Records:   state.Records,
 			Current:   cloneCurrentExecution(state.Current),
 		}
@@ -95,6 +97,7 @@ func (o *Orchestrator) withCurrentExecutionContext(ctx context.Context, key, id,
 		state = &ExecutionContext{
 			Iteration: cloneIteration(state.Iteration),
 			Trigger:   cloneTriggerContext(state.Trigger),
+			Inputs:    cloneInputs(state.Inputs),
 			Records:   state.Records,
 			Current:   cloneCurrentExecution(state.Current),
 		}
@@ -109,6 +112,23 @@ func (o *Orchestrator) withCurrentExecutionContext(ctx context.Context, key, id,
 	if state.Records == nil {
 		state.Records = o.snapshotRecords()
 	}
+	return WithExecutionContext(ctx, state)
+}
+
+func withInputsContext(ctx context.Context, inputs map[string]any) context.Context {
+	state, ok := ExecutionContextFromContext(ctx)
+	if !ok || state == nil {
+		state = &ExecutionContext{}
+	} else {
+		state = &ExecutionContext{
+			Iteration: cloneIteration(state.Iteration),
+			Trigger:   cloneTriggerContext(state.Trigger),
+			Inputs:    cloneInputs(state.Inputs),
+			Records:   state.Records,
+			Current:   cloneCurrentExecution(state.Current),
+		}
+	}
+	state.Inputs = cloneInputs(inputs)
 	return WithExecutionContext(ctx, state)
 }
 
@@ -145,6 +165,17 @@ func (o *Orchestrator) resolveOutputs(ctx context.Context, key, id, kind, respon
 
 func cloneMapAny(src map[string]any) map[string]any {
 	if len(src) == 0 {
+		return nil
+	}
+	out := make(map[string]any, len(src))
+	for key, value := range src {
+		out[key] = value
+	}
+	return out
+}
+
+func cloneInputs(src map[string]any) map[string]any {
+	if src == nil {
 		return nil
 	}
 	out := make(map[string]any, len(src))

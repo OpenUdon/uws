@@ -53,7 +53,7 @@ func TestDocumentDispatchTriggerExecutesTopLevelStepTargets(t *testing.T) {
 	assert.Equal(t, []string{"fetch", "save"}, runtime.executedLeafs)
 	records := doc.ExecutionRecords()
 	require.Contains(t, records, "step:save_step")
-	assert.Equal(t, "webhook", records["op:save"].Outputs["kind"])
+	assert.Equal(t, "webhook", records["stepop:save_step:save"].Outputs["kind"])
 }
 
 func TestDocumentDispatchTriggerExecutesWorkflowTargets(t *testing.T) {

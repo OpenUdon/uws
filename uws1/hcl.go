@@ -145,6 +145,7 @@ func (s *Step) UnmarshalHCL(data []byte, labels ...string) error {
 	*s = Step(alias)
 	transformDescriptionFromHCL(&s.Description)
 	transformDynamicMapFromHCL(&s.Body)
+	transformDynamicMapFromHCL(&s.Inputs)
 	transformExtensionsFromHCL(s.Extensions)
 	return nil
 }

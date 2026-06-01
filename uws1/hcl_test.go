@@ -166,6 +166,33 @@ extensions {
 	}
 }
 
+func TestStepHCLRestoresInputDollarKeysDirectly(t *testing.T) {
+	stepHCL := []byte(`
+operationRef = "op1"
+inputs = {
+  __dollar__expr = "$inputs.name"
+  nested = {
+    _ref = "#/components/schemas/Input"
+  }
+}
+`)
+
+	var step Step
+	if err := dethcl.Unmarshal(stepHCL, &step, "s1"); err != nil {
+		t.Fatalf("dethcl.Unmarshal step failed: %v", err)
+	}
+	if step.StepID != "s1" {
+		t.Fatalf("expected label to populate stepId, got %q", step.StepID)
+	}
+	if got := step.Inputs["$expr"]; got != "$inputs.name" {
+		t.Fatalf("expected restored step input $expr, got %#v", step.Inputs)
+	}
+	nested, ok := step.Inputs["nested"].(map[string]any)
+	if !ok || nested["$ref"] != "#/components/schemas/Input" {
+		t.Fatalf("expected restored nested step input $ref, got %#v", step.Inputs["nested"])
+	}
+}
+
 func TestDocumentHCLInterfacesMarshalThroughDethcl(t *testing.T) {
 	doc := &Document{
 		UWS: "1.0.0",

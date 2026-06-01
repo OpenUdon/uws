@@ -141,6 +141,9 @@ func walkHCLStepFields(path string, step *Step, h documentHCLWalkHandlers) error
 	if err := walkHCLDynamicMap(path+".body", &step.Body, h); err != nil {
 		return err
 	}
+	if err := walkHCLDynamicMap(path+".inputs", &step.Inputs, h); err != nil {
+		return err
+	}
 	return nil
 }
 

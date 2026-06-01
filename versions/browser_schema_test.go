@@ -92,6 +92,26 @@ func TestBrowserProfileSchemaRejectsUnsafeOutputs(t *testing.T) {
 		require.Error(t, validateBrowserProfile(t, schema, profile))
 	})
 
+	t.Run("a11y presence output requires boolean type", func(t *testing.T) {
+		profile := profileWithOutput(map[string]any{
+			"type":     "string",
+			"source":   "a11y",
+			"locator":  map[string]any{"role": "status"},
+			"presence": true,
+		})
+		require.Error(t, validateBrowserProfile(t, schema, profile))
+	})
+
+	t.Run("a11y presence output accepts boolean type", func(t *testing.T) {
+		profile := profileWithOutput(map[string]any{
+			"type":     "boolean",
+			"source":   "a11y",
+			"locator":  map[string]any{"role": "status"},
+			"presence": true,
+		})
+		require.NoError(t, validateBrowserProfile(t, schema, profile))
+	})
+
 	for _, source := range []string{"jsonld", "microdata"} {
 		t.Run(source+" output forbids locator", func(t *testing.T) {
 			profile := profileWithOutput(map[string]any{

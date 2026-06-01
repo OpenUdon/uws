@@ -8,6 +8,7 @@ type executionContextKey struct{}
 type ExecutionContext struct {
 	Iteration *IterationContext
 	Trigger   *TriggerExecutionContext
+	Inputs    map[string]any
 	Records   map[string]ExecutionRecord
 	Current   *CurrentExecutionContext
 }

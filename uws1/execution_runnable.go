@@ -81,6 +81,10 @@ func (o *Orchestrator) executeForEach(ctx context.Context, execKey, key, id, kin
 		itemKey := o.keyForContext(itemCtx, key)
 		o.setRecord(itemKey, ExecutionRecord{ID: id, Kind: kind, Status: "running"})
 		if err := run(itemCtx); err != nil {
+			if isControlSignal(err) {
+				o.setRecord(itemKey, ExecutionRecord{ID: id, Kind: kind, Status: "success"})
+				return err
+			}
 			o.setRecord(itemKey, ExecutionRecord{ID: id, Kind: kind, Status: "error", Error: err.Error()})
 			return err
 		}
@@ -228,9 +232,50 @@ func (o *Orchestrator) executeDependency(ctx context.Context, name string) error
 		return o.ExecuteWorkflow(ctx, wf)
 	}
 	if op := o.opIndex[name]; op != nil {
+		if satisfied, err := o.waitForExistingOperationInvocation(ctx, op.OperationID); satisfied || err != nil {
+			return err
+		}
 		return o.executeOperationByID(ctx, op.OperationID)
 	}
 	return fmt.Errorf("uws1: unknown dependency %q", name)
+}
+
+func (o *Orchestrator) waitForExistingOperationInvocation(ctx context.Context, operationID string) (bool, error) {
+	for {
+		o.mu.Lock()
+		keys := o.operationInvocationKeysLocked(operationID)
+		if len(keys) == 0 {
+			o.mu.Unlock()
+			return false, nil
+		}
+		chans := make([]chan struct{}, 0, len(keys))
+		for _, key := range keys {
+			if ch := o.inFlight[key]; ch != nil {
+				chans = append(chans, ch)
+			}
+		}
+		if len(chans) == 0 {
+			for _, key := range keys {
+				record := o.records[key]
+				cachedErr := o.recordErrors[key]
+				if err := replayedRunnableError(record, cachedErr); err != nil {
+					o.mu.Unlock()
+					return true, err
+				}
+			}
+			o.mu.Unlock()
+			return true, nil
+		}
+		o.mu.Unlock()
+
+		for _, ch := range chans {
+			select {
+			case <-ctx.Done():
+				return true, ctx.Err()
+			case <-ch:
+			}
+		}
+	}
 }
 
 func (o *Orchestrator) entryWorkflow() (*Workflow, error) {
@@ -248,6 +293,9 @@ func (o *Orchestrator) evaluateTruthy(ctx context.Context, expr string) (bool, e
 func operationKey(id string) string { return "op:" + id }
 func workflowKey(id string) string  { return "wf:" + id }
 func stepKey(id string) string      { return "step:" + id }
+func stepOperationKey(stepID, operationID string) string {
+	return "stepop:" + stepID + ":" + operationID
+}
 
 // compositeKey returns the per-iteration key for a runnable executing inside a
 // forEach/loop frame. Iter < 0 means "no iteration suffix".

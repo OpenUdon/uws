@@ -147,10 +147,10 @@ func TestOrchestratorCapturesOutputs(t *testing.T) {
 
 	require.NoError(t, doc.Execute(context.Background()))
 	records := doc.ExecutionRecords()
-	require.Contains(t, records, "op:fetch")
+	require.Contains(t, records, "stepop:fetch_step:fetch")
 	require.Contains(t, records, "step:fetch_step")
 	require.Contains(t, records, "wf:main")
-	assert.Equal(t, map[string]any{"city": "Toronto"}, records["op:fetch"].Outputs["body"])
+	assert.Equal(t, map[string]any{"city": "Toronto"}, records["stepop:fetch_step:fetch"].Outputs["body"])
 	assert.Equal(t, map[string]any{"city": "Toronto"}, records["step:fetch_step"].Outputs["copy"])
 	assert.Equal(t, map[string]any{"city": "Toronto"}, records["wf:main"].Outputs["from_step"])
 }

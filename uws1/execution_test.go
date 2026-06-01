@@ -14,11 +14,15 @@ type mockRuntime struct {
 	executedLeafs []string
 	expressions   map[string]any
 	items         map[string][]any
+	execute       func(context.Context, *Operation) error
 	eval          func(context.Context, string) (any, error)
 }
 
 func (m *mockRuntime) ExecuteLeaf(ctx context.Context, op *Operation) error {
 	m.executedLeafs = append(m.executedLeafs, op.OperationID)
+	if m.execute != nil {
+		return m.execute(ctx, op)
+	}
 	return nil
 }
 
@@ -80,6 +84,38 @@ func TestOrchestratorExecuteSequenceWorkflow(t *testing.T) {
 	if len(runtime.executedLeafs) != 2 || runtime.executedLeafs[0] != "op1" || runtime.executedLeafs[1] != "op2" {
 		t.Fatalf("unexpected execution order: %v", runtime.executedLeafs)
 	}
+}
+
+func TestStepInputsAreVisiblePerOperationInvocation(t *testing.T) {
+	doc := testDocument(&Operation{OperationID: "shared"})
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		Steps: []*Step{
+			{StepID: "first", OperationRef: "shared", Inputs: map[string]any{"value": "one"}},
+			{StepID: "second", OperationRef: "shared", Inputs: map[string]any{"value": "two"}},
+		},
+	}}
+	var seen []map[string]any
+	runtime := &mockRuntime{
+		execute: func(ctx context.Context, op *Operation) error {
+			state, ok := ExecutionContextFromContext(ctx)
+			require.True(t, ok)
+			seen = append(seen, cloneInputs(state.Inputs))
+			return nil
+		},
+	}
+	doc.SetRuntime(runtime)
+
+	require.NoError(t, doc.Execute(context.Background()))
+	require.Equal(t, []string{"shared", "shared"}, runtime.executedLeafs)
+	require.Equal(t, []map[string]any{
+		{"value": "one"},
+		{"value": "two"},
+	}, seen)
+	records := doc.ExecutionRecords()
+	require.Contains(t, records, "stepop:first:shared")
+	require.Contains(t, records, "stepop:second:shared")
 }
 
 func TestOrchestratorSkipsWhenFalse(t *testing.T) {
@@ -379,6 +415,43 @@ func TestOrchestratorForEachAggregatesOutputsAndResults(t *testing.T) {
 	assert.Equal(t, 1, records["op:op1#iter:0"].Outputs["value"])
 }
 
+func TestOrchestratorForEachRecordsControlSignalIterationAsSuccess(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		action *SuccessAction
+	}{
+		{name: "end", action: &SuccessAction{Name: "stop", Type: "end"}},
+		{name: "goto", action: &SuccessAction{Name: "jump", Type: "goto", StepID: "target"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			doc := testDocument(
+				&Operation{OperationID: "op1", OnSuccess: []*SuccessAction{tc.action}},
+				&Operation{OperationID: "op2"},
+			)
+			doc.Workflows = []*Workflow{{
+				WorkflowID: "main",
+				Type:       WorkflowTypeSequence,
+				Steps: []*Step{
+					{
+						StepID:       "each",
+						OperationRef: "op1",
+						StepExecutionFields: StepExecutionFields{
+							ForEach: "items",
+						},
+					},
+					{StepID: "target", OperationRef: "op2"},
+				},
+			}}
+			doc.SetRuntime(&mockRuntime{items: map[string][]any{"items": {"one", "two"}}})
+
+			require.NoError(t, doc.Execute(context.Background()))
+			record := doc.ExecutionRecords()["step:each#iter:0"]
+			require.Equal(t, "success", record.Status)
+			require.Empty(t, record.Error)
+		})
+	}
+}
+
 func TestOrchestratorExecuteStepWorkflowReference(t *testing.T) {
 	doc := testDocument(&Operation{OperationID: "leaf"})
 	doc.Workflows = []*Workflow{
@@ -480,6 +553,39 @@ func TestOrchestratorExecuteMergeUsesDeclaredDependenciesOnly(t *testing.T) {
 	if results[0]["id"] != "left" || results[1]["id"] != "right" {
 		t.Fatalf("unexpected dependency order in merge result: %#v", results)
 	}
+}
+
+func TestOrchestratorColonOperationDependencyDoesNotMatchSuffix(t *testing.T) {
+	doc := testDocument(
+		&Operation{OperationID: "a:b"},
+		&Operation{OperationID: "b"},
+	)
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		Steps: []*Step{
+			{StepID: "colon", OperationRef: "a:b"},
+			{
+				StepID: "join",
+				Type:   WorkflowTypeMerge,
+				StepExecutionFields: RunnableExecutionFields{
+					DependsOn: []string{"b"},
+				},
+			},
+		},
+	}}
+	runtime := &mockRuntime{}
+	doc.SetRuntime(runtime)
+
+	require.NoError(t, doc.Execute(context.Background()))
+	assert.Equal(t, []string{"a:b", "b"}, runtime.executedLeafs)
+
+	record := doc.ExecutionRecords()["step:join"]
+	results, ok := record.Result.([]map[string]any)
+	require.True(t, ok, "unexpected merge result type: %#v", record.Result)
+	require.Len(t, results, 1)
+	assert.Equal(t, "b", results[0]["id"])
+	assert.Equal(t, "operation", results[0]["kind"])
 }
 
 func TestDocumentValidateExecutableRejectsAmbiguousIDs(t *testing.T) {

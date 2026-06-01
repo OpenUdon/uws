@@ -237,6 +237,48 @@ Settled scope:
   them.
 - `browser-profile` is the *weakest* first-class source type by intent;
   tooling SHOULD prefer a published API source when one covers the task.
+- Browser-profile examples that exercise scraping, crawling, browser evidence,
+  reviewed UI profiles, or wrapper sidecars belong in `../browsertools`; this
+  repository keeps only the schema/spec fixtures needed to validate the UWS
+  wire contract and `browser.1.5` sub-spec.
+
+### Possible UWS 1.6 Browser Boundary Expansion
+
+UWS 1.5 is enough for the API-vs-UI boundary: UWS binds an operation to a
+reviewed browser capability profile, while browser-aware tooling and runtimes
+own Playwright/WebDriver/CDP adapters, sessions, cookies, screenshots, retries,
+scraper integrations, and revalidation execution. It is intentionally not a
+general browser automation DSL.
+
+A future `browser.1.6` profile should be considered only if real reviewed
+workflows repeatedly fall outside the 1.5 capability shape while still needing
+portable, audited interchange. Candidate areas include:
+
+- bounded file upload/download declarations, with explicit filename, MIME,
+  size, storage, and review constraints
+- narrowly defined drag/drop or pointer interactions when an accessible
+  semantic alternative is unavailable
+- visual assertion evidence or screenshot comparison metadata, without making
+  raw pixels the primary locator contract
+- richer post-action wait and completion evidence, still expressed as reviewed
+  conditions rather than tool command traces
+- revalidation hints that describe what must be checked, while leaving retry
+  timing and live browser policy runtime-owned
+- crawler or scraper policy summaries for read-only evidence collection, kept
+  separate from side-effectful browser actions
+
+The same boundary rules should apply to any 1.6 work:
+
+- Do not standardize Playwright, Puppeteer, WebDriver, WebDriver BiDi, or CDP
+  command streams.
+- Do not add arbitrary JavaScript execution, raw DOM scripting, or unbounded
+  coordinate automation as portable profile behavior.
+- Do not embed login flows, MFA/captcha handling, credentials, cookies, session
+  state, or account-selection policy.
+- Do not turn browser profiles into a substitute for provider-owned API/event
+  contracts when those contracts can cover the task.
+- Add a feature only with a narrow reviewed shape, explicit safety metadata,
+  schema validation, and fail-closed runtime semantics.
 
 ### Earlier Roadmap (Historical)
 

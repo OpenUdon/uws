@@ -533,6 +533,29 @@
                     "if": {
                         "properties": {
                             "source": {
+                                "const": "a11y"
+                            },
+                            "presence": {
+                                "const": true
+                            }
+                        },
+                        "required": [
+                            "source",
+                            "presence"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "type": {
+                                "const": "boolean"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "source": {
                                 "enum": [
                                     "jsonld",
                                     "microdata"

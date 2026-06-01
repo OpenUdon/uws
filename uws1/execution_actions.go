@@ -6,11 +6,11 @@ import (
 	"time"
 )
 
-func (o *Orchestrator) executeOperation(ctx context.Context, op *Operation) error {
+func (o *Orchestrator) executeOperation(ctx context.Context, op *Operation, key string) error {
 	attempts := 0
 	for {
 		err := o.Runtime.ExecuteLeaf(ctx, op)
-		opCtx := o.withCurrentExecutionContext(o.withRecordContext(ctx), operationKey(op.OperationID), op.OperationID, "operation", op.OperationID, nil)
+		opCtx := o.withCurrentExecutionContext(o.withRecordContext(ctx), o.keyForContext(ctx, key), op.OperationID, "operation", op.OperationID, nil)
 		if err == nil {
 			ok, critErr := o.criteriaMatchAll(opCtx, op.SuccessCriteria)
 			if critErr != nil {

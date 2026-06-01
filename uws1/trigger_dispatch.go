@@ -32,6 +32,7 @@ func (o *Orchestrator) ExecuteTrigger(ctx context.Context, triggerID string, out
 		state = &ExecutionContext{
 			Iteration: cloneIteration(state.Iteration),
 			Trigger:   cloneTriggerContext(state.Trigger),
+			Inputs:    cloneInputs(state.Inputs),
 			Records:   state.Records,
 			Current:   cloneCurrentExecution(state.Current),
 		}

@@ -479,6 +479,60 @@ func TestHCLConversionPreservesDynamicExtensionKeys(t *testing.T) {
 	}
 }
 
+func TestHCLConversionPreservesStepInputDynamicKeys(t *testing.T) {
+	jsonData := []byte(`{
+		"uws": "1.5.0",
+		"info": {"title": "Step Inputs", "version": "1.0.0"},
+		"sourceDescriptions": [{"name": "api", "url": "./openapi.yaml", "type": "openapi"}],
+		"operations": [{"operationId": "op1", "sourceDescription": "api", "openapiOperationId": "getOp"}],
+		"workflows": [{
+			"workflowId": "wf",
+			"type": "sequence",
+			"steps": [{
+				"stepId": "s",
+				"operationRef": "op1",
+				"inputs": {
+					"$expr": "$inputs.request_id",
+					"literalTemplate": "${not_hcl}",
+					"nested": {"$ref": "#/components/schemas/Input"}
+				}
+			}]
+		}],
+		"results": []
+	}`)
+
+	hclData, err := JSONToHCL(jsonData)
+	if err != nil {
+		t.Fatalf("JSONToHCL failed: %v", err)
+	}
+	hcl := string(hclData)
+	for _, want := range []string{"__dollar__expr", "_ref", "$${not_hcl}"} {
+		if !strings.Contains(hcl, want) {
+			t.Fatalf("HCL output missing %q:\n%s", want, hcl)
+		}
+	}
+
+	jsonData2, err := HCLToJSON(hclData)
+	if err != nil {
+		t.Fatalf("HCLToJSON failed: %v", err)
+	}
+	var doc uws1.Document
+	if err := json.Unmarshal(jsonData2, &doc); err != nil {
+		t.Fatalf("Failed to parse JSON output: %v", err)
+	}
+	inputs := doc.Workflows[0].Steps[0].Inputs
+	if got := inputs["$expr"]; got != "$inputs.request_id" {
+		t.Fatalf("step.inputs.$expr = %#v", got)
+	}
+	if got := inputs["literalTemplate"]; got != "${not_hcl}" {
+		t.Fatalf("step.inputs.literalTemplate = %#v", got)
+	}
+	nested, ok := inputs["nested"].(map[string]any)
+	if !ok || nested["$ref"] != "#/components/schemas/Input" {
+		t.Fatalf("step.inputs.nested.$ref = %#v", inputs["nested"])
+	}
+}
+
 func TestHCLConversionPreservesIdempotencyExtensionDollarKeys(t *testing.T) {
 	jsonData := []byte(`{
 		"uws": "1.1.0",

@@ -178,7 +178,7 @@ func (o *Orchestrator) recordKeysForDependencyLocked(dep string) []string {
 	case o.workflowIndex[dep] != nil:
 		base = workflowKey(dep)
 	case o.opIndex[dep] != nil:
-		base = operationKey(dep)
+		return o.operationInvocationKeysLocked(dep)
 	default:
 		return nil
 	}
@@ -189,6 +189,17 @@ func (o *Orchestrator) recordKeysForDependencyLocked(dep string) []string {
 	matches := make([]string, 0, len(set))
 	for key := range set {
 		matches = append(matches, key)
+	}
+	sort.Strings(matches)
+	return matches
+}
+
+func (o *Orchestrator) operationInvocationKeysLocked(operationID string) []string {
+	var matches []string
+	for key, record := range o.records {
+		if record.Kind == "operation" && record.ID == operationID {
+			matches = append(matches, key)
+		}
 	}
 	sort.Strings(matches)
 	return matches

@@ -179,6 +179,7 @@ During each `ExecuteLeaf` call, the runtime can inspect:
 |---------|-----------------|
 | Trigger context | Active trigger ID, emitted output label, and payload |
 | Iteration context | Current item value, index, batch number, position in batch |
+| Input bindings | Current `$inputs` values, including step-local bindings when a step supplies `inputs` |
 | Current-execution context | The operation or step being run right now |
 | Execution records snapshot | All records accumulated so far |
 
