@@ -112,6 +112,26 @@ operations:
 
 Do not add HTTP method, path, channel, server URL, or security configuration here. Those belong to the source document and the bound runtime.
 
+Ansible module sources follow the same binding shape; module arguments go under `request.body`:
+
+```yaml
+sourceDescriptions:
+  - name: builtin
+    url: ./ansible/ansible-builtin.argspec.json
+    type: ansible-module
+
+operations:
+  - operationId: install_nginx
+    sourceDescription: builtin
+    sourceOperationId: ansible.builtin.apt
+    request:
+      body:
+        name: nginx
+        state: present
+    outputs:
+      changed: $response.body.changed
+```
+
 ## Step 3: Add Request Values
 
 Request values are grouped by common source request location:

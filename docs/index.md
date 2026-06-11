@@ -90,6 +90,8 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 - **JSON Schema**: [`versions/1.6.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.6.0.json)
 - **Runtime supplement**: [`versions/runtime.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md)
 - **Runtime supplement schema**: [`versions/runtime.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json)
+- **Ansible module supplement**: [`versions/ansible.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/ansible.1.0.md)
+- **UWS 1.6 Ansible design**: [accepted design note](uws_1_6_ansible.md)
 - **Future source profiles**: [UWS 1.1 import/advisory features, UWS 1.4 source profiles, UWS 1.5 browser capability profiles, and UWS 1.6 Ansible module profiles](future-source-profiles.md)
 - **Go package**: `github.com/OpenUdon/uws`
 - **License**: Apache 2.0
@@ -102,7 +104,7 @@ If you need to hand-write a workflow, start with the practical [workflow authori
 
 | # | Feature | Summary |
 |---|---------|---------|
-| 1 | [Source Operation Binding](01-OpenAPI-Operation-Binding.md) | Strict binding to OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, OData, or extension-owned operations |
+| 1 | [Source Operation Binding](01-OpenAPI-Operation-Binding.md) | Strict binding to OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, OData, browser profiles, Ansible modules, or extension-owned operations |
 | 2 | [Six Structural Constructs](02-Six-Structural-Constructs.md) | sequence · parallel · switch · loop · merge · await |
 | 3 | [Runtime Expression Grammar](03-Runtime-Expression-Grammar.md) | Normative ABNF expression language for value flow |
 | 4 | [Triggers and Route Dispatch](04-Triggers-and-Route-Dispatch.md) | Typed entry points with output-based routing |

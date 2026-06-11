@@ -40,6 +40,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - Runtime supplement schema: [versions/runtime.1.0.json](versions/runtime.1.0.json)
 - Browser profile supplement: [versions/browser.1.5.md](versions/browser.1.5.md) / [versions/browser.1.5.json](versions/browser.1.5.json)
 - Ansible module supplement: [versions/ansible.1.0.md](versions/ansible.1.0.md) / [versions/ansible.1.0.json](versions/ansible.1.0.json)
+- UWS 1.6 Ansible design note: [docs/uws_1_6_ansible.md](docs/uws_1_6_ansible.md)
 - JSON Schema: [versions/1.6.0.json](versions/1.6.0.json)
 
 ## Packages
