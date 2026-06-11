@@ -1,14 +1,12 @@
-# UWS 1.6 Specification Proposal: Ansible Module Source Family
+# UWS 1.6 Ansible Module Source Design
 
-> Builds on the feasibility assessment of expressing Ansible playbooks in UWS.
-> Proposes `ansible-module` as a first-class `sourceDescriptions[].type` for
-> core UWS 1.6, with the heavier sub-spec published separately as
+> Design record for the UWS 1.6 adoption of `ansible-module` as a first-class
+> `sourceDescriptions[].type`, with the heavier sub-spec published separately as
 > `versions/ansible.1.0.{json,md}` — the same two-layer packaging used by
 > `runtime.1.0` and `browser.1.5`. The companion roadmap entry lives in
-> [`docs/future-source-profiles.md`](docs/future-source-profiles.md)
-> ("Candidate: Ansible Module Source Profiles"). Note: this core proposal is
-> independent of any possible `browser.1.6` sub-profile bump; sub-spec versions
-> are numbered by their own streams.
+> [`future-source-profiles.md`](future-source-profiles.md)
+> ("Adopted in UWS 1.6: Ansible Module Source Profiles"). Sub-spec versions are
+> numbered by their own streams.
 
 ## 1. Core Philosophy: Module Argspecs Are Published Operation Contracts
 
@@ -159,7 +157,7 @@ instead of calling the convergent `ansible.builtin.apt` module, it always
 restarts instead of restarting only on change, and the template is pre-rendered
 out of band. It demonstrates the floor, not the target.
 
-### 3.3 Proposed UWS 1.6 form
+### 3.3 UWS 1.6 form
 
 ```yaml
 uws: "1.6.0"
@@ -218,15 +216,17 @@ workflows:
 
 The handler becomes an ordinary step gated on the notifying task's `changed`
 output. Where several tasks notify the same handler, the `ansible.1.0` sub-spec
-defines the lowering rule: the notifying steps' `changed` outputs feed a `merge`
-barrier, and the handler step is gated on the merged result — preserving
-Ansible's run-once-at-end semantics. The Jinja2 template (`nginx.conf.j2`)
-stays a file the `template` module consumes; UWS never parses it.
+defines the lowering rule: a `switch` step gates each case on one notifier's
+`changed` output, and each case references the same handler operation. Because
+`switch` executes at most one matching case, this preserves Ansible's
+run-once-at-end semantics without adding logical OR to UWS core. The Jinja2
+template (`nginx.conf.j2`) stays a file the `template` module consumes; UWS
+never parses it.
 
 ## 4. Inventory and Execution Targets
 
 UWS has no host axis; an Ansible play's execution matrix is tasks × hosts. The
-proposal takes the two-stage path browser profiles took:
+adopted design takes the two-stage path browser profiles took:
 
 **Stage 1 — no core change.** Inventory is input data. A `loop` construct with
 `items: $inputs.hosts` fans tasks out per host; connection details and
@@ -255,11 +255,11 @@ Ansible's result model is three-state (`ok` / `changed` / `failed`, plus
   runtime's module-failure signaling.
 * `skipped` is represented structurally: a step whose `when` gate is false does
   not execute — same semantics, no new state needed.
-* Handlers lower to `when`-gated steps (single notifier) or merge-gated steps
+* Handlers lower to `when`-gated steps (single notifier) or switch-gated steps
   (multiple notifiers), as in §3.3.
 
 A possible future core convenience — an `onChanged` action list parallel to
-`onSuccess`/`onFailure` — is explicitly **not** part of this proposal. The
+`onSuccess`/`onFailure` — is explicitly **not** part of UWS 1.6. The
 convention covers the need without widening core.
 
 ## 6. Safety & Integrity Controls
@@ -300,7 +300,7 @@ UWS 1.6 deliberately does NOT standardize:
 
 ## 8. Graduation Criteria Check
 
-Against the source-family baseline `docs/future-source-profiles.md` applies
+Against the source-family baseline `future-source-profiles.md` applies
 (the UWS 1.4 standard):
 
 | Criterion | Status |
@@ -312,8 +312,7 @@ Against the source-family baseline `docs/future-source-profiles.md` applies
 | No secrets / credentials in the wire format | §6; vault and connection material stay runtime-private. |
 | Multi-runtime interchange need | Playbook-style automation spans many runtimes (ansible-core, AWX/Controller, custom executors); a neutral binding lets UWS-authoring tools target all of them. |
 
-On adoption, `docs/future-source-profiles.md` flips the candidate section to
-"Adopted in UWS 1.6", and the implementation follows the established
-per-release recipe: schema enum + selector-description enrichment, Go constant
-+ validation switch + `supports16` version gate, parametrized binding tests,
-and the conformance/convert round-trip extensions.
+The adopted implementation follows the established per-release recipe: schema
+enum + selector-description enrichment, Go constant + validation switch +
+`supports16` version gate, parametrized binding tests, and the
+conformance/convert round-trip extensions.

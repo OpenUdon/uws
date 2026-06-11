@@ -35,6 +35,7 @@ nav:
     - 10. Interchange Formats: 10-Interchange-Formats.md
   - Runtimes: runtimes.md
   - Future Source Profiles: future-source-profiles.md
+  - UWS 1.6 Ansible Design: uws_1_6_ansible.md
   - Reference:
     - Specification: https://github.com/OpenUdon/uws/blob/main/versions/1.6.0.md
     - JSON Schema: https://github.com/OpenUdon/uws/blob/main/versions/1.6.0.json

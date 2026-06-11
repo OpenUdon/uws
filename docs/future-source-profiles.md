@@ -557,7 +557,7 @@ reusing the existing generic selectors from UWS 1.2. The substantive sub-spec
 is published separately as `versions/ansible.1.0.{json,md}` so UWS core stays
 thin (mirrors the `runtime.1.0` and `browser.1.5` splits). The originating
 design is recorded in
-[`uws_1_6_proposal.md`](https://github.com/OpenUdon/uws/blob/main/uws_1_6_proposal.md).
+[`docs/uws_1_6_ansible.md`](uws_1_6_ansible.md).
 
 Settled scope:
 
