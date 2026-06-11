@@ -17,6 +17,7 @@ const (
 	SourceDescriptionTypeGRPCProtobuf    SourceDescriptionType = "grpc-protobuf"
 	SourceDescriptionTypeOData           SourceDescriptionType = "odata"
 	SourceDescriptionTypeBrowserProfile  SourceDescriptionType = "browser-profile"
+	SourceDescriptionTypeAnsibleModule   SourceDescriptionType = "ansible-module"
 )
 
 var sourceDescriptionNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)

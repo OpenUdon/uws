@@ -7,18 +7,20 @@ specification and JSON Schema.
 
 ## Status And Normativity
 
-This document is not part of the normative UWS 1.5 wire contract. The published
-UWS 1.5 source description types are `openapi`, `google-discovery`,
-`aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and
-`browser-profile`; missing `sourceDescriptions[].type` still defaults to
-`openapi`.
+This document is not part of the normative UWS 1.6 wire contract. The published
+UWS 1.6 source description types are `openapi`, `google-discovery`,
+`aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`,
+`browser-profile`, and `ansible-module`; missing `sourceDescriptions[].type`
+still defaults to `openapi`.
 
 The `v0.1.x` labels below are implementation-roadmap labels. They do not define
 released UWS versions, JSON Schema changes, Go model changes, or new validator
 behavior by themselves. AsyncAPI has graduated into UWS 1.3; GraphQL, OpenRPC,
-gRPC/protobuf, and OData have graduated into UWS 1.4; and browser capability
+gRPC/protobuf, and OData have graduated into UWS 1.4; browser capability
 profiles have graduated into UWS 1.5 (`browser-profile`) with a separate
-published sub-spec at `versions/browser.1.5.{json,md}`.
+published sub-spec at `versions/browser.1.5.{json,md}`; and Ansible modules
+have graduated into UWS 1.6 (`ansible-module`) with a separate published
+sub-spec at `versions/ansible.1.0.{json,md}`.
 
 Examples in this note are illustrative future shapes unless a section explicitly
 labels them as valid today. Pre-1.5 documents that need browser/UI work used
@@ -42,6 +44,7 @@ Future source-profile tracks are listed separately:
 | `v0.1.3` | AsyncAPI source profiles | Graduated in UWS 1.3 for event, message, and subscription contracts when a provider publishes AsyncAPI. |
 | UWS 1.4 source profiles | Formal API source families | Graduated `graphql`, `openrpc`, `grpc-protobuf`, and `odata` as normative source type values. |
 | UWS 1.5 source profiles | Browser capability profiles | Graduated `browser-profile` as a normative source type, with the heavier sub-spec published separately as `versions/browser.1.5.{json,md}`. |
+| UWS 1.6 source profiles | Ansible module source profiles | Graduated `ansible-module` as a normative source type binding convergent module operations through collection argspecs, with the sub-spec published separately as `versions/ansible.1.0.{json,md}`. Inventory/execution-target interchange remains reserved for a future `inventory.1.0` sub-spec. |
 
 ## UWS 1.1-Compatible Import And Advisory Features
 
@@ -534,3 +537,54 @@ way it references API operations:
   coverage is insufficient
 - extension-owned operation profiles while the browser profile contract is still
   experimental
+
+## Adopted in UWS 1.6: Ansible Module Source Profiles
+
+Ansible modules graduated in UWS 1.6. Ansible collections publish
+machine-readable module contracts: `ansible-doc --json` emits the documented
+parameter specification and return-value documentation for every module. That
+is a provider-published operation contract — the same artifact class UWS binds
+to for OpenAPI, Discovery, Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf,
+and OData. Structurally, playbooks are ordered task lists with convergent
+leaves: imperative control flow over idempotent operations, which maps directly
+onto the UWS execution model (`when`, `loop`+`items`, `dependsOn`,
+`register`→`outputs`).
+
+### Ansible Module Graduation Result
+
+UWS 1.6 added `ansible-module` as a first-class `sourceDescriptions[].type`,
+reusing the existing generic selectors from UWS 1.2. The substantive sub-spec
+is published separately as `versions/ansible.1.0.{json,md}` so UWS core stays
+thin (mirrors the `runtime.1.0` and `browser.1.5` splits). The originating
+design is recorded in
+[`uws_1_6_proposal.md`](https://github.com/OpenUdon/uws/blob/main/uws_1_6_proposal.md).
+
+Settled scope:
+
+- `sourceOperationId` is the module FQCN (`ansible.builtin.apt`);
+  `sourceOperationRef`'s preferred form is `#/modules/<fqcn>`. Module arguments
+  bind under `request.body`; module JSON results surface as `$response.body.*`.
+- The `ansible.1.0` sub-spec owns the normalized argspec document shape, the
+  `changed` output convention (lowering Ansible's ok/changed/failed/skipped
+  result model), the `noLog` sensitive-parameter rule (literal values
+  forbidden; symbolic credential bindings required), and the handler-lowering
+  rules (single notifier ⇒ `when`-gated step; multiple notifiers ⇒ a `switch`
+  step whose cases gate on each notifier and reference the same handler
+  operation, preserving run-once-at-end semantics without logical OR).
+- Inventory/execution targets follow the two-stage browser-profile path:
+  fan-out via `loop` over input host lists today (no core change); a typed
+  `inventory.1.0` sub-spec (hosts, groups, vars — never secrets) with an
+  execution-target extension remains reserved for the future, with core
+  graduation only on demonstrated multi-runtime demand.
+- A degenerate lowering remains valid without the source type: single-target
+  playbook tasks expressed as extension-owned operations through the
+  `uws.runtime.1.0` profile (`ssh`, `cmd`, `fileio`, `scp`, `sftp`). That
+  floor loses module idempotency and handler semantics, which is exactly the
+  gap `ansible-module` closes.
+
+Out of scope, consistent with prior non-goals: Jinja2 never enters the core
+expression grammar (authoring tooling lowers templates; the `template` module
+keeps owning its own rendering); connection plugins, `become`, forks/serial
+strategy, and check mode stay runtime-owned; vault material and connection
+secrets never appear in UWS or argspec documents; Galaxy packaging and role
+layout stay in the Ansible ecosystem.

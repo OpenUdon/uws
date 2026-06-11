@@ -525,6 +525,42 @@ func TestValidate_UWS15BrowserProfileSourceOperationBindings(t *testing.T) {
 	})
 }
 
+func TestValidate_UWS16AnsibleModuleSourceOperationBindings(t *testing.T) {
+	t.Run("ansible-module accepts sourceOperationId FQCN", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.6.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAnsibleModule
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationID = "ansible.builtin.apt"
+		assert.NoError(t, doc.Validate())
+	})
+
+	t.Run("ansible-module accepts sourceOperationRef #/modules/<fqcn>", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.6.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAnsibleModule
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationRef = "#/modules/ansible.builtin.apt"
+		assert.NoError(t, doc.Validate())
+	})
+
+	t.Run("ansible-module rejects pre-1.6 document", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.5.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAnsibleModule
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationID = "ansible.builtin.apt"
+		assert.ErrorContains(t, doc.Validate(), "requires UWS 1.6.0 or later")
+	})
+
+	t.Run("ansible-module rejects legacy openapi selector", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.6.0"
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAnsibleModule
+		assert.ErrorContains(t, doc.Validate(), "ansible-module sourceDescriptions require sourceOperationId or sourceOperationRef, not openapiOperationId or openapiOperationRef")
+	})
+}
+
 func TestValidate_DuplicateIDs(t *testing.T) {
 	doc := validDocument()
 	doc.SourceDescriptions = append(doc.SourceDescriptions, &SourceDescription{Name: "api", URL: "./other.yaml"})

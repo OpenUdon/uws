@@ -4,7 +4,7 @@
 
 ---
 
-Most executable operations in UWS bind to an operation in a source document by reference. UWS 1.5 supports `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile` source descriptions directly. Extension-owned operations are the explicit non-source escape hatch. UWS never duplicates HTTP methods, paths, AsyncAPI channels, messages, GraphQL schemas, JSON-RPC method metadata, protobuf descriptors, OData metadata, browser profile locator/action/output details, schemas, servers, security schemes, or protocol metadata; those live in the source document (or, for `browser-profile`, the separate sub-spec `versions/browser.1.5.{json,md}`) or executor-owned configuration.
+Most executable operations in UWS bind to an operation in a source document by reference. UWS 1.6 supports `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, `browser-profile`, and `ansible-module` source descriptions directly. Extension-owned operations are the explicit non-source escape hatch. UWS never duplicates HTTP methods, paths, AsyncAPI channels, messages, GraphQL schemas, JSON-RPC method metadata, protobuf descriptors, OData metadata, browser profile locator/action/output details, Ansible module argspec details, schemas, servers, security schemes, or protocol metadata; those live in the source document, the separate `versions/browser.1.5.{json,md}` / `versions/ansible.1.0.{json,md}` sub-specs, or executor-owned configuration.
 
 ## Three Mutually Exclusive Shapes
 
@@ -22,7 +22,7 @@ A document that omits the binding fields of every shape is invalid. Source-bound
 
 `sourceDescriptions[]` declares every API or event source document the workflow uses. Every source entry must have a unique `name` matching `^[A-Za-z0-9_-]+$`, a `url`, and optionally `type`.
 
-Missing `type` defaults to `openapi`. In UWS 1.5, browser capability profiles may be declared directly as `type: browser-profile` (with the heavier profile schema published separately as `versions/browser.1.5.{json,md}`). UWS 1.4 added direct declarations for Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, and OData via `type: google-discovery`, `type: aws-smithy`, `type: asyncapi`, `type: graphql`, `type: openrpc`, `type: grpc-protobuf`, and `type: odata`. UWS 1.3 documents remain limited to OpenAPI, Google Discovery, AWS Smithy, and AsyncAPI sources. UWS 1.2 documents remain limited to OpenAPI, Google Discovery, and AWS Smithy sources. UWS 1.1 documents remain OpenAPI-bound: Discovery, Smithy, Stone, Postman Collection, RAML, API Blueprint, and similar non-OpenAPI artifacts can participate only after tooling lowers or converts them into reviewed OpenAPI, or as advisory evidence outside `sourceDescriptions`.
+Missing `type` defaults to `openapi`. UWS 1.6 added direct declarations for Ansible collection argspecs via `type: ansible-module` (with the heavier argspec profile schema published separately as `versions/ansible.1.0.{json,md}`). UWS 1.5 added browser capability profiles via `type: browser-profile` (with `versions/browser.1.5.{json,md}`). UWS 1.4 added direct declarations for Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, and OData via `type: google-discovery`, `type: aws-smithy`, `type: asyncapi`, `type: graphql`, `type: openrpc`, `type: grpc-protobuf`, and `type: odata`. UWS 1.3 documents remain limited to OpenAPI, Google Discovery, AWS Smithy, and AsyncAPI sources. UWS 1.2 documents remain limited to OpenAPI, Google Discovery, and AWS Smithy sources. UWS 1.1 documents remain OpenAPI-bound: Discovery, Smithy, Stone, Postman Collection, RAML, API Blueprint, and similar non-OpenAPI artifacts can participate only after tooling lowers or converts them into reviewed OpenAPI, or as advisory evidence outside `sourceDescriptions`.
 
 ```yaml
 sourceDescriptions:
@@ -50,6 +50,9 @@ sourceDescriptions:
   - name: successfactors
     url: ./odata/successfactors.xml
     type: odata
+  - name: builtin
+    url: ./ansible/ansible-builtin.argspec.json
+    type: ansible-module
 ```
 
 `sourceDescriptions` is REQUIRED whenever any operation declares `sourceDescription`. A document where every operation is extension-owned may omit it.
@@ -133,6 +136,8 @@ The pointer MUST begin with `#/`. Slashes in path segments are escaped as `~1` p
 For AsyncAPI sources, `sourceOperationId` names a root AsyncAPI Operation Object. UWS core validates `sourceOperationRef` as a JSON Pointer fragment; source-aware tooling and runtimes validate whether it resolves to a supported AsyncAPI target. `sourceOperationRef` should point to `#/operations/<name>` when possible; `#/channels/<name>` and `#/channels/<name>/messages/<name>` are compatibility targets for runtimes that can resolve them unambiguously.
 
 For GraphQL, OpenRPC, gRPC/protobuf, and OData sources, UWS core validates only the source type, selector exclusivity, and JSON Pointer fragment shape. Source-aware tooling and runtimes validate whether a selector resolves to a supported GraphQL operation, JSON-RPC method, protobuf service method, OData entity operation, OData function, or OData action.
+
+For Ansible module sources, `sourceOperationId` is the module's fully qualified collection name, such as `ansible.builtin.apt`. `sourceOperationRef` should point to `#/modules/<fqcn>` when a pointer form is preferred. Module arguments bind under `request.body`; source-aware tooling validates those values against the referenced `versions/ansible.1.0` argspec document.
 
 ## Extension-Owned Operations
 

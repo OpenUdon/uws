@@ -12,6 +12,7 @@ func (d *Document) validateVersionedFields(result *ValidationResult) {
 	supports13 := supportsUWSVersion(d.UWS, 1, 3)
 	supports14 := supportsUWSVersion(d.UWS, 1, 4)
 	supports15 := supportsUWSVersion(d.UWS, 1, 5)
+	supports16 := supportsUWSVersion(d.UWS, 1, 6)
 	for i, sd := range d.SourceDescriptions {
 		if sd == nil {
 			continue
@@ -32,6 +33,10 @@ func (d *Document) validateVersionedFields(result *ValidationResult) {
 		case SourceDescriptionTypeBrowserProfile:
 			if !supports15 {
 				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "requires UWS 1.5.0 or later")
+			}
+		case SourceDescriptionTypeAnsibleModule:
+			if !supports16 {
+				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "requires UWS 1.6.0 or later")
 			}
 		}
 	}

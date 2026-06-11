@@ -32,7 +32,7 @@ The UWS document points to source documents. It does not copy endpoint URLs, cha
 ## Minimal Workflow
 
 ```yaml
-uws: "1.5.0"
+uws: "1.6.0"
 info:
   title: Support Ticket Workflow
   version: "1.0.0"
@@ -95,7 +95,7 @@ Rules of thumb:
 
 - `name` is the stable local handle used by operations.
 - `url` can be a local path or reviewed remote location, depending on the runtime.
-- `type` may be `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, or `browser-profile`. Missing `type` defaults to `openapi`. The `browser-profile` sub-spec is published separately as `versions/browser.1.5.{json,md}`.
+- `type` may be `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, `browser-profile`, or `ansible-module`. Missing `type` defaults to `openapi`. The `browser-profile` sub-spec is published separately as `versions/browser.1.5.{json,md}`, and the `ansible-module` sub-spec as `versions/ansible.1.0.{json,md}`.
 
 ## Step 2: Bind Operations
 
@@ -108,7 +108,7 @@ operations:
     sourceOperationId: createTicket
 ```
 
-`operationId` is local to the UWS file. `sourceOperationId` is the operation ID from the referenced source document. For AsyncAPI sources, it names a root AsyncAPI Operation Object. For GraphQL, OpenRPC, gRPC/protobuf, and OData sources, source-aware tooling defines stable operation identifiers or refs. OpenAPI sources may also use legacy `openapiOperationId`.
+`operationId` is local to the UWS file. `sourceOperationId` is the operation ID from the referenced source document. For AsyncAPI sources, it names a root AsyncAPI Operation Object. For GraphQL, OpenRPC, gRPC/protobuf, and OData sources, source-aware tooling defines stable operation identifiers or refs. For Ansible module sources, it is the module's fully qualified collection name (FQCN), such as `ansible.builtin.apt`. OpenAPI sources may also use legacy `openapiOperationId`.
 
 Do not add HTTP method, path, channel, server URL, or security configuration here. Those belong to the source document and the bound runtime.
 

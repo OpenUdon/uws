@@ -277,7 +277,7 @@ func TestSchemaConformance_JSONSchemaValidator(t *testing.T) {
 	require.ErrorContains(t, duplicateDoc.Validate(), `duplicate operationId "fetch"`)
 
 	nativeSourceBindings := []byte(`{
-		"uws": "1.5.0",
+		"uws": "1.6.0",
 		"info": {"title": "Native Sources", "version": "1.0.0"},
 		"sourceDescriptions": [
 			{"name": "gmail_api", "url": "./google-discovery/gmail.json", "type": "google-discovery"},
@@ -287,7 +287,8 @@ func TestSchemaConformance_JSONSchemaValidator(t *testing.T) {
 			{"name": "pet_rpc", "url": "./openrpc/pet-rpc.json", "type": "openrpc"},
 			{"name": "inventory_grpc", "url": "./protobuf/inventory.proto", "type": "grpc-protobuf"},
 			{"name": "successfactors_api", "url": "./odata/successfactors.xml", "type": "odata"},
-			{"name": "github_pr_manager", "url": "./profiles/github_pr_manager.yaml", "type": "browser-profile"}
+			{"name": "github_pr_manager", "url": "./profiles/github_pr_manager.yaml", "type": "browser-profile"},
+			{"name": "builtin", "url": "./ansible/ansible-builtin.argspec.json", "type": "ansible-module"}
 		],
 		"operations": [
 			{"operationId": "send_mail", "sourceDescription": "gmail_api", "sourceOperationId": "gmail_users_messages_send"},
@@ -297,7 +298,8 @@ func TestSchemaConformance_JSONSchemaValidator(t *testing.T) {
 			{"operationId": "get_pet", "sourceDescription": "pet_rpc", "sourceOperationRef": "#/methods/pet.get"},
 			{"operationId": "reserve_inventory", "sourceDescription": "inventory_grpc", "sourceOperationId": "inventory.InventoryService/Reserve"},
 			{"operationId": "list_goals", "sourceDescription": "successfactors_api", "sourceOperationRef": "#/entitySets/ContinuousPerformanceGoals"},
-			{"operationId": "submit_approval", "sourceDescription": "github_pr_manager", "sourceOperationId": "approve_pr"}
+			{"operationId": "submit_approval", "sourceDescription": "github_pr_manager", "sourceOperationId": "approve_pr"},
+			{"operationId": "install_nginx", "sourceDescription": "builtin", "sourceOperationId": "ansible.builtin.apt"}
 		]
 	}`)
 	require.NoError(t, schema.Validate(decodeJSONValue(t, nativeSourceBindings)))
@@ -570,6 +572,26 @@ func TestSchemaConformance_Draft202012CrossValidator(t *testing.T) {
 				"info": {"title": "Browser Ref", "version": "1.0.0"},
 				"sourceDescriptions": [{"name": "github_pr_manager", "url": "./profiles/github_pr_manager.yaml", "type": "browser-profile"}],
 				"operations": [{"operationId": "submit_approval", "sourceDescription": "github_pr_manager", "sourceOperationRef": "#/actions/approve_pr"}]
+			}`),
+			valid: true,
+		},
+		{
+			name: "ansible-module source binding by FQCN",
+			data: []byte(`{
+				"uws": "1.6.0",
+				"info": {"title": "Ansible", "version": "1.0.0"},
+				"sourceDescriptions": [{"name": "builtin", "url": "./ansible/ansible-builtin.argspec.json", "type": "ansible-module"}],
+				"operations": [{"operationId": "install_nginx", "sourceDescription": "builtin", "sourceOperationId": "ansible.builtin.apt"}]
+			}`),
+			valid: true,
+		},
+		{
+			name: "ansible-module source binding by modules ref",
+			data: []byte(`{
+				"uws": "1.6.0",
+				"info": {"title": "Ansible Ref", "version": "1.0.0"},
+				"sourceDescriptions": [{"name": "builtin", "url": "./ansible/ansible-builtin.argspec.json", "type": "ansible-module"}],
+				"operations": [{"operationId": "install_nginx", "sourceDescription": "builtin", "sourceOperationRef": "#/modules/ansible.builtin.apt"}]
 			}`),
 			valid: true,
 		},

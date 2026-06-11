@@ -4,6 +4,23 @@ This changelog summarizes externally visible changes between published UWS
 versioned schemas and specification documents. The versioned `.md` files remain
 the normative human-readable specifications.
 
+## 1.6.0 - 2026-06-02
+
+- Added `ansible-module` as a first-class `sourceDescription.type` for Ansible
+  collection argspec source documents.
+- Reused generic `sourceOperationId` and `sourceOperationRef` selectors;
+  `sourceOperationId` is the module's fully qualified collection name (FQCN,
+  e.g. `ansible.builtin.apt`), and the preferred `sourceOperationRef` form is
+  `#/modules/<fqcn>`.
+- Published the Ansible module sub-spec separately as
+  `versions/ansible.1.0.{json,md}` so UWS core stays thin (mirrors the
+  `runtime.1.0` and `browser.1.5` splits): UWS core only references the type
+  name and selector rules; the argspec document shape, the `changed` output
+  convention, and handler-lowering rules live in the sub-spec.
+- Kept connection plugins, privilege escalation, forks/serial strategy, check
+  mode, vault material, Jinja2 templating, and the module execution environment
+  runtime-owned or authoring-tool-owned.
+
 ## 1.5.0 - 2026-05-30
 
 - Added `browser-profile` as a first-class `sourceDescription.type` for browser
