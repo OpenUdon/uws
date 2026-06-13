@@ -293,6 +293,12 @@ UWS 1.6 deliberately does NOT standardize:
 * **Roles and collection packaging.** Galaxy packaging, role directory layout,
   and dependency resolution stay in the Ansible ecosystem. UWS binds to module
   contracts, not to distribution mechanics.
+* **Block recovery flow (`rescue` / `always`).** UWS 1.6 does not standardize
+  Ansible block failure recovery. Static `block` may be represented only as
+  ordinary structural grouping when its child tasks can be lowered with
+  existing UWS constructs. `rescue` and `always` are Ansible runtime error
+  handling behavior and remain out of scope for the `ansible-module` source
+  profile.
 * **The Ansible execution engine.** UWS does not re-specify task executor
   internals, callback plugins, or strategy plugins. A UWS runtime MAY execute
   modules through `ansible-core`, through a compatible reimplementation, or by
