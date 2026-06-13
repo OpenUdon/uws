@@ -1,20 +1,20 @@
 # UWS Ansible Module Source Profile 1.0
 
 The UWS Ansible Module Source Profile is the sub-spec for documents referenced
-by UWS 1.6 `sourceDescriptions[].type: ansible-module`. It is wire/spec
-metadata only. It does not standardize the Ansible execution engine, connection
+by UWS 1.6 `sourceDescriptions[].type: ansible-module`. It is inert source
+metadata for conversion and review. It does not standardize the Ansible
+execution engine, inventory connection behavior, module invocation, connection
 plugins, privilege escalation (`become`), forks/serial strategy, check mode,
 vault decryption, callback or strategy plugins, or the Python execution
-environment. Those remain runtime-private. Jinja2 templating is owned by
-authoring tooling and by modules that consume template files; it never enters
-the UWS expression grammar.
+environment. Jinja2 templating is owned by authoring tooling and by modules
+that consume template files; it never enters the UWS expression grammar.
 
 UWS core (the main `versions/1.6.0.json` schema) only references this profile
 by *type name* and reuses the existing generic `sourceOperationId` /
 `sourceOperationRef` selector rules. Validating an argspec document against the
 shape below — and validating a UWS operation's `request.body` against a
-module's parameter specification — is the job of source-aware tooling and
-runtimes.
+module's parameter specification — is the job of source-aware conversion and
+review tooling.
 
 Unlike `browser-profile`, an `ansible-module` source is a **provider-published
 contract**: collections ship documented argument specifications
@@ -200,5 +200,6 @@ UWS documents:
   UWS expressions, and template *files* (e.g. the `template` module's `src`)
   stay files the module consumes.
 
-Runtimes execute modules with bound credentials and connection context at
-execution time. Argspec documents are inert contract metadata until then.
+Argspec documents are inert contract metadata. This profile does not define how
+to execute modules, connect to inventory hosts, bind credentials, or interpret
+Ansible runtime behavior.

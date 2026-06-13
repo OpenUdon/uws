@@ -23,9 +23,10 @@ UWS 1.6 therefore enforces the same boundary as every earlier source family:
   shapes, module semantics, idempotent convergence behavior.
 * **UWS owns the workflow overlay** — which modules run, in what order, with
   which argument values, gated by which conditions, feeding which outputs.
-* **The bound runtime owns the mechanism** — connection plugins, `become`
+* **Execution is out of scope for UWS 1.6** — connection plugins, `become`
   privilege escalation, forks/serial strategy, check mode, vault decryption,
-  and the Python execution environment.
+  module invocation, inventory connections, and the Python execution
+  environment are not standardized by this source profile.
 
 A UWS document never restates a module's parameter schema, just as it never
 restates an OpenAPI operation's request schema. It names the module and binds
@@ -77,8 +78,8 @@ every family since:
   `ansible-module` sources (consistent with all non-openapi types since 1.2).
 * UWS core validates only the type name and selector shape. Whether an FQCN
   resolves to a real module, and whether `request.body` satisfies the module's
-  argspec, is the job of source-aware tooling and runtimes — the same deferral
-  that kept GraphQL/OData/protobuf support thin in 1.4.
+  argspec, is the job of source-aware conversion and review tooling — the same
+  deferral that kept GraphQL/OData/protobuf support thin in 1.4.
 
 ## 3. Worked Example: A Playbook Three Ways
 
@@ -300,9 +301,9 @@ UWS 1.6 deliberately does NOT standardize:
   handling behavior and remain out of scope for the `ansible-module` source
   profile.
 * **The Ansible execution engine.** UWS does not re-specify task executor
-  internals, callback plugins, or strategy plugins. A UWS runtime MAY execute
-  modules through `ansible-core`, through a compatible reimplementation, or by
-  any mechanism that honors the module contract.
+  internals, callback plugins, strategy plugins, inventory connections, or
+  module invocation. The `ansible-module` source profile is inert conversion
+  and review metadata, not an execution contract.
 
 ## 8. Graduation Criteria Check
 
@@ -314,9 +315,9 @@ Against the source-family baseline `future-source-profiles.md` applies
 | Clear operation selector model | FQCN as `sourceOperationId`; `#/modules/<fqcn>` as `sourceOperationRef`. |
 | Source-owned request/response metadata | Collection argspecs own parameter schemas and return docs; UWS never restates them. |
 | Parser/index evidence or bounded tooling path | `ansible-doc --json` output is stable, machine-readable, and already shipped by every collection; an apitools-style argspec parser is a bounded effort. |
-| Runtime path that consumes source semantics without flattening | Modules execute as modules (convergent, idempotent), not flattened into shell strings — the degenerate `runtime.1.0` lowering remains available as the explicit floor. |
+| Static conversion path that preserves source semantics | Playbook-to-UWS conversion binds module operations to inert argspec metadata instead of flattening them into shell strings; execution behavior remains outside UWS 1.6. |
 | No secrets / credentials in the wire format | §6; vault and connection material stay runtime-private. |
-| Multi-runtime interchange need | Playbook-style automation spans many runtimes (ansible-core, AWX/Controller, custom executors); a neutral binding lets UWS-authoring tools target all of them. |
+| Multi-tool review need | Playbook-style automation is reviewed across many tools (ansible-core, AWX/Controller, custom converters); a neutral argspec binding lets UWS-authoring tools produce consistent review metadata without standardizing execution. |
 
 The adopted implementation follows the established per-release recipe: schema
 enum + selector-description enrichment, Go constant + validation switch +

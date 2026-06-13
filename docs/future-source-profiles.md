@@ -44,7 +44,7 @@ Future source-profile tracks are listed separately:
 | `v0.1.3` | AsyncAPI source profiles | Graduated in UWS 1.3 for event, message, and subscription contracts when a provider publishes AsyncAPI. |
 | UWS 1.4 source profiles | Formal API source families | Graduated `graphql`, `openrpc`, `grpc-protobuf`, and `odata` as normative source type values. |
 | UWS 1.5 source profiles | Browser capability profiles | Graduated `browser-profile` as a normative source type, with the heavier sub-spec published separately as `versions/browser.1.5.{json,md}`. |
-| UWS 1.6 source profiles | Ansible module source profiles | Graduated `ansible-module` as a normative source type binding convergent module operations through collection argspecs, with the sub-spec published separately as `versions/ansible.1.0.{json,md}`. Inventory/execution-target interchange remains reserved for a future `inventory.1.0` sub-spec. |
+| UWS 1.6 source profiles | Ansible module source profiles | Graduated `ansible-module` as a normative source type for inert collection argspec metadata used by static conversion and review tooling, with the sub-spec published separately as `versions/ansible.1.0.{json,md}`. Ansible execution, inventory connection behavior, and module invocation remain out of scope. |
 
 ## UWS 1.1-Compatible Import And Advisory Features
 
