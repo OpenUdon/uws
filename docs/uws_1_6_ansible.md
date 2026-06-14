@@ -23,6 +23,11 @@ UWS 1.6 therefore enforces the same boundary as every earlier source family:
   shapes, module semantics, idempotent convergence behavior.
 * **UWS owns the workflow overlay** — which modules run, in what order, with
   which argument values, gated by which conditions, feeding which outputs.
+* **Converters own playbook lowering** — Ansible directives such as `when`,
+  `loop`, `register`, `notify`, `changed_when`, `failed_when`, and
+  `until`/`retries` are represented only when source-aware tooling can lower
+  them into existing UWS objects (`sequence`, `switch`, `forEach`, `outputs`,
+  `successCriteria`, and `onFailure: retry`).
 * **Execution is out of scope for UWS 1.6** — connection plugins, `become`
   privilege escalation, forks/serial strategy, check mode, vault decryption,
   module invocation, inventory connections, and the Python execution
@@ -42,6 +47,11 @@ Two properties make Ansible modules an unusually good fit for UWS:
    imperative control flow over idempotent operations — structurally closer to
    the UWS execution model than any prior source family. `when`, `loop`,
    `dependsOn`, and `register`→`outputs` map one-to-one.
+
+The `ansible-module` source type does not standardize those playbook lowering
+rules. It gives tooling a portable module leaf binding. A converter may emit
+the same orchestration shape for UWS 1.5 using extension-owned module calls or
+for UWS 1.6 using first-class `ansible-module` source bindings.
 
 ## 2. Document Structure: `ansible-module`
 
@@ -297,6 +307,31 @@ A possible future core convenience — an `onChanged` action list parallel to
 `onSuccess`/`onFailure` — is explicitly **not** part of UWS 1.6. The
 convention covers the need without widening core.
 
+## 5.1 Converter-Owned Playbook Lowering
+
+Playbook directives are not part of the `ansible-module` source profile. A
+static converter can still represent a useful subset through existing UWS core
+objects:
+
+| Ansible construct | UWS representation |
+| --- | --- |
+| Ordered tasks | `workflow.type: sequence` with operation steps. |
+| `when` simple comparison | Step `when` expression. |
+| `when` with AND | Nested `switch` guards or equivalent sequential guards. |
+| `when` with OR | `switch.cases`, one case per disjunct, when a stable output identity is not required. |
+| `loop` / `with_items` | Step `forEach`; `$item` and `$index` stay expression-scope values. |
+| `register` field reads | Producer operation `outputs` plus consumer `$steps.<step>.outputs.<field>` references. |
+| `changed_when` | Override the operation's `changed` output expression when statically expressible. |
+| `failed_when` | Override or extend `successCriteria` when the condition can be represented as UWS comparisons. |
+| `until` + `retries` + `delay` | Additional `successCriteria` plus `onFailure` retry metadata. |
+| `notify` / handlers | Changed-output gates or `switch` cases, as described above. |
+
+Constructs that cannot be represented without changing UWS core remain
+converter diagnostics or runtime-owned behavior. In particular,
+`ignore_errors` requires continue-on-failure semantics that UWS 1.6 does not
+define; a future UWS version may add a narrow primitive for that behavior, but
+this source profile deliberately does not.
+
 ## 6. Safety & Integrity Controls
 
 * **No secrets in the wire format.** Vault-encrypted values, connection
@@ -325,6 +360,10 @@ UWS 1.6 deliberately does NOT standardize:
 * **Connection and execution policy.** Connection plugins, `become`,
   forks/serial/strategy, async/poll, and check mode are runtime-owned, exactly
   as HTTP transport and retries are for API sources.
+* **Continue-on-error semantics.** Ansible `ignore_errors` changes sequence
+  failure propagation. UWS 1.6 has no portable continue-on-failure primitive,
+  so converters must either fail closed or keep that behavior runtime-owned
+  until a future core or profile field is defined.
 * **Roles and collection packaging.** Galaxy packaging, role directory layout,
   and dependency resolution stay in the Ansible ecosystem. UWS binds to module
   contracts, not to distribution mechanics.

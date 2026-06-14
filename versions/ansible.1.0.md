@@ -16,6 +16,14 @@ shape below — and validating a UWS operation's `request.body` against a
 module's parameter specification — is the job of source-aware conversion and
 review tooling.
 
+This profile does not define Ansible playbook control flow. Tooling may lower
+playbook constructs into existing UWS workflow objects, but those rules are
+converter-owned. For example, a converter can map `when` to `when` or `switch`,
+`loop` to `forEach`, `register` field references to operation `outputs`,
+`failed_when` to `successCriteria`, and `until`/`retries` to `onFailure:
+retry`. The emitted UWS document carries the result of that lowering; the
+argspec profile remains only the module leaf contract.
+
 Unlike `browser-profile`, an `ansible-module` source is a **provider-published
 contract**: collections ship documented argument specifications
 (`ansible-doc --json`) for every module. This profile defines the normalized
@@ -183,6 +191,11 @@ steps:
             operationRef: restart_nginx
 ```
 
+Handler lowering is a converter convention, not a new source-profile field.
+The same handler orchestration can be emitted in UWS 1.5 compatibility output
+using `uws.ansible-module-call.1.0` extension-owned operations or in UWS 1.6
+output using first-class `ansible-module` source bindings.
+
 ## Inventory Posture (Stage 1)
 
 This profile does not define an inventory document. Host fan-out uses existing
@@ -202,6 +215,9 @@ UWS documents:
 - Vault-encrypted values, vault passwords, or any decrypted secret material.
 - Forks, serial, strategy plugins, async/poll, and check-mode invocation.
 - Callback plugins, logging configuration, and execution-environment selection.
+- Continue-on-error behavior such as `ignore_errors`. UWS 1.6 has no portable
+  continue-on-failure primitive, so converters must fail closed or keep the
+  behavior runtime-owned until a future core or profile field exists.
 - Jinja2 template evaluation. Authoring tooling lowers templates before the
   document is written: static values render inline, dynamic references become
   UWS expressions, and template *files* (e.g. the `template` module's `src`)
