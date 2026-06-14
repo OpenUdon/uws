@@ -158,6 +158,40 @@ instead of calling the convergent `ansible.builtin.apt` module, it always
 restarts instead of restarting only on change, and the template is pre-rendered
 out of band. It demonstrates the floor, not the target.
 
+### 3.2.1 UWS 1.5 compatibility form
+
+When tooling wants to preserve Ansible module identity without using the UWS
+1.6 `ansible-module` source type, it can emit an extension-owned leaf operation
+using `uws.ansible-module-call.1.0`:
+
+```yaml
+uws: "1.5.0"
+info:
+  title: Nginx Setup (compatibility lowering)
+  version: 1.0.0
+
+operations:
+  - operationId: install_nginx
+    x-uws-operation-profile: uws.ansible-module-call.1.0
+    x-uws-ansible-module:
+      module: ansible.builtin.apt
+      argspec:
+        sourceId: builtin
+        url: ./ansible/ansible-builtin.argspec.json
+        collection: ansible.builtin
+    request:
+      body:
+        name: nginx
+        state: present
+    outputs:
+      changed: $response.body.changed
+    successCriteria:
+      - condition: $response.body.failed != true
+```
+
+This keeps Ansible module execution runtime-owned while preserving the same UWS
+orchestration shape used by the 1.6 source-bound form.
+
 ### 3.3 UWS 1.6 form
 
 ```yaml

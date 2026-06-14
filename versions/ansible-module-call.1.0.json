@@ -1,0 +1,54 @@
+{
+  "$id": "https://github.com/OpenUdon/uws/versions/ansible-module-call.1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UWS Ansible Module Call Supplement 1.0",
+  "description": "Wire metadata schema for extension-owned Ansible module leaf operations. This supplement is intended for UWS 1.5-compatible documents that cannot use sourceDescriptions[].type = ansible-module.",
+  "type": "object",
+  "required": [
+    "x-uws-ansible-module"
+  ],
+  "properties": {
+    "x-uws-ansible-module": {
+      "$ref": "#/$defs/operation-ansible-module"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "operation-ansible-module": {
+      "type": "object",
+      "required": [
+        "module"
+      ],
+      "properties": {
+        "module": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_]+\\.[A-Za-z0-9_]+\\.[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$",
+          "description": "Ansible module fully qualified collection name, such as ansible.builtin.apt."
+        },
+        "argspec": {
+          "$ref": "#/$defs/argspec-reference"
+        }
+      },
+      "additionalProperties": false
+    },
+    "argspec-reference": {
+      "type": "object",
+      "properties": {
+        "sourceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "collection": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

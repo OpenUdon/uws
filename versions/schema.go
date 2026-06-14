@@ -33,6 +33,12 @@ func PathForRuntimeSupplement(anchorDir, profile string) string {
 	return pathForSchemaName(anchorDir, runtimeSupplementSchemaName(profile))
 }
 
+// PathForAnsibleModuleCallSupplement returns the best local schema path for an
+// Ansible module-call supplement profile.
+func PathForAnsibleModuleCallSupplement(anchorDir, profile string) string {
+	return pathForSchemaName(anchorDir, ansibleModuleCallSupplementSchemaName(profile))
+}
+
 func runtimeSupplementSchemaName(profile string) string {
 	profile = strings.TrimSpace(profile)
 	if profile == "" {
@@ -42,6 +48,19 @@ func runtimeSupplementSchemaName(profile string) string {
 	profile = strings.TrimPrefix(profile, "uws.")
 	if !strings.HasPrefix(profile, "runtime.") {
 		profile = "runtime." + profile
+	}
+	return profile + ".json"
+}
+
+func ansibleModuleCallSupplementSchemaName(profile string) string {
+	profile = strings.TrimSpace(profile)
+	if profile == "" {
+		return "ansible-module-call.1.0.json"
+	}
+	profile = strings.TrimSuffix(profile, ".json")
+	profile = strings.TrimPrefix(profile, "uws.")
+	if !strings.HasPrefix(profile, "ansible-module-call.") {
+		profile = "ansible-module-call." + profile
 	}
 	return profile + ".json"
 }

@@ -4,6 +4,15 @@ This changelog summarizes externally visible changes between published UWS
 versioned schemas and specification documents. The versioned `.md` files remain
 the normative human-readable specifications.
 
+## Ansible Module Call Supplement 1.0 - 2026-06-14
+
+- Added `uws.ansible-module-call.1.0` for extension-owned Ansible module leaf
+  operations in UWS 1.5-compatible documents.
+- Defined the slim `x-uws-ansible-module` payload with required module FQCN and
+  optional argspec review reference.
+- Kept Ansible execution, inventory, credentials, vault material, `become`,
+  strategy, async/poll, check mode, and callbacks outside public UWS metadata.
+
 ## 1.6.0 - 2026-06-02
 
 - Added `ansible-module` as a first-class `sourceDescription.type` for Ansible

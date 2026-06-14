@@ -21,6 +21,13 @@ contract**: collections ship documented argument specifications
 (`ansible-doc --json`) for every module. This profile defines the normalized
 document shape those argspecs are carried in.
 
+For UWS 1.5-compatible documents, tooling can still preserve Ansible module
+identity by emitting extension-owned operations with
+`x-uws-operation-profile: uws.ansible-module-call.1.0` and
+`x-uws-ansible-module.module`. That compatibility supplement references the
+same argspec documents for review, but it is not a source binding and does not
+change the UWS 1.6 `ansible-module` source contract.
+
 ## Profile
 
 | Field | Value |

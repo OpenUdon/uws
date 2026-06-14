@@ -10,7 +10,7 @@ UWS is a workflow **overlay** over source documents — OpenAPI, AsyncAPI, Graph
 
 This is what distinguishes UWS from full client-side workflow tools such as Arazzo and IaC engines such as OpenTofu and Terraform. Arazzo describes full client-side action sequences and treats each step as a bespoke client action. OpenTofu and Terraform act as full client-side workflow engines for infrastructure: each resource and provider call is described in the client configuration and resolved against a provider plugin at apply time. Neither approach assumes that the underlying operations are already defined by a server contract. UWS takes the opposite position: server actions are pre-defined by the source document, and UWS workflows reference those operations by ID rather than re-describing them. The result is a much smaller overlay: UWS does not duplicate request/response shapes, does not redeclare endpoints, and does not encode anything the source document already specifies.
 
-UWS 1.6 keeps OpenAPI compatibility and adds first-class `ansible-module` source descriptions alongside `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`. The Ansible module sub-spec is published separately as `versions/ansible.1.0.{json,md}`, joining `runtime.1.0` and `browser.1.5`. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
+UWS 1.6 keeps OpenAPI compatibility and adds first-class `ansible-module` source descriptions alongside `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`. The Ansible module sub-spec is published separately as `versions/ansible.1.0.{json,md}`, joining `runtime.1.0` and `browser.1.5`. For UWS 1.5-compatible documents, the optional `uws.ansible-module-call.1.0` supplement identifies Ansible module calls as extension-owned leaf operations while UWS still owns orchestration. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
 
 ### Version highlights
 
@@ -40,6 +40,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - Runtime supplement schema: [versions/runtime.1.0.json](versions/runtime.1.0.json)
 - Browser profile supplement: [versions/browser.1.5.md](versions/browser.1.5.md) / [versions/browser.1.5.json](versions/browser.1.5.json)
 - Ansible module supplement: [versions/ansible.1.0.md](versions/ansible.1.0.md) / [versions/ansible.1.0.json](versions/ansible.1.0.json)
+- Ansible module-call supplement: [versions/ansible-module-call.1.0.md](versions/ansible-module-call.1.0.md) / [versions/ansible-module-call.1.0.json](versions/ansible-module-call.1.0.json)
 - UWS 1.6 Ansible design note: [docs/uws_1_6_ansible.md](docs/uws_1_6_ansible.md)
 - JSON Schema: [versions/1.6.0.json](versions/1.6.0.json)
 
@@ -48,6 +49,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - `uws1` contains the UWS 1.x Go model, structural vocabulary, and structural validation.
 - `convert` converts UWS documents between JSON, YAML, and the HCL authoring form.
 - `runtimes` contains the public `uws.runtime.1.0` supplement constants, wire structs, and extension helpers.
+- `ansiblemodulecall` contains the public `uws.ansible-module-call.1.0` supplement constants, wire structs, and extension helpers.
 - `versions/1.6.0.md` is the human-readable UWS 1.6 specification.
 - `versions/1.6.0.json` is the JSON Schema for UWS 1.6 documents.
 - `versions/browser.1.5.md` / `versions/browser.1.5.json` publish the browser capability profile sub-spec referenced by `sourceDescriptions[].type: browser-profile`.

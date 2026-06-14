@@ -33,6 +33,38 @@ Valid `type` values are `ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`, `smtp`, `dn
 
 The supplement does not standardize credentials, clients, hosts, provider selection, process management, or result schemas. Those remain runtime-private configuration or product-owned extension fields.
 
+## Public Ansible Module-Call Supplement
+
+UWS also publishes `uws.ansible-module-call.1.0` for UWS 1.5-compatible
+documents that need to treat an Ansible module call as an extension-owned leaf
+operation. UWS 1.6 documents SHOULD prefer first-class `ansible-module` source
+binding; this supplement is the compatibility form for older documents.
+
+```yaml
+operationId: install_nginx
+x-uws-operation-profile: uws.ansible-module-call.1.0
+x-uws-ansible-module:
+  module: ansible.builtin.apt
+  argspec:
+    sourceId: builtin
+    url: ./ansible/ansible-builtin.argspec.json
+    collection: ansible.builtin
+request:
+  body:
+    name: nginx
+    state: present
+outputs:
+  changed: $response.body.changed
+successCriteria:
+  - condition: $response.body.failed != true
+```
+
+The supplement only identifies the Ansible module leaf and optional argspec
+review reference. Module arguments remain in `request.body`; results remain
+under `$response.body.*`. Inventory connections, credentials, vault material,
+`become`, forks/strategy, async/poll, check mode, callbacks, and module
+invocation details remain runtime-owned.
+
 ## Example 1: Function Call
 
 Invoke a local or serverless function within the workflow:

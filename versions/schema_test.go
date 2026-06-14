@@ -41,8 +41,17 @@ func TestPathForRuntimeSupplementFindsReadableSchema(t *testing.T) {
 	}
 }
 
+func TestPathForAnsibleModuleCallSupplementFindsReadableSchema(t *testing.T) {
+	for _, profile := range []string{"", "1.0", "ansible-module-call.1.0", "uws.ansible-module-call.1.0"} {
+		path := PathForAnsibleModuleCallSupplement(t.TempDir(), profile)
+		if _, err := os.Stat(path); err != nil {
+			t.Fatalf("ansible module-call schema path for profile %q is not readable: %s: %v", profile, path, err)
+		}
+	}
+}
+
 func TestEmbeddedSchemaPathFindsReadableSchema(t *testing.T) {
-	for _, name := range []string{"1.0.0.json", "1.1.0.json", "1.1.1.json", "1.2.0.json", "1.3.0.json", "1.4.0.json", "1.5.0.json", "1.6.0.json", "runtime.1.0.json", "browser.1.5.json", "ansible.1.0.json"} {
+	for _, name := range []string{"1.0.0.json", "1.1.0.json", "1.1.1.json", "1.2.0.json", "1.3.0.json", "1.4.0.json", "1.5.0.json", "1.6.0.json", "runtime.1.0.json", "browser.1.5.json", "ansible.1.0.json", "ansible-module-call.1.0.json"} {
 		path, ok := embeddedSchemaPath(name)
 		if !ok {
 			t.Fatalf("embedded schema path %s not found", name)
