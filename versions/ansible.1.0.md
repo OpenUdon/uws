@@ -88,7 +88,7 @@ modules:
 | `argspec` | string const | REQUIRED. Literal `uws.ansible.1.0`. |
 | `collection` | string | REQUIRED. Collection namespace (`ansible.builtin`, `community.postgresql`). |
 | `info` | object | Optional provenance: `title`, `collectionVersion`, `extractedAt`, `source`. |
-| `modules` | object | REQUIRED. Module entries keyed by FQCN. Each key is the value a UWS operation uses as `sourceOperationId`. |
+| `modules` | object | REQUIRED. Module entries keyed by FQCN. Each key is the value a UWS operation uses as `sourceOperationId`. Every key MUST begin with the declared `collection` value followed by a dot (e.g. `collection: ansible.builtin` permits only `ansible.builtin.*` keys). JSON Schema cannot express this cross-field constraint, so source-aware tooling MUST enforce it and fail closed on mismatched keys. |
 
 ## Module Entries
 

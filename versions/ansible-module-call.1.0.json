@@ -23,8 +23,8 @@
         "module": {
           "type": "string",
           "minLength": 1,
-          "pattern": "^[A-Za-z0-9_]+\\.[A-Za-z0-9_]+\\.[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$",
-          "description": "Ansible module fully qualified collection name, such as ansible.builtin.apt."
+          "pattern": "^[a-z0-9_]+\\.[a-z0-9_]+\\.[a-z0-9_]+$",
+          "description": "Ansible module fully qualified collection name (exactly namespace.collection.module, lowercase per Ansible Galaxy naming rules), such as ansible.builtin.apt. Matches the module-key pattern in the uws.ansible.1.0 argspec schema."
         },
         "argspec": {
           "$ref": "#/$defs/argspec-reference"

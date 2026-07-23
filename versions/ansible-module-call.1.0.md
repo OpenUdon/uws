@@ -45,7 +45,7 @@ successCriteria:
 
 | Field | Type | Purpose |
 | --- | --- | --- |
-| `module` | string | REQUIRED. Ansible module FQCN, such as `ansible.builtin.apt`. |
+| `module` | string | REQUIRED. Ansible module FQCN, such as `ansible.builtin.apt`. MUST be exactly `namespace.collection.module` in lowercase (`^[a-z0-9_]+\.[a-z0-9_]+\.[a-z0-9_]+$`), matching the module-key pattern of the `uws.ansible.1.0` argspec schema. |
 | `argspec` | object | Optional review reference to the argspec source used by conversion tooling. |
 
 `argspec`, when present, may carry `sourceId`, `url`, and `collection`.

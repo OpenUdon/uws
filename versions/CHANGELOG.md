@@ -2,7 +2,10 @@
 
 This changelog summarizes externally visible changes between published UWS
 versioned schemas and specification documents. The versioned `.md` files remain
-the normative human-readable specifications.
+the normative human-readable specifications. Purely editorial clarifications to
+already-published artifacts may land without an entry; any change that adjusts
+the meaning or scope of a published schema or sub-spec is recorded as an
+"Amended" note under the affected release.
 
 ## Ansible Module Call Supplement 1.0 - 2026-06-14
 
@@ -12,6 +15,12 @@ the normative human-readable specifications.
   optional argspec review reference.
 - Kept Ansible execution, inventory, credentials, vault material, `become`,
   strategy, async/poll, check mode, and callbacks outside public UWS metadata.
+
+Amended 2026-07-23:
+
+- Tightened the module FQCN contract to the canonical lowercase
+  `namespace.collection.module` form, matching the module-key pattern in the
+  `uws.ansible.1.0` argspec schema.
 
 ## 1.6.0 - 2026-06-02
 
@@ -29,6 +38,26 @@ the normative human-readable specifications.
 - Kept connection plugins, privilege escalation, forks/serial strategy, check
   mode, vault material, Jinja2 templating, and the module execution environment
   runtime-owned or authoring-tool-owned.
+
+Amended 2026-06-13:
+
+- Rescoped the `ansible.1.0` sub-spec to inert conversion/review metadata:
+  argspec documents carry the module leaf contract only, and validating or
+  resolving them is the job of source-aware conversion and review tooling, not
+  runtimes. The `1.6.0.json` selector descriptions were updated to match
+  ("inert argspec document"; runtime validation language removed).
+
+Amended 2026-06-14:
+
+- Reclassified handler lowering (and other playbook control-flow mappings) as
+  converter-owned conventions documented in `ansible.1.0.md`, not
+  source-profile fields.
+
+Amended 2026-07-23:
+
+- Required every module key in a `uws.ansible.1.0` argspec document to begin
+  with the declared collection value; source-aware tooling enforces this
+  cross-field constraint.
 
 ## 1.5.0 - 2026-05-30
 
@@ -54,6 +83,11 @@ the normative human-readable specifications.
   `openapi` sources.
 - Kept source parsing, selector resolution, transport, authentication,
   credentials, and runtime invocation source-aware or runtime-owned.
+
+Amended 2026-05-29:
+
+- Corrected the `1.4.0.json` top-level description, which incorrectly said
+  "v1.3.x" at release.
 
 ## 1.3.0 - 2026-05-27
 

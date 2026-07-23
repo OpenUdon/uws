@@ -30,10 +30,16 @@ The supplement defines these runtime type identifiers:
 `ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`, `smtp`, `dns`, `ldaps`, `scp`,
 `sftp`, and `llm`.
 
-HTTP/API-source-bound calls are represented by core UWS operation binding
-fields, not by `x-uws-runtime`. A payload that assigns `type: http` in
-`x-uws-runtime` is invalid. The spelling is exact. `ldaps` is defined; plain
-`ldap` is not.
+Source-bound calls — API, RPC, event, browser-profile, and ansible-module
+sources alike — are represented by core UWS operation binding fields, not by
+`x-uws-runtime`. A payload that assigns `type: http` in `x-uws-runtime` is
+invalid. The spelling is exact. `ldaps` is defined; plain `ldap` is not.
+
+`type: ssh` and `type: cmd` select runtime-owned imperative command execution
+and are distinct from an `ansible-module` source binding, even though both can
+run work on a remote host: the former carries an opaque command chosen by the
+author, while the latter binds to a module contract from a reviewed argspec
+document produced by conversion tooling.
 
 ## Operation Runtime Payload
 
@@ -52,9 +58,10 @@ The payload shape is intentionally small. It selects a non-HTTP invocation
 surface without standardizing runtime behavior. A bound runtime decides whether
 it can execute the selected type and how to interpret the selector fields.
 
-HTTP/API source operation metadata is not part of `x-uws-runtime`. HTTP method,
-path, server, request/response schemas, and operation security requirements
-belong in the referenced API source document and core UWS API source binding fields.
+Source operation metadata is not part of `x-uws-runtime`. HTTP method, path,
+server, channels, messages, module argument specifications, request/response
+schemas, and operation security requirements belong in the referenced source
+document and core UWS source binding fields.
 
 Runtime-specific credentials, provider selection, client defaults, connection
 pools, security material, and other execution configuration belong in

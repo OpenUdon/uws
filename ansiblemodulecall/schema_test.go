@@ -42,6 +42,24 @@ func TestAnsibleModuleCallSupplementSchemaRejectsMissingModule(t *testing.T) {
 	require.Error(t, schema.Validate(value))
 }
 
+func TestAnsibleModuleCallSupplementSchemaRejectsNonCanonicalFQCNs(t *testing.T) {
+	schema := compileAnsibleModuleCallSupplementSchema(t)
+	for name, module := range map[string]string{
+		"mixed case":     "Ansible.Builtin.Apt",
+		"four segments":  "ansible.builtin.apt.extra",
+		"two segments":   "ansible.apt",
+		"short name":     "apt",
+		"hyphen segment": "ansible.builtin.apt-get",
+	} {
+		value := decodeAnsibleModuleCallJSONValue(t, []byte(`{
+			"x-uws-ansible-module": {
+				"module": "`+module+`"
+			}
+		}`))
+		require.Error(t, schema.Validate(value), "module %s (%s) should be rejected", module, name)
+	}
+}
+
 func TestAnsibleModuleCallSupplementSchemaRejectsUnknownFields(t *testing.T) {
 	schema := compileAnsibleModuleCallSupplementSchema(t)
 	value := decodeAnsibleModuleCallJSONValue(t, []byte(`{
