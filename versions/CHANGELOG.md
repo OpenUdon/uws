@@ -7,6 +7,17 @@ already-published artifacts may land without an entry; any change that adjusts
 the meaning or scope of a published schema or sub-spec is recorded as an
 "Amended" note under the affected release.
 
+## Go Schema Accessors - 2026-07-25
+
+- Added `versions.PathForAnsibleSourceProfile` and
+  `versions.PathForBrowserSourceProfile` so source-aware tooling can resolve
+  the published profile schemas through the supported environment, package,
+  module-cache, embedded-schema, and sibling fallback lookup sequence.
+- The accessors accept bare versions, profile-prefixed names, optional `uws.`
+  prefixes, and optional `.json` suffixes. They default to `ansible.1.0` and
+  `browser.1.5`, respectively.
+- No schema wire format changed.
+
 ## Ansible Module Call Supplement 1.0 - 2026-06-14
 
 - Added `uws.ansible-module-call.1.0` for extension-owned Ansible module leaf

@@ -39,6 +39,18 @@ func PathForAnsibleModuleCallSupplement(anchorDir, profile string) string {
 	return pathForSchemaName(anchorDir, ansibleModuleCallSupplementSchemaName(profile))
 }
 
+// PathForAnsibleSourceProfile returns the best local schema path for an
+// Ansible source profile.
+func PathForAnsibleSourceProfile(anchorDir, profile string) string {
+	return pathForSchemaName(anchorDir, sourceProfileSchemaName(profile, "ansible", "1.0"))
+}
+
+// PathForBrowserSourceProfile returns the best local schema path for a browser
+// source profile.
+func PathForBrowserSourceProfile(anchorDir, profile string) string {
+	return pathForSchemaName(anchorDir, sourceProfileSchemaName(profile, "browser", "1.5"))
+}
+
 func runtimeSupplementSchemaName(profile string) string {
 	profile = strings.TrimSpace(profile)
 	if profile == "" {
@@ -61,6 +73,19 @@ func ansibleModuleCallSupplementSchemaName(profile string) string {
 	profile = strings.TrimPrefix(profile, "uws.")
 	if !strings.HasPrefix(profile, "ansible-module-call.") {
 		profile = "ansible-module-call." + profile
+	}
+	return profile + ".json"
+}
+
+func sourceProfileSchemaName(profile, name, defaultVersion string) string {
+	profile = strings.TrimSpace(profile)
+	if profile == "" {
+		profile = defaultVersion
+	}
+	profile = strings.TrimSuffix(profile, ".json")
+	profile = strings.TrimPrefix(profile, "uws.")
+	if !strings.HasPrefix(profile, name+".") {
+		profile = name + "." + profile
 	}
 	return profile + ".json"
 }

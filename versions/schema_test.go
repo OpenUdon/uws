@@ -50,6 +50,41 @@ func TestPathForAnsibleModuleCallSupplementFindsReadableSchema(t *testing.T) {
 	}
 }
 
+func TestPathForAnsibleSourceProfileFindsReadableSchema(t *testing.T) {
+	for _, profile := range []string{"", "1.0", "1.0.json", "ansible.1.0", "ansible.1.0.json", "uws.ansible.1.0", "uws.ansible.1.0.json"} {
+		path := PathForAnsibleSourceProfile(t.TempDir(), profile)
+		if _, err := os.Stat(path); err != nil {
+			t.Fatalf("Ansible source profile path for profile %q is not readable: %s: %v", profile, path, err)
+		}
+	}
+}
+
+func TestPathForBrowserSourceProfileFindsReadableSchema(t *testing.T) {
+	for _, profile := range []string{"", "1.5", "1.5.json", "browser.1.5", "browser.1.5.json", "uws.browser.1.5", "uws.browser.1.5.json"} {
+		path := PathForBrowserSourceProfile(t.TempDir(), profile)
+		if _, err := os.Stat(path); err != nil {
+			t.Fatalf("browser source profile path for profile %q is not readable: %s: %v", profile, path, err)
+		}
+	}
+}
+
+func TestSourceProfilePathsHonorSchemaDir(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("UWS_SCHEMA_DIR", dir)
+	for name, path := range map[string]string{
+		"Ansible": PathForAnsibleSourceProfile(".", "uws.ansible.1.0.json"),
+		"browser": PathForBrowserSourceProfile(".", "uws.browser.1.5.json"),
+	} {
+		want := filepath.Join(dir, map[string]string{
+			"Ansible": "ansible.1.0.json",
+			"browser": "browser.1.5.json",
+		}[name])
+		if path != want {
+			t.Fatalf("%s source profile path = %q, want %q", name, path, want)
+		}
+	}
+}
+
 func TestEmbeddedSchemaPathFindsReadableSchema(t *testing.T) {
 	for _, name := range []string{"1.0.0.json", "1.1.0.json", "1.1.1.json", "1.2.0.json", "1.3.0.json", "1.4.0.json", "1.5.0.json", "1.6.0.json", "runtime.1.0.json", "browser.1.5.json", "ansible.1.0.json", "ansible-module-call.1.0.json"} {
 		path, ok := embeddedSchemaPath(name)
