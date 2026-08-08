@@ -2,7 +2,7 @@
   "$id": "https://github.com/OpenUdon/uws/versions/ansible-module-call.1.0.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "UWS Ansible Module Call Supplement 1.0",
-  "description": "Wire metadata schema for extension-owned Ansible module leaf operations. This supplement is intended for UWS 1.5-compatible documents that cannot use sourceDescriptions[].type = ansible-module.",
+  "description": "Wire metadata schema for extension-owned Ansible module leaf operations. This supplement is the supported representation for Ansible module calls at every UWS version.",
   "type": "object",
   "required": [
     "x-uws-ansible-module"

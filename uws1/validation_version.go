@@ -36,10 +36,10 @@ func (d *Document) validateVersionedFields(result *ValidationResult) {
 				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "requires UWS 1.5.0 or later")
 			}
 		case SourceDescriptionTypeAnsibleModule:
-			// ansible-module was introduced in 1.6.0 and withdrawn in 1.7.0: an
-			// Ansible argspec is a client-side library manifest, not a
-			// server-published source contract. Module operations use the
-			// uws.ansible-module-call.1.0 operation profile instead.
+			// ansible-module was introduced in 1.6.0 and withdrawn in 1.7.0.
+			// Source descriptions identify pre-existing named operations on a
+			// remote target; the control node instead supplies Ansible module
+			// implementations, so calls use the operation profile below.
 			switch {
 			case !supports16:
 				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "requires UWS 1.6.0 or later")

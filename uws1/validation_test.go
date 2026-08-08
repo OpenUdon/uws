@@ -561,9 +561,10 @@ func TestValidate_UWS16AnsibleModuleSourceOperationBindings(t *testing.T) {
 	})
 }
 
-// ansible-module was withdrawn in 1.7.0: an Ansible argspec is a client-side
-// library manifest, not a server-published source contract. The type stays
-// valid on 1.6 documents so already-published workflows keep validating.
+// ansible-module was withdrawn in 1.7.0 because the control node supplies the
+// module implementation rather than selecting a pre-existing named operation
+// on the remote target. The type stays valid on 1.6 documents so
+// already-published workflows keep validating.
 func TestValidate_UWS17AnsibleModuleSourceTypeRemoved(t *testing.T) {
 	ansibleDoc := func(version string) *Document {
 		doc := validDocument()

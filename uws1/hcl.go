@@ -60,7 +60,8 @@ func (d *Document) UnmarshalHCL(data []byte, labels ...string) error {
 	return nil
 }
 
-// MarshalHCL marshals a UWS document to native UWS HCL.
+// MarshalHCL marshals a UWS document to native UWS HCL. Equivalent documents
+// produce byte-stable output, including maps and extension payloads.
 func (d *Document) MarshalHCL() ([]byte, error) {
 	cloned, err := cloneDocumentForHCL(d)
 	if err != nil {

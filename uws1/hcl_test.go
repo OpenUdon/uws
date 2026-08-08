@@ -1,6 +1,7 @@
 package uws1
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 
@@ -230,5 +231,57 @@ func TestDocumentHCLInterfacesMarshalThroughDethcl(t *testing.T) {
 	body := doc.Operations[0].Request["body"].(map[string]any)
 	if _, ok := body["$request"]; !ok {
 		t.Fatalf("MarshalHCL mutated original request keys: %#v", body)
+	}
+}
+
+func TestDocumentMarshalHCLIsDeterministic(t *testing.T) {
+	doc := &Document{
+		UWS: "1.7.0",
+		Info: &Info{
+			Title:      "Deterministic HCL",
+			Version:    "1.0.0",
+			Extensions: map[string]any{"x-zulu": 26, "x-alpha": 1},
+		},
+		Variables: map[string]any{"zulu": "last", "alpha": "first"},
+		Operations: []*Operation{{
+			OperationID: "op1",
+			Request: map[string]any{"body": map[string]any{
+				"zulu":  26,
+				"alpha": map[string]any{"two": 2, "one": 1},
+			}},
+			Extensions: map[string]any{
+				ExtensionOperationProfile: "test.profile.1.0",
+				"x-zulu":                  map[string]any{"two": 2, "one": 1},
+				"x-alpha":                 true,
+			},
+		}},
+	}
+
+	first, err := doc.MarshalHCL()
+	if err != nil {
+		t.Fatalf("MarshalHCL failed: %v", err)
+	}
+	for i := 0; i < 100; i++ {
+		got, err := doc.MarshalHCL()
+		if err != nil {
+			t.Fatalf("MarshalHCL failed: %v", err)
+		}
+		if !bytes.Equal(got, first) {
+			t.Fatalf("MarshalHCL output changed between calls:\nfirst:\n%s\ngot:\n%s", first, got)
+		}
+	}
+
+	hcl := string(first)
+	for before, after := range map[string]string{
+		`alpha = "first"`: `zulu = "last"`,
+		"one = 1":         "two = 2",
+	} {
+		beforeIndex, afterIndex := strings.Index(hcl, before), strings.Index(hcl, after)
+		if beforeIndex < 0 || afterIndex < 0 || beforeIndex >= afterIndex {
+			t.Fatalf("expected %q before %q in deterministic HCL:\n%s", before, after, hcl)
+		}
+	}
+	if alphaIndex, zuluIndex := strings.Index(hcl, "x-alpha = true"), strings.LastIndex(hcl, "x-zulu"); alphaIndex < 0 || zuluIndex < 0 || alphaIndex >= zuluIndex {
+		t.Fatalf("expected operation extension x-alpha before x-zulu in deterministic HCL:\n%s", hcl)
 	}
 }

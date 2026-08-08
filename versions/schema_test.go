@@ -1,8 +1,10 @@
 package versions
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -47,6 +49,25 @@ func TestPathForAnsibleModuleCallSupplementFindsReadableSchema(t *testing.T) {
 		if _, err := os.Stat(path); err != nil {
 			t.Fatalf("ansible module-call schema path for profile %q is not readable: %s: %v", profile, path, err)
 		}
+	}
+}
+
+func TestAnsibleModuleCallSupplementDescribesSupportedRepresentation(t *testing.T) {
+	data, err := os.ReadFile(PathForAnsibleModuleCallSupplement(t.TempDir(), "1.0"))
+	if err != nil {
+		t.Fatalf("read Ansible module-call schema: %v", err)
+	}
+	var schema struct {
+		Description string `json:"description"`
+	}
+	if err := json.Unmarshal(data, &schema); err != nil {
+		t.Fatalf("parse Ansible module-call schema: %v", err)
+	}
+	if !strings.Contains(schema.Description, "supported representation") || !strings.Contains(schema.Description, "every UWS version") {
+		t.Fatalf("schema description does not state the supported cross-version contract: %q", schema.Description)
+	}
+	if strings.Contains(schema.Description, "cannot use sourceDescriptions") {
+		t.Fatalf("schema description retains the withdrawn compatibility-only wording: %q", schema.Description)
 	}
 }
 

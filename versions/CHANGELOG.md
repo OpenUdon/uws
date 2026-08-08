@@ -57,6 +57,13 @@ Amended 2026-07-23:
   `namespace.collection.module` form, matching the module-key pattern in the
   `uws.ansible.1.0` argspec schema.
 
+Amended 2026-08-08:
+
+- Repositioned the supplement as the supported Ansible module-call
+  representation at every UWS version after UWS 1.7 withdrew the temporary
+  source type. Updated schema metadata only; the supplement wire shape is
+  unchanged.
+
 ## 1.6.0 - 2026-06-02
 
 - Added `ansible-module` as a first-class `sourceDescription.type` for Ansible
