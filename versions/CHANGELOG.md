@@ -18,6 +18,30 @@ the meaning or scope of a published schema or sub-spec is recorded as an
   `browser.1.5`, respectively.
 - No schema wire format changed.
 
+## 1.7.0 - 2026-08-08
+
+- Removed the `ansible-module` `sourceDescription.type` introduced in 1.6.0.
+  UWS 1.7 defines nine source description type values.
+- Rationale: first-class source descriptions name operations that already exist
+  on the remote target. Provider-published API descriptions are the strongest
+  form; an author-asserted browser profile is weaker but still names actions the
+  target UI implements. An Ansible host does not expose a collection module as
+  a pre-existing operation: the control node supplies and runs that
+  implementation, so the argspec is a client-side library manifest.
+- Ansible module operations are represented by the
+  `uws.ansible-module-call.1.0` operation profile, which is now the supported
+  path at every UWS version rather than a 1.5 compatibility form.
+- `versions/ansible.1.0.{json,md}` remains published, unchanged in shape, as the
+  argspec document format that supplement references for review. It is no longer
+  a source profile.
+- Added `versions.PathForAnsibleArgspec`; retained
+  `PathForAnsibleSourceProfile` as a deprecated compatibility alias. Updated the
+  `ansible.1.0.json` title and description to argspec terminology without
+  changing its wire shape.
+- Documents declaring `uws: 1.6.0` are unaffected; `versions/1.6.0.json` still
+  accepts `ansible-module`. Validators MUST reject the type on documents
+  declaring 1.7.0 or later.
+
 ## Ansible Module Call Supplement 1.0 - 2026-06-14
 
 - Added `uws.ansible-module-call.1.0` for extension-owned Ansible module leaf

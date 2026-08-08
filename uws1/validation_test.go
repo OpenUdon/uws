@@ -561,6 +561,46 @@ func TestValidate_UWS16AnsibleModuleSourceOperationBindings(t *testing.T) {
 	})
 }
 
+// ansible-module was withdrawn in 1.7.0: an Ansible argspec is a client-side
+// library manifest, not a server-published source contract. The type stays
+// valid on 1.6 documents so already-published workflows keep validating.
+func TestValidate_UWS17AnsibleModuleSourceTypeRemoved(t *testing.T) {
+	ansibleDoc := func(version string) *Document {
+		doc := validDocument()
+		doc.UWS = version
+		doc.SourceDescriptions[0].Type = SourceDescriptionTypeAnsibleModule
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceOperationID = "ansible.builtin.apt"
+		return doc
+	}
+
+	t.Run("rejected on 1.7.0 documents", func(t *testing.T) {
+		assert.ErrorContains(t, ansibleDoc("1.7.0").Validate(),
+			"removed in UWS 1.7.0; use the uws.ansible-module-call.1.0 operation profile")
+	})
+
+	t.Run("rejected on versions after 1.7.0", func(t *testing.T) {
+		assert.ErrorContains(t, ansibleDoc("1.8.0").Validate(), "removed in UWS 1.7.0")
+	})
+
+	t.Run("still valid on 1.6.0 documents", func(t *testing.T) {
+		assert.NoError(t, ansibleDoc("1.6.0").Validate())
+	})
+
+	t.Run("module call supplement remains valid at 1.7.0", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.7.0"
+		doc.SourceDescriptions = nil
+		doc.Operations[0].OpenAPIOperationID = ""
+		doc.Operations[0].SourceDescription = ""
+		doc.Operations[0].Extensions = map[string]any{
+			ExtensionOperationProfile: "uws.ansible-module-call.1.0",
+			"x-uws-ansible-module":    map[string]any{"module": "ansible.builtin.apt"},
+		}
+		assert.NoError(t, doc.Validate())
+	})
+}
+
 func TestValidate_DuplicateIDs(t *testing.T) {
 	doc := validDocument()
 	doc.SourceDescriptions = append(doc.SourceDescriptions, &SourceDescription{Name: "api", URL: "./other.yaml"})

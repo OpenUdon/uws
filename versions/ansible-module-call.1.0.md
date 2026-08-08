@@ -1,9 +1,15 @@
 # UWS Ansible Module Call Supplement 1.0
 
 The UWS Ansible Module Call Supplement defines a small public extension profile
-for extension-owned Ansible module leaf operations. It is intended for UWS
-1.5-compatible documents, where `sourceDescriptions[].type: ansible-module`
-does not exist yet.
+for extension-owned Ansible module leaf operations. **It is the supported way to
+represent an Ansible module call in UWS, at every version.**
+
+UWS 1.6 briefly offered a first-class `sourceDescriptions[].type:
+ansible-module` binding; UWS 1.7 removed it. The managed host does not expose a
+collection module as a pre-existing named operation; the control node supplies
+and runs that implementation. The argspec is therefore a client-side library
+manifest rather than a remote-operation contract. Module calls belong in an
+operation profile, alongside `uws.runtime.1.0`.
 
 This supplement is wire/spec metadata only. It does not standardize the
 Ansible execution engine, inventory connections, connection plugins,
@@ -51,8 +57,13 @@ successCriteria:
 `argspec`, when present, may carry `sourceId`, `url`, and `collection`.
 
 Module arguments stay in normal UWS `request.body`. Module result values stay
-under `$response.body.*`. This mirrors the UWS 1.6 `ansible-module` source-bound
-form while keeping the operation extension-owned for older UWS documents.
+under `$response.body.*`. The `argspec` reference points at a document in the
+`uws.ansible.1.0` argspec format, which conversion and review tooling uses to
+check `request.body` against the module's parameter specification.
+
+Documents declaring `uws: 1.6.0` that use the withdrawn `ansible-module` source
+type remain valid as 1.6 documents; `versions/1.6.0.json` is unchanged. New
+documents, and any document declaring 1.7.0 or later, use this supplement.
 
 ## Boundary
 

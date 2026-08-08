@@ -32,7 +32,7 @@ The UWS document points to source documents. It does not copy endpoint URLs, cha
 ## Minimal Workflow
 
 ```yaml
-uws: "1.6.0"
+uws: "1.7.0"
 info:
   title: Support Ticket Workflow
   version: "1.0.0"
@@ -95,7 +95,7 @@ Rules of thumb:
 
 - `name` is the stable local handle used by operations.
 - `url` can be a local path or reviewed remote location, depending on the runtime.
-- `type` may be `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, `browser-profile`, or `ansible-module`. Missing `type` defaults to `openapi`. The `browser-profile` sub-spec is published separately as `versions/browser.1.5.{json,md}`, and the `ansible-module` sub-spec as `versions/ansible.1.0.{json,md}`.
+- `type` may be `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, or `browser-profile`. Missing `type` defaults to `openapi`. The `browser-profile` sub-spec is published separately as `versions/browser.1.5.{json,md}`.
 
 ## Step 2: Bind Operations
 
@@ -112,18 +112,21 @@ operations:
 
 Do not add HTTP method, path, channel, server URL, or security configuration here. Those belong to the source document and the bound runtime.
 
-Ansible module sources follow the same binding shape; module arguments go under `request.body`:
+Ansible module calls are extension-owned rather than source-bound, because an
+argspec is published by the collection maintainer, while the managed host does
+not expose the module as a pre-existing named operation. Module arguments still
+go under `request.body`:
 
 ```yaml
-sourceDescriptions:
-  - name: builtin
-    url: ./ansible/ansible-builtin.argspec.json
-    type: ansible-module
-
 operations:
   - operationId: install_nginx
-    sourceDescription: builtin
-    sourceOperationId: ansible.builtin.apt
+    x-uws-operation-profile: uws.ansible-module-call.1.0
+    x-uws-ansible-module:
+      module: ansible.builtin.apt
+      argspec:
+        sourceId: builtin
+        url: ./ansible/ansible-builtin.argspec.json
+        collection: ansible.builtin
     request:
       body:
         name: nginx

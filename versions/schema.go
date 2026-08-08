@@ -39,16 +39,25 @@ func PathForAnsibleModuleCallSupplement(anchorDir, profile string) string {
 	return pathForSchemaName(anchorDir, ansibleModuleCallSupplementSchemaName(profile))
 }
 
+// PathForAnsibleArgspec returns the best local schema path for an Ansible
+// argspec document.
+func PathForAnsibleArgspec(anchorDir, profile string) string {
+	return pathForSchemaName(anchorDir, familySchemaName(profile, "ansible", "1.0"))
+}
+
 // PathForAnsibleSourceProfile returns the best local schema path for an
-// Ansible source profile.
+// Ansible argspec document.
+//
+// Deprecated: use PathForAnsibleArgspec. Ansible argspecs are not source
+// profiles as of UWS 1.7.
 func PathForAnsibleSourceProfile(anchorDir, profile string) string {
-	return pathForSchemaName(anchorDir, sourceProfileSchemaName(profile, "ansible", "1.0"))
+	return PathForAnsibleArgspec(anchorDir, profile)
 }
 
 // PathForBrowserSourceProfile returns the best local schema path for a browser
 // source profile.
 func PathForBrowserSourceProfile(anchorDir, profile string) string {
-	return pathForSchemaName(anchorDir, sourceProfileSchemaName(profile, "browser", "1.5"))
+	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser", "1.5"))
 }
 
 func runtimeSupplementSchemaName(profile string) string {
@@ -77,7 +86,7 @@ func ansibleModuleCallSupplementSchemaName(profile string) string {
 	return profile + ".json"
 }
 
-func sourceProfileSchemaName(profile, name, defaultVersion string) string {
+func familySchemaName(profile, name, defaultVersion string) string {
 	profile = strings.TrimSpace(profile)
 	if profile == "" {
 		profile = defaultVersion

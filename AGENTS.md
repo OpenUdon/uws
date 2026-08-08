@@ -17,9 +17,9 @@ UWS is a workflow overlay for API- and event-source-backed operations. Source do
 
 Three coordinated artifacts must stay in sync:
 
-1. `versions/1.6.0.json` — the latest canonical JSON Schema for UWS 1.x documents. `versions/1.0.0.json`, `versions/1.1.0.json`, `versions/1.1.1.json`, `versions/1.2.0.json`, `versions/1.3.0.json`, `versions/1.4.0.json`, and `versions/1.5.0.json` remain published historical schemas. `versions/browser.1.5.json` publishes the browser capability profile sub-spec referenced by `sourceDescriptions[].type: browser-profile`, and `versions/ansible.1.0.json` publishes the Ansible module sub-spec referenced by `sourceDescriptions[].type: ansible-module`.
+1. `versions/1.7.0.json` — the latest canonical JSON Schema for UWS 1.x documents. `versions/1.0.0.json` through `versions/1.6.0.json` remain published historical schemas. `versions/browser.1.5.json` publishes the browser capability profile referenced by `sourceDescriptions[].type: browser-profile`. `versions/ansible.1.0.json` publishes the Ansible argspec format referenced by the extension-owned `uws.ansible-module-call.1.0` operation profile; the `ansible-module` source type exists only in historical UWS 1.6 documents.
 2. `uws1/` — the Go model and semantic validator.
-3. `versions/1.6.0.md` — the latest human-readable spec. `versions/1.0.0.md`, `versions/1.1.0.md`, `versions/1.1.1.md`, `versions/1.2.0.md`, `versions/1.3.0.md`, `versions/1.4.0.md`, `versions/1.5.0.md`, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are comparison/background docs. `versions/browser.1.5.md` is the browser capability profile sub-spec, and `versions/ansible.1.0.md` is the Ansible module sub-spec.
+3. `versions/1.7.0.md` — the latest human-readable spec. Earlier numbered specifications, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are historical or comparison documents. `versions/browser.1.5.md` is the browser capability profile, `versions/ansible.1.0.md` is the Ansible argspec format, and `versions/ansible-module-call.1.0.md` is the extension-owned module-call supplement.
 
 ## Execution Model
 

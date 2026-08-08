@@ -1,40 +1,38 @@
-# UWS Ansible Module Source Profile 1.0
+# UWS Ansible Module Argspec Format 1.0
 
-The UWS Ansible Module Source Profile is the sub-spec for documents referenced
-by UWS 1.6 `sourceDescriptions[].type: ansible-module`. It is inert source
-metadata for conversion and review. It does not standardize the Ansible
-execution engine, inventory connection behavior, module invocation, connection
-plugins, privilege escalation (`become`), forks/serial strategy, check mode,
-vault decryption, callback or strategy plugins, or the Python execution
-environment. Jinja2 templating is owned by authoring tooling and by modules
-that consume template files; it never enters the UWS expression grammar.
+The UWS Ansible Module Argspec Format is the normalized document shape for
+Ansible collection argument specifications. It is inert metadata for conversion
+and review. It does not standardize the Ansible execution engine, inventory
+connection behavior, module invocation, connection plugins, privilege
+escalation (`become`), forks/serial strategy, check mode, vault decryption,
+callback or strategy plugins, or the Python execution environment. Jinja2
+templating is owned by authoring tooling and by modules that consume template
+files; it never enters the UWS expression grammar.
 
-UWS core (the main `versions/1.6.0.json` schema) only references this profile
-by *type name* and reuses the existing generic `sourceOperationId` /
-`sourceOperationRef` selector rules. Validating an argspec document against the
-shape below — and validating a UWS operation's `request.body` against a
-module's parameter specification — is the job of source-aware conversion and
-review tooling.
+Collections ship documented argument specifications (`ansible-doc --json`) for
+every module. This format defines how those argspecs are carried so that
+conversion and review tooling can check a UWS operation's `request.body`
+against a module's parameter specification.
 
-This profile does not define Ansible playbook control flow. Tooling may lower
+**This is not a UWS source profile.** UWS 1.6 briefly bound it through
+`sourceDescriptions[].type: ansible-module`; UWS 1.7 removed that type. The
+managed host does not expose a collection module as a pre-existing named
+operation; the control node supplies and runs that implementation. The argspec
+is therefore a client-side library manifest, and Ansible module operations are
+extension-owned, using `x-uws-operation-profile: uws.ansible-module-call.1.0`
+and `x-uws-ansible-module.module`, and that supplement's optional `argspec`
+reference points at a document in this format.
+
+Documents declaring `uws: 1.6.0` that still use the `ansible-module` source
+type remain valid as 1.6 documents; `versions/1.6.0.json` is unchanged.
+
+This format does not define Ansible playbook control flow. Tooling may lower
 playbook constructs into existing UWS workflow objects, but those rules are
 converter-owned. For example, a converter can map `when` to `when` or `switch`,
 `loop` to `forEach`, `register` field references to operation `outputs`,
 `failed_when` to `successCriteria`, and `until`/`retries` to `onFailure:
-retry`. The emitted UWS document carries the result of that lowering; the
-argspec profile remains only the module leaf contract.
-
-Unlike `browser-profile`, an `ansible-module` source is a **provider-published
-contract**: collections ship documented argument specifications
-(`ansible-doc --json`) for every module. This profile defines the normalized
-document shape those argspecs are carried in.
-
-For UWS 1.5-compatible documents, tooling can still preserve Ansible module
-identity by emitting extension-owned operations with
-`x-uws-operation-profile: uws.ansible-module-call.1.0` and
-`x-uws-ansible-module.module`. That compatibility supplement references the
-same argspec documents for review, but it is not a source binding and does not
-change the UWS 1.6 `ansible-module` source contract.
+retry`. The emitted UWS document carries the result of that lowering; this
+format remains only the module leaf contract.
 
 ## Profile
 
@@ -42,8 +40,8 @@ change the UWS 1.6 `ansible-module` source contract.
 | --- | --- |
 | Profile name | `uws.ansible.1.0` |
 | JSON Schema | `versions/ansible.1.0.json` |
-| Bound from | UWS 1.6+ `sourceDescriptions[].type: ansible-module` |
-| Selector | `sourceOperationId` (module FQCN) or `sourceOperationRef` (preferred form: `#/modules/<fqcn>`) |
+| Referenced from | `x-uws-ansible-module.argspec` in the `uws.ansible-module-call.1.0` supplement |
+| Module key | Module FQCN, matching `x-uws-ansible-module.module` |
 
 A minimal argspec document:
 
@@ -88,7 +86,7 @@ modules:
 | `argspec` | string const | REQUIRED. Literal `uws.ansible.1.0`. |
 | `collection` | string | REQUIRED. Collection namespace (`ansible.builtin`, `community.postgresql`). |
 | `info` | object | Optional provenance: `title`, `collectionVersion`, `extractedAt`, `source`. |
-| `modules` | object | REQUIRED. Module entries keyed by FQCN. Each key is the value a UWS operation uses as `sourceOperationId`. Every key MUST begin with the declared `collection` value followed by a dot (e.g. `collection: ansible.builtin` permits only `ansible.builtin.*` keys). JSON Schema cannot express this cross-field constraint, so source-aware tooling MUST enforce it and fail closed on mismatched keys. |
+| `modules` | object | REQUIRED. Module entries keyed by FQCN. Each key is the value a UWS operation carries as `x-uws-ansible-module.module`. Every key MUST begin with the declared `collection` value followed by a dot (e.g. `collection: ansible.builtin` permits only `ansible.builtin.*` keys). JSON Schema cannot express this cross-field constraint, so source-aware tooling MUST enforce it and fail closed on mismatched keys. |
 
 ## Module Entries
 
@@ -117,8 +115,13 @@ name):
 ```yaml
 operations:
   - operationId: install_nginx
-    sourceDescription: builtin
-    sourceOperationId: ansible.builtin.apt
+    x-uws-operation-profile: uws.ansible-module-call.1.0
+    x-uws-ansible-module:
+      module: ansible.builtin.apt
+      argspec:
+        sourceId: builtin
+        url: ./ansible/ansible-builtin.argspec.json
+        collection: ansible.builtin
     request:
       body:
         name: nginx
@@ -191,10 +194,9 @@ steps:
             operationRef: restart_nginx
 ```
 
-Handler lowering is a converter convention, not a new source-profile field.
-The same handler orchestration can be emitted in UWS 1.5 compatibility output
-using `uws.ansible-module-call.1.0` extension-owned operations or in UWS 1.6
-output using first-class `ansible-module` source bindings.
+Handler lowering is a converter convention, not a field of this format. The
+handler orchestration is emitted as ordinary UWS steps referencing
+`uws.ansible-module-call.1.0` extension-owned operations.
 
 ## Inventory Posture (Stage 1)
 
@@ -215,7 +217,7 @@ UWS documents:
 - Vault-encrypted values, vault passwords, or any decrypted secret material.
 - Forks, serial, strategy plugins, async/poll, and check-mode invocation.
 - Callback plugins, logging configuration, and execution-environment selection.
-- Continue-on-error behavior such as `ignore_errors`. UWS 1.6 has no portable
+- Continue-on-error behavior such as `ignore_errors`. UWS core has no portable
   continue-on-failure primitive, so converters must fail closed or keep the
   behavior runtime-owned until a future core or profile field exists.
 - Jinja2 template evaluation. Authoring tooling lowers templates before the

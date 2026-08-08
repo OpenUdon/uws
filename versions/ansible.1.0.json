@@ -1,8 +1,8 @@
 {
     "$id": "https://github.com/OpenUdon/uws/versions/ansible.1.0.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "title": "UWS Ansible Module Source Profile 1.0",
-    "description": "Wire schema for inert collection argspec source documents referenced from UWS 1.6 sourceDescriptions[].type = ansible-module. The document is a normalized form of the ansible-doc --json argument-spec output. UWS core does not duplicate this schema; source-aware conversion and review tooling validates argspec documents against it.",
+    "title": "UWS Ansible Module Argspec Format 1.0",
+    "description": "Wire schema for inert collection argspec documents referenced by the uws.ansible-module-call.1.0 operation profile. The document is a normalized form of the ansible-doc --json argument-spec output. UWS core does not duplicate this schema; conversion and review tooling validates argspec documents against it.",
     "type": "object",
     "required": [
         "argspec",

@@ -13,6 +13,7 @@ func (d *Document) validateVersionedFields(result *ValidationResult) {
 	supports14 := supportsUWSVersion(d.UWS, 1, 4)
 	supports15 := supportsUWSVersion(d.UWS, 1, 5)
 	supports16 := supportsUWSVersion(d.UWS, 1, 6)
+	supports17 := supportsUWSVersion(d.UWS, 1, 7)
 	for i, sd := range d.SourceDescriptions {
 		if sd == nil {
 			continue
@@ -35,8 +36,15 @@ func (d *Document) validateVersionedFields(result *ValidationResult) {
 				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "requires UWS 1.5.0 or later")
 			}
 		case SourceDescriptionTypeAnsibleModule:
-			if !supports16 {
+			// ansible-module was introduced in 1.6.0 and withdrawn in 1.7.0: an
+			// Ansible argspec is a client-side library manifest, not a
+			// server-published source contract. Module operations use the
+			// uws.ansible-module-call.1.0 operation profile instead.
+			switch {
+			case !supports16:
 				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "requires UWS 1.6.0 or later")
+			case supports17:
+				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "removed in UWS 1.7.0; use the uws.ansible-module-call.1.0 operation profile")
 			}
 		}
 	}

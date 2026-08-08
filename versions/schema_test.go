@@ -7,7 +7,7 @@ import (
 )
 
 func TestPathForVersionFindsReadableSchema(t *testing.T) {
-	for _, version := range []string{"", "1.0.0", "1.1.0", "1.1.1", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0"} {
+	for _, version := range []string{"", "1.0.0", "1.1.0", "1.1.1", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0"} {
 		path := PathForVersion(t.TempDir(), version)
 		if _, err := os.Stat(path); err != nil {
 			t.Fatalf("schema path for version %q is not readable: %s: %v", version, path, err)
@@ -50,11 +50,14 @@ func TestPathForAnsibleModuleCallSupplementFindsReadableSchema(t *testing.T) {
 	}
 }
 
-func TestPathForAnsibleSourceProfileFindsReadableSchema(t *testing.T) {
+func TestPathForAnsibleArgspecFindsReadableSchema(t *testing.T) {
 	for _, profile := range []string{"", "1.0", "1.0.json", "ansible.1.0", "ansible.1.0.json", "uws.ansible.1.0", "uws.ansible.1.0.json"} {
-		path := PathForAnsibleSourceProfile(t.TempDir(), profile)
+		path := PathForAnsibleArgspec(t.TempDir(), profile)
 		if _, err := os.Stat(path); err != nil {
-			t.Fatalf("Ansible source profile path for profile %q is not readable: %s: %v", profile, path, err)
+			t.Fatalf("Ansible argspec path for profile %q is not readable: %s: %v", profile, path, err)
+		}
+		if legacy := PathForAnsibleSourceProfile(t.TempDir(), profile); legacy != path {
+			t.Fatalf("deprecated Ansible source profile path = %q, want %q", legacy, path)
 		}
 	}
 }
@@ -68,11 +71,11 @@ func TestPathForBrowserSourceProfileFindsReadableSchema(t *testing.T) {
 	}
 }
 
-func TestSourceProfilePathsHonorSchemaDir(t *testing.T) {
+func TestProfileAndArgspecPathsHonorSchemaDir(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("UWS_SCHEMA_DIR", dir)
 	for name, path := range map[string]string{
-		"Ansible": PathForAnsibleSourceProfile(".", "uws.ansible.1.0.json"),
+		"Ansible": PathForAnsibleArgspec(".", "uws.ansible.1.0.json"),
 		"browser": PathForBrowserSourceProfile(".", "uws.browser.1.5.json"),
 	} {
 		want := filepath.Join(dir, map[string]string{
@@ -80,13 +83,13 @@ func TestSourceProfilePathsHonorSchemaDir(t *testing.T) {
 			"browser": "browser.1.5.json",
 		}[name])
 		if path != want {
-			t.Fatalf("%s source profile path = %q, want %q", name, path, want)
+			t.Fatalf("%s schema path = %q, want %q", name, path, want)
 		}
 	}
 }
 
 func TestEmbeddedSchemaPathFindsReadableSchema(t *testing.T) {
-	for _, name := range []string{"1.0.0.json", "1.1.0.json", "1.1.1.json", "1.2.0.json", "1.3.0.json", "1.4.0.json", "1.5.0.json", "1.6.0.json", "runtime.1.0.json", "browser.1.5.json", "ansible.1.0.json", "ansible-module-call.1.0.json"} {
+	for _, name := range []string{"1.0.0.json", "1.1.0.json", "1.1.1.json", "1.2.0.json", "1.3.0.json", "1.4.0.json", "1.5.0.json", "1.6.0.json", "1.7.0.json", "runtime.1.0.json", "browser.1.5.json", "ansible.1.0.json", "ansible-module-call.1.0.json"} {
 		path, ok := embeddedSchemaPath(name)
 		if !ok {
 			t.Fatalf("embedded schema path %s not found", name)

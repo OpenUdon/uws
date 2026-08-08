@@ -1,4 +1,16 @@
-# UWS 1.6 Ansible Module Source Design
+# UWS 1.6 Ansible Module Source Design (historical)
+
+> **Superseded.** This records the UWS 1.6 design. UWS 1.7 removed the
+> `ansible-module` source type: the managed host does not expose a collection
+> module as a pre-existing named operation; the control node supplies and runs
+> that implementation, so the argspec is a client-side library manifest.
+> Ansible module operations now use the
+> `uws.ansible-module-call.1.0` operation profile, and
+> `versions/ansible.1.0.{json,md}` remains published as the argspec document
+> format that supplement references. The document below is kept as the design
+> record of the 1.6 decision; see the withdrawal record in
+> [`future-source-profiles.md`](future-source-profiles.md) for what the
+> admission criteria missed.
 
 > Design record for the UWS 1.6 adoption of `ansible-module` as a first-class
 > `sourceDescriptions[].type`, with the heavier sub-spec published separately as

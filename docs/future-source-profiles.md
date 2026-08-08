@@ -7,20 +7,21 @@ specification and JSON Schema.
 
 ## Status And Normativity
 
-This document is not part of the normative UWS 1.6 wire contract. The published
-UWS 1.6 source description types are `openapi`, `google-discovery`,
-`aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`,
-`browser-profile`, and `ansible-module`; missing `sourceDescriptions[].type`
-still defaults to `openapi`.
+This document is not part of the normative UWS 1.7 wire contract. The published
+UWS 1.7 source description types are `openapi`, `google-discovery`,
+`aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and
+`browser-profile`; missing `sourceDescriptions[].type` still defaults to
+`openapi`.
 
 The `v0.1.x` labels below are implementation-roadmap labels. They do not define
 released UWS versions, JSON Schema changes, Go model changes, or new validator
 behavior by themselves. AsyncAPI has graduated into UWS 1.3; GraphQL, OpenRPC,
 gRPC/protobuf, and OData have graduated into UWS 1.4; browser capability
 profiles have graduated into UWS 1.5 (`browser-profile`) with a separate
-published sub-spec at `versions/browser.1.5.{json,md}`; and Ansible modules
-have graduated into UWS 1.6 (`ansible-module`) with a separate published
-sub-spec at `versions/ansible.1.0.{json,md}`.
+published sub-spec at `versions/browser.1.5.{json,md}`. Ansible modules
+graduated into UWS 1.6 (`ansible-module`) and were **withdrawn in UWS 1.7**;
+`versions/ansible.1.0.{json,md}` remains published as the argspec document
+format referenced by the `uws.ansible-module-call.1.0` operation profile.
 
 Examples in this note are illustrative future shapes unless a section explicitly
 labels them as valid today. Pre-1.5 documents that need browser/UI work used
@@ -44,7 +45,84 @@ Future source-profile tracks are listed separately:
 | `v0.1.3` | AsyncAPI source profiles | Graduated in UWS 1.3 for event, message, and subscription contracts when a provider publishes AsyncAPI. |
 | UWS 1.4 source profiles | Formal API source families | Graduated `graphql`, `openrpc`, `grpc-protobuf`, and `odata` as normative source type values. |
 | UWS 1.5 source profiles | Browser capability profiles | Graduated `browser-profile` as a normative source type, with the heavier sub-spec published separately as `versions/browser.1.5.{json,md}`. |
-| UWS 1.6 source profiles | Ansible module source profiles | Graduated `ansible-module` as a normative source type for inert collection argspec metadata used by static conversion and review tooling, with the sub-spec published separately as `versions/ansible.1.0.{json,md}`. Ansible execution, inventory connection behavior, and module invocation remain out of scope. |
+| UWS 1.6 source profiles | Ansible module source profiles | Graduated `ansible-module` in 1.6 and **withdrew it in 1.7**: the managed host does not expose a collection module as a pre-existing named operation, so the argspec describes client-supplied implementation rather than a remote capability. Ansible module operations use the `uws.ansible-module-call.1.0` operation profile; `versions/ansible.1.0.{json,md}` remains the argspec document format. |
+
+## Source Type Admission Criteria
+
+This is the standing test for whether a candidate family becomes a first-class
+`sourceDescriptions[].type`. It governs the per-family graduation sections below,
+which record how each admitted type satisfied it.
+
+A family qualifies when there is a portable, machine-readable document that:
+
+1. **Names operations.** A value can be written as `sourceOperationId`, and a
+   `sourceOperationRef` JSON Pointer fragment can address it. A document that
+   describes *types*, *shapes*, or *desired state* rather than invocable
+   operations does not qualify, however well specified it is.
+2. **Is reviewable before execution.** A human reading the document can
+   determine what will be invoked, with which parameters, returning what.
+3. **Is diffable.** A change to the document is mechanically detectable, so a
+   changed upstream contract fails closed rather than drifting silently.
+4. **Describes operations the remote party implements.** The document is a
+   contract for something that exists on the other end of the call. UWS is a
+   client-side workflow and a source description is a server-side contract; the
+   pairing only holds when the far end actually implements the named operation.
+   A document describing code the *client* ships to a target is a library
+   manifest, not a source contract, however well specified it is.
+
+Whether the document is **provider-published** or **author-asserted** is a
+quality tier, not a gate. Both can qualify; provider-published contracts are
+stronger because the operation semantics are maintained by the party that
+implements them. This is the real reason `browser-profile` is the weakest
+first-class source type: not because it fronts a UI, but because its contract is
+author-asserted rather than published by the target.
+
+Three shapes are disqualifying, and each has an existing home:
+
+- **Names types, not operations.** Declarative resource models publish a schema
+  per resource *type* while leaving create/read/update/replace semantics to a
+  plugin that decides them at diff time against recorded state. Supplying the
+  missing operation roles is authoring work, not source metadata, so these are
+  lowered into API source types rather than becoming a source type. Terraform
+  and OpenTofu are the reference case: `ramen convert tf` emits `aws-smithy`,
+  `google-discovery`, or `openapi` bindings, and the create/read/delete roles it
+  needs are authored in the converter's own mapping metadata. Puppet, Chef,
+  systemd units, and Kubernetes CRDs sort the same way.
+- **Data, not operations.** A file is an input or output of a workflow, not a
+  source of operations — there is no `sourceOperationId` to write for a PDF or a
+  spreadsheet. Reading one is a `uws.runtime.1.0` `fileio` operation; processing
+  one through a service is an ordinary API source binding.
+- **Client-shipped code.** Where the client delivers the implementation to the
+  target and runs it there, the far end does not expose the named operation as
+  a pre-existing capability. Ansible is the reference case: `ansible-doc --json` is a genuine
+  machine-readable operation contract, but it is published by the collection
+  maintainer and describes a module the control node copies onto the host. That
+  is a client-side library manifest. These belong in an operation profile —
+  `uws.ansible-module-call.1.0` for Ansible modules, `uws.runtime.1.0` for
+  everything else — not in `sourceDescriptions`.
+
+Opaque executables — shell and Python scripts, spreadsheet macros, arbitrary
+commands — fail the first criterion outright: there is no published contract to
+bind to. They are represented by `uws.runtime.1.0` (`cmd`, `ssh`, `fnct`), which
+is the deliberate floor for work whose only reviewable artifact is the command
+string itself.
+
+Applied to families evaluated so far:
+
+| Candidate | Names operations? | Contract source | Result |
+| --- | --- | --- | --- |
+| OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, OData | Yes | Provider | First-class, strong |
+| Ansible modules (`ansible-doc --json`) | Yes, but the host implements none of them | Collection maintainer, not the target | **Not a source**; `uws.ansible-module-call.1.0` operation profile |
+| Browser capability profiles | Yes | Author-asserted | First-class, weak |
+| Salt execution modules | Yes, but client-shipped like Ansible | Collection maintainer | Not a source; operation profile |
+| Terraform / OpenTofu, Puppet, Chef, systemd units, Kubernetes CRDs | No — names types | Provider | Not a source; lower into API source types |
+| Shell/Python scripts, spreadsheet macros | No — no contract | None | `uws.runtime.1.0` (`cmd`, `ssh`, `fnct`) |
+| PDF, spreadsheet, and other data files | No — data | Not applicable | `uws.runtime.1.0` (`fileio`), or an API source |
+
+Meeting the criteria makes a family *eligible*, not scheduled. Graduation also
+requires that multiple runtimes need interoperable interchange rather than
+product-owned extension fields, and that a candidate's remaining design points
+are settled — see the per-family criteria and graduation records below.
 
 ## UWS 1.1-Compatible Import And Advisory Features
 
@@ -305,6 +383,11 @@ bounded capability description.
 
 ### Browser Profile Graduation Criteria
 
+These are the browser-specific design points, applied on top of the general
+[Source Type Admission Criteria](#source-type-admission-criteria). Browser
+capability profiles satisfy the general test in its author-asserted tier, which
+is why `browser-profile` is the weakest first-class source type.
+
 Browser capability profiles should graduate from roadmap candidate to UWS source
 profile only after the following design points are settled:
 
@@ -538,7 +621,13 @@ way it references API operations:
 - extension-owned operation profiles while the browser profile contract is still
   experimental
 
-## Adopted in UWS 1.6: Ansible Module Source Profiles
+## Adopted in UWS 1.6 and Withdrawn in UWS 1.7: Ansible Module Source Profiles
+
+**Outcome: withdrawn.** `ansible-module` was added in UWS 1.6 and removed in UWS
+1.7. This section keeps the original reasoning intact, then records what it
+missed.
+
+### The 1.6 Case
 
 Ansible modules graduated in UWS 1.6. Ansible collections publish
 machine-readable module contracts: `ansible-doc --json` emits the documented
@@ -549,6 +638,55 @@ and OData. Structurally, playbooks are ordered task lists with convergent
 leaves: imperative control flow over idempotent operations, which maps directly
 onto the UWS execution model (`when`, `loop`+`items`, `dependsOn`,
 `register`→`outputs`).
+
+### Why That Was Wrong
+
+The argument above tests the *document* and never tests the *binding*. It asks
+whether a machine-readable operation contract exists, and one does. It does not
+ask **who implements the operation**.
+
+Every other source family names an operation the remote target already exposes.
+Provider-published descriptions such as OpenAPI are the strongest case. A
+browser profile may be author-asserted, but it still names an action implemented
+by the target UI. Ansible differs: the managed host does not expose the
+collection module as a pre-existing operation. The control node copies the
+module onto the host, runs it there, and deletes it. Data does not travel to a
+service that already holds the implementation; the *implementation* travels to
+a substrate.
+
+So an argspec is a client-side library manifest, not a remote-operation source
+contract. This also
+explains a detail the 1.6 design treated as scope discipline: `become`,
+connection plugins, interpreter discovery, forks/serial, and execution
+environments all had to be declared runtime-owned because UWS has no model for
+shipping code, so everything about shipping it was pushed outside the spec.
+
+Two signals were visible before the reversal and were read as maturity gaps
+rather than as evidence of the category error:
+
+- The 2026-06-13 amendment rescoped `ansible.1.0` to inert conversion/review
+  metadata that runtimes do not resolve. A source type no runtime resolves is
+  not doing the work a source binding exists to do.
+- No runtime implemented it. `udon` handles eight source types and fails closed
+  on this one, while building against uws HEAD.
+
+Criterion 4 in [Source Type Admission Criteria](#source-type-admission-criteria)
+was added as a result. It is what `ansible-module` fails and the other nine
+pass.
+
+### The 1.7 Result
+
+`ansible-module` was removed from the source-type enum in `versions/1.7.0.json`.
+Ansible module operations are extension-owned through the
+`uws.ansible-module-call.1.0` operation profile, which preserves the module
+FQCN, the argspec reference, `request.body`, `outputs`, and `successCriteria`.
+`versions/ansible.1.0.{json,md}` remains published, unchanged in shape, as the
+argspec document format that supplement references.
+
+Documents declaring `uws: 1.6.0` are unaffected — `versions/1.6.0.json` still
+accepts the type. Validators reject it on documents declaring 1.7.0 or later.
+
+The original 1.6 settled scope follows, for the record.
 
 ### Ansible Module Graduation Result
 
@@ -576,11 +714,26 @@ Settled scope:
   `inventory.1.0` sub-spec (hosts, groups, vars — never secrets) with an
   execution-target extension remains reserved for the future, with core
   graduation only on demonstrated multi-runtime demand.
-- A degenerate lowering remains valid without the source type: single-target
-  playbook tasks expressed as extension-owned operations through the
-  `uws.runtime.1.0` profile (`ssh`, `cmd`, `fileio`, `scp`, `sftp`). That
-  floor loses module idempotency and handler semantics, which is exactly the
-  gap `ansible-module` closes.
+- Two lowerings remain valid without the source type, and they are not
+  equivalent. The floor is `uws.runtime.1.0` (`ssh`, `cmd`, `fileio`, `scp`,
+  `sftp`), which loses module identity, idempotency, and any argspec contract —
+  the task becomes an opaque command. The real alternative is the
+  `uws.ansible-module-call.1.0` supplement, published after UWS 1.6 for
+  1.5-compatible documents: it preserves the module FQCN, the argspec
+  reference, `request.body`, `outputs`, and `successCriteria`, and handler
+  lowering is converter-owned in both paths. Against that supplement, what
+  first-class binding adds is **review legibility**: any conforming UWS reader
+  resolves `sourceDescription` + `sourceOperationId` without understanding an
+  extension, whereas `x-uws-ansible-module` is opaque to a generic validator.
+  That is the gap `ansible-module` closes.
+
+Historical 1.6 conclusion, superseded by criterion 4: `ansible-module` was
+treated as ahead of its implementations because static conversion tooling
+emitted the binding while no runtime resolved it. The argspec was considered a
+provider-published contract in the same tier as OpenAPI, and the absence of a
+runtime was recorded as a maturity gap. UWS 1.7 corrected that conclusion: the
+contract publisher is not the deciding factor; the managed host does not expose
+the named module operation until the client supplies its implementation.
 
 Out of scope, consistent with prior non-goals: Jinja2 never enters the core
 expression grammar (authoring tooling lowers templates; the `template` module

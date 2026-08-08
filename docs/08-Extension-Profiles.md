@@ -35,10 +35,12 @@ The supplement does not standardize credentials, clients, hosts, provider select
 
 ## Public Ansible Module-Call Supplement
 
-UWS also publishes `uws.ansible-module-call.1.0` for UWS 1.5-compatible
-documents that need to treat an Ansible module call as an extension-owned leaf
-operation. UWS 1.6 documents SHOULD prefer first-class `ansible-module` source
-binding; this supplement is the compatibility form for older documents.
+UWS also publishes `uws.ansible-module-call.1.0` for Ansible module calls,
+which are extension-owned leaf operations at every UWS version. The managed
+host does not expose a collection module as a pre-existing named operation; the
+control node supplies and runs that implementation, so its argspec is a
+client-side library manifest. UWS 1.6 briefly offered an `ansible-module`
+source type; UWS 1.7 removed it in favour of this supplement.
 
 ```yaml
 operationId: install_nginx

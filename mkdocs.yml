@@ -4,7 +4,7 @@ site_url: https://openudon.github.io/uws/
 repo_url: https://github.com/OpenUdon/uws
 repo_name: OpenUdon/uws
 docs_dir: docs
-copyright: "© 2026 OpenUdon/uws · Udon Workflow Specification v1.6.0 · Apache 2.0"
+copyright: "© 2026 OpenUdon/uws · Udon Workflow Specification v1.7.0 · Apache 2.0"
 
 theme:
   name: material
@@ -35,12 +35,13 @@ nav:
     - 10. Interchange Formats: 10-Interchange-Formats.md
   - Runtimes: runtimes.md
   - Future Source Profiles: future-source-profiles.md
-  - UWS 1.6 Ansible Design: uws_1_6_ansible.md
+  - Historical UWS 1.6 Ansible Design: uws_1_6_ansible.md
   - Reference:
-    - Specification: https://github.com/OpenUdon/uws/blob/main/versions/1.6.0.md
-    - JSON Schema: https://github.com/OpenUdon/uws/blob/main/versions/1.6.0.json
+    - Specification: https://github.com/OpenUdon/uws/blob/main/versions/1.7.0.md
+    - JSON Schema: https://github.com/OpenUdon/uws/blob/main/versions/1.7.0.json
     - Browser Profile Supplement: https://github.com/OpenUdon/uws/blob/main/versions/browser.1.5.md
-    - Ansible Module Supplement: https://github.com/OpenUdon/uws/blob/main/versions/ansible.1.0.md
+    - Ansible Argspec Format: https://github.com/OpenUdon/uws/blob/main/versions/ansible.1.0.md
+    - Ansible Module Call Supplement: https://github.com/OpenUdon/uws/blob/main/versions/ansible-module-call.1.0.md
     - Runtime Supplement: https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md
     - Runtime Supplement Schema: https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json
     - Big Fixture: big-fixture.md
