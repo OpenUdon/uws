@@ -1,0 +1,21 @@
+uws: 1.7.0
+info:
+  title: Browser profile side-effect binding
+  version: 1.0.0
+sourceDescriptions:
+  - name: example_editor
+    type: browser-profile
+    url: ./confirmed-side-effect.yaml
+operations:
+  - operationId: update_record
+    sourceDescription: example_editor
+    sourceOperationRef: '#/actions/update_record'
+workflows:
+  - workflowId: update_record
+    type: sequence
+    description: Update a synthetic record after confirmation.
+    inputs:
+      type: object
+    steps:
+      - stepId: update
+        operationRef: update_record

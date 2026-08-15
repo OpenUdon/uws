@@ -1,0 +1,65 @@
+profile: uws.browser.1.5
+info:
+  title: Example Status Reader
+  provider: example
+  origin: https://example.test
+  loginStateRequired: false
+observationKind: accessibility_snapshot
+evidence:
+  learnedAt: "2026-08-15T00:00:00Z"
+  source: reviewed_synthetic_fixture
+confidence: high
+expiresAfter: P30D
+verification:
+  lastVerifiedAt: "2026-08-15T00:00:00Z"
+  successfulRuns: 3
+  uiStabilityScore: 0.99
+actions:
+  read_status:
+    description: Read a synthetic status page without changing it.
+    parameters:
+      type: object
+      properties:
+        item:
+          type: string
+          default: sample
+    sequence:
+      - navigate: /status/{{item}}
+      - wait_for:
+          role: status
+          name: Ready
+    outputs:
+      status:
+        type: string
+        source: a11y
+        locator:
+          role: status
+          name: Ready
+      available:
+        type: boolean
+        source: a11y
+        locator:
+          role: status
+          name: Ready
+        presence: true
+      schema_name:
+        type: string
+        source: jsonld
+        property: name
+      item_name:
+        type: string
+        source: microdata
+        property: name
+      canonical_url:
+        type: string
+        source: css
+        selector: link[rel='canonical']
+        attribute: href
+        fallbackReason: no_a11y_region
+        validation:
+          type: string
+          pattern: ^https://example\.test/
+    sideEffects:
+      - read_only
+    confirmationPolicy:
+      required: false

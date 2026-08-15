@@ -4,20 +4,31 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"embed"
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"strings"
+	"sync"
 
+	"github.com/santhosh-tekuri/jsonschema/v6"
 	"golang.org/x/mod/module"
+	"gopkg.in/yaml.v3"
 )
 
 const uwsModulePath = "github.com/OpenUdon/uws"
 
 //go:embed *.json
 var embeddedSchemas embed.FS
+
+var (
+	browserSchemaOnce sync.Once
+	browserSchema     *jsonschema.Schema
+	browserSchemaErr  error
+)
 
 // PathForVersion returns the best local schema path for a UWS document version.
 func PathForVersion(anchorDir, version string) string {
@@ -58,6 +69,92 @@ func PathForAnsibleSourceProfile(anchorDir, profile string) string {
 // source profile.
 func PathForBrowserSourceProfile(anchorDir, profile string) string {
 	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser", "1.5"))
+}
+
+// BrowserSourceProfileSchema returns an independent copy of the embedded
+// browser-profile JSON Schema selected by profile. An empty profile selects
+// the current uws.browser.1.5 contract.
+func BrowserSourceProfileSchema(profile string) ([]byte, error) {
+	name := familySchemaName(profile, "browser", "1.5")
+	data, err := embeddedSchemas.ReadFile(name)
+	if err != nil {
+		return nil, fmt.Errorf("load browser source profile schema %q: %w", profile, err)
+	}
+	return append([]byte(nil), data...), nil
+}
+
+// ValidateBrowserSourceProfile validates one JSON or YAML browser-profile
+// document against the embedded uws.browser.1.5 schema. It validates portable
+// wire shape only; freshness, review evidence, registry lifecycle, sessions,
+// and execution policy remain downstream responsibilities.
+func ValidateBrowserSourceProfile(data []byte) error {
+	if len(bytes.TrimSpace(data)) == 0 {
+		return fmt.Errorf("browser source profile document is empty")
+	}
+	value, err := decodeSingleJSONOrYAMLDocument(data)
+	if err != nil {
+		return fmt.Errorf("decode browser source profile: %w", err)
+	}
+	document, err := jsonschema.UnmarshalJSON(bytes.NewReader(value))
+	if err != nil {
+		return fmt.Errorf("decode browser source profile as JSON: %w", err)
+	}
+	schema, err := compiledBrowserSourceProfileSchema()
+	if err != nil {
+		return err
+	}
+	if err := schema.Validate(document); err != nil {
+		return fmt.Errorf("validate browser source profile: %w", err)
+	}
+	return nil
+}
+
+func decodeSingleJSONOrYAMLDocument(data []byte) ([]byte, error) {
+	decoder := yaml.NewDecoder(bytes.NewReader(data))
+	var value any
+	if err := decoder.Decode(&value); err != nil {
+		return nil, err
+	}
+	var extra any
+	if err := decoder.Decode(&extra); err != io.EOF {
+		if err == nil {
+			return nil, fmt.Errorf("multiple YAML documents are not supported")
+		}
+		return nil, err
+	}
+	if value == nil {
+		return nil, fmt.Errorf("document is empty")
+	}
+	encoded, err := json.Marshal(value)
+	if err != nil {
+		return nil, err
+	}
+	return encoded, nil
+}
+
+func compiledBrowserSourceProfileSchema() (*jsonschema.Schema, error) {
+	browserSchemaOnce.Do(func() {
+		data, err := BrowserSourceProfileSchema("")
+		if err != nil {
+			browserSchemaErr = err
+			return
+		}
+		document, err := jsonschema.UnmarshalJSON(bytes.NewReader(data))
+		if err != nil {
+			browserSchemaErr = fmt.Errorf("decode embedded browser source profile schema: %w", err)
+			return
+		}
+		compiler := jsonschema.NewCompiler()
+		if err := compiler.AddResource("browser.1.5.json", document); err != nil {
+			browserSchemaErr = fmt.Errorf("register embedded browser source profile schema: %w", err)
+			return
+		}
+		browserSchema, browserSchemaErr = compiler.Compile("browser.1.5.json")
+		if browserSchemaErr != nil {
+			browserSchemaErr = fmt.Errorf("compile embedded browser source profile schema: %w", browserSchemaErr)
+		}
+	})
+	return browserSchema, browserSchemaErr
 }
 
 func runtimeSupplementSchemaName(profile string) string {

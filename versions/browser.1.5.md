@@ -83,7 +83,7 @@ actions:
 | --- | --- | --- |
 | `profile` | string const | REQUIRED. Literal `uws.browser.1.5`. |
 | `info.title` | string | REQUIRED. Human-readable provider/app name. |
-| `info.origin` | string or array of strings | REQUIRED. Browser origin allowlist; the runtime MUST reject `navigate` outside it. |
+| `info.origin` | string or array of strings | REQUIRED. Browser origin allowlist; the runtime MUST reject `navigate` outside it. A profile with multiple origins MUST use absolute `navigate` targets because no implicit base origin is defined. |
 | `info.loginStateRequired` | boolean | Whether execution assumes an authenticated browser session. |
 | `observationKind` | enum | REQUIRED. How the profile was learned: `accessibility_snapshot`, `dom_text`, `screenshot_ocr`, `other`. The snapshot format itself stays runtime-owned. |
 | `evidence` | object | REQUIRED. `learnedAt` (RFC 3339 timestamp) plus optional `source` (e.g. `reviewed_browser_session`). |
@@ -118,7 +118,7 @@ arguments.
 
 | Macro | Shape | Purpose |
 | --- | --- | --- |
-| `navigate` | string | Relative or absolute URL. MUST be templatable from action `parameters` via `{{name}}`. Runtime MUST reject targets outside `info.origin`. |
+| `navigate` | string | Relative or absolute URL. MUST be templatable from action `parameters` via `{{name}}`. Runtime MUST reject targets outside `info.origin`, and MUST reject a relative target when `info.origin` contains more than one origin. |
 | `click` | `{ locator, wait_for? }` | Fire a standard click event on the located element. |
 | `type_text` | `{ locator, value, wait_for? }` | Input text. `value` MAY be templated. |
 | `check_radio` | `{ locator, wait_for? }` | Check a radio or checkbox element. |
@@ -216,6 +216,23 @@ profile document:
 Runtimes bind active session contexts (a pre-authenticated browser profile or
 cookie jar) at execution time. Profiles are *learned evidence* and stay
 inert until a trusted runtime executes them with bound credentials.
+
+## What Stays Distribution-Owned
+
+Content-addressed distribution does not change the portable profile wire. A
+catalog, package, or registry MAY bind a profile to external metadata such as
+an artifact digest, catalog identity and release version, media type, byte
+size, provenance, license, publication time, expiry assessment, revocation, or
+supersession. That metadata is an envelope around the exact profile bytes and
+MUST NOT be inserted into this closed schema.
+
+Likewise, registry URLs, storage paths, pull-request authors, reviewer
+identities, signatures, membership, access policy, and transport credentials
+remain distribution concerns. Consumers validate the profile against this
+schema, verify the external digest/lifecycle envelope according to their own
+policy, and bind sessions only at trusted execution time. A profile copied
+between a local package and a static registry therefore retains identical
+`uws.browser.1.5` bytes.
 
 ## HCL Representation
 

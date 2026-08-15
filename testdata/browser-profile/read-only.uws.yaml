@@ -1,0 +1,21 @@
+uws: 1.7.0
+info:
+  title: Browser profile read-only binding
+  version: 1.0.0
+sourceDescriptions:
+  - name: example_status
+    type: browser-profile
+    url: ./read-only.yaml
+operations:
+  - operationId: read_status
+    sourceDescription: example_status
+    sourceOperationId: read_status
+workflows:
+  - workflowId: read_status
+    type: sequence
+    description: Read a synthetic status.
+    inputs:
+      type: object
+    steps:
+      - stepId: read
+        operationRef: read_status

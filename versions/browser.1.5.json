@@ -75,7 +75,7 @@
                     "type": "string"
                 },
                 "origin": {
-                    "description": "Browser origin allowlist. Runtimes MUST reject navigate instructions targeting domains outside this allowlist. May be a single origin string or an array of origins.",
+                    "description": "Browser origin allowlist. Runtimes MUST reject navigate instructions targeting domains outside this allowlist. May be a single origin string or an array of origins. Profiles with multiple origins MUST use absolute navigate targets because no implicit base origin is defined.",
                     "oneOf": [
                         {
                             "type": "string",
@@ -241,7 +241,7 @@
                     ],
                     "properties": {
                         "navigate": {
-                            "description": "Relative or absolute URL redirection. Must be templatable from action parameters.",
+                            "description": "Relative or absolute URL redirection. Must be templatable from action parameters. Runtimes MUST reject a relative target when more than one info.origin is configured.",
                             "type": "string"
                         }
                     },

@@ -1,0 +1,88 @@
+profile: uws.browser.1.5
+info:
+  title: Example Record Editor
+  provider: example
+  origin:
+    - https://example.test
+    - https://account.example.test
+  loginStateRequired: true
+observationKind: accessibility_snapshot
+evidence:
+  learnedAt: "2026-08-15T00:00:00Z"
+  source: reviewed_synthetic_fixture
+confidence: high
+expiresAfter: P14D
+verification:
+  lastVerifiedAt: "2026-08-15T00:00:00Z"
+  successfulRuns: 2
+  uiStabilityScore: 0.95
+actions:
+  update_record:
+    description: Exercise the complete closed macro vocabulary on a synthetic record.
+    parameters:
+      type: object
+      required:
+        - record_id
+        - note
+      properties:
+        record_id:
+          type: string
+        note:
+          type: string
+        priority:
+          type: string
+          default: normal
+    sequence:
+      - navigate: https://example.test/records/{{record_id}}
+      - click:
+          locator:
+            role: button
+            name: Edit
+          wait_for:
+            role: dialog
+            name: Edit record
+      - type_text:
+          locator:
+            role: textbox
+            name: Note
+          value: "{{note}}"
+          wait_for:
+            navigation: domcontentloaded
+      - check_radio:
+          locator:
+            role: radio
+            name: Enabled
+      - uncheck:
+          locator:
+            role: checkbox
+            name: Archived
+      - select_option:
+          locator:
+            role: combobox
+            name: Priority
+          value: "{{priority}}"
+      - wait_for:
+          role: status
+          text: Ready to save
+      - click:
+          locator:
+            role: button
+            name: Save
+          wait_for:
+            navigation: network_idle
+      - wait_for:
+          navigation: load
+    outputs:
+      saved:
+        type: boolean
+        source: a11y
+        locator:
+          role: status
+          name: Saved
+        presence: true
+    sideEffects:
+      - state_change
+      - updates_record
+    confirmationPolicy:
+      required: true
+      prompt: Update record {{record_id}}?
