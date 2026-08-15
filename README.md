@@ -10,7 +10,7 @@ UWS is a workflow **overlay** over source documents — OpenAPI, AsyncAPI, Graph
 
 This is what distinguishes UWS from full client-side workflow tools such as Arazzo and IaC engines such as OpenTofu and Terraform. Arazzo describes full client-side action sequences and treats each step as a bespoke client action. OpenTofu and Terraform act as full client-side workflow engines for infrastructure: each resource and provider call is described in the client configuration and resolved against a provider plugin at apply time. Neither approach assumes that the underlying operations are already defined by a server contract. UWS takes the opposite position: server actions are pre-defined by the source document, and UWS workflows reference those operations by ID rather than re-describing them. The result is a much smaller overlay: UWS does not duplicate request/response shapes, does not redeclare endpoints, and does not encode anything the source document already specifies.
 
-UWS 1.7 keeps OpenAPI compatibility and supports nine source description types: `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`. Ansible module calls are represented by the `uws.ansible-module-call.1.0` operation profile, which identifies the module leaf while UWS owns orchestration; the `ansible-module` source type added in 1.6 was removed in 1.7. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
+UWS 1.7 keeps OpenAPI compatibility and supports nine source description types: `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`. The `ansible-module` source type added in 1.6 was removed in 1.7, and UWS 1.7 defines no replacement Ansible operation profile. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
 
 ### Version highlights
 
@@ -23,7 +23,7 @@ UWS 1.7 keeps OpenAPI compatibility and supports nine source description types: 
 | **1.4** | First-class `graphql`, `openrpc`, `grpc-protobuf`, and `odata` source types; generic selectors required for those families. |
 | **1.5** | First-class `browser-profile` source type; capability profile sub-spec published separately as `versions/browser.1.5.{json,md}`. |
 | **1.6** | First-class `ansible-module` source type (FQCN as `sourceOperationId`, `#/modules/<fqcn>` refs); argspec sub-spec published separately as `versions/ansible.1.0.{json,md}`. |
-| **1.7** | Removed `ansible-module`: the managed host does not expose the collection module as a pre-existing operation, so its argspec is a client-side library manifest and module calls use the `uws.ansible-module-call.1.0` operation profile. |
+| **1.7** | Removed `ansible-module`: the managed host does not expose the collection module as a pre-existing operation, and UWS 1.7 does not standardize Ansible module calls. |
 
 See [`versions/CHANGELOG.md`](versions/CHANGELOG.md) for the full changelog.
 
@@ -43,8 +43,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - Browser authentication profile: [versions/browser-authentication.1.0.md](versions/browser-authentication.1.0.md) / [versions/browser-authentication.1.0.json](versions/browser-authentication.1.0.json)
 - Browser authentication call supplement: [versions/browser-authentication-call.1.0.md](versions/browser-authentication-call.1.0.md) / [versions/browser-authentication-call.1.0.json](versions/browser-authentication-call.1.0.json)
 - Browser capability distribution milestone: [docs/browser-capability-goal.md](docs/browser-capability-goal.md)
-- Ansible module supplement: [versions/ansible.1.0.md](versions/ansible.1.0.md) / [versions/ansible.1.0.json](versions/ansible.1.0.json)
-- Ansible module-call supplement: [versions/ansible-module-call.1.0.md](versions/ansible-module-call.1.0.md) / [versions/ansible-module-call.1.0.json](versions/ansible-module-call.1.0.json)
+- UWS 1.6 Ansible argspec (historical): [versions/ansible.1.0.md](versions/ansible.1.0.md) / [versions/ansible.1.0.json](versions/ansible.1.0.json)
 - UWS 1.6 Ansible design note (historical): [docs/uws_1_6_ansible.md](docs/uws_1_6_ansible.md)
 - JSON Schema: [versions/1.7.0.json](versions/1.7.0.json)
 
@@ -52,14 +51,36 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 
 - `uws1` contains the UWS 1.x Go model, structural vocabulary, and structural validation.
 - `convert` converts UWS documents between JSON, YAML, and the HCL authoring form.
+- `schemas` locates version documents and validates the separately versioned browser profiles. Go schema APIs formerly under `versions` moved here so `versions/` contains documents only.
 - `runtimes` contains the public `uws.runtime.1.0` supplement constants, wire structs, and extension helpers.
-- `ansiblemodulecall` contains the public `uws.ansible-module-call.1.0` supplement constants, wire structs, and extension helpers.
 - `browserauthentication` contains the additive secret-free sign-in profile and named-session operation extension types.
 - `versions/1.7.0.md` is the human-readable UWS 1.7 specification.
 - `versions/1.7.0.json` is the JSON Schema for UWS 1.7 documents.
 - `versions/browser.1.5.md` / `versions/browser.1.5.json` publish the browser capability profile sub-spec referenced by `sourceDescriptions[].type: browser-profile`.
 - `versions/browser-authentication.1.0.*` and `versions/browser-authentication-call.1.0.*` publish portable sign-in recipes and explicit named-session establishment without changing `browser.1.5`.
-- `versions/ansible.1.0.md` / `versions/ansible.1.0.json` publish the Ansible argspec document format referenced by `x-uws-ansible-module.argspec`.
+- `versions/ansible.1.0.md` / `versions/ansible.1.0.json` are retained only with the historical UWS 1.6 contract.
+
+The UWS-owned Ansible module-call supplement, its `ansiblemodulecall` Go package,
+and its schema accessors were removed when 1.7 support was retired. UWS 1.6
+documents still validate. Consumers of those historical UWS-named Go contracts
+must pin an older revision; the last published pre-removal tree is commit
+`87644c1`. Ramen instead localizes its static conversion-only implementation
+under `internal/ansibleconvert` with Ramen-owned identifiers. It is not a
+compatibility copy and does not accept the retired UWS Ansible identifiers.
+This recovers the historical files into the current directory:
+
+```bash
+git archive 87644c1 ansiblemodulecall versions/ansible.1.0.json versions/ansible.1.0.md versions/ansible-module-call.1.0.json versions/ansible-module-call.1.0.md | tar -x
+```
+
+The browser-authentication documents are separate profiles rather than part of
+the UWS 1.7 core schema. `browser-authentication.1.0` describes a reviewed,
+secret-free sign-in recipe, while `browser-authentication-call.1.0` validates
+the operation-level `x-uws-browser-authentication` envelope. A UWS 1.7 document
+selects that envelope through `x-uws-operation-profile`; tooling that implements
+the profile then validates it with `schemas`. This separation lets the browser
+profile evolve independently and keeps authentication semantics out of core
+UWS parsing.
 
 ## Validation
 
@@ -74,7 +95,7 @@ if !result.Valid() {
 
 Validation checks required root fields, source operation bindings, extension-owned operation profiles, duplicate identifiers, standard request-binding keys, known structural types, selected reference integrity, action/criterion rules, and trigger routes.
 
-`versions/1.7.0.json` provides structural JSON Schema validation. Use the Go validator for semantic checks such as duplicate identifiers and reference integrity.
+`versions/1.7.0.json` provides structural JSON Schema validation. Use the Go validator for semantic checks such as duplicate identifiers and reference integrity. Go callers resolve it with `schemas.PathForVersion`.
 
 The separate `versions/runtime.1.0.json` schema validates the public runtime supplement payload. It requires `x-uws-runtime.type`, accepts only the non-HTTP runtime identifiers defined by the supplement, and rejects HTTP/API/event source metadata because HTTP and event calls are represented by core source operation binding fields.
 

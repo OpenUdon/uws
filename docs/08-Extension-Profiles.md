@@ -33,39 +33,14 @@ Valid `type` values are `ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`, `smtp`, `dn
 
 The supplement does not standardize credentials, clients, hosts, provider selection, process management, or result schemas. Those remain runtime-private configuration or product-owned extension fields.
 
-## Public Ansible Module-Call Supplement
+## Historical Ansible Profile
 
-UWS also publishes `uws.ansible-module-call.1.0` for Ansible module calls,
-which are extension-owned leaf operations at every UWS version. The managed
-host does not expose a collection module as a pre-existing named operation; the
-control node supplies and runs that implementation, so its argspec is a
-client-side library manifest. UWS 1.6 briefly offered an `ansible-module`
-source type; UWS 1.7 removed it in favour of this supplement.
-
-```yaml
-operationId: install_nginx
-x-uws-operation-profile: uws.ansible-module-call.1.0
-x-uws-ansible-module:
-  module: ansible.builtin.apt
-  argspec:
-    sourceId: builtin
-    url: ./ansible/ansible-builtin.argspec.json
-    collection: ansible.builtin
-request:
-  body:
-    name: nginx
-    state: present
-outputs:
-  changed: $response.body.changed
-successCriteria:
-  - condition: $response.body.failed != true
-```
-
-The supplement only identifies the Ansible module leaf and optional argspec
-review reference. Module arguments remain in `request.body`; results remain
-under `$response.body.*`. Inventory connections, credentials, vault material,
-`become`, forks/strategy, async/poll, check mode, callbacks, and module
-invocation details remain runtime-owned.
+UWS 1.6 briefly defined an `ansible-module` source type, and an
+`uws.ansible-module-call.1.0` extension supplement was subsequently published.
+Both are retired in UWS 1.7. The generic extension mechanism remains available
+to product-owned profiles, but UWS no longer assigns Ansible-specific fields or
+semantics. See the [historical UWS 1.6 design](uws_1_6_ansible.md) and the
+repository-history note in the project README.
 
 ## Example 1: Function Call
 

@@ -20,8 +20,8 @@ gRPC/protobuf, and OData have graduated into UWS 1.4; browser capability
 profiles have graduated into UWS 1.5 (`browser-profile`) with a separate
 published sub-spec at `versions/browser.1.5.{json,md}`. Ansible modules
 graduated into UWS 1.6 (`ansible-module`) and were **withdrawn in UWS 1.7**;
-`versions/ansible.1.0.{json,md}` remains published as the argspec document
-format referenced by the `uws.ansible-module-call.1.0` operation profile.
+`versions/ansible.1.0.{json,md}` remains only as historical UWS 1.6 material.
+UWS 1.7 defines no replacement Ansible operation profile.
 
 Examples in this note are illustrative future shapes unless a section explicitly
 labels them as valid today. Pre-1.5 documents that need browser/UI work used
@@ -45,7 +45,7 @@ Future source-profile tracks are listed separately:
 | `v0.1.3` | AsyncAPI source profiles | Graduated in UWS 1.3 for event, message, and subscription contracts when a provider publishes AsyncAPI. |
 | UWS 1.4 source profiles | Formal API source families | Graduated `graphql`, `openrpc`, `grpc-protobuf`, and `odata` as normative source type values. |
 | UWS 1.5 source profiles | Browser capability profiles | Graduated `browser-profile` as a normative source type, with the heavier sub-spec published separately as `versions/browser.1.5.{json,md}`. |
-| UWS 1.6 source profiles | Ansible module source profiles | Graduated `ansible-module` in 1.6 and **withdrew it in 1.7**: the managed host does not expose a collection module as a pre-existing named operation, so the argspec describes client-supplied implementation rather than a remote capability. Ansible module operations use the `uws.ansible-module-call.1.0` operation profile; `versions/ansible.1.0.{json,md}` remains the argspec document format. |
+| UWS 1.6 source profiles | Ansible module source profiles | Graduated `ansible-module` in 1.6 and **withdrew it in 1.7**: the managed host does not expose a collection module as a pre-existing named operation, so the argspec describes client-supplied implementation rather than a remote capability. UWS 1.7 defines no replacement; `versions/ansible.1.0.{json,md}` remains historical 1.6 material. |
 
 ## Source Type Admission Criteria
 
@@ -97,9 +97,8 @@ Three shapes are disqualifying, and each has an existing home:
   a pre-existing capability. Ansible is the reference case: `ansible-doc --json` is a genuine
   machine-readable operation contract, but it is published by the collection
   maintainer and describes a module the control node copies onto the host. That
-  is a client-side library manifest. These belong in an operation profile —
-  `uws.ansible-module-call.1.0` for Ansible modules, `uws.runtime.1.0` for
-  everything else — not in `sourceDescriptions`.
+  is a client-side library manifest. These do not belong in
+  `sourceDescriptions`; UWS 1.7 does not standardize an Ansible replacement.
 
 Opaque executables — shell and Python scripts, spreadsheet macros, arbitrary
 commands — fail the first criterion outright: there is no published contract to
@@ -112,7 +111,7 @@ Applied to families evaluated so far:
 | Candidate | Names operations? | Contract source | Result |
 | --- | --- | --- | --- |
 | OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, OData | Yes | Provider | First-class, strong |
-| Ansible modules (`ansible-doc --json`) | Yes, but the host implements none of them | Collection maintainer, not the target | **Not a source**; `uws.ansible-module-call.1.0` operation profile |
+| Ansible modules (`ansible-doc --json`) | Yes, but the host implements none of them | Collection maintainer, not the target | **Not supported in UWS 1.7** |
 | Browser capability profiles | Yes | Author-asserted | First-class, weak |
 | Salt execution modules | Yes, but client-shipped like Ansible | Collection maintainer | Not a source; operation profile |
 | Terraform / OpenTofu, Puppet, Chef, systemd units, Kubernetes CRDs | No — names types | Provider | Not a source; lower into API source types |
@@ -677,11 +676,10 @@ pass.
 ### The 1.7 Result
 
 `ansible-module` was removed from the source-type enum in `versions/1.7.0.json`.
-Ansible module operations are extension-owned through the
-`uws.ansible-module-call.1.0` operation profile, which preserves the module
-FQCN, the argspec reference, `request.body`, `outputs`, and `successCriteria`.
-`versions/ansible.1.0.{json,md}` remains published, unchanged in shape, as the
-argspec document format that supplement references.
+UWS 1.7 defines no Ansible operation profile. A module-call supplement was
+briefly published during the transition and was later retired; its documents
+and Go helpers remain available from repository history at commit `87644c1`.
+`versions/ansible.1.0.{json,md}` remains only as historical UWS 1.6 material.
 
 Documents declaring `uws: 1.6.0` are unaffected — `versions/1.6.0.json` still
 accepts the type. Validators reject it on documents declaring 1.7.0 or later.
@@ -714,18 +712,12 @@ Settled scope:
   `inventory.1.0` sub-spec (hosts, groups, vars — never secrets) with an
   execution-target extension remains reserved for the future, with core
   graduation only on demonstrated multi-runtime demand.
-- Two lowerings remain valid without the source type, and they are not
-  equivalent. The floor is `uws.runtime.1.0` (`ssh`, `cmd`, `fileio`, `scp`,
-  `sftp`), which loses module identity, idempotency, and any argspec contract —
-  the task becomes an opaque command. The real alternative is the
-  `uws.ansible-module-call.1.0` supplement, published after UWS 1.6 for
-  1.5-compatible documents: it preserves the module FQCN, the argspec
-  reference, `request.body`, `outputs`, and `successCriteria`, and handler
-  lowering is converter-owned in both paths. Against that supplement, what
-  first-class binding adds is **review legibility**: any conforming UWS reader
-  resolves `sourceDescription` + `sourceOperationId` without understanding an
-  extension, whereas `x-uws-ansible-module` is opaque to a generic validator.
-  That is the gap `ansible-module` closes.
+- Historically, two lowerings were considered without the source type. The
+  floor was `uws.runtime.1.0` (`ssh`, `cmd`, `fileio`, `scp`, `sftp`), which
+  loses module identity, idempotency, and any argspec contract. A briefly
+  published `uws.ansible-module-call.1.0` supplement preserved the module FQCN
+  and argspec reference, but it is not supported by UWS 1.7. Product-owned
+  profiles remain possible through generic `x-*` fields and are outside UWS.
 
 Historical 1.6 conclusion, superseded by criterion 4: `ansible-module` was
 treated as ahead of its implementations because static conversion tooling

@@ -38,13 +38,13 @@ func (d *Document) validateVersionedFields(result *ValidationResult) {
 		case SourceDescriptionTypeAnsibleModule:
 			// ansible-module was introduced in 1.6.0 and withdrawn in 1.7.0.
 			// Source descriptions identify pre-existing named operations on a
-			// remote target; the control node instead supplies Ansible module
-			// implementations, so calls use the operation profile below.
+			// remote target. UWS 1.7 does not define a replacement Ansible
+			// operation profile.
 			switch {
 			case !supports16:
 				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "requires UWS 1.6.0 or later")
 			case supports17:
-				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "removed in UWS 1.7.0; use the uws.ansible-module-call.1.0 operation profile")
+				result.addError(fmt.Sprintf("sourceDescriptions[%d].type", i), "removed in UWS 1.7.0; Ansible automation is not supported by UWS 1.7")
 			}
 		}
 	}

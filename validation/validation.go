@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/OpenUdon/uws/convert"
+	"github.com/OpenUdon/uws/schemas"
 	"github.com/OpenUdon/uws/uws1"
-	"github.com/OpenUdon/uws/versions"
 	"github.com/santhosh-tekuri/jsonschema/v6"
 	"gopkg.in/yaml.v3"
 )
@@ -59,7 +59,7 @@ func ValidateDocumentFile(path string) (*uws1.Document, error) {
 	if version == "" {
 		version = "1.0.0"
 	}
-	schemaPath := versions.PathForVersion(filepath.Dir(path), version)
+	schemaPath := schemas.PathForVersion(filepath.Dir(path), version)
 	if isRawSchemaDocument(path) {
 		if err := ValidateFile(schemaPath, path); err != nil {
 			return nil, err

@@ -40,8 +40,7 @@ nav:
     - Specification: https://github.com/OpenUdon/uws/blob/main/versions/1.7.0.md
     - JSON Schema: https://github.com/OpenUdon/uws/blob/main/versions/1.7.0.json
     - Browser Profile Supplement: https://github.com/OpenUdon/uws/blob/main/versions/browser.1.5.md
-    - Ansible Argspec Format: https://github.com/OpenUdon/uws/blob/main/versions/ansible.1.0.md
-    - Ansible Module Call Supplement: https://github.com/OpenUdon/uws/blob/main/versions/ansible-module-call.1.0.md
+    - Historical UWS 1.6 Ansible Argspec: https://github.com/OpenUdon/uws/blob/main/versions/ansible.1.0.md
     - Runtime Supplement: https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md
     - Runtime Supplement Schema: https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json
     - Big Fixture: big-fixture.md

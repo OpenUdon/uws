@@ -15,11 +15,12 @@ Module path: `github.com/OpenUdon/uws` (Go 1.25.4).
 
 UWS is a workflow overlay for API- and event-source-backed operations. Source documents such as OpenAPI, Google Discovery, AWS Smithy, and AsyncAPI own methods, paths, channels, messages, schemas, servers, and security; UWS owns operation binding, workflow structure, request values, outputs, triggers, and control flow. Non-HTTP runtimes (command exec, SSH, SQL, LLM, browser automation, etc.) are extension-profile concerns expressed via `x-*` fields and `x-uws-operation-profile`, not built-in service types.
 
-Three coordinated artifacts must stay in sync:
+The coordinated artifacts must stay in sync:
 
-1. `versions/1.7.0.json` — the latest canonical JSON Schema for UWS 1.x documents. `versions/1.0.0.json` through `versions/1.6.0.json` remain published historical schemas. `versions/browser.1.5.json` publishes the browser capability profile referenced by `sourceDescriptions[].type: browser-profile`. `versions/ansible.1.0.json` publishes the Ansible argspec format referenced by the extension-owned `uws.ansible-module-call.1.0` operation profile; the `ansible-module` source type exists only in historical UWS 1.6 documents.
+1. `versions/1.7.0.json` — the latest canonical JSON Schema for UWS 1.x documents. `versions/1.0.0.json` through `versions/1.6.0.json` remain published historical schemas. `versions/browser.1.5.json` publishes the browser capability profile referenced by `sourceDescriptions[].type: browser-profile`. `versions/ansible.1.0.json` is historical UWS 1.6 material; UWS 1.7 does not support Ansible.
 2. `uws1/` — the Go model and semantic validator.
-3. `versions/1.7.0.md` — the latest human-readable spec. Earlier numbered specifications, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are historical or comparison documents. `versions/browser.1.5.md` is the browser capability profile, `versions/ansible.1.0.md` is the Ansible argspec format, and `versions/ansible-module-call.1.0.md` is the extension-owned module-call supplement.
+3. `versions/1.7.0.md` — the latest human-readable spec. Earlier numbered specifications, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are historical or comparison documents. `versions/browser.1.5.md` is the browser capability profile and `versions/ansible.1.0.md` is retained only for historical UWS 1.6 documents.
+4. `schemas/` — Go lookup and profile-validation helpers plus the generated embedded document archive. `versions/` is document-only; regenerate the archive with `go generate ./schemas` after changing a JSON document.
 
 ## Execution Model
 

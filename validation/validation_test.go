@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/OpenUdon/uws/convert"
+	"github.com/OpenUdon/uws/schemas"
 	"github.com/OpenUdon/uws/uws1"
-	"github.com/OpenUdon/uws/versions"
 )
 
 func TestValidateFileAcceptsJSONAndYAML(t *testing.T) {
@@ -123,7 +123,7 @@ func TestValidateFileAcceptsVersionedUWSDocuments(t *testing.T) {
 			if err := os.WriteFile(doc, []byte(tc.body), 0o644); err != nil {
 				t.Fatal(err)
 			}
-			if err := ValidateFile(versions.PathForVersion(dir, tc.version), doc); err != nil {
+			if err := ValidateFile(schemas.PathForVersion(dir, tc.version), doc); err != nil {
 				t.Fatalf("ValidateFile returned error: %v", err)
 			}
 		})

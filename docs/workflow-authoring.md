@@ -108,32 +108,13 @@ operations:
     sourceOperationId: createTicket
 ```
 
-`operationId` is local to the UWS file. `sourceOperationId` is the operation ID from the referenced source document. For AsyncAPI sources, it names a root AsyncAPI Operation Object. For GraphQL, OpenRPC, gRPC/protobuf, and OData sources, source-aware tooling defines stable operation identifiers or refs. For Ansible module sources, it is the module's fully qualified collection name (FQCN), such as `ansible.builtin.apt`. OpenAPI sources may also use legacy `openapiOperationId`.
+`operationId` is local to the UWS file. `sourceOperationId` is the operation ID from the referenced source document. For AsyncAPI sources, it names a root AsyncAPI Operation Object. For GraphQL, OpenRPC, gRPC/protobuf, and OData sources, source-aware tooling defines stable operation identifiers or refs. OpenAPI sources may also use legacy `openapiOperationId`. The historical `ansible-module` binding is valid only in UWS 1.6 documents.
 
 Do not add HTTP method, path, channel, server URL, or security configuration here. Those belong to the source document and the bound runtime.
 
-Ansible module calls are extension-owned rather than source-bound, because an
-argspec is published by the collection maintainer, while the managed host does
-not expose the module as a pre-existing named operation. Module arguments still
-go under `request.body`:
-
-```yaml
-operations:
-  - operationId: install_nginx
-    x-uws-operation-profile: uws.ansible-module-call.1.0
-    x-uws-ansible-module:
-      module: ansible.builtin.apt
-      argspec:
-        sourceId: builtin
-        url: ./ansible/ansible-builtin.argspec.json
-        collection: ansible.builtin
-    request:
-      body:
-        name: nginx
-        state: present
-    outputs:
-      changed: $response.body.changed
-```
+UWS 1.7 does not standardize Ansible module calls. A product may define its own
+extension-owned operation profile, but that profile is not portable UWS
+behavior and must not use a retired UWS-owned profile identifier.
 
 ## Step 3: Add Request Values
 

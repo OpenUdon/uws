@@ -1,9 +1,8 @@
-package versions
+package schemas
 
 import (
 	"bytes"
 	"encoding/json"
-	"os"
 	"testing"
 
 	"github.com/santhosh-tekuri/jsonschema/v6"
@@ -224,7 +223,7 @@ func TestBrowserProfileSchemaAcceptsExpandedRoles(t *testing.T) {
 
 func compileBrowserProfileSchema(t *testing.T) *jsonschema.Schema {
 	t.Helper()
-	data, err := os.ReadFile("browser.1.5.json")
+	data, err := BrowserSourceProfileSchema("")
 	require.NoError(t, err)
 	doc, err := jsonschema.UnmarshalJSON(bytes.NewReader(data))
 	require.NoError(t, err)

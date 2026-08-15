@@ -1,4 +1,4 @@
-package versions_test
+package schemas_test
 
 import (
 	"encoding/json"
@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/OpenUdon/uws/convert"
+	"github.com/OpenUdon/uws/schemas"
 	"github.com/OpenUdon/uws/uws1"
-	"github.com/OpenUdon/uws/versions"
 	"gopkg.in/yaml.v3"
 )
 
@@ -18,7 +18,7 @@ func TestValidateBrowserSourceProfileCanonicalFixtures(t *testing.T) {
 	for _, name := range []string{"read-only.yaml", "confirmed-side-effect.yaml"} {
 		t.Run(name, func(t *testing.T) {
 			data := readBrowserFixture(t, name)
-			if err := versions.ValidateBrowserSourceProfile(data); err != nil {
+			if err := schemas.ValidateBrowserSourceProfile(data); err != nil {
 				t.Fatalf("ValidateBrowserSourceProfile() error = %v", err)
 			}
 
@@ -30,7 +30,7 @@ func TestValidateBrowserSourceProfileCanonicalFixtures(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if err := versions.ValidateBrowserSourceProfile(jsonData); err != nil {
+			if err := schemas.ValidateBrowserSourceProfile(jsonData); err != nil {
 				t.Fatalf("JSON ValidateBrowserSourceProfile() error = %v", err)
 			}
 		})
@@ -77,23 +77,23 @@ func TestCanonicalBrowserWorkflowBindingsValidate(t *testing.T) {
 
 func TestValidateBrowserSourceProfileRejectsInvalidAndMultipleDocuments(t *testing.T) {
 	invalid := strings.Replace(string(readBrowserFixture(t, "read-only.yaml")), "read_only", "unknown_effect", 1)
-	if err := versions.ValidateBrowserSourceProfile([]byte(invalid)); err == nil {
+	if err := schemas.ValidateBrowserSourceProfile([]byte(invalid)); err == nil {
 		t.Fatal("invalid side effect unexpectedly validated")
 	}
-	if err := versions.ValidateBrowserSourceProfile([]byte("profile: uws.browser.1.5\n---\nprofile: uws.browser.1.5\n")); err == nil || !strings.Contains(err.Error(), "multiple YAML documents") {
+	if err := schemas.ValidateBrowserSourceProfile([]byte("profile: uws.browser.1.5\n---\nprofile: uws.browser.1.5\n")); err == nil || !strings.Contains(err.Error(), "multiple YAML documents") {
 		t.Fatalf("multiple documents error = %v", err)
 	}
-	if err := versions.ValidateBrowserSourceProfile(nil); err == nil || !strings.Contains(err.Error(), "empty") {
+	if err := schemas.ValidateBrowserSourceProfile(nil); err == nil || !strings.Contains(err.Error(), "empty") {
 		t.Fatalf("empty document error = %v", err)
 	}
 }
 
 func TestBrowserSourceProfileSchemaReturnsIndependentBytes(t *testing.T) {
-	first, err := versions.BrowserSourceProfileSchema("")
+	first, err := schemas.BrowserSourceProfileSchema("")
 	if err != nil {
 		t.Fatal(err)
 	}
-	second, err := versions.BrowserSourceProfileSchema("uws.browser.1.5")
+	second, err := schemas.BrowserSourceProfileSchema("uws.browser.1.5")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,7 +101,7 @@ func TestBrowserSourceProfileSchemaReturnsIndependentBytes(t *testing.T) {
 	if second[0] == 'x' {
 		t.Fatal("schema callers share mutable backing bytes")
 	}
-	if _, err := versions.BrowserSourceProfileSchema("browser.9.9"); err == nil {
+	if _, err := schemas.BrowserSourceProfileSchema("browser.9.9"); err == nil {
 		t.Fatal("unsupported browser profile schema unexpectedly loaded")
 	}
 }

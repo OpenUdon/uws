@@ -1,9 +1,12 @@
-package versions
+// Package schemas locates and validates the versioned schema documents kept in
+// the repository's document-only versions directory.
+package schemas
 
 import (
+	"archive/zip"
 	"bytes"
 	"crypto/sha256"
-	"embed"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -24,8 +27,13 @@ import (
 
 const uwsModulePath = "github.com/OpenUdon/uws"
 
-//go:embed *.json
-var embeddedSchemas embed.FS
+//go:generate go run ../internal/generateversionarchive -source ../versions -output version-documents.zip
+
+// embeddedVersionDocuments preserves schema lookup for installed binaries
+// without putting Go source in the document-only versions directory.
+//
+//go:embed version-documents.zip
+var embeddedVersionDocuments []byte
 
 var (
 	browserSchemaOnce  sync.Once
@@ -55,27 +63,6 @@ func PathForRuntimeSupplement(anchorDir, profile string) string {
 	return pathForSchemaName(anchorDir, runtimeSupplementSchemaName(profile))
 }
 
-// PathForAnsibleModuleCallSupplement returns the best local schema path for an
-// Ansible module-call supplement profile.
-func PathForAnsibleModuleCallSupplement(anchorDir, profile string) string {
-	return pathForSchemaName(anchorDir, ansibleModuleCallSupplementSchemaName(profile))
-}
-
-// PathForAnsibleArgspec returns the best local schema path for an Ansible
-// argspec document.
-func PathForAnsibleArgspec(anchorDir, profile string) string {
-	return pathForSchemaName(anchorDir, familySchemaName(profile, "ansible", "1.0"))
-}
-
-// PathForAnsibleSourceProfile returns the best local schema path for an
-// Ansible argspec document.
-//
-// Deprecated: use PathForAnsibleArgspec. Ansible argspecs are not source
-// profiles as of UWS 1.7.
-func PathForAnsibleSourceProfile(anchorDir, profile string) string {
-	return PathForAnsibleArgspec(anchorDir, profile)
-}
-
 // PathForBrowserSourceProfile returns the best local schema path for a browser
 // source profile.
 func PathForBrowserSourceProfile(anchorDir, profile string) string {
@@ -87,7 +74,7 @@ func PathForBrowserSourceProfile(anchorDir, profile string) string {
 // the current uws.browser.1.5 contract.
 func BrowserSourceProfileSchema(profile string) ([]byte, error) {
 	name := familySchemaName(profile, "browser", "1.5")
-	data, err := embeddedSchemas.ReadFile(name)
+	data, err := embeddedSchemaDocument(name)
 	if err != nil {
 		return nil, fmt.Errorf("load browser source profile schema %q: %w", profile, err)
 	}
@@ -104,7 +91,7 @@ func PathForBrowserAuthenticationProfile(anchorDir, profile string) string {
 // embedded uws.browser-authentication.1.0 JSON Schema.
 func BrowserAuthenticationProfileSchema(profile string) ([]byte, error) {
 	name := familySchemaName(profile, "browser-authentication", "1.0")
-	data, err := embeddedSchemas.ReadFile(name)
+	data, err := embeddedSchemaDocument(name)
 	if err != nil {
 		return nil, fmt.Errorf("load browser authentication profile schema %q: %w", profile, err)
 	}
@@ -121,7 +108,7 @@ func PathForBrowserAuthenticationCallSupplement(anchorDir, profile string) strin
 // the embedded uws.browser-authentication-call.1.0 JSON Schema.
 func BrowserAuthenticationCallSupplementSchema(profile string) ([]byte, error) {
 	name := familySchemaName(profile, "browser-authentication-call", "1.0")
-	data, err := embeddedSchemas.ReadFile(name)
+	data, err := embeddedSchemaDocument(name)
 	if err != nil {
 		return nil, fmt.Errorf("load browser authentication call schema %q: %w", profile, err)
 	}
@@ -454,19 +441,6 @@ func runtimeSupplementSchemaName(profile string) string {
 	return profile + ".json"
 }
 
-func ansibleModuleCallSupplementSchemaName(profile string) string {
-	profile = strings.TrimSpace(profile)
-	if profile == "" {
-		return "ansible-module-call.1.0.json"
-	}
-	profile = strings.TrimSuffix(profile, ".json")
-	profile = strings.TrimPrefix(profile, "uws.")
-	if !strings.HasPrefix(profile, "ansible-module-call.") {
-		profile = "ansible-module-call." + profile
-	}
-	return profile + ".json"
-}
-
 func familySchemaName(profile, name, defaultVersion string) string {
 	profile = strings.TrimSpace(profile)
 	if profile == "" {
@@ -508,7 +482,7 @@ func packageSchemaPath(name string) (string, bool) {
 	if !ok {
 		return "", false
 	}
-	path := filepath.Join(filepath.Dir(file), name)
+	path := filepath.Join(filepath.Dir(file), "..", "versions", name)
 	if _, err := os.Stat(path); err == nil {
 		return path, true
 	}
@@ -583,7 +557,7 @@ func moduleCacheDir() string {
 }
 
 func embeddedSchemaPath(name string) (string, bool) {
-	data, err := embeddedSchemas.ReadFile(filepath.ToSlash(name))
+	data, err := embeddedSchemaDocument(name)
 	if err != nil {
 		return "", false
 	}
@@ -619,4 +593,31 @@ func embeddedSchemaPath(name string) (string, bool) {
 		return "", false
 	}
 	return path, true
+}
+
+func embeddedSchemaDocument(name string) ([]byte, error) {
+	name = filepath.ToSlash(filepath.Base(strings.TrimSpace(name)))
+	archive, err := zip.NewReader(bytes.NewReader(embeddedVersionDocuments), int64(len(embeddedVersionDocuments)))
+	if err != nil {
+		return nil, fmt.Errorf("open embedded version documents: %w", err)
+	}
+	for _, file := range archive.File {
+		if file.Name != name {
+			continue
+		}
+		reader, err := file.Open()
+		if err != nil {
+			return nil, err
+		}
+		data, readErr := io.ReadAll(reader)
+		closeErr := reader.Close()
+		if readErr != nil {
+			return nil, readErr
+		}
+		if closeErr != nil {
+			return nil, closeErr
+		}
+		return data, nil
+	}
+	return nil, fmt.Errorf("version document %q is not embedded", name)
 }

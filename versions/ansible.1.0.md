@@ -1,4 +1,9 @@
-# UWS Ansible Module Argspec Format 1.0
+# Historical UWS 1.6 Ansible Module Argspec Format 1.0
+
+> This document is retained for UWS 1.6 documents only. UWS 1.7 removed the
+> `ansible-module` source type and defines no replacement Ansible operation
+> profile. A module-call supplement mentioned by older amendments was also
+> retired; its documents and Go helpers are available at commit `87644c1`.
 
 The UWS Ansible Module Argspec Format is the normalized document shape for
 Ansible collection argument specifications. It is inert metadata for conversion
@@ -14,14 +19,11 @@ every module. This format defines how those argspecs are carried so that
 conversion and review tooling can check a UWS operation's `request.body`
 against a module's parameter specification.
 
-**This is not a UWS source profile.** UWS 1.6 briefly bound it through
+**This is not a current UWS source profile.** UWS 1.6 bound it through
 `sourceDescriptions[].type: ansible-module`; UWS 1.7 removed that type. The
 managed host does not expose a collection module as a pre-existing named
 operation; the control node supplies and runs that implementation. The argspec
-is therefore a client-side library manifest, and Ansible module operations are
-extension-owned, using `x-uws-operation-profile: uws.ansible-module-call.1.0`
-and `x-uws-ansible-module.module`, and that supplement's optional `argspec`
-reference points at a document in this format.
+is therefore a client-side library manifest, not a UWS 1.7 source.
 
 Documents declaring `uws: 1.6.0` that still use the `ansible-module` source
 type remain valid as 1.6 documents; `versions/1.6.0.json` is unchanged.
@@ -40,8 +42,8 @@ format remains only the module leaf contract.
 | --- | --- |
 | Profile name | `uws.ansible.1.0` |
 | JSON Schema | `versions/ansible.1.0.json` |
-| Referenced from | `x-uws-ansible-module.argspec` in the `uws.ansible-module-call.1.0` supplement |
-| Module key | Module FQCN, matching `x-uws-ansible-module.module` |
+| Referenced from | Historical UWS 1.6 `sourceDescriptions[].type: ansible-module` |
+| Module key | Module FQCN, matching a UWS 1.6 operation's `sourceOperationId` |
 
 A minimal argspec document:
 
@@ -86,7 +88,7 @@ modules:
 | `argspec` | string const | REQUIRED. Literal `uws.ansible.1.0`. |
 | `collection` | string | REQUIRED. Collection namespace (`ansible.builtin`, `community.postgresql`). |
 | `info` | object | Optional provenance: `title`, `collectionVersion`, `extractedAt`, `source`. |
-| `modules` | object | REQUIRED. Module entries keyed by FQCN. Each key is the value a UWS operation carries as `x-uws-ansible-module.module`. Every key MUST begin with the declared `collection` value followed by a dot (e.g. `collection: ansible.builtin` permits only `ansible.builtin.*` keys). JSON Schema cannot express this cross-field constraint, so source-aware tooling MUST enforce it and fail closed on mismatched keys. |
+| `modules` | object | REQUIRED. Module entries keyed by FQCN. Each key is the value a historical UWS 1.6 operation carries as `sourceOperationId`. Every key MUST begin with the declared `collection` value followed by a dot (e.g. `collection: ansible.builtin` permits only `ansible.builtin.*` keys). JSON Schema cannot express this cross-field constraint, so source-aware tooling MUST enforce it and fail closed on mismatched keys. |
 
 ## Module Entries
 
@@ -113,15 +115,15 @@ parameter name (aliases permitted; tooling SHOULD normalize to the canonical
 name):
 
 ```yaml
+uws: "1.6.0"
+sourceDescriptions:
+  - name: builtin
+    type: ansible-module
+    url: ./ansible/ansible-builtin.argspec.json
 operations:
   - operationId: install_nginx
-    x-uws-operation-profile: uws.ansible-module-call.1.0
-    x-uws-ansible-module:
-      module: ansible.builtin.apt
-      argspec:
-        sourceId: builtin
-        url: ./ansible/ansible-builtin.argspec.json
-        collection: ansible.builtin
+    sourceDescription: builtin
+    sourceOperationId: ansible.builtin.apt
     request:
       body:
         name: nginx
@@ -196,7 +198,7 @@ steps:
 
 Handler lowering is a converter convention, not a field of this format. The
 handler orchestration is emitted as ordinary UWS steps referencing
-`uws.ansible-module-call.1.0` extension-owned operations.
+historical UWS 1.6 `ansible-module` source-bound operations.
 
 ## Inventory Posture (Stage 1)
 

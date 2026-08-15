@@ -577,7 +577,7 @@ func TestValidate_UWS17AnsibleModuleSourceTypeRemoved(t *testing.T) {
 
 	t.Run("rejected on 1.7.0 documents", func(t *testing.T) {
 		assert.ErrorContains(t, ansibleDoc("1.7.0").Validate(),
-			"removed in UWS 1.7.0; use the uws.ansible-module-call.1.0 operation profile")
+			"removed in UWS 1.7.0; Ansible automation is not supported by UWS 1.7")
 	})
 
 	t.Run("rejected on versions after 1.7.0", func(t *testing.T) {
@@ -588,18 +588,6 @@ func TestValidate_UWS17AnsibleModuleSourceTypeRemoved(t *testing.T) {
 		assert.NoError(t, ansibleDoc("1.6.0").Validate())
 	})
 
-	t.Run("module call supplement remains valid at 1.7.0", func(t *testing.T) {
-		doc := validDocument()
-		doc.UWS = "1.7.0"
-		doc.SourceDescriptions = nil
-		doc.Operations[0].OpenAPIOperationID = ""
-		doc.Operations[0].SourceDescription = ""
-		doc.Operations[0].Extensions = map[string]any{
-			ExtensionOperationProfile: "uws.ansible-module-call.1.0",
-			"x-uws-ansible-module":    map[string]any{"module": "ansible.builtin.apt"},
-		}
-		assert.NoError(t, doc.Validate())
-	})
 }
 
 func TestValidate_DuplicateIDs(t *testing.T) {

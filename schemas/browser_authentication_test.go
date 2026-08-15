@@ -1,4 +1,4 @@
-package versions_test
+package schemas_test
 
 import (
 	"encoding/json"
@@ -9,14 +9,14 @@ import (
 
 	"github.com/OpenUdon/uws/browserauthentication"
 	"github.com/OpenUdon/uws/convert"
+	"github.com/OpenUdon/uws/schemas"
 	"github.com/OpenUdon/uws/uws1"
-	"github.com/OpenUdon/uws/versions"
 	"gopkg.in/yaml.v3"
 )
 
 func TestBrowserAuthenticationProfileCanonicalFixture(t *testing.T) {
 	data := readBrowserAuthenticationFixture(t, "member-push.yaml")
-	if err := versions.ValidateBrowserAuthenticationProfile(data); err != nil {
+	if err := schemas.ValidateBrowserAuthenticationProfile(data); err != nil {
 		t.Fatalf("ValidateBrowserAuthenticationProfile() error = %v", err)
 	}
 }
@@ -34,7 +34,7 @@ func TestBrowserAuthenticationCallWorkflowFixture(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := versions.ValidateBrowserAuthenticationCallSupplement(call); err != nil {
+	if err := schemas.ValidateBrowserAuthenticationCallSupplement(call); err != nil {
 		t.Fatalf("ValidateBrowserAuthenticationCallSupplement() error = %v", err)
 	}
 }
@@ -54,7 +54,7 @@ func TestBrowserAuthenticationProfileRejectsUnsafeAndInconsistentDocuments(t *te
 	}
 	for name, data := range tests {
 		t.Run(name, func(t *testing.T) {
-			if err := versions.ValidateBrowserAuthenticationProfile([]byte(data)); err == nil {
+			if err := schemas.ValidateBrowserAuthenticationProfile([]byte(data)); err == nil {
 				t.Fatal("invalid profile unexpectedly validated")
 			}
 		})
@@ -85,14 +85,14 @@ func TestBrowserAuthenticationVerificationPreservesExplicitZeroStabilityScore(t 
 
 func TestBrowserAuthenticationProfileBoundAndIndependentSchemaBytes(t *testing.T) {
 	oversized := make([]byte, (1<<20)+1)
-	if err := versions.ValidateBrowserAuthenticationProfile(oversized); err == nil || !strings.Contains(err.Error(), "exceeds") {
+	if err := schemas.ValidateBrowserAuthenticationProfile(oversized); err == nil || !strings.Contains(err.Error(), "exceeds") {
 		t.Fatalf("oversized error = %v", err)
 	}
-	first, err := versions.BrowserAuthenticationProfileSchema("")
+	first, err := schemas.BrowserAuthenticationProfileSchema("")
 	if err != nil {
 		t.Fatal(err)
 	}
-	second, err := versions.BrowserAuthenticationProfileSchema("uws.browser-authentication.1.0")
+	second, err := schemas.BrowserAuthenticationProfileSchema("uws.browser-authentication.1.0")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,7 +108,7 @@ func TestBrowserAuthenticationCallRejectsUnsafeProfilePathAndInlineFields(t *tes
 		"inline password": `{"x-uws-browser-authentication":{"profile":"login.yaml","flow":"login","session":"member","credentialBindings":{},"password":"secret"}}`,
 	} {
 		t.Run(name, func(t *testing.T) {
-			if err := versions.ValidateBrowserAuthenticationCallSupplement([]byte(data)); err == nil {
+			if err := schemas.ValidateBrowserAuthenticationCallSupplement([]byte(data)); err == nil {
 				t.Fatal("invalid call unexpectedly validated")
 			}
 		})

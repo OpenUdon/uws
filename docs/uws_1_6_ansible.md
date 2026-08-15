@@ -4,10 +4,10 @@
 > `ansible-module` source type: the managed host does not expose a collection
 > module as a pre-existing named operation; the control node supplies and runs
 > that implementation, so the argspec is a client-side library manifest.
-> Ansible module operations now use the
-> `uws.ansible-module-call.1.0` operation profile, and
-> `versions/ansible.1.0.{json,md}` remains published as the argspec document
-> format that supplement references. The document below is kept as the design
+> UWS 1.7 defines no replacement Ansible operation profile.
+> `versions/ansible.1.0.{json,md}` remains only as historical UWS 1.6 material;
+> the retired supplement and Go helpers are available from repository history
+> as described in the project README. The document below is kept as the design
 > record of the 1.6 decision; see the withdrawal record in
 > [`future-source-profiles.md`](future-source-profiles.md) for what the
 > admission criteria missed.
@@ -180,11 +180,11 @@ instead of calling the convergent `ansible.builtin.apt` module, it always
 restarts instead of restarting only on change, and the template is pre-rendered
 out of band. It demonstrates the floor, not the target.
 
-### 3.2.1 UWS 1.5 compatibility form
+### 3.2.1 Retired UWS 1.5 compatibility experiment
 
-When tooling wants to preserve Ansible module identity without using the UWS
-1.6 `ansible-module` source type, it can emit an extension-owned leaf operation
-using `uws.ansible-module-call.1.0`:
+For historical context, tooling briefly used an extension-owned leaf operation
+to preserve Ansible module identity without the UWS 1.6 source type. That
+supplement is retired and the example below is not supported by UWS 1.7:
 
 ```yaml
 uws: "1.5.0"

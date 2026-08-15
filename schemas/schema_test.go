@@ -1,12 +1,61 @@
-package versions
+package schemas
 
 import (
-	"encoding/json"
+	"archive/zip"
+	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 )
+
+func TestVersionsDirectoryContainsDocumentsOnly(t *testing.T) {
+	entries, err := os.ReadDir(filepath.Join("..", "versions"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.EqualFold(filepath.Ext(entry.Name()), ".go") {
+			t.Fatalf("versions directory contains Go source %q", entry.Name())
+		}
+	}
+}
+
+func TestEmbeddedVersionDocumentsMatchSource(t *testing.T) {
+	archive, err := zip.NewReader(bytes.NewReader(embeddedVersionDocuments), int64(len(embeddedVersionDocuments)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	embedded := make(map[string]bool, len(archive.File))
+	for _, file := range archive.File {
+		embedded[file.Name] = true
+	}
+	entries, err := os.ReadDir(filepath.Join("..", "versions"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		if !entry.Type().IsRegular() || !strings.EqualFold(filepath.Ext(entry.Name()), ".json") {
+			continue
+		}
+		name := entry.Name()
+		want, err := os.ReadFile(filepath.Join("..", "versions", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := embeddedSchemaDocument(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !bytes.Equal(got, want) {
+			t.Errorf("embedded %s is stale; run go generate ./schemas", name)
+		}
+		delete(embedded, name)
+	}
+	if len(embedded) != 0 {
+		t.Fatalf("embedded archive contains documents absent from versions/: %v", embedded)
+	}
+}
 
 func TestPathForVersionFindsReadableSchema(t *testing.T) {
 	for _, version := range []string{"", "1.0.0", "1.1.0", "1.1.1", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0"} {
@@ -43,46 +92,6 @@ func TestPathForRuntimeSupplementFindsReadableSchema(t *testing.T) {
 	}
 }
 
-func TestPathForAnsibleModuleCallSupplementFindsReadableSchema(t *testing.T) {
-	for _, profile := range []string{"", "1.0", "ansible-module-call.1.0", "uws.ansible-module-call.1.0"} {
-		path := PathForAnsibleModuleCallSupplement(t.TempDir(), profile)
-		if _, err := os.Stat(path); err != nil {
-			t.Fatalf("ansible module-call schema path for profile %q is not readable: %s: %v", profile, path, err)
-		}
-	}
-}
-
-func TestAnsibleModuleCallSupplementDescribesSupportedRepresentation(t *testing.T) {
-	data, err := os.ReadFile(PathForAnsibleModuleCallSupplement(t.TempDir(), "1.0"))
-	if err != nil {
-		t.Fatalf("read Ansible module-call schema: %v", err)
-	}
-	var schema struct {
-		Description string `json:"description"`
-	}
-	if err := json.Unmarshal(data, &schema); err != nil {
-		t.Fatalf("parse Ansible module-call schema: %v", err)
-	}
-	if !strings.Contains(schema.Description, "supported representation") || !strings.Contains(schema.Description, "every UWS version") {
-		t.Fatalf("schema description does not state the supported cross-version contract: %q", schema.Description)
-	}
-	if strings.Contains(schema.Description, "cannot use sourceDescriptions") {
-		t.Fatalf("schema description retains the withdrawn compatibility-only wording: %q", schema.Description)
-	}
-}
-
-func TestPathForAnsibleArgspecFindsReadableSchema(t *testing.T) {
-	for _, profile := range []string{"", "1.0", "1.0.json", "ansible.1.0", "ansible.1.0.json", "uws.ansible.1.0", "uws.ansible.1.0.json"} {
-		path := PathForAnsibleArgspec(t.TempDir(), profile)
-		if _, err := os.Stat(path); err != nil {
-			t.Fatalf("Ansible argspec path for profile %q is not readable: %s: %v", profile, path, err)
-		}
-		if legacy := PathForAnsibleSourceProfile(t.TempDir(), profile); legacy != path {
-			t.Fatalf("deprecated Ansible source profile path = %q, want %q", legacy, path)
-		}
-	}
-}
-
 func TestPathForBrowserSourceProfileFindsReadableSchema(t *testing.T) {
 	for _, profile := range []string{"", "1.5", "1.5.json", "browser.1.5", "browser.1.5.json", "uws.browser.1.5", "uws.browser.1.5.json"} {
 		path := PathForBrowserSourceProfile(t.TempDir(), profile)
@@ -92,25 +101,18 @@ func TestPathForBrowserSourceProfileFindsReadableSchema(t *testing.T) {
 	}
 }
 
-func TestProfileAndArgspecPathsHonorSchemaDir(t *testing.T) {
+func TestProfilePathsHonorSchemaDir(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("UWS_SCHEMA_DIR", dir)
-	for name, path := range map[string]string{
-		"Ansible": PathForAnsibleArgspec(".", "uws.ansible.1.0.json"),
-		"browser": PathForBrowserSourceProfile(".", "uws.browser.1.5.json"),
-	} {
-		want := filepath.Join(dir, map[string]string{
-			"Ansible": "ansible.1.0.json",
-			"browser": "browser.1.5.json",
-		}[name])
-		if path != want {
-			t.Fatalf("%s schema path = %q, want %q", name, path, want)
-		}
+	path := PathForBrowserSourceProfile(".", "uws.browser.1.5.json")
+	want := filepath.Join(dir, "browser.1.5.json")
+	if path != want {
+		t.Fatalf("browser schema path = %q, want %q", path, want)
 	}
 }
 
 func TestEmbeddedSchemaPathFindsReadableSchema(t *testing.T) {
-	for _, name := range []string{"1.0.0.json", "1.1.0.json", "1.1.1.json", "1.2.0.json", "1.3.0.json", "1.4.0.json", "1.5.0.json", "1.6.0.json", "1.7.0.json", "runtime.1.0.json", "browser.1.5.json", "ansible.1.0.json", "ansible-module-call.1.0.json"} {
+	for _, name := range []string{"1.0.0.json", "1.1.0.json", "1.1.1.json", "1.2.0.json", "1.3.0.json", "1.4.0.json", "1.5.0.json", "1.6.0.json", "1.7.0.json", "runtime.1.0.json", "browser.1.5.json", "browser-authentication.1.0.json", "browser-authentication-call.1.0.json"} {
 		path, ok := embeddedSchemaPath(name)
 		if !ok {
 			t.Fatalf("embedded schema path %s not found", name)

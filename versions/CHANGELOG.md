@@ -16,6 +16,21 @@ the meaning or scope of a published schema or sub-spec is recorded as an
   named-session establishment and use.
 - Kept UWS 1.7 core and `uws.browser.1.5` unchanged.
 
+## Ansible Support Retirement - 2026-08-15
+
+- Retired the UWS-owned `uws.ansible-module-call.1.0` supplement and its typed
+  Go helpers. UWS 1.7 defines no Ansible source or operation profile.
+- Removed the Ansible-specific schema accessors while retaining
+  `versions/1.6.0.{json,md}`, the version-gated 1.6 Go model behavior, and
+  `versions/ansible.1.0.{json,md}` as historical material.
+- Ramen localizes its static conversion-only schemas and wire helpers under its
+  internal adapter with Ramen-owned identifiers; it is not required to retain
+  or accept the removed UWS-named contracts.
+- The removed implementation and module-call documents remain available from
+  repository history at commit `87644c1`.
+- Moved Go schema access and browser-profile validation from package `versions`
+  to package `schemas`; `versions/` now contains documents only.
+
 ## Go Schema Accessors - 2026-07-25
 
 - Added `versions.PathForAnsibleSourceProfile` and
@@ -37,16 +52,10 @@ the meaning or scope of a published schema or sub-spec is recorded as an
   target UI implements. An Ansible host does not expose a collection module as
   a pre-existing operation: the control node supplies and runs that
   implementation, so the argspec is a client-side library manifest.
-- Ansible module operations are represented by the
-  `uws.ansible-module-call.1.0` operation profile, which is now the supported
-  path at every UWS version rather than a 1.5 compatibility form.
-- `versions/ansible.1.0.{json,md}` remains published, unchanged in shape, as the
-  argspec document format that supplement references for review. It is no longer
-  a source profile.
-- Added `versions.PathForAnsibleArgspec`; retained
-  `PathForAnsibleSourceProfile` as a deprecated compatibility alias. Updated the
-  `ansible.1.0.json` title and description to argspec terminology without
-  changing its wire shape.
+- UWS 1.7 defines no replacement Ansible operation profile. The briefly
+  published module-call supplement was retired on 2026-08-15.
+- `versions/ansible.1.0.{json,md}` remains only as historical UWS 1.6 material;
+  it is not a UWS 1.7 source profile.
 - Documents declaring `uws: 1.6.0` are unaffected; `versions/1.6.0.json` still
   accepts `ansible-module`. Validators MUST reject the type on documents
   declaring 1.7.0 or later.
@@ -72,6 +81,12 @@ Amended 2026-08-08:
   representation at every UWS version after UWS 1.7 withdrew the temporary
   source type. Updated schema metadata only; the supplement wire shape is
   unchanged.
+
+Withdrawn 2026-08-15:
+
+- Removed the supplement from the current tree. UWS 1.7 no longer standardizes
+  Ansible automation. The historical schema, prose, and Go helper package are
+  available at commit `87644c1`.
 
 ## 1.6.0 - 2026-06-02
 

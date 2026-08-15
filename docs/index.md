@@ -10,7 +10,7 @@ UWS is a compact, execution-oriented workflow specification that sits directly o
 
 This is what distinguishes UWS from full client-side workflow tools such as Arazzo and IaC engines such as OpenTofu and Terraform. Arazzo describes full client-side action sequences and treats each step as a bespoke client action. OpenTofu and Terraform act as full client-side workflow engines for infrastructure: each resource and provider call is described in the client configuration and resolved against a provider plugin at apply time. Neither approach assumes the underlying operations are already defined by a server contract. UWS takes the opposite position: server actions are pre-defined by the source document, and UWS workflows reference those operations by ID rather than re-describing them. The result is a much smaller overlay: UWS does not duplicate request/response shapes, does not redeclare endpoints, and does not encode anything the source document already specifies.
 
-UWS 1.7 keeps OpenAPI compatibility and supports first-class source descriptions for `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources. The browser profile sub-spec is published separately as `versions/browser.1.5.{json,md}`. Ansible module calls use the `uws.ansible-module-call.1.0` operation profile; the `ansible-module` source type added in 1.6 was removed in 1.7.
+UWS 1.7 keeps OpenAPI compatibility and supports first-class source descriptions for `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources. The browser profile sub-spec is published separately as `versions/browser.1.5.{json,md}`. The `ansible-module` source type added in 1.6 was removed in 1.7 without a replacement UWS-owned Ansible profile.
 
 ## Why UWS?
 
@@ -90,7 +90,7 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 - **JSON Schema**: [`versions/1.7.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.7.0.json)
 - **Runtime supplement**: [`versions/runtime.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md)
 - **Runtime supplement schema**: [`versions/runtime.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json)
-- **Ansible module supplement**: [`versions/ansible.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/ansible.1.0.md)
+- **Historical UWS 1.6 Ansible argspec**: [`versions/ansible.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/ansible.1.0.md)
 - **UWS 1.6 Ansible design**: [historical design note](uws_1_6_ansible.md)
 - **Future source profiles**: [admission criteria, adopted source families, browser capability profiles, and the historical UWS 1.6 Ansible withdrawal](future-source-profiles.md)
 - **Go package**: `github.com/OpenUdon/uws`
@@ -104,7 +104,7 @@ If you need to hand-write a workflow, start with the practical [workflow authori
 
 | # | Feature | Summary |
 |---|---------|---------|
-| 1 | [Source Operation Binding](01-OpenAPI-Operation-Binding.md) | Strict binding to OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, OData, browser profiles, Ansible modules, or extension-owned operations |
+| 1 | [Source Operation Binding](01-OpenAPI-Operation-Binding.md) | Strict binding to OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, OData, browser profiles, or extension-owned operations |
 | 2 | [Six Structural Constructs](02-Six-Structural-Constructs.md) | sequence · parallel · switch · loop · merge · await |
 | 3 | [Runtime Expression Grammar](03-Runtime-Expression-Grammar.md) | Normative ABNF expression language for value flow |
 | 4 | [Triggers and Route Dispatch](04-Triggers-and-Route-Dispatch.md) | Typed entry points with output-based routing |

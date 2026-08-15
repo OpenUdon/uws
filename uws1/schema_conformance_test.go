@@ -595,22 +595,6 @@ func TestSchemaConformance_Draft202012CrossValidator(t *testing.T) {
 			valid: false,
 		},
 		{
-			// The ansible-module replacement: an extension-owned operation
-			// carrying uws.ansible-module-call.1.0, valid at every version.
-			name: "ansible module call supplement accepted",
-			data: []byte(`{
-				"uws": "1.7.0",
-				"info": {"title": "Ansible Supplement", "version": "1.0.0"},
-				"operations": [{
-					"operationId": "install_nginx",
-					"x-uws-operation-profile": "uws.ansible-module-call.1.0",
-					"x-uws-ansible-module": {"module": "ansible.builtin.apt"},
-					"request": {"body": {"name": "nginx", "state": "present"}}
-				}]
-			}`),
-			valid: true,
-		},
-		{
 			name: "mixed generic and legacy selectors rejected",
 			data: []byte(`{
 				"uws": "1.2.0",
