@@ -1,11 +1,13 @@
 package versions_test
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/OpenUdon/uws/browserauthentication"
 	"github.com/OpenUdon/uws/convert"
 	"github.com/OpenUdon/uws/uws1"
 	"github.com/OpenUdon/uws/versions"
@@ -40,19 +42,42 @@ func TestBrowserAuthenticationCallWorkflowFixture(t *testing.T) {
 func TestBrowserAuthenticationProfileRejectsUnsafeAndInconsistentDocuments(t *testing.T) {
 	valid := string(readBrowserAuthenticationFixture(t, "member-push.yaml"))
 	tests := map[string]string{
-		"inline secret":            strings.Replace(valid, "kind: password", "kind: password\n    value: hunter2", 1),
-		"unsafe origin":            strings.Replace(valid, "https://login.example.test", "http://login.example.test", 1),
-		"undeclared slot":          strings.Replace(valid, "slot: password", "slot: missing", 1),
-		"missing MFA effect":       strings.Replace(valid, "effects: [establishes_session, sends_mfa_challenge]", "effects: [establishes_session]", 1),
-		"success outside origins":  strings.Replace(valid, "origin: https://members.example.test", "origin: https://other.example.test", 1),
-		"navigate outside origins": strings.Replace(valid, "navigate: https://members.example.test/", "navigate: https://other.example.test/", 1),
-		"relative navigation":      strings.Replace(valid, "navigate: https://members.example.test/", "navigate: /login", 1),
-		"trailing document":        valid + "\n---\nprofile: uws.browser-authentication.1.0\n",
+		"inline secret":             strings.Replace(valid, "kind: password", "kind: password\n    value: hunter2", 1),
+		"TOTP seed typed into page": strings.Replace(valid, "kind: password", "kind: totp_seed", 1),
+		"unsafe origin":             strings.Replace(valid, "https://login.example.test", "http://login.example.test", 1),
+		"undeclared slot":           strings.Replace(valid, "slot: password", "slot: missing", 1),
+		"missing MFA effect":        strings.Replace(valid, "effects: [establishes_session, sends_mfa_challenge]", "effects: [establishes_session]", 1),
+		"success outside origins":   strings.Replace(valid, "origin: https://members.example.test", "origin: https://other.example.test", 1),
+		"navigate outside origins":  strings.Replace(valid, "navigate: https://members.example.test/", "navigate: https://other.example.test/", 1),
+		"relative navigation":       strings.Replace(valid, "navigate: https://members.example.test/", "navigate: /login", 1),
+		"trailing document":         valid + "\n---\nprofile: uws.browser-authentication.1.0\n",
 	}
 	for name, data := range tests {
 		t.Run(name, func(t *testing.T) {
 			if err := versions.ValidateBrowserAuthenticationProfile([]byte(data)); err == nil {
 				t.Fatal("invalid profile unexpectedly validated")
+			}
+		})
+	}
+}
+
+func TestBrowserAuthenticationVerificationPreservesExplicitZeroStabilityScore(t *testing.T) {
+	for name, data := range map[string]string{
+		"explicit zero": `{"lastVerifiedAt":"2026-08-15T00:00:00Z","successfulRuns":1,"uiStabilityScore":0}`,
+		"omitted":       `{"lastVerifiedAt":"2026-08-15T00:00:00Z","successfulRuns":1}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			var value browserauthentication.Verification
+			if err := json.Unmarshal([]byte(data), &value); err != nil {
+				t.Fatal(err)
+			}
+			encoded, err := json.Marshal(value)
+			if err != nil {
+				t.Fatal(err)
+			}
+			hasScore := strings.Contains(string(encoded), `"uiStabilityScore"`)
+			if want := name == "explicit zero"; hasScore != want {
+				t.Fatalf("encoded verification = %s, score present = %t, want %t", encoded, hasScore, want)
 			}
 		})
 	}

@@ -56,9 +56,9 @@ type Evidence struct {
 
 // Verification records the latest successful review of the recipe.
 type Verification struct {
-	LastVerifiedAt   string  `json:"lastVerifiedAt" yaml:"lastVerifiedAt"`
-	SuccessfulRuns   int     `json:"successfulRuns" yaml:"successfulRuns"`
-	UIStabilityScore float64 `json:"uiStabilityScore,omitempty" yaml:"uiStabilityScore,omitempty"`
+	LastVerifiedAt   string   `json:"lastVerifiedAt" yaml:"lastVerifiedAt"`
+	SuccessfulRuns   int      `json:"successfulRuns" yaml:"successfulRuns"`
+	UIStabilityScore *float64 `json:"uiStabilityScore,omitempty" yaml:"uiStabilityScore,omitempty"`
 }
 
 // CredentialSlot declares the class of a symbolic driver-resolved credential.

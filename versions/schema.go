@@ -212,8 +212,13 @@ func ValidateBrowserAuthenticationProfile(data []byte) error {
 			if rawType, ok := step["type_credential"]; ok {
 				typeStep, _ := rawType.(map[string]any)
 				slot, _ := typeStep["slot"].(string)
-				if _, ok := credentialSlots[slot]; !ok {
+				rawSlot, ok := credentialSlots[slot]
+				if !ok {
 					return fmt.Errorf("flows.%s.sequence[%d].type_credential.slot: undeclared credential slot %q", name, i, slot)
+				}
+				slotDef, _ := rawSlot.(map[string]any)
+				if kind, _ := slotDef["kind"].(string); kind == "totp_seed" {
+					return fmt.Errorf("flows.%s.sequence[%d].type_credential.slot: totp_seed slots may be used only by a totp challenge", name, i)
 				}
 			}
 			if rawChallenge, ok := step["challenge"]; ok {
