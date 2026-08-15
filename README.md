@@ -40,6 +40,8 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - Runtime supplement: [versions/runtime.1.0.md](versions/runtime.1.0.md)
 - Runtime supplement schema: [versions/runtime.1.0.json](versions/runtime.1.0.json)
 - Browser profile supplement: [versions/browser.1.5.md](versions/browser.1.5.md) / [versions/browser.1.5.json](versions/browser.1.5.json)
+- Browser authentication profile: [versions/browser-authentication.1.0.md](versions/browser-authentication.1.0.md) / [versions/browser-authentication.1.0.json](versions/browser-authentication.1.0.json)
+- Browser authentication call supplement: [versions/browser-authentication-call.1.0.md](versions/browser-authentication-call.1.0.md) / [versions/browser-authentication-call.1.0.json](versions/browser-authentication-call.1.0.json)
 - Browser capability distribution milestone: [docs/browser-capability-goal.md](docs/browser-capability-goal.md)
 - Ansible module supplement: [versions/ansible.1.0.md](versions/ansible.1.0.md) / [versions/ansible.1.0.json](versions/ansible.1.0.json)
 - Ansible module-call supplement: [versions/ansible-module-call.1.0.md](versions/ansible-module-call.1.0.md) / [versions/ansible-module-call.1.0.json](versions/ansible-module-call.1.0.json)
@@ -52,9 +54,11 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - `convert` converts UWS documents between JSON, YAML, and the HCL authoring form.
 - `runtimes` contains the public `uws.runtime.1.0` supplement constants, wire structs, and extension helpers.
 - `ansiblemodulecall` contains the public `uws.ansible-module-call.1.0` supplement constants, wire structs, and extension helpers.
+- `browserauthentication` contains the additive secret-free sign-in profile and named-session operation extension types.
 - `versions/1.7.0.md` is the human-readable UWS 1.7 specification.
 - `versions/1.7.0.json` is the JSON Schema for UWS 1.7 documents.
 - `versions/browser.1.5.md` / `versions/browser.1.5.json` publish the browser capability profile sub-spec referenced by `sourceDescriptions[].type: browser-profile`.
+- `versions/browser-authentication.1.0.*` and `versions/browser-authentication-call.1.0.*` publish portable sign-in recipes and explicit named-session establishment without changing `browser.1.5`.
 - `versions/ansible.1.0.md` / `versions/ansible.1.0.json` publish the Ansible argspec document format referenced by `x-uws-ansible-module.argspec`.
 
 ## Validation

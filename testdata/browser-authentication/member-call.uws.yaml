@@ -1,0 +1,32 @@
+uws: 1.7.0
+info:
+  title: Authenticated member link
+  version: 1.0.0
+operations:
+  - operationId: authenticate_member
+    x-uws-operation-profile: uws.browser-authentication-call.1.0
+    x-uws-browser-authentication:
+      profile: ./browser-authentication/member-push.yaml
+      flow: member_login_push
+      session: member_portal
+      credentialBindings:
+        username: member_username
+        password: member_password
+    timeout: 120
+  - operationId: open_member_link
+    sourceDescription: member_dashboard
+    sourceOperationId: open_member_link
+    x-uws-browser-session:
+      session: member_portal
+sourceDescriptions:
+  - name: member_dashboard
+    type: browser-profile
+    url: ./browser-profiles/member.yaml
+workflows:
+  - workflowId: main
+    type: sequence
+    steps:
+      - stepId: authenticate
+        operationRef: authenticate_member
+      - stepId: open_link
+        operationRef: open_member_link

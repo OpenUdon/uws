@@ -7,6 +7,15 @@ already-published artifacts may land without an entry; any change that adjusts
 the meaning or scope of a published schema or sub-spec is recorded as an
 "Amended" note under the affected release.
 
+## Browser Authentication 1.0 - 2026-08-15
+
+- Added the additive `uws.browser-authentication.1.0` secret-free sign-in
+  recipe schema and validation helpers.
+- Added `uws.browser-authentication-call.1.0`,
+  `x-uws-browser-authentication`, and `x-uws-browser-session` for explicit
+  named-session establishment and use.
+- Kept UWS 1.7 core and `uws.browser.1.5` unchanged.
+
 ## Go Schema Accessors - 2026-07-25
 
 - Added `versions.PathForAnsibleSourceProfile` and

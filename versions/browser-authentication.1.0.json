@@ -1,0 +1,263 @@
+{
+  "$id": "https://github.com/OpenUdon/uws/versions/browser-authentication.1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UWS Browser Authentication Profile 1.0",
+  "description": "Portable, inert, secret-free browser sign-in recipes consumed by a trusted private browser driver.",
+  "type": "object",
+  "required": [
+    "profile",
+    "info",
+    "observationKind",
+    "evidence",
+    "confidence",
+    "expiresAfter",
+    "verification",
+    "credentialSlots",
+    "flows"
+  ],
+  "properties": {
+    "profile": {
+      "const": "uws.browser-authentication.1.0"
+    },
+    "info": {
+      "$ref": "#/$defs/profile-info"
+    },
+    "observationKind": {
+      "type": "string",
+      "enum": ["accessibility_snapshot", "dom_text", "screenshot_ocr", "other"]
+    },
+    "evidence": {
+      "$ref": "#/$defs/evidence"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "expiresAfter": {
+      "type": "string",
+      "allOf": [
+        {"pattern": "^P(?:\\d+Y)?(?:\\d+M)?(?:\\d+W)?(?:\\d+D)?(?:T(?:\\d+H)?(?:\\d+M)?(?:\\d+S)?)?$"},
+        {"pattern": "\\d+(?:Y|M|W|D|H|S)"}
+      ]
+    },
+    "verification": {
+      "$ref": "#/$defs/verification"
+    },
+    "credentialSlots": {
+      "type": "object",
+      "minProperties": 0,
+      "maxProperties": 64,
+      "propertyNames": {"$ref": "#/$defs/identifier"},
+      "additionalProperties": {"$ref": "#/$defs/credential-slot"}
+    },
+    "flows": {
+      "type": "object",
+          "minProperties": 0,
+      "maxProperties": 100,
+      "propertyNames": {"$ref": "#/$defs/identifier"},
+      "additionalProperties": {"$ref": "#/$defs/flow"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+    },
+    "profile-info": {
+      "type": "object",
+      "required": ["title", "applicationOrigins", "authenticationOrigins"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1, "maxLength": 256},
+        "provider": {"type": "string", "minLength": 1, "maxLength": 256},
+        "applicationOrigins": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {"type": "string", "format": "uri", "maxLength": 2048}
+        },
+        "authenticationOrigins": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {"type": "string", "format": "uri", "maxLength": 2048}
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["learnedAt"],
+      "properties": {
+        "learnedAt": {"type": "string", "format": "date-time"},
+        "source": {"type": "string", "minLength": 1, "maxLength": 256}
+      },
+      "additionalProperties": false
+    },
+    "verification": {
+      "type": "object",
+      "required": ["lastVerifiedAt", "successfulRuns"],
+      "properties": {
+        "lastVerifiedAt": {"type": "string", "format": "date-time"},
+        "successfulRuns": {"type": "integer", "minimum": 0},
+        "uiStabilityScore": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    },
+    "credential-slot": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["identifier", "password", "totp_seed"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "locator": {
+      "type": "object",
+      "required": ["role"],
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "button", "link", "textbox", "checkbox", "radio", "dialog",
+            "status", "alert", "heading", "img", "list", "listitem",
+            "combobox", "option", "menu", "menuitem", "tab", "tabpanel",
+            "table", "row", "cell", "region", "navigation", "article",
+            "form", "search", "switch", "group"
+          ]
+        },
+        "name": {"type": "string", "maxLength": 512},
+        "text": {"type": "string", "maxLength": 512},
+        "value": {"type": "string", "maxLength": 512}
+      },
+      "additionalProperties": false
+    },
+    "type-credential": {
+      "type": "object",
+      "required": ["locator", "slot"],
+      "properties": {
+        "locator": {"$ref": "#/$defs/locator"},
+        "slot": {"$ref": "#/$defs/identifier"}
+      },
+      "additionalProperties": false
+    },
+    "click": {
+      "type": "object",
+      "required": ["locator"],
+      "properties": {
+        "locator": {"$ref": "#/$defs/locator"}
+      },
+      "additionalProperties": false
+    },
+    "challenge": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "push", "push_number_match", "totp", "sms_otp", "email_otp",
+            "voice_otp", "passkey", "security_key"
+          ]
+        },
+        "locator": {"$ref": "#/$defs/locator"},
+        "slot": {"$ref": "#/$defs/identifier"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "totp"}}},
+          "then": {"required": ["locator", "slot"]}
+        },
+        {
+          "if": {"properties": {"kind": {"enum": ["sms_otp", "email_otp", "voice_otp"]}}},
+          "then": {"required": ["locator"], "not": {"required": ["slot"]}}
+        },
+        {
+          "if": {"properties": {"kind": {"enum": ["push", "push_number_match", "passkey", "security_key"]}}},
+          "then": {"not": {"anyOf": [{"required": ["locator"]}, {"required": ["slot"]}]}}
+        }
+      ],
+      "additionalProperties": false
+    },
+    "wait-for": {
+      "type": "object",
+      "required": ["locator"],
+      "properties": {
+        "locator": {"$ref": "#/$defs/locator"}
+      },
+      "additionalProperties": false
+    },
+    "step": {
+      "type": "object",
+      "oneOf": [
+        {
+          "required": ["navigate"],
+          "properties": {"navigate": {"type": "string", "minLength": 1, "maxLength": 2048}},
+          "additionalProperties": false
+        },
+        {
+          "required": ["type_credential"],
+          "properties": {"type_credential": {"$ref": "#/$defs/type-credential"}},
+          "additionalProperties": false
+        },
+        {
+          "required": ["click"],
+          "properties": {"click": {"$ref": "#/$defs/click"}},
+          "additionalProperties": false
+        },
+        {
+          "required": ["challenge"],
+          "properties": {"challenge": {"$ref": "#/$defs/challenge"}},
+          "additionalProperties": false
+        },
+        {
+          "required": ["wait_for"],
+          "properties": {"wait_for": {"$ref": "#/$defs/wait-for"}},
+          "additionalProperties": false
+        }
+      ]
+    },
+    "success": {
+      "type": "object",
+      "required": ["origin", "locator"],
+      "properties": {
+        "origin": {"type": "string", "format": "uri", "maxLength": 2048},
+        "locator": {"$ref": "#/$defs/locator"}
+      },
+      "additionalProperties": false
+    },
+    "flow": {
+      "type": "object",
+      "required": ["sequence", "effects", "success"],
+      "properties": {
+        "description": {"type": "string", "maxLength": 1024},
+        "sequence": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": {"$ref": "#/$defs/step"}
+        },
+        "effects": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "contains": {"const": "establishes_session"},
+          "items": {
+            "type": "string",
+            "enum": ["establishes_session", "sends_mfa_challenge"]
+          }
+        },
+        "success": {"$ref": "#/$defs/success"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

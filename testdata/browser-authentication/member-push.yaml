@@ -1,0 +1,43 @@
+profile: uws.browser-authentication.1.0
+info:
+  title: Example member login
+  applicationOrigins:
+    - https://members.example.test
+  authenticationOrigins:
+    - https://login.example.test
+observationKind: accessibility_snapshot
+evidence:
+  learnedAt: "2026-08-15T00:00:00Z"
+  source: reviewed_synthetic_fixture
+confidence: high
+expiresAfter: P30D
+verification:
+  lastVerifiedAt: "2026-08-15T00:00:00Z"
+  successfulRuns: 1
+  uiStabilityScore: 0.95
+credentialSlots:
+  username:
+    kind: identifier
+  password:
+    kind: password
+flows:
+  member_login_push:
+    description: Sign in and approve the push notification.
+    sequence:
+      - navigate: https://members.example.test/
+      - type_credential:
+          locator: {role: textbox, name: Username}
+          slot: username
+      - type_credential:
+          locator: {role: textbox, name: Password}
+          slot: password
+      - click:
+          locator: {role: button, name: Sign in}
+      - challenge:
+          kind: push
+      - wait_for:
+          locator: {role: heading, name: Member dashboard}
+    effects: [establishes_session, sends_mfa_challenge]
+    success:
+      origin: https://members.example.test
+      locator: {role: heading, name: Member dashboard}

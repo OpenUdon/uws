@@ -7,7 +7,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
+	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
@@ -25,10 +28,18 @@ const uwsModulePath = "github.com/OpenUdon/uws"
 var embeddedSchemas embed.FS
 
 var (
-	browserSchemaOnce sync.Once
-	browserSchema     *jsonschema.Schema
-	browserSchemaErr  error
+	browserSchemaOnce  sync.Once
+	browserSchema      *jsonschema.Schema
+	browserSchemaErr   error
+	authSchemaOnce     sync.Once
+	authSchema         *jsonschema.Schema
+	authSchemaErr      error
+	authCallSchemaOnce sync.Once
+	authCallSchema     *jsonschema.Schema
+	authCallSchemaErr  error
 )
+
+const maxBrowserAuthenticationProfileBytes = 1 << 20
 
 // PathForVersion returns the best local schema path for a UWS document version.
 func PathForVersion(anchorDir, version string) string {
@@ -83,6 +94,40 @@ func BrowserSourceProfileSchema(profile string) ([]byte, error) {
 	return append([]byte(nil), data...), nil
 }
 
+// PathForBrowserAuthenticationProfile returns the best local schema path for
+// a portable browser-authentication recipe.
+func PathForBrowserAuthenticationProfile(anchorDir, profile string) string {
+	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser-authentication", "1.0"))
+}
+
+// BrowserAuthenticationProfileSchema returns an independent copy of the
+// embedded uws.browser-authentication.1.0 JSON Schema.
+func BrowserAuthenticationProfileSchema(profile string) ([]byte, error) {
+	name := familySchemaName(profile, "browser-authentication", "1.0")
+	data, err := embeddedSchemas.ReadFile(name)
+	if err != nil {
+		return nil, fmt.Errorf("load browser authentication profile schema %q: %w", profile, err)
+	}
+	return append([]byte(nil), data...), nil
+}
+
+// PathForBrowserAuthenticationCallSupplement returns the best local schema
+// path for the browser-authentication-call operation supplement.
+func PathForBrowserAuthenticationCallSupplement(anchorDir, profile string) string {
+	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser-authentication-call", "1.0"))
+}
+
+// BrowserAuthenticationCallSupplementSchema returns an independent copy of
+// the embedded uws.browser-authentication-call.1.0 JSON Schema.
+func BrowserAuthenticationCallSupplementSchema(profile string) ([]byte, error) {
+	name := familySchemaName(profile, "browser-authentication-call", "1.0")
+	data, err := embeddedSchemas.ReadFile(name)
+	if err != nil {
+		return nil, fmt.Errorf("load browser authentication call schema %q: %w", profile, err)
+	}
+	return append([]byte(nil), data...), nil
+}
+
 // ValidateBrowserSourceProfile validates one JSON or YAML browser-profile
 // document against the embedded uws.browser.1.5 schema. It validates portable
 // wire shape only; freshness, review evidence, registry lifecycle, sessions,
@@ -107,6 +152,240 @@ func ValidateBrowserSourceProfile(data []byte) error {
 		return fmt.Errorf("validate browser source profile: %w", err)
 	}
 	return nil
+}
+
+// ValidateBrowserAuthenticationProfile validates one portable, secret-free
+// browser authentication recipe. In addition to JSON Schema validation it
+// enforces exact safe origins and the 1 MiB document bound.
+func ValidateBrowserAuthenticationProfile(data []byte) error {
+	if len(data) > maxBrowserAuthenticationProfileBytes {
+		return fmt.Errorf("browser authentication profile exceeds %d bytes", maxBrowserAuthenticationProfileBytes)
+	}
+	value, document, err := decodeSchemaDocument(data, "browser authentication profile")
+	if err != nil {
+		return err
+	}
+	schema, err := compiledBrowserAuthenticationProfileSchema()
+	if err != nil {
+		return err
+	}
+	if err := schema.Validate(document); err != nil {
+		return fmt.Errorf("validate browser authentication profile: %w", err)
+	}
+	root, ok := value.(map[string]any)
+	if !ok {
+		return fmt.Errorf("browser authentication profile must be an object")
+	}
+	info, _ := root["info"].(map[string]any)
+	declaredOrigins := make(map[string]struct{})
+	originCount := 0
+	for _, field := range []string{"applicationOrigins", "authenticationOrigins"} {
+		origins, _ := info[field].([]any)
+		originCount += len(origins)
+		for i, raw := range origins {
+			origin, _ := raw.(string)
+			if err := validateAuthenticationOrigin(origin); err != nil {
+				return fmt.Errorf("info.%s[%d]: %w", field, i, err)
+			}
+			declaredOrigins[canonicalAuthenticationOrigin(origin)] = struct{}{}
+		}
+	}
+	if originCount > 32 {
+		return fmt.Errorf("info origins: combined applicationOrigins and authenticationOrigins exceed 32")
+	}
+	credentialSlots, _ := root["credentialSlots"].(map[string]any)
+	flows, _ := root["flows"].(map[string]any)
+	for name, raw := range flows {
+		flow, _ := raw.(map[string]any)
+		effects, _ := flow["effects"].([]any)
+		hasMFAEffect := containsString(effects, "sends_mfa_challenge")
+		hasChallenge := false
+		sequence, _ := flow["sequence"].([]any)
+		for i, rawStep := range sequence {
+			step, _ := rawStep.(map[string]any)
+			if rawNavigate, ok := step["navigate"]; ok {
+				navigate, _ := rawNavigate.(string)
+				if err := validateAuthenticationTarget(navigate, declaredOrigins); err != nil {
+					return fmt.Errorf("flows.%s.sequence[%d].navigate: %w", name, i, err)
+				}
+			}
+			if rawType, ok := step["type_credential"]; ok {
+				typeStep, _ := rawType.(map[string]any)
+				slot, _ := typeStep["slot"].(string)
+				if _, ok := credentialSlots[slot]; !ok {
+					return fmt.Errorf("flows.%s.sequence[%d].type_credential.slot: undeclared credential slot %q", name, i, slot)
+				}
+			}
+			if rawChallenge, ok := step["challenge"]; ok {
+				hasChallenge = true
+				challenge, _ := rawChallenge.(map[string]any)
+				if slot, _ := challenge["slot"].(string); slot != "" {
+					rawSlot, ok := credentialSlots[slot]
+					if !ok {
+						return fmt.Errorf("flows.%s.sequence[%d].challenge.slot: undeclared credential slot %q", name, i, slot)
+					}
+					slotDef, _ := rawSlot.(map[string]any)
+					if kind, _ := slotDef["kind"].(string); kind != "totp_seed" {
+						return fmt.Errorf("flows.%s.sequence[%d].challenge.slot: TOTP requires a totp_seed slot", name, i)
+					}
+				}
+			}
+		}
+		if hasChallenge != hasMFAEffect {
+			return fmt.Errorf("flows.%s.effects: sends_mfa_challenge must be present exactly when the flow has a challenge step", name)
+		}
+		success, _ := flow["success"].(map[string]any)
+		origin, _ := success["origin"].(string)
+		if err := validateAuthenticationOrigin(origin); err != nil {
+			return fmt.Errorf("flows.%s.success.origin: %w", name, err)
+		}
+		if _, ok := declaredOrigins[canonicalAuthenticationOrigin(origin)]; !ok {
+			return fmt.Errorf("flows.%s.success.origin: origin is not declared by info", name)
+		}
+	}
+	return nil
+}
+
+// ValidateBrowserAuthenticationCallSupplement validates the extension payload
+// envelope used by an explicit authentication operation.
+func ValidateBrowserAuthenticationCallSupplement(data []byte) error {
+	value, document, err := decodeSchemaDocument(data, "browser authentication call")
+	if err != nil {
+		return err
+	}
+	schema, err := compiledBrowserAuthenticationCallSupplementSchema()
+	if err != nil {
+		return err
+	}
+	if err := schema.Validate(document); err != nil {
+		return fmt.Errorf("validate browser authentication call: %w", err)
+	}
+	root, _ := value.(map[string]any)
+	call, _ := root["x-uws-browser-authentication"].(map[string]any)
+	profilePath, _ := call["profile"].(string)
+	clean := path.Clean(profilePath)
+	if clean == "." || clean == ".." || strings.HasPrefix(clean, "../") || path.IsAbs(clean) {
+		return fmt.Errorf("x-uws-browser-authentication.profile must be a safe relative path")
+	}
+	return nil
+}
+
+func decodeSchemaDocument(data []byte, label string) (any, any, error) {
+	if len(bytes.TrimSpace(data)) == 0 {
+		return nil, nil, fmt.Errorf("%s document is empty", label)
+	}
+	encoded, err := decodeSingleJSONOrYAMLDocument(data)
+	if err != nil {
+		return nil, nil, fmt.Errorf("decode %s: %w", label, err)
+	}
+	var value any
+	if err := json.Unmarshal(encoded, &value); err != nil {
+		return nil, nil, fmt.Errorf("decode %s value: %w", label, err)
+	}
+	document, err := jsonschema.UnmarshalJSON(bytes.NewReader(encoded))
+	if err != nil {
+		return nil, nil, fmt.Errorf("decode %s as JSON: %w", label, err)
+	}
+	return value, document, nil
+}
+
+func validateAuthenticationOrigin(raw string) error {
+	parsed, err := url.Parse(raw)
+	if err != nil {
+		return fmt.Errorf("invalid origin: %w", err)
+	}
+	if parsed.Host == "" || parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" || (parsed.Path != "" && parsed.Path != "/") {
+		return fmt.Errorf("must be an exact origin without credentials, path, query, or fragment")
+	}
+	host := parsed.Hostname()
+	loopback := host == "localhost"
+	if ip := net.ParseIP(host); ip != nil && ip.IsLoopback() {
+		loopback = true
+	}
+	if parsed.Scheme != "https" && !(parsed.Scheme == "http" && loopback) {
+		return fmt.Errorf("must use https (http is allowed only for loopback)")
+	}
+	return nil
+}
+
+func canonicalAuthenticationOrigin(raw string) string {
+	parsed, _ := url.Parse(raw)
+	host := strings.ToLower(parsed.Hostname())
+	port := parsed.Port()
+	if (parsed.Scheme == "https" && port == "443") || (parsed.Scheme == "http" && port == "80") {
+		port = ""
+	}
+	if port != "" {
+		host = net.JoinHostPort(host, port)
+	} else if strings.Contains(host, ":") {
+		host = "[" + host + "]"
+	}
+	return strings.ToLower(parsed.Scheme) + "://" + host
+}
+
+func validateAuthenticationTarget(raw string, origins map[string]struct{}) error {
+	parsed, err := url.Parse(raw)
+	if err != nil || !parsed.IsAbs() || parsed.Host == "" {
+		return fmt.Errorf("must be an absolute URL")
+	}
+	if parsed.User != nil || (parsed.Scheme != "https" && !(parsed.Scheme == "http" && isLoopbackHost(parsed.Hostname()))) {
+		return fmt.Errorf("must use a declared safe origin")
+	}
+	if _, ok := origins[canonicalAuthenticationOrigin(raw)]; !ok {
+		return fmt.Errorf("target origin is not declared by info")
+	}
+	return nil
+}
+
+func isLoopbackHost(host string) bool {
+	if strings.EqualFold(host, "localhost") {
+		return true
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
+}
+
+func containsString(values []any, want string) bool {
+	for _, value := range values {
+		if value == want {
+			return true
+		}
+	}
+	return false
+}
+
+func compiledBrowserAuthenticationProfileSchema() (*jsonschema.Schema, error) {
+	authSchemaOnce.Do(func() {
+		authSchema, authSchemaErr = compileEmbeddedSchema("browser-authentication.1.0.json", BrowserAuthenticationProfileSchema)
+	})
+	return authSchema, authSchemaErr
+}
+
+func compiledBrowserAuthenticationCallSupplementSchema() (*jsonschema.Schema, error) {
+	authCallSchemaOnce.Do(func() {
+		authCallSchema, authCallSchemaErr = compileEmbeddedSchema("browser-authentication-call.1.0.json", BrowserAuthenticationCallSupplementSchema)
+	})
+	return authCallSchema, authCallSchemaErr
+}
+
+func compileEmbeddedSchema(name string, load func(string) ([]byte, error)) (*jsonschema.Schema, error) {
+	data, err := load("")
+	if err != nil {
+		return nil, err
+	}
+	document, err := jsonschema.UnmarshalJSON(bytes.NewReader(data))
+	if err != nil {
+		return nil, fmt.Errorf("decode embedded %s schema: %w", name, err)
+	}
+	compiler := jsonschema.NewCompiler()
+	if err := compiler.AddResource(name, document); err != nil {
+		return nil, fmt.Errorf("register embedded %s schema: %w", name, err)
+	}
+	schema, err := compiler.Compile(name)
+	if err != nil {
+		return nil, fmt.Errorf("compile embedded %s schema: %w", name, err)
+	}
+	return schema, nil
 }
 
 func decodeSingleJSONOrYAMLDocument(data []byte) ([]byte, error) {
