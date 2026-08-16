@@ -182,14 +182,25 @@ func (s *Step) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
 	}
-	s.TypeCredential, s.Click, s.Challenge, s.WaitFor = raw.TypeCredential, raw.Click, raw.Challenge, raw.WaitFor
+	next := Step{
+		TypeCredential: raw.TypeCredential,
+		Click:          raw.Click,
+		Challenge:      raw.Challenge,
+		WaitFor:        raw.WaitFor,
+	}
 	if len(raw.Navigate) == 0 || string(raw.Navigate) == "null" {
+		*s = next
 		return nil
 	}
 	if raw.Navigate[0] == '"' {
-		return json.Unmarshal(raw.Navigate, &s.Navigate)
+		if err := json.Unmarshal(raw.Navigate, &next.Navigate); err != nil {
+			return err
+		}
+	} else if err := json.Unmarshal(raw.Navigate, &next.NavigateTarget); err != nil {
+		return err
 	}
-	return json.Unmarshal(raw.Navigate, &s.NavigateTarget)
+	*s = next
+	return nil
 }
 
 // MarshalYAML emits the same union shape as MarshalJSON.
@@ -209,14 +220,25 @@ func (s *Step) UnmarshalYAML(node *yaml.Node) error {
 	if err := node.Decode(&raw); err != nil {
 		return err
 	}
-	s.TypeCredential, s.Click, s.Challenge, s.WaitFor = raw.TypeCredential, raw.Click, raw.Challenge, raw.WaitFor
+	next := Step{
+		TypeCredential: raw.TypeCredential,
+		Click:          raw.Click,
+		Challenge:      raw.Challenge,
+		WaitFor:        raw.WaitFor,
+	}
 	if raw.Navigate.Kind == 0 {
+		*s = next
 		return nil
 	}
 	if raw.Navigate.Kind == yaml.ScalarNode {
-		return raw.Navigate.Decode(&s.Navigate)
+		if err := raw.Navigate.Decode(&next.Navigate); err != nil {
+			return err
+		}
+	} else if err := raw.Navigate.Decode(&next.NavigateTarget); err != nil {
+		return err
 	}
-	return raw.Navigate.Decode(&s.NavigateTarget)
+	*s = next
+	return nil
 }
 
 func (s Step) wire() stepWire {

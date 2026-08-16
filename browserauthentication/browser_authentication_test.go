@@ -99,3 +99,48 @@ func TestHistoricalNavigateStringWireRemainsStable(t *testing.T) {
 		t.Fatalf("historical navigation round trip = %#v", got)
 	}
 }
+
+func TestStepReuseClearsPreviousNavigationUnionArm(t *testing.T) {
+	for _, test := range []struct {
+		name   string
+		decode func([]byte, *Step) error
+		first  []byte
+		second []byte
+	}{
+		{
+			name: "json object to string",
+			decode: func(data []byte, step *Step) error {
+				return json.Unmarshal(data, step)
+			},
+			first:  []byte(`{"navigate":{"url":"https://login.example.test/start","context":"idp_popup"}}`),
+			second: []byte(`{"navigate":"https://members.example.test/dashboard"}`),
+		},
+		{
+			name: "yaml object to click",
+			decode: func(data []byte, step *Step) error {
+				return yaml.Unmarshal(data, step)
+			},
+			first:  []byte("navigate:\n  url: https://login.example.test/start\n  context: idp_popup\n"),
+			second: []byte("click:\n  locator:\n    role: button\n    name: Continue\n"),
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			var step Step
+			if err := test.decode(test.first, &step); err != nil {
+				t.Fatal(err)
+			}
+			if err := test.decode(test.second, &step); err != nil {
+				t.Fatal(err)
+			}
+			if step.NavigateTarget != nil {
+				t.Fatalf("reused step retained object navigation: %#v", step)
+			}
+			if test.name == "json object to string" && step.Navigate != "https://members.example.test/dashboard" {
+				t.Fatalf("reused step navigation = %#v", step)
+			}
+			if test.name == "yaml object to click" && (step.Navigate != "" || step.Click == nil) {
+				t.Fatalf("reused step click = %#v", step)
+			}
+		})
+	}
+}

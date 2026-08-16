@@ -322,7 +322,7 @@ Settled scope:
   repository keeps only the schema/spec fixtures needed to validate the UWS
   wire contract and `browser.1.5` sub-spec.
 
-### Possible UWS 1.6 Browser Boundary Expansion
+### Browser 1.6 Context Adoption And Later Candidates
 
 UWS 1.5 is enough for the API-vs-UI boundary: UWS binds an operation to a
 reviewed browser capability profile, while browser-aware tooling and runtimes
@@ -330,9 +330,13 @@ own Playwright/WebDriver/CDP adapters, sessions, cookies, screenshots, retries,
 scraper integrations, and revalidation execution. It is intentionally not a
 general browser automation DSL.
 
-A future `browser.1.6` profile should be considered only if real reviewed
-workflows repeatedly fall outside the 1.5 capability shape while still needing
-portable, audited interchange. Candidate areas include:
+UWS 1.8 adopted `browser.1.6` for the narrow portable popup/frame context
+contract, paired with `browser-authentication.1.1` and its call supplement.
+That adoption did not add browser command streams, session transfer, or any of
+the broader interaction candidates below. A later browser-profile revision
+should be considered only if real reviewed workflows repeatedly fall outside
+the 1.6 capability shape while still needing portable, audited interchange.
+Candidate areas include:
 
 - bounded file upload/download declarations, with explicit filename, MIME,
   size, storage, and review constraints
@@ -347,7 +351,7 @@ portable, audited interchange. Candidate areas include:
 - crawler or scraper policy summaries for read-only evidence collection, kept
   separate from side-effectful browser actions
 
-The same boundary rules should apply to any 1.6 work:
+The same boundary rules apply to any later browser-profile work:
 
 - Do not standardize Playwright, Puppeteer, WebDriver, WebDriver BiDi, or CDP
   command streams.
