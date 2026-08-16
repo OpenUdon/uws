@@ -36,15 +36,24 @@ const uwsModulePath = "github.com/OpenUdon/uws"
 var embeddedVersionDocuments []byte
 
 var (
-	browserSchemaOnce  sync.Once
-	browserSchema      *jsonschema.Schema
-	browserSchemaErr   error
-	authSchemaOnce     sync.Once
-	authSchema         *jsonschema.Schema
-	authSchemaErr      error
-	authCallSchemaOnce sync.Once
-	authCallSchema     *jsonschema.Schema
-	authCallSchemaErr  error
+	browser15SchemaOnce  sync.Once
+	browser15Schema      *jsonschema.Schema
+	browser15SchemaErr   error
+	browser16SchemaOnce  sync.Once
+	browser16Schema      *jsonschema.Schema
+	browser16SchemaErr   error
+	auth10SchemaOnce     sync.Once
+	auth10Schema         *jsonschema.Schema
+	auth10SchemaErr      error
+	auth11SchemaOnce     sync.Once
+	auth11Schema         *jsonschema.Schema
+	auth11SchemaErr      error
+	authCall10SchemaOnce sync.Once
+	authCall10Schema     *jsonschema.Schema
+	authCall10SchemaErr  error
+	authCall11SchemaOnce sync.Once
+	authCall11Schema     *jsonschema.Schema
+	authCall11SchemaErr  error
 )
 
 const maxBrowserAuthenticationProfileBytes = 1 << 20
@@ -66,14 +75,14 @@ func PathForRuntimeSupplement(anchorDir, profile string) string {
 // PathForBrowserSourceProfile returns the best local schema path for a browser
 // source profile.
 func PathForBrowserSourceProfile(anchorDir, profile string) string {
-	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser", "1.5"))
+	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser", "1.6"))
 }
 
 // BrowserSourceProfileSchema returns an independent copy of the embedded
 // browser-profile JSON Schema selected by profile. An empty profile selects
-// the current uws.browser.1.5 contract.
+// the current uws.browser.1.6 contract.
 func BrowserSourceProfileSchema(profile string) ([]byte, error) {
-	name := familySchemaName(profile, "browser", "1.5")
+	name := familySchemaName(profile, "browser", "1.6")
 	data, err := embeddedSchemaDocument(name)
 	if err != nil {
 		return nil, fmt.Errorf("load browser source profile schema %q: %w", profile, err)
@@ -84,13 +93,14 @@ func BrowserSourceProfileSchema(profile string) ([]byte, error) {
 // PathForBrowserAuthenticationProfile returns the best local schema path for
 // a portable browser-authentication recipe.
 func PathForBrowserAuthenticationProfile(anchorDir, profile string) string {
-	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser-authentication", "1.0"))
+	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser-authentication", "1.1"))
 }
 
 // BrowserAuthenticationProfileSchema returns an independent copy of the
-// embedded uws.browser-authentication.1.0 JSON Schema.
+// embedded browser-authentication JSON Schema selected by profile. An empty
+// profile selects uws.browser-authentication.1.1.
 func BrowserAuthenticationProfileSchema(profile string) ([]byte, error) {
-	name := familySchemaName(profile, "browser-authentication", "1.0")
+	name := familySchemaName(profile, "browser-authentication", "1.1")
 	data, err := embeddedSchemaDocument(name)
 	if err != nil {
 		return nil, fmt.Errorf("load browser authentication profile schema %q: %w", profile, err)
@@ -101,13 +111,14 @@ func BrowserAuthenticationProfileSchema(profile string) ([]byte, error) {
 // PathForBrowserAuthenticationCallSupplement returns the best local schema
 // path for the browser-authentication-call operation supplement.
 func PathForBrowserAuthenticationCallSupplement(anchorDir, profile string) string {
-	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser-authentication-call", "1.0"))
+	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser-authentication-call", "1.1"))
 }
 
 // BrowserAuthenticationCallSupplementSchema returns an independent copy of
-// the embedded uws.browser-authentication-call.1.0 JSON Schema.
+// the embedded browser-authentication-call JSON Schema selected by profile.
+// An empty profile selects uws.browser-authentication-call.1.1.
 func BrowserAuthenticationCallSupplementSchema(profile string) ([]byte, error) {
-	name := familySchemaName(profile, "browser-authentication-call", "1.0")
+	name := familySchemaName(profile, "browser-authentication-call", "1.1")
 	data, err := embeddedSchemaDocument(name)
 	if err != nil {
 		return nil, fmt.Errorf("load browser authentication call schema %q: %w", profile, err)
@@ -116,27 +127,30 @@ func BrowserAuthenticationCallSupplementSchema(profile string) ([]byte, error) {
 }
 
 // ValidateBrowserSourceProfile validates one JSON or YAML browser-profile
-// document against the embedded uws.browser.1.5 schema. It validates portable
-// wire shape only; freshness, review evidence, registry lifecycle, sessions,
-// and execution policy remain downstream responsibilities.
+// document against the embedded schema selected by its profile discriminator.
+// Freshness, review evidence, registry lifecycle, sessions, and execution
+// policy remain downstream responsibilities.
 func ValidateBrowserSourceProfile(data []byte) error {
-	if len(bytes.TrimSpace(data)) == 0 {
-		return fmt.Errorf("browser source profile document is empty")
-	}
-	value, err := decodeSingleJSONOrYAMLDocument(data)
+	value, document, err := decodeSchemaDocument(data, "browser source profile")
 	if err != nil {
-		return fmt.Errorf("decode browser source profile: %w", err)
+		return err
 	}
-	document, err := jsonschema.UnmarshalJSON(bytes.NewReader(value))
+	profile, err := profileDiscriminator(value, "browser source profile")
 	if err != nil {
-		return fmt.Errorf("decode browser source profile as JSON: %w", err)
+		return err
 	}
-	schema, err := compiledBrowserSourceProfileSchema()
+	schema, err := compiledBrowserSourceProfileSchema(profile)
 	if err != nil {
 		return err
 	}
 	if err := schema.Validate(document); err != nil {
 		return fmt.Errorf("validate browser source profile: %w", err)
+	}
+	if profile == "uws.browser.1.6" {
+		root, _ := value.(map[string]any)
+		if err := validateBrowserContexts(root, browserProfileOrigins(root)); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -152,7 +166,11 @@ func ValidateBrowserAuthenticationProfile(data []byte) error {
 	if err != nil {
 		return err
 	}
-	schema, err := compiledBrowserAuthenticationProfileSchema()
+	profile, err := profileDiscriminator(value, "browser authentication profile")
+	if err != nil {
+		return err
+	}
+	schema, err := compiledBrowserAuthenticationProfileSchema(profile)
 	if err != nil {
 		return err
 	}
@@ -180,6 +198,11 @@ func ValidateBrowserAuthenticationProfile(data []byte) error {
 	if originCount > 32 {
 		return fmt.Errorf("info origins: combined applicationOrigins and authenticationOrigins exceed 32")
 	}
+	if profile == "uws.browser-authentication.1.1" {
+		if err := validateBrowserContexts(root, declaredOrigins); err != nil {
+			return err
+		}
+	}
 	credentialSlots, _ := root["credentialSlots"].(map[string]any)
 	flows, _ := root["flows"].(map[string]any)
 	for name, raw := range flows {
@@ -191,8 +214,11 @@ func ValidateBrowserAuthenticationProfile(data []byte) error {
 		for i, rawStep := range sequence {
 			step, _ := rawStep.(map[string]any)
 			if rawNavigate, ok := step["navigate"]; ok {
-				navigate, _ := rawNavigate.(string)
+				navigate, contextID := browserNavigate(rawNavigate)
 				if err := validateAuthenticationTarget(navigate, declaredOrigins); err != nil {
+					return fmt.Errorf("flows.%s.sequence[%d].navigate: %w", name, i, err)
+				}
+				if err := validateContextTarget(root, contextID, navigate); err != nil {
 					return fmt.Errorf("flows.%s.sequence[%d].navigate: %w", name, i, err)
 				}
 			}
@@ -234,6 +260,12 @@ func ValidateBrowserAuthenticationProfile(data []byte) error {
 		if _, ok := declaredOrigins[canonicalAuthenticationOrigin(origin)]; !ok {
 			return fmt.Errorf("flows.%s.success.origin: origin is not declared by info", name)
 		}
+		if rawPath, _ := success["path"].(string); rawPath != "" && !isCleanBrowserPath(rawPath) {
+			return fmt.Errorf("flows.%s.success.path: must be an exact clean path", name)
+		}
+		if err := validateContextOrigin(root, stringField(success, "context"), origin); err != nil {
+			return fmt.Errorf("flows.%s.success.context: %w", name, err)
+		}
 	}
 	return nil
 }
@@ -241,11 +273,18 @@ func ValidateBrowserAuthenticationProfile(data []byte) error {
 // ValidateBrowserAuthenticationCallSupplement validates the extension payload
 // envelope used by an explicit authentication operation.
 func ValidateBrowserAuthenticationCallSupplement(data []byte) error {
+	return ValidateBrowserAuthenticationCallSupplementForProfile(data, "uws.browser-authentication-call.1.0")
+}
+
+// ValidateBrowserAuthenticationCallSupplementForProfile validates the call
+// envelope against the explicitly selected supplement version. Call envelopes
+// have no document discriminator, so version selection cannot be inferred.
+func ValidateBrowserAuthenticationCallSupplementForProfile(data []byte, profile string) error {
 	value, document, err := decodeSchemaDocument(data, "browser authentication call")
 	if err != nil {
 		return err
 	}
-	schema, err := compiledBrowserAuthenticationCallSupplementSchema()
+	schema, err := compiledBrowserAuthenticationCallSupplementSchema(profile)
 	if err != nil {
 		return err
 	}
@@ -260,6 +299,18 @@ func ValidateBrowserAuthenticationCallSupplement(data []byte) error {
 		return fmt.Errorf("x-uws-browser-authentication.profile must be a safe relative path")
 	}
 	return nil
+}
+
+func profileDiscriminator(value any, label string) (string, error) {
+	root, ok := value.(map[string]any)
+	if !ok {
+		return "", fmt.Errorf("%s must be an object", label)
+	}
+	profile, ok := root["profile"].(string)
+	if !ok || strings.TrimSpace(profile) == "" {
+		return "", fmt.Errorf("%s profile discriminator is required", label)
+	}
+	return profile, nil
 }
 
 func decodeSchemaDocument(data []byte, label string) (any, any, error) {
@@ -329,6 +380,258 @@ func validateAuthenticationTarget(raw string, origins map[string]struct{}) error
 	return nil
 }
 
+func browserProfileOrigins(root map[string]any) map[string]struct{} {
+	origins := make(map[string]struct{})
+	info, _ := root["info"].(map[string]any)
+	switch value := info["origin"].(type) {
+	case string:
+		origins[canonicalAuthenticationOrigin(value)] = struct{}{}
+	case []any:
+		for _, raw := range value {
+			if origin, ok := raw.(string); ok {
+				origins[canonicalAuthenticationOrigin(origin)] = struct{}{}
+			}
+		}
+	}
+	return origins
+}
+
+func validateBrowserContexts(root map[string]any, origins map[string]struct{}) error {
+	contexts, _ := root["contexts"].(map[string]any)
+	if info, ok := root["info"].(map[string]any); ok {
+		switch value := info["origin"].(type) {
+		case string:
+			if err := validateAuthenticationOrigin(value); err != nil {
+				return fmt.Errorf("info.origin: %w", err)
+			}
+		case []any:
+			for i, raw := range value {
+				origin, _ := raw.(string)
+				if err := validateAuthenticationOrigin(origin); err != nil {
+					return fmt.Errorf("info.origin[%d]: %w", i, err)
+				}
+			}
+		}
+	}
+	for id, raw := range contexts {
+		context, _ := raw.(map[string]any)
+		origin, _ := context["origin"].(string)
+		if err := validateAuthenticationOrigin(origin); err != nil {
+			return fmt.Errorf("contexts.%s.origin: %w", id, err)
+		}
+		if _, ok := origins[canonicalAuthenticationOrigin(origin)]; !ok {
+			return fmt.Errorf("contexts.%s.origin: origin is not declared by profile info", id)
+		}
+		parent, _ := context["parent"].(string)
+		if parent == id {
+			return fmt.Errorf("contexts.%s.parent: context cannot parent itself", id)
+		}
+		if parent != "main" {
+			if _, ok := contexts[parent]; !ok {
+				return fmt.Errorf("contexts.%s.parent: unknown context %q", id, parent)
+			}
+		}
+		if rawPath, _ := context["path"].(string); rawPath != "" && !isCleanBrowserPath(rawPath) {
+			return fmt.Errorf("contexts.%s.path: must be an exact clean path", id)
+		}
+	}
+
+	depths := make(map[string]int, len(contexts))
+	visiting := make(map[string]bool, len(contexts))
+	var depth func(string) (int, error)
+	depth = func(id string) (int, error) {
+		if id == "main" {
+			return 0, nil
+		}
+		if got, ok := depths[id]; ok {
+			return got, nil
+		}
+		if visiting[id] {
+			return 0, fmt.Errorf("contexts.%s.parent: context graph contains a cycle", id)
+		}
+		visiting[id] = true
+		context, _ := contexts[id].(map[string]any)
+		parent, _ := context["parent"].(string)
+		parentDepth, err := depth(parent)
+		if err != nil {
+			return 0, err
+		}
+		visiting[id] = false
+		got := parentDepth + 1
+		if got > 4 {
+			return 0, fmt.Errorf("contexts.%s: context depth exceeds 4", id)
+		}
+		depths[id] = got
+		return got, nil
+	}
+	for id := range contexts {
+		if _, err := depth(id); err != nil {
+			return err
+		}
+	}
+
+	opened := make(map[string]int)
+	var visit func(any, string) error
+	visit = func(value any, valuePath string) error {
+		switch typed := value.(type) {
+		case map[string]any:
+			if contextID, ok := typed["context"].(string); ok {
+				if contextID != "main" {
+					if _, exists := contexts[contextID]; !exists {
+						return fmt.Errorf("%s.context: unknown context %q", valuePath, contextID)
+					}
+				}
+			}
+			if openedID, ok := typed["opensContext"].(string); ok {
+				context, exists := contexts[openedID].(map[string]any)
+				if !exists || context["kind"] != "popup" {
+					return fmt.Errorf("%s.opensContext: %q is not a declared popup context", valuePath, openedID)
+				}
+				parent := stringField(typed, "context")
+				if parent == "" {
+					parent = "main"
+				}
+				if context["parent"] != parent {
+					return fmt.Errorf("%s.opensContext: popup parent does not match click context", valuePath)
+				}
+				opened[openedID]++
+			}
+			for key, child := range typed {
+				if valuePath == "document" && key == "contexts" {
+					continue
+				}
+				if err := visit(child, valuePath+"."+key); err != nil {
+					return err
+				}
+			}
+		case []any:
+			for i, child := range typed {
+				if err := visit(child, fmt.Sprintf("%s[%d]", valuePath, i)); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+	if err := visit(root, "document"); err != nil {
+		return err
+	}
+	for id, raw := range contexts {
+		context, _ := raw.(map[string]any)
+		if context["kind"] == "popup" && opened[id] != 1 {
+			return fmt.Errorf("contexts.%s: popup must be opened by exactly one approved click", id)
+		}
+	}
+
+	if actions, ok := root["actions"].(map[string]any); ok {
+		for actionID, rawAction := range actions {
+			action, _ := rawAction.(map[string]any)
+			sequence, _ := action["sequence"].([]any)
+			for i, rawStep := range sequence {
+				step, _ := rawStep.(map[string]any)
+				if rawNavigate, ok := step["navigate"]; ok {
+					target, contextID := browserNavigate(rawNavigate)
+					if err := validateBrowserTarget(root, target, contextID, origins); err != nil {
+						return fmt.Errorf("actions.%s.sequence[%d].navigate: %w", actionID, i, err)
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func browserNavigate(value any) (string, string) {
+	if target, ok := value.(string); ok {
+		return target, "main"
+	}
+	object, _ := value.(map[string]any)
+	contextID, _ := object["context"].(string)
+	if contextID == "" {
+		contextID = "main"
+	}
+	return stringField(object, "url"), contextID
+}
+
+func validateBrowserTarget(root map[string]any, raw, contextID string, origins map[string]struct{}) error {
+	parsed, err := url.Parse(raw)
+	if err != nil || raw == "" || parsed.User != nil || parsed.Fragment != "" {
+		return fmt.Errorf("must be a safe URL")
+	}
+	if parsed.IsAbs() {
+		if parsed.Scheme != "https" && !(parsed.Scheme == "http" && isLoopbackHost(parsed.Hostname())) {
+			return fmt.Errorf("must use a declared safe origin")
+		}
+		if _, ok := origins[canonicalAuthenticationOrigin(raw)]; !ok {
+			return fmt.Errorf("target origin is not declared by info")
+		}
+	} else {
+		if !strings.HasPrefix(raw, "/") {
+			return fmt.Errorf("relative target must be root-relative")
+		}
+		if len(origins) != 1 {
+			return fmt.Errorf("relative target requires exactly one info origin")
+		}
+	}
+	return validateContextTarget(root, contextID, raw)
+}
+
+func validateContextTarget(root map[string]any, contextID, raw string) error {
+	if contextID == "" || contextID == "main" {
+		return nil
+	}
+	contexts, _ := root["contexts"].(map[string]any)
+	context, ok := contexts[contextID].(map[string]any)
+	if !ok {
+		return fmt.Errorf("unknown context %q", contextID)
+	}
+	parsed, err := url.Parse(raw)
+	if err != nil {
+		return fmt.Errorf("invalid target URL")
+	}
+	if parsed.IsAbs() && canonicalAuthenticationOrigin(raw) != canonicalAuthenticationOrigin(stringField(context, "origin")) {
+		return fmt.Errorf("target origin does not match context %q", contextID)
+	}
+	return nil
+}
+
+func validateContextOrigin(root map[string]any, contextID, origin string) error {
+	if contextID == "" || contextID == "main" {
+		return nil
+	}
+	contexts, _ := root["contexts"].(map[string]any)
+	context, ok := contexts[contextID].(map[string]any)
+	if !ok {
+		return fmt.Errorf("unknown context %q", contextID)
+	}
+	if canonicalAuthenticationOrigin(stringField(context, "origin")) != canonicalAuthenticationOrigin(origin) {
+		return fmt.Errorf("origin does not match context %q", contextID)
+	}
+	return nil
+}
+
+func isCleanBrowserPath(raw string) bool {
+	if raw == "" || !strings.HasPrefix(raw, "/") || strings.ContainsAny(raw, "?#\\") {
+		return false
+	}
+	segments := strings.Split(raw, "/")
+	for i, segment := range segments[1:] {
+		if segment == "" && i != len(segments)-2 && raw != "/" {
+			return false
+		}
+		decoded, err := url.PathUnescape(segment)
+		if err != nil || decoded == "." || decoded == ".." || strings.Contains(decoded, "/") {
+			return false
+		}
+	}
+	return true
+}
+
+func stringField(value map[string]any, key string) string {
+	got, _ := value[key].(string)
+	return got
+}
+
 func isLoopbackHost(host string) bool {
 	if strings.EqualFold(host, "localhost") {
 		return true
@@ -346,22 +649,43 @@ func containsString(values []any, want string) bool {
 	return false
 }
 
-func compiledBrowserAuthenticationProfileSchema() (*jsonschema.Schema, error) {
-	authSchemaOnce.Do(func() {
-		authSchema, authSchemaErr = compileEmbeddedSchema("browser-authentication.1.0.json", BrowserAuthenticationProfileSchema)
-	})
-	return authSchema, authSchemaErr
+func compiledBrowserAuthenticationProfileSchema(profile string) (*jsonschema.Schema, error) {
+	switch profile {
+	case "uws.browser-authentication.1.0":
+		auth10SchemaOnce.Do(func() {
+			auth10Schema, auth10SchemaErr = compileEmbeddedSchema("browser-authentication.1.0.json")
+		})
+		return auth10Schema, auth10SchemaErr
+	case "uws.browser-authentication.1.1":
+		auth11SchemaOnce.Do(func() {
+			auth11Schema, auth11SchemaErr = compileEmbeddedSchema("browser-authentication.1.1.json")
+		})
+		return auth11Schema, auth11SchemaErr
+	default:
+		return nil, fmt.Errorf("unsupported browser authentication profile discriminator %q", profile)
+	}
 }
 
-func compiledBrowserAuthenticationCallSupplementSchema() (*jsonschema.Schema, error) {
-	authCallSchemaOnce.Do(func() {
-		authCallSchema, authCallSchemaErr = compileEmbeddedSchema("browser-authentication-call.1.0.json", BrowserAuthenticationCallSupplementSchema)
-	})
-	return authCallSchema, authCallSchemaErr
+func compiledBrowserAuthenticationCallSupplementSchema(profile string) (*jsonschema.Schema, error) {
+	name := familySchemaName(profile, "browser-authentication-call", "1.1")
+	switch name {
+	case "browser-authentication-call.1.0.json":
+		authCall10SchemaOnce.Do(func() {
+			authCall10Schema, authCall10SchemaErr = compileEmbeddedSchema(name)
+		})
+		return authCall10Schema, authCall10SchemaErr
+	case "browser-authentication-call.1.1.json":
+		authCall11SchemaOnce.Do(func() {
+			authCall11Schema, authCall11SchemaErr = compileEmbeddedSchema(name)
+		})
+		return authCall11Schema, authCall11SchemaErr
+	default:
+		return nil, fmt.Errorf("unsupported browser authentication call profile %q", profile)
+	}
 }
 
-func compileEmbeddedSchema(name string, load func(string) ([]byte, error)) (*jsonschema.Schema, error) {
-	data, err := load("")
+func compileEmbeddedSchema(name string) (*jsonschema.Schema, error) {
+	data, err := embeddedSchemaDocument(name)
 	if err != nil {
 		return nil, err
 	}
@@ -403,29 +727,21 @@ func decodeSingleJSONOrYAMLDocument(data []byte) ([]byte, error) {
 	return encoded, nil
 }
 
-func compiledBrowserSourceProfileSchema() (*jsonschema.Schema, error) {
-	browserSchemaOnce.Do(func() {
-		data, err := BrowserSourceProfileSchema("")
-		if err != nil {
-			browserSchemaErr = err
-			return
-		}
-		document, err := jsonschema.UnmarshalJSON(bytes.NewReader(data))
-		if err != nil {
-			browserSchemaErr = fmt.Errorf("decode embedded browser source profile schema: %w", err)
-			return
-		}
-		compiler := jsonschema.NewCompiler()
-		if err := compiler.AddResource("browser.1.5.json", document); err != nil {
-			browserSchemaErr = fmt.Errorf("register embedded browser source profile schema: %w", err)
-			return
-		}
-		browserSchema, browserSchemaErr = compiler.Compile("browser.1.5.json")
-		if browserSchemaErr != nil {
-			browserSchemaErr = fmt.Errorf("compile embedded browser source profile schema: %w", browserSchemaErr)
-		}
-	})
-	return browserSchema, browserSchemaErr
+func compiledBrowserSourceProfileSchema(profile string) (*jsonschema.Schema, error) {
+	switch profile {
+	case "uws.browser.1.5":
+		browser15SchemaOnce.Do(func() {
+			browser15Schema, browser15SchemaErr = compileEmbeddedSchema("browser.1.5.json")
+		})
+		return browser15Schema, browser15SchemaErr
+	case "uws.browser.1.6":
+		browser16SchemaOnce.Do(func() {
+			browser16Schema, browser16SchemaErr = compileEmbeddedSchema("browser.1.6.json")
+		})
+		return browser16Schema, browser16SchemaErr
+	default:
+		return nil, fmt.Errorf("unsupported browser source profile discriminator %q", profile)
+	}
 }
 
 func runtimeSupplementSchemaName(profile string) string {

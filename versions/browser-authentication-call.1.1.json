@@ -1,0 +1,44 @@
+{
+  "$id": "https://github.com/OpenUdon/uws/versions/browser-authentication-call.1.1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UWS Browser Authentication Call Supplement 1.1",
+  "description": "Operation extension payload for an explicit browser session-establishment operation.",
+  "type": "object",
+  "required": ["x-uws-browser-authentication"],
+  "properties": {
+    "x-uws-browser-authentication": {
+      "$ref": "#/$defs/authentication-call"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+    },
+    "authentication-call": {
+      "type": "object",
+      "required": ["profile", "flow", "session", "credentialBindings"],
+      "properties": {
+        "profile": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^[A-Za-z0-9._/-]+$"
+        },
+        "flow": {"$ref": "#/$defs/identifier"},
+        "session": {"$ref": "#/$defs/identifier"},
+        "credentialBindings": {
+          "type": "object",
+          "minProperties": 0,
+          "maxProperties": 64,
+          "propertyNames": {"$ref": "#/$defs/identifier"},
+          "additionalProperties": {"$ref": "#/$defs/identifier"}
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -10,7 +10,7 @@ UWS is a compact, execution-oriented workflow specification that sits directly o
 
 This is what distinguishes UWS from full client-side workflow tools such as Arazzo and IaC engines such as OpenTofu and Terraform. Arazzo describes full client-side action sequences and treats each step as a bespoke client action. OpenTofu and Terraform act as full client-side workflow engines for infrastructure: each resource and provider call is described in the client configuration and resolved against a provider plugin at apply time. Neither approach assumes the underlying operations are already defined by a server contract. UWS takes the opposite position: server actions are pre-defined by the source document, and UWS workflows reference those operations by ID rather than re-describing them. The result is a much smaller overlay: UWS does not duplicate request/response shapes, does not redeclare endpoints, and does not encode anything the source document already specifies.
 
-UWS 1.7 keeps OpenAPI compatibility and supports first-class source descriptions for `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources. The browser profile sub-spec is published separately as `versions/browser.1.5.{json,md}`. The `ansible-module` source type added in 1.6 was removed in 1.7 without a replacement UWS-owned Ansible profile.
+UWS 1.8 keeps OpenAPI compatibility and supports first-class source descriptions for `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources. Browser 1.6 adds bounded portable popup/frame contexts while browser 1.5 remains accepted for main-only profiles. The `ansible-module` source type added in 1.6 was removed in 1.7 without a replacement UWS-owned Ansible profile.
 
 ## Why UWS?
 
@@ -33,7 +33,7 @@ For non-source leaf work, UWS keeps the core document narrow. Extension-owned op
 
 ```json
 {
-  "uws": "1.7.0",
+  "uws": "1.8.0",
   "info": { "title": "Weather Report", "version": "1.1.0" },
   "sourceDescriptions": [
     { "name": "weather_api", "url": "./weather.openapi.yaml", "type": "openapi" },
@@ -86,8 +86,9 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 
 ## Reference
 
-- **Specification**: [`versions/1.7.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.7.0.md)
-- **JSON Schema**: [`versions/1.7.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.7.0.json)
+- **Specification**: [`versions/1.8.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.8.0.md)
+- **JSON Schema**: [`versions/1.8.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.8.0.json)
+- **Browser contexts**: [`versions/browser.1.6.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser.1.6.md)
 - **Runtime supplement**: [`versions/runtime.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md)
 - **Runtime supplement schema**: [`versions/runtime.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json)
 - **Historical UWS 1.6 Ansible argspec**: [`versions/ansible.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/ansible.1.0.md)

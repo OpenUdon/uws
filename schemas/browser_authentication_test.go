@@ -92,7 +92,7 @@ func TestBrowserAuthenticationProfileBoundAndIndependentSchemaBytes(t *testing.T
 	if err != nil {
 		t.Fatal(err)
 	}
-	second, err := schemas.BrowserAuthenticationProfileSchema("uws.browser-authentication.1.0")
+	second, err := schemas.BrowserAuthenticationProfileSchema("uws.browser-authentication.1.1")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,0 +1,57 @@
+profile: uws.browser-authentication.1.1
+info:
+  title: Member popup and frame login
+  applicationOrigins: [https://members.example.test]
+  authenticationOrigins: [https://login.example.test]
+observationKind: accessibility_snapshot
+evidence:
+  learnedAt: "2026-08-16T00:00:00Z"
+  source: reviewed_synthetic_fixture
+confidence: high
+expiresAfter: P30D
+verification:
+  lastVerifiedAt: "2026-08-16T00:00:00Z"
+  successfulRuns: 1
+contexts:
+  idp_popup:
+    kind: popup
+    parent: main
+    origin: https://login.example.test
+  otp_frame:
+    kind: frame
+    parent: idp_popup
+    origin: https://login.example.test
+    path: /challenge/otp
+    name: One-time code
+credentialSlots:
+  username: {kind: identifier}
+  password: {kind: password}
+flows:
+  member_login_sms:
+    sequence:
+      - navigate: https://members.example.test/login
+      - click:
+          locator: {role: button, name: Continue with identity provider}
+          opensContext: idp_popup
+      - type_credential:
+          locator: {role: textbox, name: Username}
+          slot: username
+          context: idp_popup
+      - type_credential:
+          locator: {role: textbox, name: Password}
+          slot: password
+          context: idp_popup
+      - click:
+          locator: {role: button, name: Sign in}
+          context: idp_popup
+      - challenge:
+          kind: sms_otp
+          locator: {role: textbox, name: One-time code}
+          context: otp_frame
+      - wait_for:
+          locator: {role: heading, name: Member dashboard}
+    effects: [establishes_session, sends_mfa_challenge]
+    success:
+      origin: https://members.example.test
+      path: /dashboard
+      locator: {role: heading, name: Member dashboard}

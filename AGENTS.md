@@ -17,9 +17,9 @@ UWS is a workflow overlay for API- and event-source-backed operations. Source do
 
 The coordinated artifacts must stay in sync:
 
-1. `versions/1.7.0.json` — the latest canonical JSON Schema for UWS 1.x documents. `versions/1.0.0.json` through `versions/1.6.0.json` remain published historical schemas. `versions/browser.1.5.json` publishes the browser capability profile referenced by `sourceDescriptions[].type: browser-profile`. `versions/ansible.1.0.json` is historical UWS 1.6 material; UWS 1.7 does not support Ansible.
+1. `versions/1.8.0.json` — the latest canonical JSON Schema for UWS 1.x documents. All earlier schemas remain published and immutable. `versions/browser.1.6.json` adds portable popup/frame contexts while browser 1.5 remains accepted. `versions/browser-authentication.1.1.json` and its call supplement add the matching sign-in context contract. `versions/ansible.1.0.json` is historical UWS 1.6 material; UWS 1.8 does not support Ansible.
 2. `uws1/` — the Go model and semantic validator.
-3. `versions/1.7.0.md` — the latest human-readable spec. Earlier numbered specifications, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are historical or comparison documents. `versions/browser.1.5.md` is the browser capability profile and `versions/ansible.1.0.md` is retained only for historical UWS 1.6 documents.
+3. `versions/1.8.0.md` — the latest human-readable spec. Earlier numbered specifications, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are historical or comparison documents. `versions/browser.1.6.md` is the latest browser capability profile and `versions/ansible.1.0.md` is retained only for historical UWS 1.6 documents.
 4. `schemas/` — Go lookup and profile-validation helpers plus the generated embedded document archive. `versions/` is document-only; regenerate the archive with `go generate ./schemas` after changing a JSON document.
 
 ## Execution Model

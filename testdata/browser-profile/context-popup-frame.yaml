@@ -1,0 +1,48 @@
+profile: uws.browser.1.6
+info:
+  title: Member statement dashboard
+  origin:
+    - https://members.example.test
+    - https://statements.example.test
+  loginStateRequired: true
+observationKind: accessibility_snapshot
+evidence:
+  learnedAt: "2026-08-16T00:00:00Z"
+  source: reviewed_synthetic_fixture
+confidence: high
+expiresAfter: P30D
+verification:
+  lastVerifiedAt: "2026-08-16T00:00:00Z"
+  successfulRuns: 1
+contexts:
+  statement_popup:
+    kind: popup
+    parent: main
+    origin: https://statements.example.test
+  detail_frame:
+    kind: frame
+    parent: statement_popup
+    origin: https://statements.example.test
+    path: /embedded/detail
+    name: Statement detail
+actions:
+  read_statement_status:
+    sequence:
+      - navigate:
+          url: https://members.example.test/dashboard
+          context: main
+      - click:
+          locator: {role: link, name: Open statement}
+          context: main
+          opensContext: statement_popup
+      - wait_for:
+          locator: {role: status, name: Ready}
+          context: detail_frame
+    outputs:
+      status:
+        type: string
+        source: a11y
+        locator: {role: status, name: Ready}
+        context: detail_frame
+    sideEffects: [read_only]
+    confirmationPolicy: {required: false}

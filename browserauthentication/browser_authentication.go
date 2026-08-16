@@ -9,14 +9,20 @@ package browserauthentication
 import (
 	"encoding/json"
 	"fmt"
+
+	"gopkg.in/yaml.v3"
 )
 
 const (
 	// ProfileName is the portable browser sign-in recipe profile.
 	ProfileName = "uws.browser-authentication.1.0"
+	// ContextProfileName adds portable popup and frame contexts.
+	ContextProfileName = "uws.browser-authentication.1.1"
 
 	// CallProfileName identifies extension-owned UWS authentication operations.
 	CallProfileName = "uws.browser-authentication-call.1.0"
+	// ContextCallProfileName accompanies context-capable authentication profiles.
+	ContextCallProfileName = "uws.browser-authentication-call.1.1"
 
 	// ExtensionAuthentication is the operation-level authentication-call key.
 	ExtensionAuthentication = "x-uws-browser-authentication"
@@ -34,6 +40,7 @@ type Profile struct {
 	Confidence      string                    `json:"confidence" yaml:"confidence"`
 	ExpiresAfter    string                    `json:"expiresAfter" yaml:"expiresAfter"`
 	Verification    Verification              `json:"verification" yaml:"verification"`
+	Contexts        map[string]Context        `json:"contexts,omitempty" yaml:"contexts,omitempty"`
 	CredentialSlots map[string]CredentialSlot `json:"credentialSlots" yaml:"credentialSlots"`
 	Flows           map[string]Flow           `json:"flows" yaml:"flows"`
 }
@@ -67,6 +74,15 @@ type CredentialSlot struct {
 	Kind string `json:"kind" yaml:"kind"`
 }
 
+// Context declares one portable popup or frame below the implicit main page.
+type Context struct {
+	Kind   string `json:"kind" yaml:"kind"`
+	Parent string `json:"parent" yaml:"parent"`
+	Origin string `json:"origin" yaml:"origin"`
+	Path   string `json:"path,omitempty" yaml:"path,omitempty"`
+	Name   string `json:"name,omitempty" yaml:"name,omitempty"`
+}
+
 // Flow is one explicitly selected sign-in alternative. MFA alternatives are
 // separate flows so a runtime never guesses which challenge to use.
 type Flow struct {
@@ -78,11 +94,19 @@ type Flow struct {
 
 // Step is a closed declarative sign-in macro union. Exactly one field is set.
 type Step struct {
-	Navigate       string              `json:"navigate,omitempty" yaml:"navigate,omitempty"`
+	Navigate       string              `json:"-" yaml:"-"`
+	NavigateTarget *NavigateStep       `json:"-" yaml:"-"`
 	TypeCredential *TypeCredentialStep `json:"type_credential,omitempty" yaml:"type_credential,omitempty"`
 	Click          *ClickStep          `json:"click,omitempty" yaml:"click,omitempty"`
 	Challenge      *ChallengeStep      `json:"challenge,omitempty" yaml:"challenge,omitempty"`
 	WaitFor        *WaitForCondition   `json:"wait_for,omitempty" yaml:"wait_for,omitempty"`
+}
+
+// NavigateStep is the context-qualified object form of navigate. Navigate on
+// Step retains the historical string form for source compatibility.
+type NavigateStep struct {
+	URL     string `json:"url" yaml:"url"`
+	Context string `json:"context,omitempty" yaml:"context,omitempty"`
 }
 
 // Locator is an accessibility-tree locator. CSS, XPath, coordinates, and
@@ -98,11 +122,14 @@ type Locator struct {
 type TypeCredentialStep struct {
 	Locator Locator `json:"locator" yaml:"locator"`
 	Slot    string  `json:"slot" yaml:"slot"`
+	Context string  `json:"context,omitempty" yaml:"context,omitempty"`
 }
 
 // ClickStep activates a reviewed accessibility locator.
 type ClickStep struct {
-	Locator Locator `json:"locator" yaml:"locator"`
+	Locator      Locator `json:"locator" yaml:"locator"`
+	Context      string  `json:"context,omitempty" yaml:"context,omitempty"`
+	OpensContext string  `json:"opensContext,omitempty" yaml:"opensContext,omitempty"`
 }
 
 // ChallengeStep performs one explicitly selected MFA handoff. Locator is
@@ -111,17 +138,101 @@ type ChallengeStep struct {
 	Kind    string   `json:"kind" yaml:"kind"`
 	Locator *Locator `json:"locator,omitempty" yaml:"locator,omitempty"`
 	Slot    string   `json:"slot,omitempty" yaml:"slot,omitempty"`
+	Context string   `json:"context,omitempty" yaml:"context,omitempty"`
 }
 
 // WaitForCondition waits for one reviewed locator.
 type WaitForCondition struct {
 	Locator Locator `json:"locator" yaml:"locator"`
+	Context string  `json:"context,omitempty" yaml:"context,omitempty"`
 }
 
 // SuccessCondition proves that sign-in established the named session.
 type SuccessCondition struct {
 	Origin  string  `json:"origin" yaml:"origin"`
 	Locator Locator `json:"locator" yaml:"locator"`
+	Context string  `json:"context,omitempty" yaml:"context,omitempty"`
+	Path    string  `json:"path,omitempty" yaml:"path,omitempty"`
+}
+
+type stepWire struct {
+	Navigate       any                 `json:"navigate,omitempty" yaml:"navigate,omitempty"`
+	TypeCredential *TypeCredentialStep `json:"type_credential,omitempty" yaml:"type_credential,omitempty"`
+	Click          *ClickStep          `json:"click,omitempty" yaml:"click,omitempty"`
+	Challenge      *ChallengeStep      `json:"challenge,omitempty" yaml:"challenge,omitempty"`
+	WaitFor        *WaitForCondition   `json:"wait_for,omitempty" yaml:"wait_for,omitempty"`
+}
+
+// MarshalJSON preserves the historical navigate string and emits the object
+// form only when NavigateTarget is set.
+func (s Step) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.wire())
+}
+
+// UnmarshalJSON accepts both navigation forms without changing the historical
+// Step.Navigate field used by existing callers.
+func (s *Step) UnmarshalJSON(data []byte) error {
+	var raw struct {
+		Navigate       json.RawMessage     `json:"navigate"`
+		TypeCredential *TypeCredentialStep `json:"type_credential"`
+		Click          *ClickStep          `json:"click"`
+		Challenge      *ChallengeStep      `json:"challenge"`
+		WaitFor        *WaitForCondition   `json:"wait_for"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	s.TypeCredential, s.Click, s.Challenge, s.WaitFor = raw.TypeCredential, raw.Click, raw.Challenge, raw.WaitFor
+	if len(raw.Navigate) == 0 || string(raw.Navigate) == "null" {
+		return nil
+	}
+	if raw.Navigate[0] == '"' {
+		return json.Unmarshal(raw.Navigate, &s.Navigate)
+	}
+	return json.Unmarshal(raw.Navigate, &s.NavigateTarget)
+}
+
+// MarshalYAML emits the same union shape as MarshalJSON.
+func (s Step) MarshalYAML() (any, error) {
+	return s.wire(), nil
+}
+
+// UnmarshalYAML accepts both YAML navigation forms.
+func (s *Step) UnmarshalYAML(node *yaml.Node) error {
+	var raw struct {
+		Navigate       yaml.Node           `yaml:"navigate"`
+		TypeCredential *TypeCredentialStep `yaml:"type_credential"`
+		Click          *ClickStep          `yaml:"click"`
+		Challenge      *ChallengeStep      `yaml:"challenge"`
+		WaitFor        *WaitForCondition   `yaml:"wait_for"`
+	}
+	if err := node.Decode(&raw); err != nil {
+		return err
+	}
+	s.TypeCredential, s.Click, s.Challenge, s.WaitFor = raw.TypeCredential, raw.Click, raw.Challenge, raw.WaitFor
+	if raw.Navigate.Kind == 0 {
+		return nil
+	}
+	if raw.Navigate.Kind == yaml.ScalarNode {
+		return raw.Navigate.Decode(&s.Navigate)
+	}
+	return raw.Navigate.Decode(&s.NavigateTarget)
+}
+
+func (s Step) wire() stepWire {
+	var navigate any
+	if s.NavigateTarget != nil {
+		navigate = s.NavigateTarget
+	} else if s.Navigate != "" {
+		navigate = s.Navigate
+	}
+	return stepWire{
+		Navigate:       navigate,
+		TypeCredential: s.TypeCredential,
+		Click:          s.Click,
+		Challenge:      s.Challenge,
+		WaitFor:        s.WaitFor,
+	}
 }
 
 // OperationAuthentication is the typed x-uws-browser-authentication payload.

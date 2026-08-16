@@ -223,7 +223,7 @@ func TestBrowserProfileSchemaAcceptsExpandedRoles(t *testing.T) {
 
 func compileBrowserProfileSchema(t *testing.T) *jsonschema.Schema {
 	t.Helper()
-	data, err := BrowserSourceProfileSchema("")
+	data, err := BrowserSourceProfileSchema("uws.browser.1.5")
 	require.NoError(t, err)
 	doc, err := jsonschema.UnmarshalJSON(bytes.NewReader(data))
 	require.NoError(t, err)

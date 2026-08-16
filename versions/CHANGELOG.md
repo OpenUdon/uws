@@ -7,6 +7,21 @@ already-published artifacts may land without an entry; any change that adjusts
 the meaning or scope of a published schema or sub-spec is recorded as an
 "Amended" note under the affected release.
 
+## 1.8.0 and Browser Context Profiles - 2026-08-16
+
+- Published UWS 1.8.0 with the UWS core document shape unchanged from 1.7.
+- Added `uws.browser.1.6` and `uws.browser-authentication.1.1` optional bounded
+  popup/frame context graphs, context-qualified actions/waits/outputs/success,
+  the navigate object form, explicit `opensContext`, and exact success paths.
+- Added the wire-compatible `uws.browser-authentication-call.1.1` supplement.
+- Made Go profile validators dispatch on exact document discriminators,
+  compile each embedded schema once, and reject unknown versions, fields,
+  references, cycles, excessive depth, unsafe paths, missing/duplicate popup
+  bindings, and context/origin mismatches.
+- Kept every UWS 1.7, browser 1.5, browser-authentication 1.0, and call 1.0
+  document immutable and accepted. Main-only authors SHOULD emit the oldest
+  sufficient profile version.
+
 ## Browser Authentication 1.0 - 2026-08-15
 
 - Added the additive `uws.browser-authentication.1.0` secret-free sign-in
