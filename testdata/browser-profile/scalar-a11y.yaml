@@ -1,0 +1,41 @@
+profile: uws.browser.1.7
+info:
+  title: Reviewed dashboard outputs
+  origin: https://example.test
+observationKind: accessibility_snapshot
+evidence:
+  learnedAt: "2026-08-17T00:00:00Z"
+  source: reviewed_browser_session
+confidence: high
+expiresAfter: P30D
+verification:
+  lastVerifiedAt: "2026-08-17T00:00:00Z"
+  successfulRuns: 1
+actions:
+  read_dashboard:
+    sequence:
+      - navigate: /dashboard
+    outputs:
+      title:
+        type: string
+        source: a11y
+        locator: {role: heading, name: Dashboard}
+      count:
+        type: integer
+        source: a11y
+        locator: {role: status, name: Count}
+      ratio:
+        type: number
+        source: a11y
+        locator: {role: status, name: Ratio}
+      enabled:
+        type: boolean
+        source: a11y
+        locator: {role: status, name: Enabled}
+      goal_present:
+        type: boolean
+        source: a11y
+        locator: {role: heading, name: Dashboard}
+        presence: true
+    sideEffects: [read_only]
+    confirmationPolicy: {required: false}

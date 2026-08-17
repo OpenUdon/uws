@@ -7,6 +7,18 @@ already-published artifacts may land without an entry; any change that adjusts
 the meaning or scope of a published schema or sub-spec is recorded as an
 "Amended" note under the affected release.
 
+## 1.9.0 and Typed Browser Outputs - 2026-08-17
+
+- Published UWS 1.9.0 with the UWS core document shape unchanged from 1.8.
+- Added `uws.browser.1.7`, retaining browser 1.6 contexts while defining
+  locale-free conversion of trimmed accessibility text to string, safe
+  integer, finite JSON number, or lowercase Boolean values.
+- Required browser 1.7 accessibility outputs to remain scalar, kept presence
+  as Boolean match behavior without text access, and failed closed on empty,
+  noncanonical, non-finite, or out-of-range text.
+- Kept `uws.browser-authentication.1.1` unchanged and retained every earlier
+  UWS and browser schema as an immutable compatibility contract.
+
 ## 1.8.0 and Browser Context Profiles - 2026-08-16
 
 - Published UWS 1.8.0 with the UWS core document shape unchanged from 1.7.

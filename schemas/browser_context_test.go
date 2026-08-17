@@ -26,6 +26,40 @@ func TestContextProfileFixturesValidate(t *testing.T) {
 	}
 }
 
+func TestBrowser17ScalarOutputFixtureValidates(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "testdata", "browser-profile", "scalar-a11y.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := schemas.ValidateBrowserSourceProfile(data); err != nil {
+		t.Fatalf("browser 1.7 scalar fixture: %v", err)
+	}
+}
+
+func TestBrowser17AccessibilityTextRejectsCompositeTypesWithoutChangingBrowser16(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "testdata", "browser-profile", "scalar-a11y.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	valid := string(data)
+	for _, outputType := range []string{"array", "object", "null"} {
+		t.Run(outputType, func(t *testing.T) {
+			declared := outputType
+			if outputType == "null" {
+				declared = `"null"`
+			}
+			browser17 := strings.Replace(valid, "type: string", "type: "+declared, 1)
+			if err := schemas.ValidateBrowserSourceProfile([]byte(browser17)); err == nil {
+				t.Fatalf("browser 1.7 accepted a11y %s output", outputType)
+			}
+			browser16 := strings.Replace(browser17, "uws.browser.1.7", "uws.browser.1.6", 1)
+			if err := schemas.ValidateBrowserSourceProfile([]byte(browser16)); err != nil {
+				t.Fatalf("browser 1.6 compatibility for a11y %s: %v", outputType, err)
+			}
+		})
+	}
+}
+
 func TestProfileValidatorsDispatchAndRejectUnknownDiscriminators(t *testing.T) {
 	oldBrowser := `{"profile":"uws.browser.1.5","info":{"title":"Old","origin":"https://example.test"},"observationKind":"other","evidence":{"learnedAt":"2026-08-16T00:00:00Z"},"confidence":"high","expiresAfter":"P1D","verification":{"lastVerifiedAt":"2026-08-16T00:00:00Z","successfulRuns":1},"actions":{"read":{"sequence":[{"navigate":"/"}],"sideEffects":["read_only"],"confirmationPolicy":{"required":false}}}}`
 	if err := schemas.ValidateBrowserSourceProfile([]byte(oldBrowser)); err != nil {

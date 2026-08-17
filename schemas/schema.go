@@ -42,6 +42,9 @@ var (
 	browser16SchemaOnce  sync.Once
 	browser16Schema      *jsonschema.Schema
 	browser16SchemaErr   error
+	browser17SchemaOnce  sync.Once
+	browser17Schema      *jsonschema.Schema
+	browser17SchemaErr   error
 	auth10SchemaOnce     sync.Once
 	auth10Schema         *jsonschema.Schema
 	auth10SchemaErr      error
@@ -75,14 +78,14 @@ func PathForRuntimeSupplement(anchorDir, profile string) string {
 // PathForBrowserSourceProfile returns the best local schema path for a browser
 // source profile.
 func PathForBrowserSourceProfile(anchorDir, profile string) string {
-	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser", "1.6"))
+	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser", "1.7"))
 }
 
 // BrowserSourceProfileSchema returns an independent copy of the embedded
 // browser-profile JSON Schema selected by profile. An empty profile selects
-// the current uws.browser.1.6 contract.
+// the current uws.browser.1.7 contract.
 func BrowserSourceProfileSchema(profile string) ([]byte, error) {
-	name := familySchemaName(profile, "browser", "1.6")
+	name := familySchemaName(profile, "browser", "1.7")
 	data, err := embeddedSchemaDocument(name)
 	if err != nil {
 		return nil, fmt.Errorf("load browser source profile schema %q: %w", profile, err)
@@ -146,7 +149,7 @@ func ValidateBrowserSourceProfile(data []byte) error {
 	if err := schema.Validate(document); err != nil {
 		return fmt.Errorf("validate browser source profile: %w", err)
 	}
-	if profile == "uws.browser.1.6" {
+	if profile == "uws.browser.1.6" || profile == "uws.browser.1.7" {
 		root, _ := value.(map[string]any)
 		if err := validateBrowserContexts(root, browserProfileOrigins(root)); err != nil {
 			return err
@@ -739,6 +742,11 @@ func compiledBrowserSourceProfileSchema(profile string) (*jsonschema.Schema, err
 			browser16Schema, browser16SchemaErr = compileEmbeddedSchema("browser.1.6.json")
 		})
 		return browser16Schema, browser16SchemaErr
+	case "uws.browser.1.7":
+		browser17SchemaOnce.Do(func() {
+			browser17Schema, browser17SchemaErr = compileEmbeddedSchema("browser.1.7.json")
+		})
+		return browser17Schema, browser17SchemaErr
 	default:
 		return nil, fmt.Errorf("unsupported browser source profile discriminator %q", profile)
 	}

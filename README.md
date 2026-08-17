@@ -10,7 +10,7 @@ UWS is a workflow **overlay** over source documents — OpenAPI, AsyncAPI, Graph
 
 This is what distinguishes UWS from full client-side workflow tools such as Arazzo and IaC engines such as OpenTofu and Terraform. Arazzo describes full client-side action sequences and treats each step as a bespoke client action. OpenTofu and Terraform act as full client-side workflow engines for infrastructure: each resource and provider call is described in the client configuration and resolved against a provider plugin at apply time. Neither approach assumes that the underlying operations are already defined by a server contract. UWS takes the opposite position: server actions are pre-defined by the source document, and UWS workflows reference those operations by ID rather than re-describing them. The result is a much smaller overlay: UWS does not duplicate request/response shapes, does not redeclare endpoints, and does not encode anything the source document already specifies.
 
-UWS 1.8 keeps OpenAPI compatibility and supports nine source description types: `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`. The `ansible-module` source type added in 1.6 was removed in 1.7, and UWS 1.8 defines no replacement Ansible operation profile. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
+UWS 1.9 keeps OpenAPI compatibility and supports nine source description types: `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`. The `ansible-module` source type added in 1.6 was removed in 1.7, and UWS 1.9 defines no replacement Ansible operation profile. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
 
 ### Version highlights
 
@@ -25,6 +25,7 @@ UWS 1.8 keeps OpenAPI compatibility and supports nine source description types: 
 | **1.6** | First-class `ansible-module` source type (FQCN as `sourceOperationId`, `#/modules/<fqcn>` refs); argspec sub-spec published separately as `versions/ansible.1.0.{json,md}`. |
 | **1.7** | Removed `ansible-module`: the managed host does not expose the collection module as a pre-existing operation, and UWS 1.7 does not standardize Ansible module calls. |
 | **1.8** | Kept UWS core stable; added browser 1.6 and browser-authentication/call 1.1 profiles for bounded popup/frame contexts while retaining all older schemas. |
+| **1.9** | Kept UWS core stable; added browser 1.7 locale-free scalar conversion for accessibility-text outputs while retaining browser authentication 1.1 and all older schemas. |
 
 See [`versions/CHANGELOG.md`](versions/CHANGELOG.md) for the full changelog.
 
@@ -37,16 +38,16 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 ## Documentation
 
 - **Docs site**: [openudon.github.io/uws](https://openudon.github.io/uws/)
-- Human-readable specification: [versions/1.8.0.md](versions/1.8.0.md)
+- Human-readable specification: [versions/1.9.0.md](versions/1.9.0.md)
 - Runtime supplement: [versions/runtime.1.0.md](versions/runtime.1.0.md)
 - Runtime supplement schema: [versions/runtime.1.0.json](versions/runtime.1.0.json)
-- Browser profile supplement: [versions/browser.1.6.md](versions/browser.1.6.md) / [versions/browser.1.6.json](versions/browser.1.6.json)
+- Browser profile supplement: [versions/browser.1.7.md](versions/browser.1.7.md) / [versions/browser.1.7.json](versions/browser.1.7.json)
 - Browser authentication profile: [versions/browser-authentication.1.1.md](versions/browser-authentication.1.1.md) / [versions/browser-authentication.1.1.json](versions/browser-authentication.1.1.json)
 - Browser authentication call supplement: [versions/browser-authentication-call.1.1.md](versions/browser-authentication-call.1.1.md) / [versions/browser-authentication-call.1.1.json](versions/browser-authentication-call.1.1.json)
 - Browser capability distribution milestone: [docs/browser-capability-goal.md](docs/browser-capability-goal.md)
 - UWS 1.6 Ansible argspec (historical): [versions/ansible.1.0.md](versions/ansible.1.0.md) / [versions/ansible.1.0.json](versions/ansible.1.0.json)
 - UWS 1.6 Ansible design note (historical): [docs/uws_1_6_ansible.md](docs/uws_1_6_ansible.md)
-- JSON Schema: [versions/1.8.0.json](versions/1.8.0.json)
+- JSON Schema: [versions/1.9.0.json](versions/1.9.0.json)
 
 ## Packages
 
@@ -55,9 +56,9 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - `schemas` locates version documents and validates the separately versioned browser profiles. Go schema APIs formerly under `versions` moved here so `versions/` contains documents only.
 - `runtimes` contains the public `uws.runtime.1.0` supplement constants, wire structs, and extension helpers.
 - `browserauthentication` contains the additive secret-free sign-in profile and named-session operation extension types.
-- `versions/1.8.0.md` is the human-readable UWS 1.8 specification.
-- `versions/1.8.0.json` is the JSON Schema for UWS 1.8 documents.
-- `versions/browser.1.6.*` publishes portable popup/frame context topology; immutable `browser.1.5` remains accepted for main-only profiles.
+- `versions/1.9.0.md` is the human-readable UWS 1.9 specification.
+- `versions/1.9.0.json` is the JSON Schema for UWS 1.9 documents.
+- `versions/browser.1.7.*` publishes portable scalar accessibility-text conversion on top of browser 1.6 contexts; immutable browser 1.5/1.6 documents remain accepted.
 - `versions/browser-authentication.1.1.*` and `versions/browser-authentication-call.1.1.*` publish context-capable sign-in recipes and explicit named-session establishment; immutable 1.0 documents remain accepted.
 - `versions/ansible.1.0.md` / `versions/ansible.1.0.json` are retained only with the historical UWS 1.6 contract.
 
@@ -75,9 +76,9 @@ git archive 87644c1 ansiblemodulecall versions/ansible.1.0.json versions/ansible
 ```
 
 The browser-authentication documents are separate profiles rather than part of
-the UWS 1.8 core schema. `browser-authentication.1.1` describes a reviewed,
+the UWS 1.8+ core schema. `browser-authentication.1.1` describes a reviewed,
 secret-free sign-in recipe, while `browser-authentication-call.1.1` validates
-the operation-level `x-uws-browser-authentication` envelope. A UWS 1.8 document
+the operation-level `x-uws-browser-authentication` envelope. A UWS 1.8+ document
 selects that envelope through `x-uws-operation-profile`; tooling that implements
 the profile then validates it with `schemas`. This separation lets the browser
 profile evolve independently and keeps authentication semantics out of core
@@ -96,7 +97,7 @@ if !result.Valid() {
 
 Validation checks required root fields, source operation bindings, extension-owned operation profiles, duplicate identifiers, standard request-binding keys, known structural types, selected reference integrity, action/criterion rules, and trigger routes.
 
-`versions/1.8.0.json` provides structural JSON Schema validation. Use the Go validator for semantic checks such as duplicate identifiers and reference integrity. Go callers resolve it with `schemas.PathForVersion`.
+`versions/1.9.0.json` provides structural JSON Schema validation. Use the Go validator for semantic checks such as duplicate identifiers and reference integrity. Go callers resolve it with `schemas.PathForVersion`.
 
 The separate `versions/runtime.1.0.json` schema validates the public runtime supplement payload. It requires `x-uws-runtime.type`, accepts only the non-HTTP runtime identifiers defined by the supplement, and rejects HTTP/API/event source metadata because HTTP and event calls are represented by core source operation binding fields.
 

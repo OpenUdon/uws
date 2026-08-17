@@ -1,0 +1,856 @@
+{
+    "$id": "https://github.com/OpenUdon/uws/versions/browser.1.7.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "UWS Browser Capability Profile 1.7",
+    "description": "Wire schema for the browser-profile source description sub-spec referenced from UWS 1.9 sourceDescriptions[].type = browser-profile. UWS core does not duplicate this schema; browser-aware tooling and runtimes validate profile documents against it.",
+    "type": "object",
+    "required": [
+        "profile",
+        "info",
+        "observationKind",
+        "evidence",
+        "confidence",
+        "expiresAfter",
+        "verification",
+        "actions"
+    ],
+    "properties": {
+        "profile": {
+            "description": "Profile identifier. MUST be the literal uws.browser.1.7.",
+            "type": "string",
+            "const": "uws.browser.1.7"
+        },
+        "info": {
+            "$ref": "#/$defs/profile-info"
+        },
+        "observationKind": {
+            "$ref": "#/$defs/observation-kind"
+        },
+        "evidence": {
+            "$ref": "#/$defs/evidence-block"
+        },
+        "confidence": {
+            "$ref": "#/$defs/confidence-level"
+        },
+        "expiresAfter": {
+            "description": "ISO-8601 duration after which the profile must be revalidated (e.g. P30D, P14D).",
+            "type": "string",
+            "allOf": [
+                {
+                    "pattern": "^P(?:\\d+Y)?(?:\\d+M)?(?:\\d+W)?(?:\\d+D)?(?:T(?:\\d+H)?(?:\\d+M)?(?:\\d+S)?)?$"
+                },
+                {
+                    "pattern": "\\d+(?:Y|M|W|D|H|S)"
+                }
+            ]
+        },
+        "verification": {
+            "$ref": "#/$defs/verification-block"
+        },
+        "contexts": {
+            "description": "Optional portable popup and frame contexts. The main page is the implicit context named main and MUST NOT be redeclared.",
+            "type": "object",
+            "maxProperties": 32,
+            "propertyNames": {
+                "$ref": "#/$defs/context-identifier"
+            },
+            "additionalProperties": {
+                "$ref": "#/$defs/context"
+            }
+        },
+        "actions": {
+            "description": "Named reusable UI capabilities exposed by the profile. Each key is the action name addressed by sourceOperationId from the UWS workflow.",
+            "type": "object",
+            "minProperties": 1,
+            "propertyNames": {
+                "pattern": "^[A-Za-z0-9_-]+$"
+            },
+            "additionalProperties": {
+                "$ref": "#/$defs/action"
+            }
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "context-identifier": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+            "not": {
+                "const": "main"
+            }
+        },
+        "context-reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+        },
+        "clean-path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "pattern": "^/[A-Za-z0-9._~!$&'()*+,;=:@%/-]*$"
+        },
+        "context": {
+            "type": "object",
+            "required": [
+                "kind",
+                "parent",
+                "origin"
+            ],
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "enum": ["popup", "frame"]
+                },
+                "parent": {
+                    "$ref": "#/$defs/context-reference"
+                },
+                "origin": {
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 2048
+                },
+                "path": {
+                    "$ref": "#/$defs/clean-path"
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                }
+            },
+            "allOf": [
+                {
+                    "if": {"properties": {"kind": {"const": "popup"}}, "required": ["kind"]},
+                    "then": {"not": {"anyOf": [{"required": ["path"]}, {"required": ["name"]}]}}
+                },
+                {
+                    "if": {"properties": {"kind": {"const": "frame"}}, "required": ["kind"]},
+                    "then": {"anyOf": [{"required": ["path"]}, {"required": ["name"]}]}
+                }
+            ],
+            "additionalProperties": false
+        },
+        "profile-info": {
+            "type": "object",
+            "required": [
+                "title",
+                "origin"
+            ],
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "origin": {
+                    "description": "Browser origin allowlist. Runtimes MUST reject navigate instructions targeting domains outside this allowlist. May be a single origin string or an array of origins. Profiles with multiple origins MUST use absolute navigate targets because no implicit base origin is defined.",
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "type": "string",
+                                "format": "uri"
+                            }
+                        }
+                    ]
+                },
+                "loginStateRequired": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false
+        },
+        "observation-kind": {
+            "description": "How the profile was learned. Recorded for review; the snapshot format itself stays runtime-owned.",
+            "type": "string",
+            "enum": [
+                "accessibility_snapshot",
+                "dom_text",
+                "screenshot_ocr",
+                "other"
+            ]
+        },
+        "evidence-block": {
+            "type": "object",
+            "required": [
+                "learnedAt"
+            ],
+            "properties": {
+                "learnedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "source": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "confidence-level": {
+            "type": "string",
+            "enum": [
+                "low",
+                "medium",
+                "high"
+            ]
+        },
+        "verification-block": {
+            "type": "object",
+            "required": [
+                "lastVerifiedAt",
+                "successfulRuns"
+            ],
+            "properties": {
+                "lastVerifiedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "successfulRuns": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "uiStabilityScore": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "locator": {
+            "description": "Accessibility-only locator. CSS selectors, XPath, DOM-structure paths, and pixel/coordinate references are NOT permitted.",
+            "type": "object",
+            "required": [
+                "role"
+            ],
+            "properties": {
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "button",
+                        "link",
+                        "textbox",
+                        "checkbox",
+                        "radio",
+                        "dialog",
+                        "status",
+                        "alert",
+                        "heading",
+                        "img",
+                        "list",
+                        "listitem",
+                        "combobox",
+                        "option",
+                        "menu",
+                        "menuitem",
+                        "tab",
+                        "tabpanel",
+                        "table",
+                        "row",
+                        "cell",
+                        "region",
+                        "navigation",
+                        "article",
+                        "form",
+                        "search",
+                        "switch",
+                        "group"
+                    ]
+                },
+                "name": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "wait-for-condition": {
+            "description": "Halt until a locator condition or navigation event fires.",
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/locator"
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "locator",
+                        "context"
+                    ],
+                    "properties": {
+                        "locator": {"$ref": "#/$defs/locator"},
+                        "context": {"$ref": "#/$defs/context-reference"}
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "navigation"
+                    ],
+                    "properties": {
+                        "navigation": {
+                            "type": "string",
+                            "enum": [
+                                "load",
+                                "domcontentloaded",
+                                "network_idle"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "step": {
+            "description": "Closed declarative macro vocabulary. Exactly one of the following step keys MUST be set.",
+            "type": "object",
+            "oneOf": [
+                {
+                    "required": [
+                        "navigate"
+                    ],
+                    "properties": {
+                        "navigate": {
+                            "description": "Relative or absolute URL redirection. Must be templatable from action parameters. Runtimes MUST reject a relative target when more than one info.origin is configured.",
+                            "oneOf": [
+                                {"type": "string"},
+                                {
+                                    "type": "object",
+                                    "required": ["url"],
+                                    "properties": {
+                                        "url": {"type": "string"},
+                                        "context": {"$ref": "#/$defs/context-reference"}
+                                    },
+                                    "additionalProperties": false
+                                }
+                            ]
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "required": [
+                        "click"
+                    ],
+                    "properties": {
+                        "click": {
+                            "type": "object",
+                            "required": [
+                                "locator"
+                            ],
+                            "properties": {
+                                "locator": {
+                                    "$ref": "#/$defs/locator"
+                                },
+                                "wait_for": {
+                                    "$ref": "#/$defs/wait-for-condition"
+                                },
+                                "context": {
+                                    "$ref": "#/$defs/context-reference"
+                                },
+                                "opensContext": {
+                                    "$ref": "#/$defs/context-identifier"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "required": [
+                        "type_text"
+                    ],
+                    "properties": {
+                        "type_text": {
+                            "type": "object",
+                            "required": [
+                                "locator",
+                                "value"
+                            ],
+                            "properties": {
+                                "locator": {
+                                    "$ref": "#/$defs/locator"
+                                },
+                                "value": {
+                                    "type": "string"
+                                },
+                                "wait_for": {
+                                    "$ref": "#/$defs/wait-for-condition"
+                                },
+                                "context": {
+                                    "$ref": "#/$defs/context-reference"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "required": [
+                        "check_radio"
+                    ],
+                    "properties": {
+                        "check_radio": {
+                            "type": "object",
+                            "required": [
+                                "locator"
+                            ],
+                            "properties": {
+                                "locator": {
+                                    "$ref": "#/$defs/locator"
+                                },
+                                "wait_for": {
+                                    "$ref": "#/$defs/wait-for-condition"
+                                },
+                                "context": {
+                                    "$ref": "#/$defs/context-reference"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "required": [
+                        "uncheck"
+                    ],
+                    "properties": {
+                        "uncheck": {
+                            "type": "object",
+                            "required": [
+                                "locator"
+                            ],
+                            "properties": {
+                                "locator": {
+                                    "$ref": "#/$defs/locator"
+                                },
+                                "wait_for": {
+                                    "$ref": "#/$defs/wait-for-condition"
+                                },
+                                "context": {
+                                    "$ref": "#/$defs/context-reference"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "required": [
+                        "select_option"
+                    ],
+                    "properties": {
+                        "select_option": {
+                            "type": "object",
+                            "required": [
+                                "locator",
+                                "value"
+                            ],
+                            "properties": {
+                                "locator": {
+                                    "$ref": "#/$defs/locator"
+                                },
+                                "value": {
+                                    "type": "string"
+                                },
+                                "wait_for": {
+                                    "$ref": "#/$defs/wait-for-condition"
+                                },
+                                "context": {
+                                    "$ref": "#/$defs/context-reference"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "required": [
+                        "wait_for"
+                    ],
+                    "properties": {
+                        "wait_for": {
+                            "$ref": "#/$defs/wait-for-condition"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "output": {
+            "description": "Output extraction declaration. Primary methods are a11y or jsonld/microdata. CSS is permitted only as a last-resort fallback with a recorded fallbackReason and a typed validation schema.",
+            "type": "object",
+            "required": [
+                "type",
+                "source"
+            ],
+            "properties": {
+                "type": {
+                    "description": "Declared JSON type for the extracted value.",
+                    "type": "string",
+                    "enum": [
+                        "string",
+                        "integer",
+                        "number",
+                        "boolean",
+                        "array",
+                        "object",
+                        "null"
+                    ]
+                },
+                "source": {
+                    "type": "string",
+                    "enum": [
+                        "a11y",
+                        "jsonld",
+                        "microdata",
+                        "css"
+                    ]
+                },
+                "locator": {
+                    "$ref": "#/$defs/locator"
+                },
+                "context": {
+                    "$ref": "#/$defs/context-reference"
+                },
+                "selector": {
+                    "description": "CSS selector. Permitted only when source=css.",
+                    "type": "string"
+                },
+                "fallbackReason": {
+                    "description": "Required when source=css; explains why a11y/jsonld/microdata are insufficient.",
+                    "type": "string",
+                    "enum": [
+                        "no_a11y_region",
+                        "no_structured_data",
+                        "ambiguous_a11y",
+                        "other"
+                    ]
+                },
+                "validation": {
+                    "description": "Inline JSON Schema for the extracted value.",
+                    "type": "object"
+                },
+                "presence": {
+                    "description": "When true and source is a11y, the runtime returns a boolean indicating whether the locator resolves rather than the element's accessible text. Only valid with source: a11y.",
+                    "type": "boolean"
+                },
+                "property": {
+                    "description": "The itemprop (microdata) or JSON-LD property name to extract. When absent, the output key name is used. Only valid with source: microdata or source: jsonld.",
+                    "type": "string"
+                },
+                "attribute": {
+                    "description": "DOM attribute name to extract from the matched element (e.g. href, src, datetime) instead of its text content. Only valid with source: css.",
+                    "type": "string"
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "source": {
+                                "const": "css"
+                            }
+                        },
+                        "required": [
+                            "source"
+                        ]
+                    },
+                    "then": {
+                        "required": [
+                            "selector",
+                            "fallbackReason",
+                            "validation"
+                        ],
+                        "not": {
+                            "anyOf": [
+                                {
+                                    "required": [
+                                        "locator"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "presence"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "property"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "source": {
+                                "enum": [
+                                    "a11y"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "source"
+                        ]
+                    },
+                    "then": {
+                        "required": [
+                            "locator"
+                        ],
+                        "properties": {
+                            "type": {
+                                "enum": [
+                                    "string",
+                                    "integer",
+                                    "number",
+                                    "boolean"
+                                ]
+                            }
+                        },
+                        "not": {
+                            "anyOf": [
+                                {
+                                    "required": [
+                                        "selector"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "fallbackReason"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "property"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "attribute"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "source": {
+                                "const": "a11y"
+                            },
+                            "presence": {
+                                "const": true
+                            }
+                        },
+                        "required": [
+                            "source",
+                            "presence"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "type": {
+                                "const": "boolean"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "source": {
+                                "enum": [
+                                    "jsonld",
+                                    "microdata"
+                                ]
+                            }
+                        },
+                        "required": [
+                            "source"
+                        ]
+                    },
+                    "then": {
+                        "not": {
+                            "anyOf": [
+                                {
+                                    "required": [
+                                        "locator"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "selector"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "fallbackReason"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "presence"
+                                    ]
+                                },
+                                {
+                                    "required": [
+                                        "attribute"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            "additionalProperties": false
+        },
+        "side-effect": {
+            "type": "string",
+            "enum": [
+                "read_only",
+                "state_change",
+                "sends_email",
+                "creates_record",
+                "updates_record",
+                "deletes_resource"
+            ]
+        },
+        "confirmation-policy": {
+            "type": "object",
+            "required": [
+                "required"
+            ],
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "prompt": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "action": {
+            "type": "object",
+            "required": [
+                "sequence",
+                "sideEffects",
+                "confirmationPolicy"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "parameters": {
+                    "description": "Inline JSON Schema for the action's templatable parameters. Sequence steps may reference these via {{paramName}} placeholders.",
+                    "type": "object"
+                },
+                "sequence": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/step"
+                    }
+                },
+                "outputs": {
+                    "type": "object",
+                    "propertyNames": {
+                        "pattern": "^[A-Za-z0-9_-]+$"
+                    },
+                    "additionalProperties": {
+                        "$ref": "#/$defs/output"
+                    }
+                },
+                "sideEffects": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                        "$ref": "#/$defs/side-effect"
+                    }
+                },
+                "confirmationPolicy": {
+                    "$ref": "#/$defs/confirmation-policy"
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "sideEffects": {
+                                "contains": {
+                                    "const": "read_only"
+                                }
+                            }
+                        },
+                        "required": [
+                            "sideEffects"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "sideEffects": {
+                                "maxItems": 1
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "sideEffects": {
+                                "contains": {
+                                    "not": {
+                                        "const": "read_only"
+                                    }
+                                }
+                            }
+                        },
+                        "required": [
+                            "sideEffects"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "confirmationPolicy": {
+                                "properties": {
+                                    "required": {
+                                        "const": true
+                                    }
+                                },
+                                "required": [
+                                    "required"
+                                ]
+                            }
+                        }
+                    }
+                }
+            ],
+            "additionalProperties": false
+        }
+    }
+}

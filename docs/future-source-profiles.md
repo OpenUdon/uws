@@ -322,7 +322,7 @@ Settled scope:
   repository keeps only the schema/spec fixtures needed to validate the UWS
   wire contract and `browser.1.5` sub-spec.
 
-### Browser 1.6 Context Adoption And Later Candidates
+### Browser 1.6 Contexts, Browser 1.7 Scalars, And Later Candidates
 
 UWS 1.5 is enough for the API-vs-UI boundary: UWS binds an operation to a
 reviewed browser capability profile, while browser-aware tooling and runtimes
@@ -332,10 +332,15 @@ general browser automation DSL.
 
 UWS 1.8 adopted `browser.1.6` for the narrow portable popup/frame context
 contract, paired with `browser-authentication.1.1` and its call supplement.
-That adoption did not add browser command streams, session transfer, or any of
-the broader interaction candidates below. A later browser-profile revision
-should be considered only if real reviewed workflows repeatedly fall outside
-the 1.6 capability shape while still needing portable, audited interchange.
+UWS 1.9 then adopted `browser.1.7` for locale-free conversion of reviewed
+accessibility text to string, safe integer, finite JSON number, or lowercase
+Boolean results. Browser 1.7 retains the 1.6 context graph, keeps presence as a
+Boolean match without text extraction, and rejects composite accessibility
+outputs. Neither adoption added browser command streams, session transfer, or
+any of the broader interaction candidates below. A later browser-profile
+revision should be considered only if real reviewed workflows repeatedly fall
+outside the 1.7 capability shape while still needing portable, audited
+interchange.
 Candidate areas include:
 
 - bounded file upload/download declarations, with explicit filename, MIME,
