@@ -64,6 +64,40 @@ func TestOrchestratorExecutesJSONPathCriterion(t *testing.T) {
 	assert.Equal(t, []string{"fetch"}, runtime.executedLeafs)
 }
 
+func TestJSONPathCriterionUsesRFC9535SelectionTruthiness(t *testing.T) {
+	orch := &Orchestrator{Runtime: &mockRuntime{eval: func(context.Context, string) (any, error) {
+		return map[string]any{
+			"items": []any{
+				map[string]any{"active": false},
+				map[string]any{"active": true},
+			},
+		}, nil
+	}}}
+
+	matched, err := orch.evaluateCriterion(context.Background(), &Criterion{
+		Type: CriterionJSONPath, Context: "$response.body", Condition: "$.items[*].active",
+	})
+	require.NoError(t, err)
+	assert.True(t, matched)
+
+	matched, err = orch.evaluateCriterion(context.Background(), &Criterion{
+		Type: CriterionJSONPath, Context: "$response.body", Condition: "$.items[?@.active == false].active",
+	})
+	require.NoError(t, err)
+	assert.False(t, matched)
+}
+
+func TestJSONPathCriterionRejectsMalformedPath(t *testing.T) {
+	orch := &Orchestrator{Runtime: &mockRuntime{eval: func(context.Context, string) (any, error) {
+		return map[string]any{"items": []any{}}, nil
+	}}}
+
+	_, err := orch.evaluateCriterion(context.Background(), &Criterion{
+		Type: CriterionJSONPath, Context: "$response.body", Condition: "$[",
+	})
+	require.ErrorContains(t, err, "parse jsonpath")
+}
+
 func TestParseCriterionIndexRejectsMalformedArrayIndexes(t *testing.T) {
 	for _, token := range []string{"", "1abc", "-1", "+1", "1.0"} {
 		t.Run(token, func(t *testing.T) {

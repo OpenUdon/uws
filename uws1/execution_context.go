@@ -3,6 +3,7 @@ package uws1
 import "context"
 
 type executionContextKey struct{}
+type iterationPathContextKey struct{}
 
 // ExecutionContext carries runtime-only orchestration state into runtime hooks.
 type ExecutionContext struct {
@@ -69,4 +70,29 @@ func cloneTriggerContext(trigger *TriggerExecutionContext) *TriggerExecutionCont
 		OutputName: trigger.OutputName,
 		Payload:    trigger.Payload,
 	}
+}
+
+// cloneExecutionContext returns an independent execution-state wrapper for a
+// child context. Values carried inside Item, Payload, and record Results remain
+// runtime-owned; all orchestrator-owned pointers and maps are copied.
+func cloneExecutionContext(state *ExecutionContext) *ExecutionContext {
+	if state == nil {
+		return &ExecutionContext{}
+	}
+	return &ExecutionContext{
+		Iteration: cloneIteration(state.Iteration),
+		Trigger:   cloneTriggerContext(state.Trigger),
+		Inputs:    cloneInputs(state.Inputs),
+		Records:   cloneExecutionRecords(state.Records),
+		Current:   cloneCurrentExecution(state.Current),
+	}
+}
+
+func iterationPathFromContext(ctx context.Context) []int {
+	path, _ := ctx.Value(iterationPathContextKey{}).([]int)
+	return append([]int(nil), path...)
+}
+
+func withIterationPath(ctx context.Context, path []int) context.Context {
+	return context.WithValue(ctx, iterationPathContextKey{}, append([]int(nil), path...))
 }

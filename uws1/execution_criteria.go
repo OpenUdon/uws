@@ -10,6 +10,7 @@ import (
 
 	"github.com/antchfx/xmlquery"
 	"github.com/antchfx/xpath"
+	"github.com/theory/jsonpath"
 )
 
 func (o *Orchestrator) criteriaMatchAll(ctx context.Context, criteria []*Criterion) (bool, error) {
@@ -88,11 +89,16 @@ func (o *Orchestrator) evaluateJSONPathCriterion(ctx context.Context, criterion 
 		}
 		return truthyValue(value), nil
 	default:
-		value, err := o.Runtime.EvaluateExpression(ctx, criterion.Condition)
+		path, err := jsonpath.Parse(target)
 		if err != nil {
-			return false, fmt.Errorf("evaluating jsonpath condition %q: %w", criterion.Condition, err)
+			return false, fmt.Errorf("parse jsonpath %q: %w", target, err)
 		}
-		return truthyValue(value), nil
+		for _, value := range path.Select(source) {
+			if truthyValue(value) {
+				return true, nil
+			}
+		}
+		return false, nil
 	}
 }
 

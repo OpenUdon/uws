@@ -3,6 +3,7 @@ package uws1
 import (
 	"context"
 	"errors"
+	"sync"
 	"testing"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 )
 
 type mockRuntime struct {
+	mu            sync.Mutex
 	executedLeafs []string
 	expressions   map[string]any
 	items         map[string][]any
@@ -19,11 +21,19 @@ type mockRuntime struct {
 }
 
 func (m *mockRuntime) ExecuteLeaf(ctx context.Context, op *Operation) error {
+	m.mu.Lock()
 	m.executedLeafs = append(m.executedLeafs, op.OperationID)
+	m.mu.Unlock()
 	if m.execute != nil {
 		return m.execute(ctx, op)
 	}
 	return nil
+}
+
+func (m *mockRuntime) leafs() []string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return append([]string(nil), m.executedLeafs...)
 }
 
 func (m *mockRuntime) ResolveItems(ctx context.Context, itemsExpr string) ([]any, error) {
@@ -372,6 +382,189 @@ func TestOrchestratorExecuteAwaitHonorsContextCancellation(t *testing.T) {
 	defer cancel()
 	err := doc.Execute(ctx)
 	require.ErrorIs(t, err, context.DeadlineExceeded)
+}
+
+func TestOrchestratorDoesNotEvaluateAwaitAfterCancellation(t *testing.T) {
+	doc := testDocument(&Operation{OperationID: "op1"})
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeAwait,
+		WorkflowExecutionFields: WorkflowExecutionFields{
+			Wait: "ready",
+		},
+	}}
+	evaluations := 0
+	doc.SetRuntime(&mockRuntime{eval: func(context.Context, string) (any, error) {
+		evaluations++
+		return false, nil
+	}})
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	require.ErrorIs(t, doc.Execute(ctx), context.Canceled)
+	assert.Zero(t, evaluations)
+}
+
+func TestSerializedAwaitTimeoutOverridesExecutorDefault(t *testing.T) {
+	timeout := 0.05
+	doc := testDocument(&Operation{OperationID: "op1"})
+	doc.UWS = "1.9.0"
+	doc.ExecutionOptions = ExecutionOptions{
+		AwaitTimeout:      5 * time.Millisecond,
+		AwaitPollInterval: time.Millisecond,
+	}
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeAwait,
+		WorkflowExecutionFields: WorkflowExecutionFields{
+			Wait:    "ready",
+			Timeout: &timeout,
+		},
+	}}
+	doc.SetRuntime(&mockRuntime{expressions: map[string]any{"ready": false}})
+
+	start := time.Now()
+	err := doc.Execute(context.Background())
+	require.ErrorIs(t, err, context.DeadlineExceeded)
+	assert.GreaterOrEqual(t, time.Since(start), 35*time.Millisecond)
+	var awaitErr *AwaitTimeoutError
+	assert.False(t, errors.As(err, &awaitErr))
+}
+
+func TestRunnableTimeoutStartsAfterDependenciesAndWhen(t *testing.T) {
+	timeout := 0.02
+	doc := testDocument(&Operation{OperationID: "dependency"})
+	doc.UWS = "1.9.0"
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		WorkflowExecutionFields: WorkflowExecutionFields{
+			DependsOn: []string{"dependency"},
+			When:      "ready",
+			Timeout:   &timeout,
+		},
+	}}
+	doc.SetRuntime(&mockRuntime{
+		execute: func(context.Context, *Operation) error {
+			time.Sleep(35 * time.Millisecond)
+			return nil
+		},
+		expressions: map[string]any{"ready": true},
+	})
+
+	require.NoError(t, doc.Execute(context.Background()))
+}
+
+func TestExecuteWithTimeoutSaturatesLargeDuration(t *testing.T) {
+	timeout := 1e10
+	called := false
+	err := executeWithTimeout(context.Background(), &timeout, func(ctx context.Context) error {
+		called = true
+		return ctx.Err()
+	})
+
+	require.NoError(t, err)
+	assert.True(t, called)
+}
+
+func TestWorkflowTimeoutCancelsDescendantOperation(t *testing.T) {
+	timeout := 0.02
+	doc := testDocument(&Operation{OperationID: "leaf"})
+	doc.UWS = "1.9.0"
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		WorkflowExecutionFields: WorkflowExecutionFields{
+			Timeout: &timeout,
+		},
+		Steps: []*Step{{StepID: "leaf_step", OperationRef: "leaf"}},
+	}}
+	doc.SetRuntime(&mockRuntime{execute: func(ctx context.Context, _ *Operation) error {
+		<-ctx.Done()
+		return ctx.Err()
+	}})
+
+	require.ErrorIs(t, doc.Execute(context.Background()), context.DeadlineExceeded)
+}
+
+func TestOperationRetriesReceiveFreshTimeoutBudgets(t *testing.T) {
+	timeout := 0.05
+	doc := testDocument(&Operation{
+		OperationID: "leaf",
+		OperationExecutionFields: OperationExecutionFields{
+			Timeout: &timeout,
+		},
+		OnFailure: []*FailureAction{{Name: "retry_once", Type: "retry", RetryLimit: 1}},
+	})
+	doc.UWS = "1.9.0"
+	attempts := 0
+	doc.SetRuntime(&mockRuntime{execute: func(context.Context, *Operation) error {
+		attempts++
+		time.Sleep(30 * time.Millisecond)
+		if attempts == 1 {
+			return errors.New("try again")
+		}
+		return nil
+	}})
+
+	require.NoError(t, doc.Operations[0].Execute(context.Background(), doc))
+	assert.Equal(t, 2, attempts)
+}
+
+func TestOperationTimeoutCanBeRetried(t *testing.T) {
+	timeout := 0.01
+	doc := testDocument(&Operation{
+		OperationID: "leaf",
+		OperationExecutionFields: OperationExecutionFields{
+			Timeout: &timeout,
+		},
+		OnFailure: []*FailureAction{{Name: "retry_once", Type: "retry", RetryLimit: 1}},
+	})
+	doc.UWS = "1.9.0"
+	attempts := 0
+	doc.SetRuntime(&mockRuntime{execute: func(ctx context.Context, _ *Operation) error {
+		attempts++
+		<-ctx.Done()
+		return ctx.Err()
+	}})
+
+	require.ErrorIs(t, doc.Operations[0].Execute(context.Background(), doc), context.DeadlineExceeded)
+	assert.Equal(t, 2, attempts)
+}
+
+func TestNestedLoopsUseFullIterationPathInRecordKeys(t *testing.T) {
+	doc := testDocument(&Operation{OperationID: "leaf"})
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeLoop,
+		StructuralFields: StructuralFields{
+			Items: "outer",
+		},
+		Steps: []*Step{{
+			StepID: "inner",
+			Type:   WorkflowTypeLoop,
+			StructuralFields: StructuralFields{
+				Items: "inner",
+			},
+			Steps: []*Step{{StepID: "leaf_step", OperationRef: "leaf"}},
+		}},
+	}}
+	doc.SetRuntime(&mockRuntime{items: map[string][]any{
+		"outer": {"a", "b"},
+		"inner": {1, 2},
+	}})
+
+	require.NoError(t, doc.Execute(context.Background()))
+	records := doc.ExecutionRecords()
+	for _, key := range []string{
+		"stepop:leaf_step:leaf#iter:0.0",
+		"stepop:leaf_step:leaf#iter:0.1",
+		"stepop:leaf_step:leaf#iter:1.0",
+		"stepop:leaf_step:leaf#iter:1.1",
+	} {
+		require.Contains(t, records, key)
+	}
+	assert.Len(t, doc.Runtime.(*mockRuntime).leafs(), 4)
 }
 
 func TestOrchestratorForEachAggregatesOutputsAndResults(t *testing.T) {

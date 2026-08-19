@@ -4,7 +4,7 @@
 
 ---
 
-Most executable operations in UWS bind to an operation in a source document by reference. UWS 1.7 supports `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile` source descriptions directly. Extension-owned operations are the explicit non-source escape hatch. UWS never duplicates HTTP methods, paths, AsyncAPI channels, messages, GraphQL schemas, JSON-RPC method metadata, protobuf descriptors, OData metadata, browser profile locator/action/output details, schemas, servers, security schemes, or protocol metadata; those live in the source document, the separate `versions/browser.1.5.{json,md}` sub-spec, or executor-owned configuration.
+Most executable operations in UWS bind to an operation in a source document by reference. UWS 1.9 supports `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile` source descriptions directly. Extension-owned operations are the explicit non-source escape hatch. UWS never duplicates HTTP methods, paths, AsyncAPI channels, messages, GraphQL schemas, JSON-RPC method metadata, protobuf descriptors, OData metadata, browser profile locator/action/output details, schemas, servers, security schemes, or protocol metadata; those live in the source document, the latest separate `versions/browser.1.7.{json,md}` sub-spec, or executor-owned configuration.
 
 ## Three Mutually Exclusive Shapes
 

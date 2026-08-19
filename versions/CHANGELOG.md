@@ -51,23 +51,12 @@ the meaning or scope of a published schema or sub-spec is recorded as an
   `versions/1.6.0.{json,md}`, the version-gated 1.6 Go model behavior, and
   `versions/ansible.1.0.{json,md}` as historical material.
 - Ramen localizes its static conversion-only schemas and wire helpers under its
-  internal adapter with Ramen-owned identifiers; it is not required to retain
+  `internal/ansibleconvert` package with Ramen-owned identifiers; it is not required to retain
   or accept the removed UWS-named contracts.
 - The removed implementation and module-call documents remain available from
-  repository history at commit `87644c1`.
+  repository history at commit `a68a209`.
 - Moved Go schema access and browser-profile validation from package `versions`
   to package `schemas`; `versions/` now contains documents only.
-
-## Go Schema Accessors - 2026-07-25
-
-- Added `versions.PathForAnsibleSourceProfile` and
-  `versions.PathForBrowserSourceProfile` so source-aware tooling can resolve
-  the published profile schemas through the supported environment, package,
-  module-cache, embedded-schema, and sibling fallback lookup sequence.
-- The accessors accept bare versions, profile-prefixed names, optional `uws.`
-  prefixes, and optional `.json` suffixes. They default to `ansible.1.0` and
-  `browser.1.5`, respectively.
-- No schema wire format changed.
 
 ## 1.7.0 - 2026-08-08
 
@@ -87,7 +76,26 @@ the meaning or scope of a published schema or sub-spec is recorded as an
   accepts `ansible-module`. Validators MUST reject the type on documents
   declaring 1.7.0 or later.
 
-## Ansible Module Call Supplement 1.0 - 2026-06-14
+## Go Schema Accessors - 2026-07-25
+
+- Added `versions.PathForAnsibleSourceProfile` and
+  `versions.PathForBrowserSourceProfile` so source-aware tooling can resolve
+  the published profile schemas through the supported environment, package,
+  module-cache, embedded-schema, and sibling fallback lookup sequence.
+- The accessors accept bare versions, profile-prefixed names, optional `uws.`
+  prefixes, and optional `.json` suffixes. They default to `ansible.1.0` and
+  `browser.1.5`, respectively.
+- No schema wire format changed.
+
+Withdrawn 2026-08-15:
+
+- Schema access moved to package `schemas`; the Ansible-specific accessor was
+  removed, while browser-profile lookup and validation remain supported there.
+
+## Ansible Module Call Supplement 1.0 (withdrawn) - 2026-06-14
+
+> Withdrawn on 2026-08-15. This entry is retained as release history, not as a
+> current UWS operation profile.
 
 - Added `uws.ansible-module-call.1.0` for extension-owned Ansible module leaf
   operations in UWS 1.5-compatible documents.
@@ -113,7 +121,7 @@ Withdrawn 2026-08-15:
 
 - Removed the supplement from the current tree. UWS 1.7 no longer standardizes
   Ansible automation. The historical schema, prose, and Go helper package are
-  available at commit `87644c1`.
+  available at commit `a68a209`.
 
 ## 1.6.0 - 2026-06-02
 

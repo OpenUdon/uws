@@ -5,29 +5,91 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
-func (o *Orchestrator) executeRunnable(ctx context.Context, key, id, kind, responseID string, deps []string, whenExpr, forEachExpr string, outputs map[string]string, run func(context.Context) error) error {
-	execKey := o.keyForContext(ctx, key)
-	return o.executeOnce(ctx, execKey, id, kind, func(ctx context.Context) error {
-		if err := o.executeDependencies(ctx, deps); err != nil {
+type runnableExecution struct {
+	key          string
+	id           string
+	kind         string
+	responseID   string
+	dependencies []string
+	when         string
+	forEach      string
+	timeout      *float64
+	outputs      map[string]string
+	run          func(context.Context) error
+}
+
+type forEachExecution struct {
+	execKey    string
+	baseKey    string
+	id         string
+	kind       string
+	responseID string
+	expression string
+	outputs    map[string]string
+	run        func(context.Context) error
+}
+
+func (o *Orchestrator) executeRunnable(ctx context.Context, spec runnableExecution) error {
+	execKey := o.keyForContext(ctx, spec.key)
+	return o.executeOnce(ctx, execKey, spec.id, spec.kind, func(ctx context.Context) error {
+		if err := ctx.Err(); err != nil {
 			return err
 		}
-		shouldRun, err := o.evaluateWhen(ctx, whenExpr, execKey, id, kind)
+		if err := o.executeDependencies(ctx, spec.dependencies); err != nil {
+			return err
+		}
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		shouldRun, err := o.evaluateWhen(ctx, spec.when, execKey, spec.id, spec.kind)
 		if err != nil {
 			return err
 		}
 		if !shouldRun {
 			return nil
 		}
-		if forEachExpr != "" {
-			return o.executeForEach(ctx, execKey, key, id, kind, responseID, forEachExpr, outputs, run)
-		}
-		if err := run(ctx); err != nil {
-			return err
-		}
-		return o.finalizeOutputs(ctx, execKey, id, kind, responseID, outputs)
+		return executeWithTimeout(ctx, spec.timeout, func(runCtx context.Context) error {
+			if spec.forEach != "" {
+				return o.executeForEach(runCtx, forEachExecution{
+					execKey: execKey, baseKey: spec.key, id: spec.id, kind: spec.kind,
+					responseID: spec.responseID, expression: spec.forEach,
+					outputs: spec.outputs, run: spec.run,
+				})
+			}
+			if err := spec.run(runCtx); err != nil {
+				return err
+			}
+			return o.finalizeOutputs(runCtx, execKey, spec.id, spec.kind, spec.responseID, spec.outputs)
+		})
 	})
+}
+
+func executeWithTimeout(ctx context.Context, timeout *float64, run func(context.Context) error) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if timeout == nil {
+		return run(ctx)
+	}
+	timeoutCtx, cancel := context.WithTimeout(ctx, timeoutDuration(*timeout))
+	defer cancel()
+	err := run(timeoutCtx)
+	if timeoutErr := timeoutCtx.Err(); timeoutErr != nil {
+		return timeoutErr
+	}
+	return err
+}
+
+func timeoutDuration(seconds float64) time.Duration {
+	const maxDuration = time.Duration(1<<63 - 1)
+	nanoseconds := seconds * float64(time.Second)
+	if nanoseconds >= float64(maxDuration) {
+		return maxDuration
+	}
+	return time.Duration(nanoseconds)
 }
 
 // evaluateWhen evaluates a when-expression. Returns false if the runnable
@@ -69,31 +131,37 @@ func (o *Orchestrator) finalizeOutputs(ctx context.Context, execKey, id, kind, r
 
 // executeForEach iterates a runnable over each item resolved from forEachExpr,
 // resolving per-iteration outputs and aggregating them under the parent record.
-func (o *Orchestrator) executeForEach(ctx context.Context, execKey, key, id, kind, responseID, forEachExpr string, outputs map[string]string, run func(context.Context) error) error {
-	items, err := o.Runtime.ResolveItems(ctx, forEachExpr)
+func (o *Orchestrator) executeForEach(ctx context.Context, spec forEachExecution) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	items, err := o.Runtime.ResolveItems(ctx, spec.expression)
 	if err != nil {
-		return fmt.Errorf("resolving forEach for %q: %w", id, err)
+		return fmt.Errorf("resolving forEach for %q: %w", spec.id, err)
 	}
 	iterationResults := make([]map[string]any, 0, len(items))
 	aggregatedOutputs := make(map[string][]any)
 	for index, item := range items {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		itemCtx := o.withIterationContext(ctx, item, index, nil, -1)
-		itemKey := o.keyForContext(itemCtx, key)
-		o.setRecord(itemKey, ExecutionRecord{ID: id, Kind: kind, Status: "running"})
-		if err := run(itemCtx); err != nil {
+		itemKey := o.keyForContext(itemCtx, spec.baseKey)
+		o.setRecord(itemKey, ExecutionRecord{ID: spec.id, Kind: spec.kind, Status: "running"})
+		if err := spec.run(itemCtx); err != nil {
 			if isControlSignal(err) {
-				o.setRecord(itemKey, ExecutionRecord{ID: id, Kind: kind, Status: "success"})
+				o.setRecord(itemKey, ExecutionRecord{ID: spec.id, Kind: spec.kind, Status: "success"})
 				return err
 			}
-			o.setRecord(itemKey, ExecutionRecord{ID: id, Kind: kind, Status: "error", Error: err.Error()})
+			o.setRecord(itemKey, ExecutionRecord{ID: spec.id, Kind: spec.kind, Status: "error", Error: err.Error()})
 			return err
 		}
 		var resolved map[string]any
-		if len(outputs) > 0 {
+		if len(spec.outputs) > 0 {
 			outputsCtx := o.withRecordContext(itemCtx)
-			resolved, err = o.resolveOutputs(outputsCtx, itemKey, id, kind, responseID, outputs)
+			resolved, err = o.resolveOutputs(outputsCtx, itemKey, spec.id, spec.kind, spec.responseID, spec.outputs)
 			if err != nil {
-				o.setRecord(itemKey, ExecutionRecord{ID: id, Kind: kind, Status: "error", Error: err.Error()})
+				o.setRecord(itemKey, ExecutionRecord{ID: spec.id, Kind: spec.kind, Status: "error", Error: err.Error()})
 				return err
 			}
 		}
@@ -120,7 +188,7 @@ func (o *Orchestrator) executeForEach(ctx context.Context, execKey, key, id, kin
 		}
 	}
 	o.mu.Lock()
-	record := o.records[execKey]
+	record := o.records[spec.execKey]
 	record.Result = iterationResults
 	record.Status = "success"
 	if len(aggregatedOutputs) > 0 {
@@ -129,12 +197,15 @@ func (o *Orchestrator) executeForEach(ctx context.Context, execKey, key, id, kin
 			record.Outputs[name] = append([]any(nil), values...)
 		}
 	}
-	o.writeRecordLocked(execKey, record)
+	o.writeRecordLocked(spec.execKey, record)
 	o.mu.Unlock()
 	return nil
 }
 
 func (o *Orchestrator) executeOnce(ctx context.Context, key, id, kind string, run func(context.Context) error) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	o.mu.Lock()
 	if record, ok := o.records[key]; ok && record.Status != "running" {
 		cachedErr := o.recordErrors[key]
@@ -206,6 +277,9 @@ func replayedRunnableError(record ExecutionRecord, cached error) error {
 
 func (o *Orchestrator) executeDependencies(ctx context.Context, deps []string) error {
 	for _, dep := range deps {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		if dep == "" {
 			continue
 		}
@@ -304,6 +378,20 @@ func compositeKey(base string, iter int) string {
 		return base
 	}
 	return fmt.Sprintf("%s#iter:%d", base, iter)
+}
+
+func compositeIterationKey(base string, path []int) string {
+	if len(path) == 0 {
+		return base
+	}
+	if len(path) == 1 {
+		return compositeKey(base, path[0])
+	}
+	parts := make([]string, len(path))
+	for i, index := range path {
+		parts[i] = fmt.Sprintf("%d", index)
+	}
+	return base + "#iter:" + strings.Join(parts, ".")
 }
 
 // baseFromCompositeKey strips a "#iter:N" suffix; if there is none it returns

@@ -95,7 +95,7 @@ Rules of thumb:
 
 - `name` is the stable local handle used by operations.
 - `url` can be a local path or reviewed remote location, depending on the runtime.
-- `type` may be `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, or `browser-profile`. Missing `type` defaults to `openapi`. The `browser-profile` sub-spec is published separately as `versions/browser.1.5.{json,md}`.
+- `type` may be `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, or `browser-profile`. Missing `type` defaults to `openapi`. The latest `browser-profile` sub-spec is published separately as `versions/browser.1.7.{json,md}`.
 
 ## Step 2: Bind Operations
 
@@ -112,7 +112,7 @@ operations:
 
 Do not add HTTP method, path, channel, server URL, or security configuration here. Those belong to the source document and the bound runtime.
 
-UWS 1.7 does not standardize Ansible module calls. A product may define its own
+UWS 1.9 does not standardize Ansible module calls. A product may define its own
 extension-owned operation profile, but that profile is not portable UWS
 behavior and must not use a retired UWS-owned profile identifier.
 

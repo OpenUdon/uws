@@ -30,7 +30,14 @@ The published JSON Schema (`versions/1.9.0.json`) validates document shape:
 - Structural-type field constraints (`loop` requires `items`, `await` requires `wait`, etc.)
 - `StructuralResult.from` linkage and kind/type match
 - `dependsOn` cycle detection
+- Direct and indirect recursive workflow-call detection
 - Component variable key patterns
+
+`validation.ValidateDocumentFile` and the browser-profile helpers enable the
+built-in JSON Schema format assertions used by UWS contracts. The lower-level
+generic `validation.ValidateFile` follows JSON Schema draft 2020-12 and leaves
+`format` as an annotation unless the supplied schema requires the assertion
+vocabulary.
 
 ## The Go API
 

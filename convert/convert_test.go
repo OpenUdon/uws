@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/OpenUdon/uws/uws1"
 )
@@ -177,6 +178,185 @@ func TestMarshalHCLDoesNotMutateDocument(t *testing.T) {
 
 	if !reflect.DeepEqual(original, after) {
 		t.Fatalf("MarshalHCL mutated the source document:\noriginal=%s\nafter=%s", original, after)
+	}
+}
+
+func TestJSONToHCLRejectsIrreversibleDynamicKeys(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		payload string
+		path    string
+	}{
+		{
+			name:    "legacy reserved spelling",
+			payload: `"variables":{"nested":{"_ref":"literal"}},`,
+			path:    "variables",
+		},
+		{
+			name:    "dynamic dollar spelling",
+			payload: `"x-meta":{"nested":[[{"__dollar__expr":"literal"}]]},`,
+			path:    "document",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			data := []byte(`{
+  "uws":"1.9.0",
+  "info":{"title":"collision","version":"1.0.0"},
+  ` + tc.payload + `
+  "operations":[{"operationId":"op","x-uws-operation-profile":"test"}]
+}`)
+			_, err := JSONToHCL(data)
+			if err == nil || !strings.Contains(err.Error(), tc.path) || !strings.Contains(err.Error(), "irreversibly decoded") {
+				t.Fatalf("JSONToHCL error = %v", err)
+			}
+		})
+	}
+}
+
+func TestHCLRoundTripPreservesEscapedStringMatrix(t *testing.T) {
+	tricky := "quote=\" backslash=\\ newline=\n interpolation=${literal} directive=%{literal} sentinel=\x00ESCAPED_N\x00"
+	doc := &uws1.Document{
+		UWS: "1.9.0",
+		Info: &uws1.Info{
+			Title:       "strings",
+			Description: tricky,
+			Version:     "1.0.0",
+		},
+		Variables: map[string]any{"nested": map[string]any{"value": tricky}},
+		Operations: []*uws1.Operation{{
+			OperationID: "op",
+			Description: tricky,
+			SuccessCriteria: []*uws1.Criterion{{
+				Condition: "value == \"quoted\"\\path\nnext", Type: uws1.CriterionSimple,
+			}},
+			Outputs: map[string]string{"value": "quoted=\"yes\"\\path\nnext"},
+			Extensions: map[string]any{
+				uws1.ExtensionOperationProfile: "test",
+				"x-nested":                     map[string]any{"value": tricky},
+			},
+		}},
+		Workflows: []*uws1.Workflow{{
+			WorkflowID: "main", Type: uws1.WorkflowTypeSwitch,
+			Cases: []*uws1.Case{{
+				CaseFields: uws1.CaseFields{Name: "case", When: "value == \"quoted\"\\path\nnext"},
+				Steps:      []*uws1.Step{{StepID: "op_step", OperationRef: "op"}},
+			}},
+		}},
+	}
+
+	encoded, err := MarshalHCL(doc)
+	if err != nil {
+		t.Fatalf("MarshalHCL: %v", err)
+	}
+	var got uws1.Document
+	if err := UnmarshalHCL(encoded, &got); err != nil {
+		t.Fatalf("UnmarshalHCL: %v\n%s", err, encoded)
+	}
+	compareUWSDocs(t, doc, &got)
+}
+
+func FuzzHCLStringRoundTrip(f *testing.F) {
+	for _, seed := range []string{
+		"plain",
+		"quote=\" slash=\\ newline=\n",
+		"${literal} %{directive}",
+		"\x00ESCAPED_N\x00 and \\n and \\\"",
+	} {
+		f.Add(seed)
+	}
+	f.Fuzz(func(t *testing.T, value string) {
+		if !utf8.ValidString(value) {
+			t.Skip()
+		}
+		for _, r := range value {
+			if r < 0x20 && r != '\n' && r != '\r' && r != '\t' {
+				t.Skip()
+			}
+		}
+		doc := testDocument()
+		doc.Info.Description = value
+		doc.Operations[0].Description = value
+		doc.Operations[0].SuccessCriteria = []*uws1.Criterion{{Condition: value}}
+		doc.Operations[0].Outputs = map[string]string{"value": value}
+		doc.Operations[0].Extensions = map[string]any{"x-value": value}
+		doc.Workflows[0].Cases = []*uws1.Case{{CaseFields: uws1.CaseFields{Name: "seed", When: value}}}
+		doc.Variables = map[string]any{"nested": map[string]any{"value": value}}
+
+		encoded, err := MarshalHCL(doc)
+		if err != nil {
+			t.Fatalf("MarshalHCL(%q): %v", value, err)
+		}
+		var got uws1.Document
+		if err := UnmarshalHCL(encoded, &got); err != nil {
+			t.Fatalf("UnmarshalHCL(%q): %v\n%s", value, err, encoded)
+		}
+		compareUWSDocs(t, doc, &got)
+	})
+}
+
+func TestJSONToYAMLPreservesNumericLexemes(t *testing.T) {
+	data := []byte(`{"large":900719925474099312345,"decimal":1.2300,"exponent":1e+09}`)
+	encoded, err := JSONToYAML(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	yamlText := string(encoded)
+	for _, lexeme := range []string{"900719925474099312345", "1.2300", "1e+09"} {
+		if !strings.Contains(yamlText, lexeme) {
+			t.Fatalf("YAML lost numeric lexeme %q:\n%s", lexeme, yamlText)
+		}
+	}
+
+	roundTripped, err := YAMLToJSON(encoded)
+	if err != nil {
+		t.Fatalf("YAMLToJSON failed: %v\n%s", err, encoded)
+	}
+	var values map[string]json.RawMessage
+	if err := json.Unmarshal(roundTripped, &values); err != nil {
+		t.Fatal(err)
+	}
+	for name, lexeme := range map[string]string{
+		"large":    "900719925474099312345",
+		"decimal":  "1.2300",
+		"exponent": "1e+09",
+	} {
+		if got := string(values[name]); got != lexeme {
+			t.Errorf("round-tripped %s = %s, want %s", name, got, lexeme)
+		}
+	}
+}
+
+func TestYAMLToJSONRejectsNonStringMappingKeys(t *testing.T) {
+	for _, data := range []string{
+		"1: numeric\n",
+		"outer:\n  true: boolean\n",
+	} {
+		_, err := YAMLToJSON([]byte(data))
+		if err == nil || !strings.Contains(err.Error(), "only string keys are supported") {
+			t.Fatalf("YAMLToJSON(%q) error = %v", data, err)
+		}
+	}
+}
+
+func TestYAMLToJSONPreservesMergeSemantics(t *testing.T) {
+	data := []byte("defaults: &defaults\n  large: 900719925474099312345\n  kept: default\nvalue:\n  <<: *defaults\n  kept: explicit\n")
+	encoded, err := YAMLToJSON(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var values map[string]json.RawMessage
+	if err := json.Unmarshal(encoded, &values); err != nil {
+		t.Fatal(err)
+	}
+	var merged map[string]json.RawMessage
+	if err := json.Unmarshal(values["value"], &merged); err != nil {
+		t.Fatal(err)
+	}
+	if got := string(merged["large"]); got != "900719925474099312345" {
+		t.Errorf("merged large = %s", got)
+	}
+	if got := string(merged["kept"]); got != `"explicit"` {
+		t.Errorf("merged kept = %s", got)
 	}
 }
 

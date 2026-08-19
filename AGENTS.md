@@ -41,9 +41,9 @@ type Document struct {
 `Document.Execute()` constructs an `Orchestrator`, and the orchestrator walks workflows, steps, and dependencies. Leaf operations are delegated to the bound runtime.
 
 ```go
-func (d *Document) Execute() error {
+func (d *Document) Execute(ctx context.Context) error {
     orch := NewOrchestrator(d, d.Runtime)
-    return orch.Execute(context.Background())
+    return orch.Execute(ctx)
 }
 ```
 

@@ -7,7 +7,7 @@ credentials, rendering, or any specific browser automation protocol
 (WebDriver, WebDriver BiDi, Chrome DevTools Protocol, Playwright, Puppeteer).
 Those remain runtime-private.
 
-UWS core (the main `versions/1.5.0.json` schema) only references this profile
+UWS core (the current `versions/1.9.0.json` schema) only references this profile
 by *type name* and reuses the existing generic `sourceOperationId` /
 `sourceOperationRef` selector rules. Validating a profile document against the
 constraints below — locator vocabulary, declarative action vocabulary, output
@@ -321,7 +321,8 @@ JSON and YAML use normal `sourceDescriptions` / `operations` fields with
 main-only profile that does not need context-qualified steps or outputs SHOULD
 continue to use browser 1.5 and may be bound from UWS 1.7. Context-aware
 profiles without typed accessibility conversion MAY continue to use browser
-1.6 with UWS 1.8. Browser 1.7 requires UWS 1.9 and Browserdriver protocol v3.
+1.6 with UWS 1.8. Browser 1.7 requires UWS 1.9; the concrete browser-driver
+protocol remains a downstream runtime implementation detail.
 Browser-aware validators select the schema from the document's exact `profile`
 discriminator and reject unknown versions. Authentication remains the separate
 `uws.browser-authentication.1.1` contract.

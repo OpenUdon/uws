@@ -59,6 +59,58 @@ func TestValidateFileRejectsInvalidAndUnsupportedDocuments(t *testing.T) {
 	}
 }
 
+func TestFormatAssertionsAreScopedToUWSValidation(t *testing.T) {
+	dir := t.TempDir()
+	schemaPath := filepath.Join(dir, "format-schema.json")
+	documentPath := filepath.Join(dir, "value.json")
+	if err := os.WriteFile(schemaPath, []byte(`{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "format": "date-time"
+}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(documentPath, []byte(`"not-a-date"`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Draft 2020-12 treats format as an annotation unless the assertion
+	// vocabulary is enabled by the application.
+	if err := ValidateFile(schemaPath, documentPath); err != nil {
+		t.Fatalf("generic ValidateFile asserted format: %v", err)
+	}
+
+	schema, err := compileSchema(schemaPath, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	value, err := loadSchemaValue(documentPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := schema.Validate(value); err == nil {
+		t.Fatal("format assertion unexpectedly accepted invalid date-time")
+	}
+}
+
+func TestValidateDocumentFileAssertsUWSFormats(t *testing.T) {
+	dir := t.TempDir()
+	documentPath := filepath.Join(dir, "invalid-uri.uws.json")
+	data := []byte(`{
+  "uws":"1.9.0",
+  "info":{"title":"format","version":"1.0.0"},
+  "sourceDescriptions":[{"name":"api","url":"\\\\bad","type":"openapi"}],
+  "operations":[{"operationId":"op","sourceDescription":"api","sourceOperationId":"get"}]
+}`)
+	if err := os.WriteFile(documentPath, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := ValidateDocumentFile(documentPath); err == nil || !strings.Contains(err.Error(), "uri-reference") {
+		t.Fatalf("ValidateDocumentFile error = %v", err)
+	}
+}
+
 func TestValidateFileAcceptsVersionedUWSDocuments(t *testing.T) {
 	for _, tc := range []struct {
 		name    string

@@ -18,7 +18,11 @@ import (
 
 // ValidateFile validates one JSON or YAML document against the supplied JSON Schema.
 func ValidateFile(schemaPath, documentPath string) error {
-	schema, err := compileSchema(schemaPath)
+	return validateFile(schemaPath, documentPath, false)
+}
+
+func validateFile(schemaPath, documentPath string, assertFormats bool) error {
+	schema, err := compileSchema(schemaPath, assertFormats)
 	if err != nil {
 		return err
 	}
@@ -61,7 +65,7 @@ func ValidateDocumentFile(path string) (*uws1.Document, error) {
 	}
 	schemaPath := schemas.PathForVersion(filepath.Dir(path), version)
 	if isRawSchemaDocument(path) {
-		if err := ValidateFile(schemaPath, path); err != nil {
+		if err := validateFile(schemaPath, path, true); err != nil {
 			return nil, err
 		}
 	} else {
@@ -102,7 +106,7 @@ func CollectArtifactFiles(root string) ([]string, error) {
 	return files, nil
 }
 
-func compileSchema(path string) (*jsonschema.Schema, error) {
+func compileSchema(path string, assertFormats bool) (*jsonschema.Schema, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("read schema %s: %w", path, err)
@@ -112,6 +116,9 @@ func compileSchema(path string) (*jsonschema.Schema, error) {
 		return nil, fmt.Errorf("parse schema %s: %w", path, err)
 	}
 	compiler := jsonschema.NewCompiler()
+	if assertFormats {
+		compiler.AssertFormat()
+	}
 	if err := compiler.AddResource(path, doc); err != nil {
 		return nil, fmt.Errorf("add schema resource %s: %w", path, err)
 	}
@@ -165,7 +172,7 @@ func parseDocument(path string, data []byte) (*uws1.Document, error) {
 }
 
 func validateDocumentAgainstSchema(schemaPath string, doc *uws1.Document, documentPath string) error {
-	schema, err := compileSchema(schemaPath)
+	schema, err := compileSchema(schemaPath, true)
 	if err != nil {
 		return err
 	}

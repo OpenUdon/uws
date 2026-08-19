@@ -8,31 +8,15 @@ import (
 )
 
 func (o *Orchestrator) withRecordContext(ctx context.Context) context.Context {
-	state, ok := ExecutionContextFromContext(ctx)
-	if !ok || state == nil {
-		state = &ExecutionContext{}
-	}
-	state.Iteration = cloneIteration(state.Iteration)
-	state.Trigger = cloneTriggerContext(state.Trigger)
-	state.Inputs = cloneInputs(state.Inputs)
+	state, _ := ExecutionContextFromContext(ctx)
+	state = cloneExecutionContext(state)
 	state.Records = o.snapshotRecords()
-	state.Current = cloneCurrentExecution(state.Current)
 	return WithExecutionContext(ctx, state)
 }
 
 func (o *Orchestrator) withIterationContext(ctx context.Context, item any, index int, batch []any, batchIndex int) context.Context {
-	state, ok := ExecutionContextFromContext(ctx)
-	if !ok || state == nil {
-		state = &ExecutionContext{}
-	} else {
-		state = &ExecutionContext{
-			Iteration: cloneIteration(state.Iteration),
-			Trigger:   cloneTriggerContext(state.Trigger),
-			Inputs:    cloneInputs(state.Inputs),
-			Records:   state.Records,
-			Current:   cloneCurrentExecution(state.Current),
-		}
-	}
+	state, _ := ExecutionContextFromContext(ctx)
+	state = cloneExecutionContext(state)
 	state.Iteration = &IterationContext{
 		Item:       item,
 		Index:      index,
@@ -42,7 +26,9 @@ func (o *Orchestrator) withIterationContext(ctx context.Context, item any, index
 	if state.Records == nil {
 		state.Records = o.snapshotRecords()
 	}
-	return WithExecutionContext(ctx, state)
+	path := append(iterationPathFromContext(ctx), index)
+	ctx = WithExecutionContext(ctx, state)
+	return withIterationPath(ctx, path)
 }
 
 func cloneIteration(iteration *IterationContext) *IterationContext {
@@ -90,18 +76,8 @@ func (o *Orchestrator) writeRecordLocked(key string, record ExecutionRecord) {
 }
 
 func (o *Orchestrator) withCurrentExecutionContext(ctx context.Context, key, id, kind, responseID string, outputs map[string]any) context.Context {
-	state, ok := ExecutionContextFromContext(ctx)
-	if !ok || state == nil {
-		state = &ExecutionContext{}
-	} else {
-		state = &ExecutionContext{
-			Iteration: cloneIteration(state.Iteration),
-			Trigger:   cloneTriggerContext(state.Trigger),
-			Inputs:    cloneInputs(state.Inputs),
-			Records:   state.Records,
-			Current:   cloneCurrentExecution(state.Current),
-		}
-	}
+	state, _ := ExecutionContextFromContext(ctx)
+	state = cloneExecutionContext(state)
 	state.Current = &CurrentExecutionContext{
 		Key:        key,
 		ID:         id,
@@ -116,18 +92,8 @@ func (o *Orchestrator) withCurrentExecutionContext(ctx context.Context, key, id,
 }
 
 func withInputsContext(ctx context.Context, inputs map[string]any) context.Context {
-	state, ok := ExecutionContextFromContext(ctx)
-	if !ok || state == nil {
-		state = &ExecutionContext{}
-	} else {
-		state = &ExecutionContext{
-			Iteration: cloneIteration(state.Iteration),
-			Trigger:   cloneTriggerContext(state.Trigger),
-			Inputs:    cloneInputs(state.Inputs),
-			Records:   state.Records,
-			Current:   cloneCurrentExecution(state.Current),
-		}
-	}
+	state, _ := ExecutionContextFromContext(ctx)
+	state = cloneExecutionContext(state)
 	state.Inputs = cloneInputs(inputs)
 	return WithExecutionContext(ctx, state)
 }
@@ -186,9 +152,9 @@ func cloneInputs(src map[string]any) map[string]any {
 }
 
 func (o *Orchestrator) keyForContext(ctx context.Context, key string) string {
-	state, ok := ExecutionContextFromContext(ctx)
-	if !ok || state == nil || state.Iteration == nil {
+	path := iterationPathFromContext(ctx)
+	if len(path) == 0 {
 		return key
 	}
-	return compositeKey(key, state.Iteration.Index)
+	return compositeIterationKey(key, path)
 }

@@ -3,7 +3,7 @@
 > This document is retained for UWS 1.6 documents only. UWS 1.7 removed the
 > `ansible-module` source type and defines no replacement Ansible operation
 > profile. A module-call supplement mentioned by older amendments was also
-> retired; its documents and Go helpers are available at commit `87644c1`.
+> retired; its documents and Go helpers are available at commit `a68a209`.
 
 The UWS Ansible Module Argspec Format is the normalized document shape for
 Ansible collection argument specifications. It is inert metadata for conversion

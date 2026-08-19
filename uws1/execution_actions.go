@@ -9,7 +9,12 @@ import (
 func (o *Orchestrator) executeOperation(ctx context.Context, op *Operation, key string) error {
 	attempts := 0
 	for {
-		err := o.Runtime.ExecuteLeaf(ctx, op)
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		err := executeWithTimeout(ctx, op.Timeout, func(attemptCtx context.Context) error {
+			return o.Runtime.ExecuteLeaf(attemptCtx, op)
+		})
 		opCtx := o.withCurrentExecutionContext(o.withRecordContext(ctx), o.keyForContext(ctx, key), op.OperationID, "operation", op.OperationID, nil)
 		if err == nil {
 			ok, critErr := o.criteriaMatchAll(opCtx, op.SuccessCriteria)

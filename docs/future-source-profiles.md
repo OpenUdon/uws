@@ -7,8 +7,8 @@ specification and JSON Schema.
 
 ## Status And Normativity
 
-This document is not part of the normative UWS 1.7 wire contract. The published
-UWS 1.7 source description types are `openapi`, `google-discovery`,
+This document is not part of the normative UWS 1.9 wire contract. The published
+UWS 1.9 source description types are `openapi`, `google-discovery`,
 `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and
 `browser-profile`; missing `sourceDescriptions[].type` still defaults to
 `openapi`.
@@ -17,11 +17,11 @@ The `v0.1.x` labels below are implementation-roadmap labels. They do not define
 released UWS versions, JSON Schema changes, Go model changes, or new validator
 behavior by themselves. AsyncAPI has graduated into UWS 1.3; GraphQL, OpenRPC,
 gRPC/protobuf, and OData have graduated into UWS 1.4; browser capability
-profiles have graduated into UWS 1.5 (`browser-profile`) with a separate
-published sub-spec at `versions/browser.1.5.{json,md}`. Ansible modules
+profiles have graduated into UWS 1.5 (`browser-profile`), whose latest separate
+sub-spec is `versions/browser.1.7.{json,md}`. Ansible modules
 graduated into UWS 1.6 (`ansible-module`) and were **withdrawn in UWS 1.7**;
 `versions/ansible.1.0.{json,md}` remains only as historical UWS 1.6 material.
-UWS 1.7 defines no replacement Ansible operation profile.
+UWS 1.9 defines no replacement Ansible operation profile.
 
 Examples in this note are illustrative future shapes unless a section explicitly
 labels them as valid today. Pre-1.5 documents that need browser/UI work used
@@ -98,7 +98,7 @@ Three shapes are disqualifying, and each has an existing home:
   machine-readable operation contract, but it is published by the collection
   maintainer and describes a module the control node copies onto the host. That
   is a client-side library manifest. These do not belong in
-  `sourceDescriptions`; UWS 1.7 does not standardize an Ansible replacement.
+  `sourceDescriptions`; UWS 1.9 does not standardize an Ansible replacement.
 
 Opaque executables — shell and Python scripts, spreadsheet macros, arbitrary
 commands — fail the first criterion outright: there is no published contract to
@@ -111,7 +111,7 @@ Applied to families evaluated so far:
 | Candidate | Names operations? | Contract source | Result |
 | --- | --- | --- | --- |
 | OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, OData | Yes | Provider | First-class, strong |
-| Ansible modules (`ansible-doc --json`) | Yes, but the host implements none of them | Collection maintainer, not the target | **Not supported in UWS 1.7** |
+| Ansible modules (`ansible-doc --json`) | Yes, but the host implements none of them | Collection maintainer, not the target | **Not supported in UWS 1.9** |
 | Browser capability profiles | Yes | Author-asserted | First-class, weak |
 | Salt execution modules | Yes, but client-shipped like Ansible | Collection maintainer | Not a source; operation profile |
 | Terraform / OpenTofu, Puppet, Chef, systemd units, Kubernetes CRDs | No — names types | Provider | Not a source; lower into API source types |
@@ -687,7 +687,7 @@ pass.
 `ansible-module` was removed from the source-type enum in `versions/1.7.0.json`.
 UWS 1.7 defines no Ansible operation profile. A module-call supplement was
 briefly published during the transition and was later retired; its documents
-and Go helpers remain available from repository history at commit `87644c1`.
+and Go helpers remain available from repository history at commit `a68a209`.
 `versions/ansible.1.0.{json,md}` remains only as historical UWS 1.6 material.
 
 Documents declaring `uws: 1.6.0` are unaffected — `versions/1.6.0.json` still

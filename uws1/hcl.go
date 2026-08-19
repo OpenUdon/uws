@@ -328,43 +328,66 @@ func transformExtensionsFromHCL(extensions map[string]any) {
 }
 
 func escapeForHCL(s string) string {
-	// Escape HCL template interpolation/directive introducers so literal
-	// "${...}" / "%{...}" values are not evaluated when the HCL is parsed back.
-	// The HCL parser reverses "$${"->"${" and "%%{"->"%{", so the round trip is
-	// symmetric without an explicit unescape step.
-	s = strings.ReplaceAll(s, "${", "$${")
-	s = strings.ReplaceAll(s, "%{", "%%{")
-	s = strings.ReplaceAll(s, "\\n", "\x00ESCAPED_N\x00")
-	s = strings.ReplaceAll(s, "\\\"", "\x00ESCAPED_Q\x00")
-	s = strings.ReplaceAll(s, "\n", "\\n")
-	s = strings.ReplaceAll(s, "\"", "\\\"")
-	s = strings.ReplaceAll(s, "\x00ESCAPED_N\x00", "\\\\n")
-	s = strings.ReplaceAll(s, "\x00ESCAPED_Q\x00", "\\\\\"")
-	return s
+	return encodeHCLString(s, false)
 }
 
 func escapeNewlines(s string) string {
-	s = strings.ReplaceAll(s, "\\n", "\x00ESCAPED_N\x00")
-	s = strings.ReplaceAll(s, "\n", "\\n")
-	s = strings.ReplaceAll(s, "\x00ESCAPED_N\x00", "\\\\n")
-	return s
+	return encodeHCLString(s, true)
 }
 
 func unescapeNewlines(s string) string {
-	s = strings.ReplaceAll(s, "\\\\n", "\x00ESCAPED_N\x00")
-	s = strings.ReplaceAll(s, "\\n", "\n")
-	s = strings.ReplaceAll(s, "\x00ESCAPED_N\x00", "\\n")
-	return s
+	var b strings.Builder
+	b.Grow(len(s))
+	for i := 0; i < len(s); i++ {
+		if (s[i] == '$' || s[i] == '%') && i+2 < len(s) && s[i+1] == s[i] && s[i+2] == '{' {
+			b.WriteByte(s[i])
+			i++
+			continue
+		}
+		if s[i] != '\\' || i+1 >= len(s) {
+			b.WriteByte(s[i])
+			continue
+		}
+		switch s[i+1] {
+		case '\\':
+			b.WriteByte('\\')
+			i++
+		case 'n':
+			b.WriteByte('\n')
+			i++
+		default:
+			b.WriteByte(s[i])
+		}
+	}
+	return b.String()
 }
 
 func unescapeFromHCL(s string) string {
-	s = strings.ReplaceAll(s, "\\\\n", "\x00ESCAPED_N\x00")
-	s = strings.ReplaceAll(s, "\\\\\"", "\x00ESCAPED_Q\x00")
-	s = strings.ReplaceAll(s, "\\n", "\n")
-	s = strings.ReplaceAll(s, "\\\"", "\"")
-	s = strings.ReplaceAll(s, "\x00ESCAPED_N\x00", "\\n")
-	s = strings.ReplaceAll(s, "\x00ESCAPED_Q\x00", "\\\"")
 	return s
+}
+
+// encodeHCLString performs one pass over a string before dethcl emits it.
+// Dynamic HCL values reverse doubled template introducers while parsing, and
+// unescapeNewlines mirrors them for description fields. Dethcl handles ordinary
+// quotes and control characters. Descriptions retain the historical
+// escaped-newline representation, so their backslashes are also encoded.
+func encodeHCLString(s string, encodeNewlines bool) string {
+	var b strings.Builder
+	b.Grow(len(s))
+	for i := 0; i < len(s); i++ {
+		switch {
+		case (s[i] == '$' || s[i] == '%') && i+1 < len(s) && s[i+1] == '{':
+			b.WriteByte(s[i])
+			b.WriteByte(s[i])
+		case encodeNewlines && s[i] == '\\':
+			b.WriteString(`\\`)
+		case encodeNewlines && s[i] == '\n':
+			b.WriteString(`\n`)
+		default:
+			b.WriteByte(s[i])
+		}
+	}
+	return b.String()
 }
 
 func transformDocumentForHCL(doc *Document) {
@@ -405,5 +428,39 @@ func validateHCLSerializable(doc *Document) error {
 	if doc == nil {
 		return fmt.Errorf("document is nil")
 	}
-	return nil
+	validateMap := func(path string, value map[string]any) error {
+		return validateHCLDynamicKeys(path, value)
+	}
+	return walkDocumentHCL(doc, documentHCLWalkHandlers{
+		dynamicMap: func(path string, value *map[string]any) error {
+			return validateMap(path, *value)
+		},
+		extensions: validateMap,
+	})
+}
+
+func validateHCLDynamicKeys(ownerPath string, value map[string]any) error {
+	var visit func(any, string) error
+	visit = func(current any, valuePath string) error {
+		switch typed := current.(type) {
+		case map[string]any:
+			for key, child := range typed {
+				childPath := valuePath + "." + key
+				if decoded := fromHCLKey(key); decoded != key {
+					return fmt.Errorf("%s: dynamic key %q at %s would be irreversibly decoded as %q in HCL", ownerPath, key, childPath, decoded)
+				}
+				if err := visit(child, childPath); err != nil {
+					return err
+				}
+			}
+		case []any:
+			for i, item := range typed {
+				if err := visit(item, fmt.Sprintf("%s[%d]", valuePath, i)); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+	return visit(value, ownerPath)
 }

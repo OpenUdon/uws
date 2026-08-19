@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
@@ -28,6 +29,39 @@ func TestOperationExtensionRoundTrip(t *testing.T) {
 	if !ok || got.Profile != want.Profile || got.Session != want.Session || got.CredentialBindings["password"] != "member_password" {
 		t.Fatalf("round trip = %#v, %v", got, ok)
 	}
+}
+
+func TestStepUnionRequiresExactlyOneArm(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		json string
+		yaml string
+	}{
+		{name: "empty", json: `{}`, yaml: `{}`},
+		{
+			name: "multiple",
+			json: `{"navigate":"https://example.test","click":{"locator":{"role":"button"}}}`,
+			yaml: "navigate: https://example.test\nclick:\n  locator:\n    role: button\n",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var jsonStep Step
+			require.ErrorContains(t, json.Unmarshal([]byte(tc.json), &jsonStep), "exactly one")
+			var yamlStep Step
+			require.ErrorContains(t, yaml.Unmarshal([]byte(tc.yaml), &yamlStep), "exactly one")
+		})
+	}
+
+	_, err := json.Marshal(Step{})
+	require.ErrorContains(t, err, "exactly one")
+	_, err = yaml.Marshal(Step{Navigate: "https://example.test", Click: &ClickStep{}})
+	require.ErrorContains(t, err, "exactly one")
+	_, err = json.Marshal(Step{Navigate: "https://example.test", NavigateTarget: &NavigateStep{URL: "https://example.test"}})
+	require.ErrorContains(t, err, "both navigate forms")
+
+	var withNullNavigation Step
+	require.NoError(t, yaml.Unmarshal([]byte("navigate: null\nclick:\n  locator:\n    role: button\n"), &withNullNavigation))
+	require.NotNil(t, withNullNavigation.Click)
 }
 
 func TestSessionExtensionRoundTrip(t *testing.T) {

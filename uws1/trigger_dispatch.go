@@ -26,17 +26,7 @@ func (o *Orchestrator) ExecuteTrigger(ctx context.Context, triggerID string, out
 		Payload:    payload,
 	}
 	state, _ := ExecutionContextFromContext(ctx)
-	if state == nil {
-		state = &ExecutionContext{}
-	} else {
-		state = &ExecutionContext{
-			Iteration: cloneIteration(state.Iteration),
-			Trigger:   cloneTriggerContext(state.Trigger),
-			Inputs:    cloneInputs(state.Inputs),
-			Records:   state.Records,
-			Current:   cloneCurrentExecution(state.Current),
-		}
-	}
+	state = cloneExecutionContext(state)
 	state.Trigger = triggerCtx
 	return o.executeWithSignals(WithExecutionContext(ctx, state), func(ctx context.Context) error {
 		for _, target := range targets {
@@ -92,14 +82,15 @@ func triggerRouteMatchesOutput(route *TriggerRoute, trigger *Trigger, output int
 	if route == nil {
 		return false
 	}
-	if route.Output == strconv.Itoa(output) {
-		return true
+	// A declared label wins over decimal-index interpretation. Without this
+	// ordering, a label such as "0" could route both output zero and the output
+	// whose declared name is "0".
+	for _, label := range trigger.Outputs {
+		if route.Output == label {
+			return output >= 0 && output < len(trigger.Outputs) && trigger.Outputs[output] == label
+		}
 	}
-	if output < 0 || output >= len(trigger.Outputs) {
-		return false
-	}
-	return resolveTriggerOutput(route.Output, trigger.Outputs, map[string]bool{trigger.Outputs[output]: true}) &&
-		trigger.Outputs[output] == route.Output
+	return route.Output == strconv.Itoa(output)
 }
 
 func triggerOutputName(trigger *Trigger, output int) string {

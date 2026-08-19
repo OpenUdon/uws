@@ -355,7 +355,10 @@ func validateAuthenticationOrigin(raw string) error {
 }
 
 func canonicalAuthenticationOrigin(raw string) string {
-	parsed, _ := url.Parse(raw)
+	parsed, err := url.Parse(raw)
+	if err != nil || parsed == nil || parsed.Host == "" {
+		return ""
+	}
 	host := strings.ToLower(parsed.Hostname())
 	port := parsed.Port()
 	if (parsed.Scheme == "https" && port == "443") || (parsed.Scheme == "http" && port == "80") {
@@ -697,6 +700,7 @@ func compileEmbeddedSchema(name string) (*jsonschema.Schema, error) {
 		return nil, fmt.Errorf("decode embedded %s schema: %w", name, err)
 	}
 	compiler := jsonschema.NewCompiler()
+	compiler.AssertFormat()
 	if err := compiler.AddResource(name, document); err != nil {
 		return nil, fmt.Errorf("register embedded %s schema: %w", name, err)
 	}

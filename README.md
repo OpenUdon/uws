@@ -54,6 +54,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - `uws1` contains the UWS 1.x Go model, structural vocabulary, and structural validation.
 - `convert` converts UWS documents between JSON, YAML, and the HCL authoring form.
 - `schemas` locates version documents and validates the separately versioned browser profiles. Go schema APIs formerly under `versions` moved here so `versions/` contains documents only.
+- `validation` loads JSON, YAML, or HCL artifacts and applies versioned JSON Schema plus semantic validation.
 - `runtimes` contains the public `uws.runtime.1.0` supplement constants, wire structs, and extension helpers.
 - `browserauthentication` contains the additive secret-free sign-in profile and named-session operation extension types.
 - `versions/1.9.0.md` is the human-readable UWS 1.9 specification.
@@ -66,13 +67,13 @@ The UWS-owned Ansible module-call supplement, its `ansiblemodulecall` Go package
 and its schema accessors were removed when 1.7 support was retired. UWS 1.6
 documents still validate. Consumers of those historical UWS-named Go contracts
 must pin an older revision; the last published pre-removal tree is commit
-`87644c1`. Ramen instead localizes its static conversion-only implementation
-under `internal/ansibleconvert` with Ramen-owned identifiers. It is not a
+`a68a209`. The Ramen repository instead keeps its static conversion-only
+implementation in its own `internal/ansibleconvert` package with Ramen-owned identifiers. It is not a
 compatibility copy and does not accept the retired UWS Ansible identifiers.
 This recovers the historical files into the current directory:
 
 ```bash
-git archive 87644c1 ansiblemodulecall versions/ansible.1.0.json versions/ansible.1.0.md versions/ansible-module-call.1.0.json versions/ansible-module-call.1.0.md | tar -x
+git archive a68a209 ansiblemodulecall versions/ansible.1.0.json versions/ansible.1.0.md versions/ansible-module-call.1.0.json versions/ansible-module-call.1.0.md | tar -x
 ```
 
 The browser-authentication documents are separate profiles rather than part of

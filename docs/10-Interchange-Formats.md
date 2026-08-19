@@ -268,7 +268,7 @@ JSON Schema keys like `$ref`, `$id`, `$defs` are not valid HCL identifiers. The 
 ```yaml
 # YAML
 inputs:
-  _ref: "#/components/schemas/OrderInput"
+  $ref: "#/components/schemas/OrderInput"
 ```
 
 ```hcl
@@ -277,6 +277,16 @@ inputs = { _ref = "#/components/schemas/OrderInput" }
 ```
 
 Round-tripping through HCL → JSON restores `$ref` exactly.
+
+Literal dynamic-map keys that already use an encoded HCL spelling, such as
+`_ref` or `__dollar__customKey`, are rejected when marshaling HCL. Accepting
+them would make the reverse conversion indistinguishable from `$ref` or
+`$customKey`; the error identifies the owning document path.
+
+JSON → YAML conversion retains each JSON number's exact lexical spelling,
+including integers larger than binary floating-point can represent exactly.
+YAML → JSON accepts only string mapping keys and rejects numeric, Boolean, or
+other key types instead of coercing them into potentially colliding strings.
 
 ## Round-Trip Guarantee
 

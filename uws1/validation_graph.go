@@ -117,3 +117,61 @@ func canonicalCycleKey(cycle []string) string {
 	rotated = append(rotated, cycle[:minIdx]...)
 	return strings.Join(rotated, "->")
 }
+
+// detectWorkflowRecursion rejects direct and indirect workflow-reference
+// cycles. Workflow calls are synchronous, so even a cycle without dependsOn
+// edges would otherwise re-enter an in-flight workflow and deadlock.
+func detectWorkflowRecursion(idx *documentIndex, result *ValidationResult) {
+	const (
+		unvisited = iota
+		visiting
+		visited
+	)
+	state := make(map[string]int, len(idx.workflows))
+	stack := make([]string, 0, len(idx.workflows))
+	reported := make(map[string]bool)
+
+	var visit func(string)
+	visit = func(workflowID string) {
+		state[workflowID] = visiting
+		stack = append(stack, workflowID)
+		for _, call := range idx.workflowCalls[workflowID] {
+			if idx.workflows[call.target] == nil {
+				continue
+			}
+			switch state[call.target] {
+			case unvisited:
+				visit(call.target)
+			case visiting:
+				start := 0
+				for i, id := range stack {
+					if id == call.target {
+						start = i
+						break
+					}
+				}
+				cycle := append([]string(nil), stack[start:]...)
+				key := canonicalCycleKey(cycle)
+				if reported[key] {
+					continue
+				}
+				reported[key] = true
+				cycle = append(cycle, call.target)
+				result.addError(call.path, fmt.Sprintf("recursive workflow call detected: %s", strings.Join(cycle, " -> ")))
+			}
+		}
+		stack = stack[:len(stack)-1]
+		state[workflowID] = visited
+	}
+
+	workflowIDs := make([]string, 0, len(idx.workflows))
+	for id := range idx.workflows {
+		workflowIDs = append(workflowIDs, id)
+	}
+	sort.Strings(workflowIDs)
+	for _, id := range workflowIDs {
+		if state[id] == unvisited {
+			visit(id)
+		}
+	}
+}

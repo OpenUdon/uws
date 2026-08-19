@@ -29,28 +29,45 @@ func (e *AwaitTimeoutError) Is(target error) bool {
 	return ok
 }
 
-func (o *Orchestrator) executeStructural(ctx context.Context, typeName string, deps []string, steps []*Step, cases []*Case, defaultSteps []*Step, itemsExpr, mode, batchSizeExpr, waitExpr, key string) error {
-	switch typeName {
+type structuralExecution struct {
+	typeName               string
+	dependencies           []string
+	steps                  []*Step
+	cases                  []*Case
+	defaultSteps           []*Step
+	items                  string
+	batchSize              string
+	wait                   string
+	key                    string
+	useDefaultAwaitTimeout bool
+}
+
+func (o *Orchestrator) executeStructural(ctx context.Context, spec structuralExecution) error {
+	key := o.keyForContext(ctx, spec.key)
+	switch spec.typeName {
 	case WorkflowTypeSequence:
-		return o.executeSteps(ctx, steps)
+		return o.executeSteps(ctx, spec.steps)
 	case WorkflowTypeParallel:
-		return o.executeStepsParallel(ctx, steps)
+		return o.executeStepsParallel(ctx, spec.steps)
 	case WorkflowTypeSwitch:
-		return o.executeSwitch(ctx, cases, defaultSteps)
+		return o.executeSwitch(ctx, spec.cases, spec.defaultSteps)
 	case WorkflowTypeMerge:
-		return o.executeMerge(ctx, deps, key)
+		return o.executeMerge(ctx, spec.dependencies, key)
 	case WorkflowTypeLoop:
-		return o.executeLoop(ctx, steps, itemsExpr, batchSizeExpr, key)
+		return o.executeLoop(ctx, spec.steps, spec.items, spec.batchSize, key)
 	case WorkflowTypeAwait:
-		return o.executeAwait(ctx, steps, waitExpr)
+		return o.executeAwait(ctx, spec.steps, spec.wait, spec.useDefaultAwaitTimeout)
 	default:
-		return fmt.Errorf("uws1: unsupported workflow type %q", typeName)
+		return fmt.Errorf("uws1: unsupported workflow type %q", spec.typeName)
 	}
 }
 
 // executeSteps executes a list of steps sequentially.
 func (o *Orchestrator) executeSteps(ctx context.Context, steps []*Step) error {
 	for _, step := range steps {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		if err := o.ExecuteStep(ctx, step); err != nil {
 			return err
 		}
@@ -207,6 +224,9 @@ func (o *Orchestrator) operationInvocationKeysLocked(operationID string) []strin
 
 // executeLoop executes a loop construct.
 func (o *Orchestrator) executeLoop(ctx context.Context, steps []*Step, itemsExpr, batchSizeExpr, key string) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	items, err := o.Runtime.ResolveItems(ctx, itemsExpr)
 	if err != nil {
 		return fmt.Errorf("resolving loop items: %w", err)
@@ -224,12 +244,18 @@ func (o *Orchestrator) executeLoop(ctx context.Context, steps []*Step, itemsExpr
 
 	var results []map[string]any
 	for batchIndex, start := 0, 0; start < len(items); batchIndex, start = batchIndex+1, start+batchSize {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		end := start + batchSize
 		if end > len(items) {
 			end = len(items)
 		}
 		batch := append([]any(nil), items[start:end]...)
 		for i, item := range batch {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
 			itemCtx := o.withIterationContext(ctx, item, start+i, batch, batchIndex)
 			if err := o.executeSteps(itemCtx, steps); err != nil {
 				return err
@@ -279,7 +305,7 @@ func (o *Orchestrator) resolveBatchSize(ctx context.Context, batchSizeExpr strin
 	}
 }
 
-func (o *Orchestrator) executeAwait(ctx context.Context, steps []*Step, waitExpr string) error {
+func (o *Orchestrator) executeAwait(ctx context.Context, steps []*Step, waitExpr string, useDefaultTimeout bool) error {
 	pollInterval := defaultAwaitPollInterval
 	if o != nil && o.Document != nil && o.Document.ExecutionOptions.AwaitPollInterval > 0 {
 		pollInterval = o.Document.ExecutionOptions.AwaitPollInterval
@@ -287,12 +313,15 @@ func (o *Orchestrator) executeAwait(ctx context.Context, steps []*Step, waitExpr
 	ticker := time.NewTicker(pollInterval)
 	defer ticker.Stop()
 	var timeout <-chan time.Time
-	if o != nil && o.Document != nil && o.Document.ExecutionOptions.AwaitTimeout > 0 {
+	if useDefaultTimeout && o != nil && o.Document != nil && o.Document.ExecutionOptions.AwaitTimeout > 0 {
 		timer := time.NewTimer(o.Document.ExecutionOptions.AwaitTimeout)
 		defer timer.Stop()
 		timeout = timer.C
 	}
 	for {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		ok, err := o.evaluateTruthy(ctx, waitExpr)
 		if err != nil {
 			return fmt.Errorf("evaluating await wait expression: %w", err)

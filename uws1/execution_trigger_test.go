@@ -85,6 +85,28 @@ func TestDocumentDispatchTriggerExecutesWorkflowTargets(t *testing.T) {
 	require.Contains(t, doc.ExecutionRecords(), "wf:secondary")
 }
 
+func TestTriggerNumericLabelTakesPrecedenceOverIndex(t *testing.T) {
+	doc := testDocument(&Operation{OperationID: "fetch"})
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		Steps:      []*Step{{StepID: "fetch_step", OperationRef: "fetch"}},
+	}}
+	doc.Triggers = []*Trigger{{
+		TriggerID: "incoming",
+		Outputs:   []string{"primary", "0"},
+		Routes: []*TriggerRoute{{
+			TriggerRouteFields: TriggerRouteFields{Output: "0", To: []string{"fetch_step"}},
+		}},
+	}}
+	runtime := &mockRuntime{}
+	doc.SetRuntime(runtime)
+
+	require.ErrorContains(t, doc.DispatchTrigger(context.Background(), "incoming", 0, nil), "no routed targets")
+	require.NoError(t, doc.DispatchTrigger(context.Background(), "incoming", 1, nil))
+	assert.Equal(t, []string{"fetch"}, runtime.leafs())
+}
+
 func TestDocumentDispatchTriggerRejectsUnknownTarget(t *testing.T) {
 	doc := testDocument(&Operation{OperationID: "fetch"})
 	doc.Workflows = []*Workflow{{

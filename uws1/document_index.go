@@ -18,6 +18,12 @@ type documentIndex struct {
 	parallelGroupMembers map[string][]string
 	sourceDescriptions   map[string]SourceDescriptionType
 	dependencies         map[string][]string
+	workflowCalls        map[string][]workflowCall
+}
+
+type workflowCall struct {
+	target string
+	path   string
 }
 
 func newDocumentIndex() *documentIndex {
@@ -34,6 +40,7 @@ func newDocumentIndex() *documentIndex {
 		parallelGroupMembers: make(map[string][]string),
 		sourceDescriptions:   make(map[string]SourceDescriptionType),
 		dependencies:         make(map[string][]string),
+		workflowCalls:        make(map[string][]workflowCall),
 	}
 }
 
@@ -87,15 +94,6 @@ func (idx *documentIndex) collectDocumentIDs(d *Document, result *ValidationResu
 				idx.dependencies[op.OperationID] = append(idx.dependencies[op.OperationID], op.DependsOn...)
 			}
 		}
-		if op.ParallelGroup != "" {
-			if idx.hasExecutableID(op.ParallelGroup) {
-				addIndexError(result, path+".parallelGroup", fmt.Sprintf("parallelGroup %q collides with an executable identifier", op.ParallelGroup))
-			}
-			idx.parallelGroups[op.ParallelGroup] = true
-			if op.OperationID != "" {
-				idx.parallelGroupMembers[op.ParallelGroup] = append(idx.parallelGroupMembers[op.ParallelGroup], op.OperationID)
-			}
-		}
 	}
 
 	for i, wf := range d.Workflows {
@@ -121,7 +119,15 @@ func (idx *documentIndex) collectDocumentIDs(d *Document, result *ValidationResu
 		idx.collectStepIDs(wf.Steps, path+".steps", result)
 		idx.collectCaseStepIDs(wf.Cases, path+".cases", result)
 		idx.collectStepIDs(wf.Default, path+".default", result)
+		if wf.WorkflowID != "" {
+			idx.collectWorkflowCalls(wf.WorkflowID, wf, path)
+		}
 	}
+
+	// Parallel-group names are validated only after every executable identifier
+	// has been collected, so declarations cannot evade collision checks merely
+	// by appearing before the colliding workflow or nested step.
+	idx.collectParallelGroups(d, result)
 
 	for i, trigger := range d.Triggers {
 		path := fmt.Sprintf("triggers[%d]", i)
@@ -229,15 +235,77 @@ func (idx *documentIndex) collectStepID(step *Step, path string, result *Validat
 			idx.dependencies[step.StepID] = append(idx.dependencies[step.StepID], step.DependsOn...)
 		}
 	}
-	if step.ParallelGroup != "" {
-		if idx.hasExecutableID(step.ParallelGroup) {
-			addIndexError(result, path+".parallelGroup", fmt.Sprintf("parallelGroup %q collides with an executable identifier", step.ParallelGroup))
+}
+
+func (idx *documentIndex) collectParallelGroups(d *Document, result *ValidationResult) {
+	add := func(group, member, path string) {
+		if group == "" {
+			return
 		}
-		idx.parallelGroups[step.ParallelGroup] = true
-		if step.StepID != "" {
-			idx.parallelGroupMembers[step.ParallelGroup] = append(idx.parallelGroupMembers[step.ParallelGroup], step.StepID)
+		if idx.hasExecutableID(group) {
+			addIndexError(result, path, fmt.Sprintf("parallelGroup %q collides with an executable identifier", group))
+		}
+		idx.parallelGroups[group] = true
+		if member != "" {
+			idx.parallelGroupMembers[group] = append(idx.parallelGroupMembers[group], member)
 		}
 	}
+	for i, op := range d.Operations {
+		if op != nil {
+			add(op.ParallelGroup, op.OperationID, fmt.Sprintf("operations[%d].parallelGroup", i))
+		}
+	}
+	for i, wf := range d.Workflows {
+		if wf == nil {
+			continue
+		}
+		base := fmt.Sprintf("workflows[%d]", i)
+		collectSteps := func(path string, steps []*Step) {
+			_ = walkStepTree(path, steps, stepTreeWalkHandlers{
+				step: func(stepPath string, step *Step) error {
+					add(step.ParallelGroup, step.StepID, stepPath+".parallelGroup")
+					return nil
+				},
+			})
+		}
+		collectSteps(base+".steps", wf.Steps)
+		_ = walkCaseTree(base+".cases", wf.Cases, stepTreeWalkHandlers{
+			step: func(stepPath string, step *Step) error {
+				add(step.ParallelGroup, step.StepID, stepPath+".parallelGroup")
+				return nil
+			},
+		})
+		collectSteps(base+".default", wf.Default)
+	}
+}
+
+func (idx *documentIndex) collectWorkflowCalls(workflowID string, wf *Workflow, path string) {
+	collect := func(base string, steps []*Step) {
+		_ = walkStepTree(base, steps, stepTreeWalkHandlers{
+			step: func(stepPath string, step *Step) error {
+				if step.Workflow != "" {
+					idx.workflowCalls[workflowID] = append(idx.workflowCalls[workflowID], workflowCall{
+						target: step.Workflow,
+						path:   stepPath + ".workflow",
+					})
+				}
+				return nil
+			},
+		})
+	}
+	collect(path+".steps", wf.Steps)
+	_ = walkCaseTree(path+".cases", wf.Cases, stepTreeWalkHandlers{
+		step: func(stepPath string, step *Step) error {
+			if step.Workflow != "" {
+				idx.workflowCalls[workflowID] = append(idx.workflowCalls[workflowID], workflowCall{
+					target: step.Workflow,
+					path:   stepPath + ".workflow",
+				})
+			}
+			return nil
+		},
+	})
+	collect(path+".default", wf.Default)
 }
 
 func (idx *documentIndex) hasExecutableID(name string) bool {

@@ -166,6 +166,9 @@ type stepWire struct {
 // MarshalJSON preserves the historical navigate string and emits the object
 // form only when NavigateTarget is set.
 func (s Step) MarshalJSON() ([]byte, error) {
+	if err := s.validateUnion(); err != nil {
+		return nil, err
+	}
 	return json.Marshal(s.wire())
 }
 
@@ -181,6 +184,18 @@ func (s *Step) UnmarshalJSON(data []byte) error {
 	}
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
+	}
+	armCount := 0
+	if len(raw.Navigate) > 0 && string(raw.Navigate) != "null" {
+		armCount++
+	}
+	for _, present := range []bool{raw.TypeCredential != nil, raw.Click != nil, raw.Challenge != nil, raw.WaitFor != nil} {
+		if present {
+			armCount++
+		}
+	}
+	if armCount != 1 {
+		return fmt.Errorf("browserauthentication: step must set exactly one action arm")
 	}
 	next := Step{
 		TypeCredential: raw.TypeCredential,
@@ -205,6 +220,9 @@ func (s *Step) UnmarshalJSON(data []byte) error {
 
 // MarshalYAML emits the same union shape as MarshalJSON.
 func (s Step) MarshalYAML() (any, error) {
+	if err := s.validateUnion(); err != nil {
+		return nil, err
+	}
 	return s.wire(), nil
 }
 
@@ -220,13 +238,25 @@ func (s *Step) UnmarshalYAML(node *yaml.Node) error {
 	if err := node.Decode(&raw); err != nil {
 		return err
 	}
+	armCount := 0
+	if raw.Navigate.Kind != 0 && raw.Navigate.Tag != "!!null" {
+		armCount++
+	}
+	for _, present := range []bool{raw.TypeCredential != nil, raw.Click != nil, raw.Challenge != nil, raw.WaitFor != nil} {
+		if present {
+			armCount++
+		}
+	}
+	if armCount != 1 {
+		return fmt.Errorf("browserauthentication: step must set exactly one action arm")
+	}
 	next := Step{
 		TypeCredential: raw.TypeCredential,
 		Click:          raw.Click,
 		Challenge:      raw.Challenge,
 		WaitFor:        raw.WaitFor,
 	}
-	if raw.Navigate.Kind == 0 {
+	if raw.Navigate.Kind == 0 || raw.Navigate.Tag == "!!null" {
 		*s = next
 		return nil
 	}
@@ -255,6 +285,28 @@ func (s Step) wire() stepWire {
 		Challenge:      s.Challenge,
 		WaitFor:        s.WaitFor,
 	}
+}
+
+func (s Step) validateUnion() error {
+	if s.Navigate != "" && s.NavigateTarget != nil {
+		return fmt.Errorf("browserauthentication: step cannot set both navigate forms")
+	}
+	count := 0
+	for _, present := range []bool{
+		s.Navigate != "" || s.NavigateTarget != nil,
+		s.TypeCredential != nil,
+		s.Click != nil,
+		s.Challenge != nil,
+		s.WaitFor != nil,
+	} {
+		if present {
+			count++
+		}
+	}
+	if count != 1 {
+		return fmt.Errorf("browserauthentication: step must set exactly one action arm")
+	}
+	return nil
 }
 
 // OperationAuthentication is the typed x-uws-browser-authentication payload.

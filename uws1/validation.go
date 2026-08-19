@@ -102,6 +102,7 @@ func (d *Document) ValidateResult() *ValidationResult {
 	idx := buildDocumentIndex(d, result)
 	d.validateDocumentReferences(idx, result)
 	detectDependencyCycles(idx, result)
+	detectWorkflowRecursion(idx, result)
 	return result
 }
 

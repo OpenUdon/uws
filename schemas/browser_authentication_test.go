@@ -51,6 +51,9 @@ func TestBrowserAuthenticationProfileRejectsUnsafeAndInconsistentDocuments(t *te
 		"navigate outside origins":  strings.Replace(valid, "navigate: https://members.example.test/", "navigate: https://other.example.test/", 1),
 		"relative navigation":       strings.Replace(valid, "navigate: https://members.example.test/", "navigate: /login", 1),
 		"trailing document":         valid + "\n---\nprofile: uws.browser-authentication.1.0\n",
+		"malformed IPv6 origin":     strings.Replace(valid, "https://login.example.test", "https://[::1", 1),
+		"malformed URL port":        strings.Replace(valid, "https://login.example.test", "https://login.example.test:bad", 1),
+		"invalid learnedAt format":  strings.Replace(valid, `learnedAt: "2026-08-15T00:00:00Z"`, "learnedAt: yesterday", 1),
 	}
 	for name, data := range tests {
 		t.Run(name, func(t *testing.T) {

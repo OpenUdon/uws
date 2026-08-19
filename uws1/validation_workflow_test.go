@@ -75,6 +75,42 @@ func TestValidate_SequenceWorkflowOperationStep(t *testing.T) {
 	assert.NoError(t, doc.Validate())
 }
 
+func TestValidate_RejectsRecursiveWorkflowCalls(t *testing.T) {
+	t.Run("direct", func(t *testing.T) {
+		doc := validDocument()
+		doc.Workflows = []*Workflow{{
+			WorkflowID: "main", Type: WorkflowTypeSequence,
+			Steps: []*Step{{StepID: "again", StepExecutionFields: StepExecutionFields{Workflow: "main"}}},
+		}}
+		require.ErrorContains(t, doc.Validate(), "recursive workflow call detected: main -> main")
+	})
+
+	t.Run("indirect nested", func(t *testing.T) {
+		doc := validDocument()
+		doc.Workflows = []*Workflow{
+			{
+				WorkflowID: "main", Type: WorkflowTypeSequence,
+				Steps: []*Step{{StepID: "call_second", StepExecutionFields: StepExecutionFields{Workflow: "second"}}},
+			},
+			{
+				WorkflowID: "second", Type: WorkflowTypeSwitch,
+				Cases: []*Case{{CaseFields: CaseFields{Name: "always"}, Steps: []*Step{{
+					StepID: "call_main", StepExecutionFields: StepExecutionFields{Workflow: "main"},
+				}}}},
+			},
+		}
+		require.ErrorContains(t, doc.Validate(), "recursive workflow call detected")
+	})
+}
+
+func TestValidate_ParallelGroupCollisionIsOrderIndependent(t *testing.T) {
+	doc := validDocument()
+	doc.Operations[0].ParallelGroup = "later"
+	doc.Workflows = []*Workflow{{WorkflowID: "later", Type: WorkflowTypeSequence}}
+
+	require.ErrorContains(t, doc.Validate(), `parallelGroup "later" collides with an executable identifier`)
+}
+
 func TestValidate_GotoStepID(t *testing.T) {
 	doc := validDocument()
 	doc.Workflows = []*Workflow{
