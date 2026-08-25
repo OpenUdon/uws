@@ -1,0 +1,15 @@
+{
+  "x-uws-browser-registration": {
+    "profile": "browser-registration/dedicated-test-user.yaml",
+    "flow": "create_dedicated_test_user",
+    "credentialBindings": {
+      "identifier": "dedicated_test_identifier",
+      "password": "dedicated_test_password"
+    },
+    "approval": "register_dedicated_test_user",
+    "duplicatePrevention": "operator_attestation",
+    "onDuplicate": "fail",
+    "ambiguousOutcome": "stop_without_retry",
+    "cleanupDisposition": "delete_separately"
+  }
+}

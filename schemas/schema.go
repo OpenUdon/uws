@@ -36,30 +36,37 @@ const uwsModulePath = "github.com/OpenUdon/uws"
 var embeddedVersionDocuments []byte
 
 var (
-	browser15SchemaOnce  sync.Once
-	browser15Schema      *jsonschema.Schema
-	browser15SchemaErr   error
-	browser16SchemaOnce  sync.Once
-	browser16Schema      *jsonschema.Schema
-	browser16SchemaErr   error
-	browser17SchemaOnce  sync.Once
-	browser17Schema      *jsonschema.Schema
-	browser17SchemaErr   error
-	auth10SchemaOnce     sync.Once
-	auth10Schema         *jsonschema.Schema
-	auth10SchemaErr      error
-	auth11SchemaOnce     sync.Once
-	auth11Schema         *jsonschema.Schema
-	auth11SchemaErr      error
-	authCall10SchemaOnce sync.Once
-	authCall10Schema     *jsonschema.Schema
-	authCall10SchemaErr  error
-	authCall11SchemaOnce sync.Once
-	authCall11Schema     *jsonschema.Schema
-	authCall11SchemaErr  error
+	browser15SchemaOnce          sync.Once
+	browser15Schema              *jsonschema.Schema
+	browser15SchemaErr           error
+	browser16SchemaOnce          sync.Once
+	browser16Schema              *jsonschema.Schema
+	browser16SchemaErr           error
+	browser17SchemaOnce          sync.Once
+	browser17Schema              *jsonschema.Schema
+	browser17SchemaErr           error
+	auth10SchemaOnce             sync.Once
+	auth10Schema                 *jsonschema.Schema
+	auth10SchemaErr              error
+	auth11SchemaOnce             sync.Once
+	auth11Schema                 *jsonschema.Schema
+	auth11SchemaErr              error
+	authCall10SchemaOnce         sync.Once
+	authCall10Schema             *jsonschema.Schema
+	authCall10SchemaErr          error
+	authCall11SchemaOnce         sync.Once
+	authCall11Schema             *jsonschema.Schema
+	authCall11SchemaErr          error
+	registration10SchemaOnce     sync.Once
+	registration10Schema         *jsonschema.Schema
+	registration10SchemaErr      error
+	registrationCall10SchemaOnce sync.Once
+	registrationCall10Schema     *jsonschema.Schema
+	registrationCall10SchemaErr  error
 )
 
 const maxBrowserAuthenticationProfileBytes = 1 << 20
+const maxBrowserRegistrationProfileBytes = 1 << 20
 
 // PathForVersion returns the best local schema path for a UWS document version.
 func PathForVersion(anchorDir, version string) string {
@@ -125,6 +132,42 @@ func BrowserAuthenticationCallSupplementSchema(profile string) ([]byte, error) {
 	data, err := embeddedSchemaDocument(name)
 	if err != nil {
 		return nil, fmt.Errorf("load browser authentication call schema %q: %w", profile, err)
+	}
+	return append([]byte(nil), data...), nil
+}
+
+// PathForBrowserRegistrationProfile returns the best local schema path for a
+// portable browser account-registration recipe.
+func PathForBrowserRegistrationProfile(anchorDir, profile string) string {
+	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser-registration", "1.0"))
+}
+
+// BrowserRegistrationProfileSchema returns an independent copy of the
+// embedded browser-registration JSON Schema. An empty profile selects
+// uws.browser-registration.1.0.
+func BrowserRegistrationProfileSchema(profile string) ([]byte, error) {
+	name := familySchemaName(profile, "browser-registration", "1.0")
+	data, err := embeddedSchemaDocument(name)
+	if err != nil {
+		return nil, fmt.Errorf("load browser registration profile schema %q: %w", profile, err)
+	}
+	return append([]byte(nil), data...), nil
+}
+
+// PathForBrowserRegistrationCallSupplement returns the best local schema path
+// for the browser-registration-call operation supplement.
+func PathForBrowserRegistrationCallSupplement(anchorDir, profile string) string {
+	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser-registration-call", "1.0"))
+}
+
+// BrowserRegistrationCallSupplementSchema returns an independent copy of the
+// embedded browser-registration-call JSON Schema. An empty profile selects
+// uws.browser-registration-call.1.0.
+func BrowserRegistrationCallSupplementSchema(profile string) ([]byte, error) {
+	name := familySchemaName(profile, "browser-registration-call", "1.0")
+	data, err := embeddedSchemaDocument(name)
+	if err != nil {
+		return nil, fmt.Errorf("load browser registration call schema %q: %w", profile, err)
 	}
 	return append([]byte(nil), data...), nil
 }
@@ -300,6 +343,125 @@ func ValidateBrowserAuthenticationCallSupplementForProfile(data []byte, profile 
 	clean := path.Clean(profilePath)
 	if clean == "." || clean == ".." || strings.HasPrefix(clean, "../") || path.IsAbs(clean) {
 		return fmt.Errorf("x-uws-browser-authentication.profile must be a safe relative path")
+	}
+	return nil
+}
+
+// ValidateBrowserRegistrationProfile validates one portable, secret-free
+// account-registration recipe. It enforces exact safe origins, symbolic slot
+// references, exactly one account-creation submit, explicit confirmation, and
+// consistency between human checkpoints and declared effects.
+func ValidateBrowserRegistrationProfile(data []byte) error {
+	if len(data) > maxBrowserRegistrationProfileBytes {
+		return fmt.Errorf("browser registration profile exceeds %d bytes", maxBrowserRegistrationProfileBytes)
+	}
+	value, document, err := decodeSchemaDocument(data, "browser registration profile")
+	if err != nil {
+		return err
+	}
+	profile, err := profileDiscriminator(value, "browser registration profile")
+	if err != nil {
+		return err
+	}
+	schema, err := compiledBrowserRegistrationProfileSchema(profile)
+	if err != nil {
+		return err
+	}
+	if err := schema.Validate(document); err != nil {
+		return fmt.Errorf("validate browser registration profile: %w", err)
+	}
+	root, ok := value.(map[string]any)
+	if !ok {
+		return fmt.Errorf("browser registration profile must be an object")
+	}
+	info, _ := root["info"].(map[string]any)
+	declaredOrigins := make(map[string]struct{})
+	originCount := 0
+	for _, field := range []string{"applicationOrigins", "registrationOrigins"} {
+		origins, _ := info[field].([]any)
+		originCount += len(origins)
+		for i, raw := range origins {
+			origin, _ := raw.(string)
+			if err := validateAuthenticationOrigin(origin); err != nil {
+				return fmt.Errorf("info.%s[%d]: %w", field, i, err)
+			}
+			declaredOrigins[canonicalAuthenticationOrigin(origin)] = struct{}{}
+		}
+	}
+	if originCount > 32 {
+		return fmt.Errorf("info origins: combined applicationOrigins and registrationOrigins exceed 32")
+	}
+	credentialSlots, _ := root["credentialSlots"].(map[string]any)
+	flows, _ := root["flows"].(map[string]any)
+	for name, raw := range flows {
+		flow, _ := raw.(map[string]any)
+		effects, _ := flow["effects"].([]any)
+		hasHumanEffect := containsString(effects, "requires_human_verification")
+		hasHumanCheckpoint := false
+		submitCount := 0
+		sequence, _ := flow["sequence"].([]any)
+		for i, rawStep := range sequence {
+			step, _ := rawStep.(map[string]any)
+			if navigate, ok := step["navigate"].(string); ok {
+				if err := validateAuthenticationTarget(navigate, declaredOrigins); err != nil {
+					return fmt.Errorf("flows.%s.sequence[%d].navigate: %w", name, i, err)
+				}
+			}
+			if rawType, ok := step["type_credential"]; ok {
+				typeStep, _ := rawType.(map[string]any)
+				slot, _ := typeStep["slot"].(string)
+				if _, ok := credentialSlots[slot]; !ok {
+					return fmt.Errorf("flows.%s.sequence[%d].type_credential.slot: undeclared credential slot %q", name, i, slot)
+				}
+			}
+			if _, ok := step["submit"]; ok {
+				submitCount++
+			}
+			if _, ok := step["human_checkpoint"]; ok {
+				hasHumanCheckpoint = true
+			}
+		}
+		if submitCount != 1 {
+			return fmt.Errorf("flows.%s.sequence: registration flow must contain exactly one submit step", name)
+		}
+		if hasHumanCheckpoint != hasHumanEffect {
+			return fmt.Errorf("flows.%s.effects: requires_human_verification must be present exactly when the flow has a human_checkpoint step", name)
+		}
+		success, _ := flow["success"].(map[string]any)
+		origin, _ := success["origin"].(string)
+		if err := validateAuthenticationOrigin(origin); err != nil {
+			return fmt.Errorf("flows.%s.success.origin: %w", name, err)
+		}
+		if _, ok := declaredOrigins[canonicalAuthenticationOrigin(origin)]; !ok {
+			return fmt.Errorf("flows.%s.success.origin: origin is not declared by info", name)
+		}
+		if rawPath, _ := success["path"].(string); rawPath != "" && !isCleanBrowserPath(rawPath) {
+			return fmt.Errorf("flows.%s.success.path: must be an exact clean path", name)
+		}
+	}
+	return nil
+}
+
+// ValidateBrowserRegistrationCallSupplement validates the extension envelope
+// used by one explicitly approved registration mutation.
+func ValidateBrowserRegistrationCallSupplement(data []byte) error {
+	value, document, err := decodeSchemaDocument(data, "browser registration call")
+	if err != nil {
+		return err
+	}
+	schema, err := compiledBrowserRegistrationCallSupplementSchema("uws.browser-registration-call.1.0")
+	if err != nil {
+		return err
+	}
+	if err := schema.Validate(document); err != nil {
+		return fmt.Errorf("validate browser registration call: %w", err)
+	}
+	root, _ := value.(map[string]any)
+	call, _ := root["x-uws-browser-registration"].(map[string]any)
+	profilePath, _ := call["profile"].(string)
+	clean := path.Clean(profilePath)
+	if clean == "." || clean == ".." || strings.HasPrefix(clean, "../") || path.IsAbs(clean) || clean != profilePath {
+		return fmt.Errorf("x-uws-browser-registration.profile must be a canonical safe relative path")
 	}
 	return nil
 }
@@ -687,6 +849,31 @@ func compiledBrowserAuthenticationCallSupplementSchema(profile string) (*jsonsch
 		return authCall11Schema, authCall11SchemaErr
 	default:
 		return nil, fmt.Errorf("unsupported browser authentication call profile %q", profile)
+	}
+}
+
+func compiledBrowserRegistrationProfileSchema(profile string) (*jsonschema.Schema, error) {
+	switch profile {
+	case "uws.browser-registration.1.0":
+		registration10SchemaOnce.Do(func() {
+			registration10Schema, registration10SchemaErr = compileEmbeddedSchema("browser-registration.1.0.json")
+		})
+		return registration10Schema, registration10SchemaErr
+	default:
+		return nil, fmt.Errorf("unsupported browser registration profile discriminator %q", profile)
+	}
+}
+
+func compiledBrowserRegistrationCallSupplementSchema(profile string) (*jsonschema.Schema, error) {
+	name := familySchemaName(profile, "browser-registration-call", "1.0")
+	switch name {
+	case "browser-registration-call.1.0.json":
+		registrationCall10SchemaOnce.Do(func() {
+			registrationCall10Schema, registrationCall10SchemaErr = compileEmbeddedSchema(name)
+		})
+		return registrationCall10Schema, registrationCall10SchemaErr
+	default:
+		return nil, fmt.Errorf("unsupported browser registration call profile %q", profile)
 	}
 }
 

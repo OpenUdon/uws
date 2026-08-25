@@ -44,6 +44,8 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - Browser profile supplement: [versions/browser.1.7.md](versions/browser.1.7.md) / [versions/browser.1.7.json](versions/browser.1.7.json)
 - Browser authentication profile: [versions/browser-authentication.1.1.md](versions/browser-authentication.1.1.md) / [versions/browser-authentication.1.1.json](versions/browser-authentication.1.1.json)
 - Browser authentication call supplement: [versions/browser-authentication-call.1.1.md](versions/browser-authentication-call.1.1.md) / [versions/browser-authentication-call.1.1.json](versions/browser-authentication-call.1.1.json)
+- Browser registration profile: [versions/browser-registration.1.0.md](versions/browser-registration.1.0.md) / [versions/browser-registration.1.0.json](versions/browser-registration.1.0.json)
+- Browser registration call supplement: [versions/browser-registration-call.1.0.md](versions/browser-registration-call.1.0.md) / [versions/browser-registration-call.1.0.json](versions/browser-registration-call.1.0.json)
 - Browser capability distribution milestone: [docs/browser-capability-goal.md](docs/browser-capability-goal.md)
 - UWS 1.6 Ansible argspec (historical): [versions/ansible.1.0.md](versions/ansible.1.0.md) / [versions/ansible.1.0.json](versions/ansible.1.0.json)
 - UWS 1.6 Ansible design note (historical): [docs/uws_1_6_ansible.md](docs/uws_1_6_ansible.md)
@@ -57,10 +59,12 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - `validation` loads JSON, YAML, or HCL artifacts and applies versioned JSON Schema plus semantic validation.
 - `runtimes` contains the public `uws.runtime.1.0` supplement constants, wire structs, and extension helpers.
 - `browserauthentication` contains the additive secret-free sign-in profile and named-session operation extension types.
+- `browserregistration` contains the separate additive secret-free account-registration profile and explicitly approved mutation extension types.
 - `versions/1.9.0.md` is the human-readable UWS 1.9 specification.
 - `versions/1.9.0.json` is the JSON Schema for UWS 1.9 documents.
 - `versions/browser.1.7.*` publishes portable scalar accessibility-text conversion on top of browser 1.6 contexts; immutable browser 1.5/1.6 documents remain accepted.
 - `versions/browser-authentication.1.1.*` and `versions/browser-authentication-call.1.1.*` publish context-capable sign-in recipes and explicit named-session establishment; immutable 1.0 documents remain accepted.
+- `versions/browser-registration.1.0.*` and `versions/browser-registration-call.1.0.*` publish account-creation recipes with symbolic credentials, an explicit submit approval, fail-on-duplicate behavior, no ambiguous retry, and a preselected cleanup disposition.
 - `versions/ansible.1.0.md` / `versions/ansible.1.0.json` are retained only with the historical UWS 1.6 contract.
 
 The UWS-owned Ansible module-call supplement, its `ansiblemodulecall` Go package,
@@ -84,6 +88,12 @@ selects that envelope through `x-uws-operation-profile`; tooling that implements
 the profile then validates it with `schemas`. This separation lets the browser
 profile evolve independently and keeps authentication semantics out of core
 UWS parsing.
+
+The browser-registration documents are likewise separate from both UWS core
+and browser authentication. They describe an explicitly approved account-
+creation mutation and its fixed duplicate, ambiguity, and cleanup controls.
+They do not establish a session, carry credential values, automate human
+verification, retry an ambiguous outcome, or perform cleanup.
 
 ## Validation
 

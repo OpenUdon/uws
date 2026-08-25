@@ -7,6 +7,17 @@ already-published artifacts may land without an entry; any change that adjusts
 the meaning or scope of a published schema or sub-spec is recorded as an
 "Amended" note under the affected release.
 
+## Browser Registration 1.0 - 2026-08-25
+
+- Added the separate `uws.browser-registration.1.0` inert, secret-free account-
+  creation recipe and `uws.browser-registration-call.1.0` operation envelope.
+- Required symbolic credential bindings, exact safe origins, exactly one
+  explicitly approved submit, fixed fail-on-duplicate and stop-without-retry
+  controls, and a preselected cleanup disposition.
+- Kept account values, verification responses, browser state, captures,
+  retries, runtime execution, and cleanup outside portable artifacts. Existing
+  UWS core, browser, and browser-authentication contracts are unchanged.
+
 ## 1.9.0 and Typed Browser Outputs - 2026-08-17
 
 - Published UWS 1.9.0 with the UWS core document shape unchanged from 1.8.
