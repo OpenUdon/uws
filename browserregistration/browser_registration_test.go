@@ -23,6 +23,21 @@ func TestOperationExtensionRoundTrip(t *testing.T) {
 	require.Equal(t, want, got)
 }
 
+func TestReadRegistrationExtensionRejectsUnknownFields(t *testing.T) {
+	extensions := map[string]any{
+		ExtensionRegistration: map[string]any{
+			"profile": "browser-registration/dedicated.yaml", "flow": "create_test_user",
+			"credentialBindings": map[string]any{"identifier": "test_identifier", "password": "test_password"},
+			"approval":           "register_test_user", "duplicatePrevention": "operator_attestation",
+			"onDuplicate": "fail", "ambiguousOutcome": "stop_without_retry", "cleanupDisposition": "delete_separately",
+			"accountIdentifier": "must-not-be-accepted",
+		},
+	}
+	_, ok, err := ReadRegistrationExtension(extensions)
+	require.ErrorContains(t, err, "unknown field")
+	require.False(t, ok)
+}
+
 func TestStepUnionRequiresExactlyOneArm(t *testing.T) {
 	for _, data := range []string{
 		`{}`,

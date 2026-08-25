@@ -8,6 +8,7 @@
 package browserregistration
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -227,7 +228,9 @@ func ReadRegistrationExtension(extensions map[string]any) (*OperationRegistratio
 	if err != nil {
 		return &out, false, fmt.Errorf("marshal %s extension: %w", ExtensionRegistration, err)
 	}
-	if err := json.Unmarshal(data, &out); err != nil {
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&out); err != nil {
 		return &out, false, fmt.Errorf("unmarshal %s extension: %w", ExtensionRegistration, err)
 	}
 	return &out, true, nil
