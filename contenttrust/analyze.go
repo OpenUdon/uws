@@ -318,6 +318,10 @@ func (a *analyzer) resolveOperations(resolvers []Resolver) {
 			if err := a.ctx.Err(); err != nil {
 				return
 			}
+			if nilResolver(resolver) {
+				a.addFinding(CodeResolverFailure, a.operationPaths[id])
+				continue
+			}
 			owned, contract, err := resolver.ResolveOperation(a.ctx, a.doc, operation)
 			if err != nil {
 				if a.ctx.Err() != nil {
@@ -327,7 +331,12 @@ func (a *analyzer) resolveOperations(resolvers []Resolver) {
 				continue
 			}
 			if owned {
-				claims = append(claims, normalizeContract(contract))
+				normalized, ok := validateContract(operation, contract)
+				if !ok {
+					a.addFinding(CodeResolverFailure, a.operationPaths[id])
+					continue
+				}
+				claims = append(claims, normalized)
 			}
 		}
 		switch len(claims) {
@@ -342,24 +351,89 @@ func (a *analyzer) resolveOperations(resolvers []Resolver) {
 	}
 }
 
-func normalizeContract(contract OperationContract) OperationContract {
-	for name, output := range contract.Outputs {
-		if !validCapability(output.Capability) {
-			output.Capability = CapabilityUnknown
-		}
-		contract.Outputs[name] = output
+func nilResolver(resolver Resolver) bool {
+	if resolver == nil {
+		return true
 	}
-	if !validTrust(contract.DefaultTrust) {
-		contract.DefaultTrust = uws1.ContentTrustUnknown
+	value := reflect.ValueOf(resolver)
+	switch value.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
+		return value.IsNil()
+	default:
+		return false
 	}
-	for i := range contract.Inputs {
-		switch contract.Inputs[i].Kind {
+}
+
+func validateContract(operation *uws1.Operation, contract OperationContract) (OperationContract, bool) {
+	normalized := OperationContract{
+		Inputs:                  make([]InputChannel, 0, len(contract.Inputs)),
+		Outputs:                 make(map[string]ValueContract, len(contract.Outputs)),
+		DefaultTrust:            contract.DefaultTrust,
+		InheritsInputProvenance: contract.InheritsInputProvenance,
+	}
+	if normalized.DefaultTrust == "" {
+		normalized.DefaultTrust = uws1.ContentTrustUnknown
+	} else if !validTrust(normalized.DefaultTrust) {
+		return OperationContract{}, false
+	}
+	for _, channel := range contract.Inputs {
+		switch channel.Kind {
 		case ChannelData, ChannelInstruction, ChannelAuthority:
 		default:
-			contract.Inputs[i].Kind = ChannelData
+			return OperationContract{}, false
 		}
+		if !validRelativeJSONPointer(channel.Path) {
+			return OperationContract{}, false
+		}
+		if _, ok := operationValueAtPointer(operation, channel.Path); !ok {
+			return OperationContract{}, false
+		}
+		normalizedChannel := InputChannel{
+			Path:       channel.Path,
+			Kind:       channel.Kind,
+			References: append([]Reference(nil), channel.References...),
+		}
+		for _, reference := range normalizedChannel.References {
+			if !validRelativeJSONPointer(reference.Path) {
+				return OperationContract{}, false
+			}
+		}
+		normalized.Inputs = append(normalized.Inputs, normalizedChannel)
 	}
-	return contract
+	for name, output := range contract.Outputs {
+		if operation.Outputs == nil {
+			return OperationContract{}, false
+		}
+		if _, ok := operation.Outputs[name]; !ok {
+			return OperationContract{}, false
+		}
+		if output.Capability == "" {
+			output.Capability = CapabilityUnknown
+		} else if !validCapability(output.Capability) {
+			return OperationContract{}, false
+		}
+		normalized.Outputs[name] = output
+	}
+	return normalized, true
+}
+
+func validRelativeJSONPointer(pointer string) bool {
+	if pointer == "" || pointer == "/" {
+		return true
+	}
+	if !strings.HasPrefix(pointer, "/") {
+		return false
+	}
+	for i := 0; i < len(pointer); i++ {
+		if pointer[i] != '~' {
+			continue
+		}
+		if i+1 >= len(pointer) || (pointer[i+1] != '0' && pointer[i+1] != '1') {
+			return false
+		}
+		i++
+	}
+	return true
 }
 
 func validCapability(capability ValueCapability) bool {
@@ -664,8 +738,42 @@ func (a *analyzer) evalValue(raw any, path string, env evalEnvironment) valueSta
 		state.capability = CapabilityComposite
 		return state
 	default:
-		return literalState(value, path)
+		if value == nil {
+			return literalState(nil, path)
+		}
+		reflected := reflect.ValueOf(value)
+		if reflected.Kind() == reflect.String {
+			return a.evalString(reflected.String(), path, env)
+		}
+		switch reflected.Kind() {
+		case reflect.Map, reflect.Array, reflect.Slice, reflect.Struct, reflect.Pointer, reflect.Interface:
+			normalized, ok := normalizeWireValue(value)
+			if !ok {
+				a.addFinding(CodeUnknownProvenance, path)
+				return unknownState(path)
+			}
+			return a.evalValue(normalized, path, env)
+		case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+			reflect.Float32, reflect.Float64:
+			return literalState(value, path)
+		default:
+			a.addFinding(CodeUnknownProvenance, path)
+			return unknownState(path)
+		}
 	}
+}
+
+func normalizeWireValue(raw any) (any, bool) {
+	data, err := json.Marshal(raw)
+	if err != nil {
+		return nil, false
+	}
+	var normalized any
+	if err := json.Unmarshal(data, &normalized); err != nil {
+		return nil, false
+	}
+	return normalized, true
 }
 
 func (a *analyzer) scanValue(raw any, path string, env evalEnvironment) valueState {

@@ -66,7 +66,8 @@ var findingMessages = map[string]string{
 // an implementation-specific interpolation language prevents the core scanner
 // from discovering references in a channel subtree. Expression must identify
 // a UWS source expression; Path optionally identifies the relative location of
-// the interpolation within the channel for stable edge reporting.
+// the interpolation within the channel for stable edge reporting. When set,
+// Path must be an RFC 6901 pointer relative to the channel value.
 type Reference struct {
 	Expression string `json:"expression"`
 	Path       string `json:"path,omitempty"`
@@ -104,8 +105,9 @@ type OperationContract struct {
 
 // Resolver describes source- or implementation-profile-owned operation
 // semantics. owned is false when the resolver does not recognize operation.
-// Resolver errors become advisory findings; context cancellation is returned
-// directly from Analyze.
+// Resolver errors, nil resolvers, and malformed owned contracts become advisory
+// resolver-failure findings; context cancellation is returned directly from
+// Analyze. A malformed claim is discarded rather than silently normalized.
 type Resolver interface {
 	ResolveOperation(ctx context.Context, doc *uws1.Document, operation *uws1.Operation) (owned bool, contract OperationContract, err error)
 }

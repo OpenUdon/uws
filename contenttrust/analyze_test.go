@@ -371,6 +371,162 @@ func TestAnalyzeResolverDiagnosticsCancellationAndStableReport(t *testing.T) {
 	}
 }
 
+func TestAnalyzeProgrammaticContainersMatchWireDocuments(t *testing.T) {
+	typed := pipelineDocument()
+	typed.Operations[1].Request = map[string]any{
+		"body": map[string]string{"prompt": "$inputs.prompt"},
+	}
+	typed.Workflows[0].Steps[1].Inputs = map[string]any{
+		"prompt": map[string]string{"nested": "$steps.read_step.outputs.body"},
+	}
+
+	data, err := json.Marshal(typed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var wire uws1.Document
+	if err := json.Unmarshal(data, &wire); err != nil {
+		t.Fatal(err)
+	}
+
+	typedReport, err := Analyze(context.Background(), typed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wireReport, err := Analyze(context.Background(), &wire)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(typedReport, wireReport) {
+		t.Fatalf("programmatic and wire reports differ:\n%#v\n%#v", typedReport, wireReport)
+	}
+	if !hasEdge(typedReport, "workflows[0].steps[0].outputs.body", "workflows[0].steps[1].inputs.prompt.nested", uws1.ContentTrustUntrusted) {
+		t.Fatalf("typed nested map hid an expression edge: %#v", typedReport.Edges)
+	}
+}
+
+func TestAnalyzeUnsupportedProgrammaticValueIsUnknown(t *testing.T) {
+	doc := pipelineDocument()
+	doc.Workflows[0].Steps[1].Inputs = map[string]any{"prompt": func() {}}
+	report, err := Analyze(context.Background(), doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !findingAtPath(report, CodeUnknownProvenance, "workflows[0].steps[1].inputs.prompt") {
+		t.Fatalf("unsupported value was not reported as unknown: %#v", report.Findings)
+	}
+}
+
+func TestAnalyzeRejectsMalformedResolverContracts(t *testing.T) {
+	tests := map[string]OperationContract{
+		"channel kind": {
+			Inputs: []InputChannel{{Path: "/request/body/prompt", Kind: ChannelKind("code")}},
+		},
+		"channel path syntax": {
+			Inputs: []InputChannel{{Path: "request/body/prompt", Kind: ChannelData}},
+		},
+		"channel path escape": {
+			Inputs: []InputChannel{{Path: "/request/body/~2", Kind: ChannelData}},
+		},
+		"missing channel": {
+			Inputs: []InputChannel{{Path: "/request/body/missing", Kind: ChannelData}},
+		},
+		"reference path": {
+			Inputs: []InputChannel{{Path: "/request/body/prompt", Kind: ChannelData, References: []Reference{{Expression: "$trigger", Path: "interpolation/0"}}}},
+		},
+		"unknown output": {
+			Outputs: map[string]OutputContract{"missing": {Capability: CapabilityFreeText}},
+		},
+		"default trust": {
+			DefaultTrust: uws1.ContentTrustLevel("reviewed"),
+		},
+		"output capability": {
+			Outputs: map[string]OutputContract{"summary": {Capability: ValueCapability("text")}},
+		},
+	}
+	for name, contract := range tests {
+		t.Run(name, func(t *testing.T) {
+			resolver := resolverFunc(func(_ context.Context, _ *uws1.Document, operation *uws1.Operation) (bool, OperationContract, error) {
+				if operation.OperationID != "model" {
+					return false, OperationContract{}, nil
+				}
+				return true, contract, nil
+			})
+			report, err := Analyze(context.Background(), pipelineDocument(), resolver)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !findingAtPath(report, CodeResolverFailure, "operations[1]") {
+				t.Fatalf("malformed contract was accepted: %#v", report.Findings)
+			}
+			if hasFinding(report, CodeResolverConflict) {
+				t.Fatalf("malformed contract participated in conflict resolution: %#v", report.Findings)
+			}
+		})
+	}
+}
+
+func TestAnalyzeResolverContractFailureFallsBackAndComposes(t *testing.T) {
+	doc := pipelineDocument()
+	doc.Operations[1].Request = map[string]any{"body": map[string]any{"prompt": "$trigger.body"}}
+	invalid := resolverFunc(func(_ context.Context, _ *uws1.Document, operation *uws1.Operation) (bool, OperationContract, error) {
+		if operation.OperationID != "model" {
+			return false, OperationContract{}, nil
+		}
+		return true, OperationContract{Inputs: []InputChannel{{Path: "/request/body/prompt", Kind: ChannelKind("invalid")}}}, nil
+	})
+
+	report, err := Analyze(context.Background(), doc, invalid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !findingAtPath(report, CodeResolverFailure, "operations[1]") {
+		t.Fatalf("expected invalid-contract finding: %#v", report.Findings)
+	}
+	if !hasEdge(report, "$trigger", "operations[1].request.body.prompt", uws1.ContentTrustUntrusted) {
+		t.Fatalf("invalid resolver claim suppressed core scanning: %#v", report.Edges)
+	}
+
+	report, err = Analyze(context.Background(), pipelineDocument(), invalid, pipelineResolver(ChannelInstruction, CapabilityFreeText))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !findingAtPath(report, CodeResolverFailure, "operations[1]") || !hasFinding(report, CodeUntrustedInstruction) {
+		t.Fatalf("valid claim was not used alongside malformed claim: %#v", report.Findings)
+	}
+	if hasFinding(report, CodeResolverConflict) {
+		t.Fatalf("malformed claim caused a resolver conflict: %#v", report.Findings)
+	}
+}
+
+func TestAnalyzeNilResolversAndEmptyOptionalContracts(t *testing.T) {
+	var typedNil resolverFunc
+	report, err := Analyze(context.Background(), pipelineDocument(), nil, typedNil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !hasFinding(report, CodeResolverFailure) {
+		t.Fatalf("nil resolvers did not produce advisory failures: %#v", report.Findings)
+	}
+
+	emptyOptional := resolverFunc(func(_ context.Context, _ *uws1.Document, operation *uws1.Operation) (bool, OperationContract, error) {
+		if operation.OperationID != "model" {
+			return false, OperationContract{}, nil
+		}
+		return true, OperationContract{
+			Inputs:  []InputChannel{{Path: "/request/body/prompt", Kind: ChannelData}},
+			Outputs: map[string]OutputContract{"summary": {}},
+		}, nil
+	})
+	report, err = Analyze(context.Background(), pipelineDocument(), emptyOptional)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if findingAtPath(report, CodeResolverFailure, "operations[1]") {
+		t.Fatalf("empty optional trust or capability was rejected: %#v", report.Findings)
+	}
+}
+
 func TestOperationTrustPrecedence(t *testing.T) {
 	doc := &uws1.Document{
 		UWS:  "1.9.1",

@@ -244,6 +244,13 @@ subtree only for exact UWS expressions. Ambiguous syntax is reported as
 `content_trust.opaque_expression`; content beyond an unresolved extension
 boundary stays `unknown`.
 
+Resolver contracts fail closed. Channel and reference paths must use RFC 6901
+pointer syntax, every channel must resolve in the operation, channel kinds and
+non-empty trust/capability labels must be recognized, and output contracts may
+name only declared operation outputs. A malformed claim is discarded and
+reported as `content_trust.resolver_failure`; if no valid resolver claim
+remains, core request scanning still runs.
+
 ## Findings and policy
 
 `contenttrust.Analyze` returns deterministic edges and findings. Reports contain
