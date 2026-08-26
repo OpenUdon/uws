@@ -10,7 +10,7 @@ UWS is a compact, execution-oriented workflow specification that sits directly o
 
 This is what distinguishes UWS from full client-side workflow tools such as Arazzo and IaC engines such as OpenTofu and Terraform. Arazzo describes full client-side action sequences and treats each step as a bespoke client action. OpenTofu and Terraform act as full client-side workflow engines for infrastructure: each resource and provider call is described in the client configuration and resolved against a provider plugin at apply time. Neither approach assumes the underlying operations are already defined by a server contract. UWS takes the opposite position: server actions are pre-defined by the source document, and UWS workflows reference those operations by ID rather than re-describing them. The result is a much smaller overlay: UWS does not duplicate request/response shapes, does not redeclare endpoints, and does not encode anything the source document already specifies.
 
-UWS 1.9 keeps OpenAPI compatibility and supports first-class source descriptions for `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources. Browser 1.7 adds locale-free scalar conversion for accessibility-text outputs while browser 1.5/1.6 remain accepted. The `ansible-module` source type added in 1.6 was removed in 1.7 without a replacement UWS-owned Ansible profile.
+UWS 1.9.1 is the latest release. It keeps OpenAPI compatibility, supports first-class source descriptions for `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`, and adds optional content-provenance declarations with advisory analysis. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources. Browser 1.7 remains the latest browser profile while browser 1.5/1.6 remain accepted. The `ansible-module` source type added in 1.6 was removed in 1.7 without a replacement UWS-owned Ansible profile.
 
 ## Why UWS?
 
@@ -27,13 +27,15 @@ UWS answers exactly those questions and nothing else.
 
 Beyond document shape, UWS also defines a normative **execution model**: a clean split between an orchestrator that owns structural workflow execution (dependency resolution, control flow, retry, output propagation) and a bound runtime that owns leaf execution (API/event calls, expression evaluation, item resolution). This split is what makes UWS portable — any compliant runtime shares the same orchestration semantics while bringing its own transport, credentials, and extension-profile logic.
 
+UWS 1.9.1 also offers an explicit **content-trust analyzer**. It recovers core data flow, accepts profile-specific channel contracts from resolvers, and reports provenance/capability findings without changing validation or execution. See [Content Trust](content-trust.md).
+
 For non-source leaf work, UWS keeps the core document narrow. Extension-owned operations declare `x-uws-operation-profile`; the public `uws.runtime.1.0` supplement optionally adds a small `x-uws-runtime` payload with a required non-HTTP `type` selector such as `fnct`, `cmd`, `sql`, or `llm`. HTTP and event calls still use source binding fields, not `x-uws-runtime`.
 
 ## A Minimal Document
 
 ```json
 {
-  "uws": "1.9.0",
+  "uws": "1.9.1",
   "info": { "title": "Weather Report", "version": "1.1.0" },
   "sourceDescriptions": [
     { "name": "weather_api", "url": "./weather.openapi.yaml", "type": "openapi" },
@@ -86,8 +88,9 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 
 ## Reference
 
-- **Specification**: [`versions/1.9.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.9.0.md)
-- **JSON Schema**: [`versions/1.9.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.9.0.json)
+- **Specification**: [`versions/1.9.1.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.9.1.md)
+- **JSON Schema**: [`versions/1.9.1.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.9.1.json)
+- **Content trust**: [declarations, resolvers, propagation, and advisory findings](content-trust.md)
 - **Browser scalar outputs and contexts**: [`versions/browser.1.7.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser.1.7.md)
 - **Runtime supplement**: [`versions/runtime.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md)
 - **Runtime supplement schema**: [`versions/runtime.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json)

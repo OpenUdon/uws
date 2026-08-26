@@ -47,6 +47,16 @@ func schemaDefCoverage() map[string]schemaDefRules {
 			required:     []string{"uws", "info", "operations"},
 			patternProps: []string{"uws"},
 		},
+		"content-trust-object": {
+			propertyNamePatternProps: []string{"sourceDescriptions", "operations", "triggers", "workflows"},
+		},
+		"content-trust-level": {},
+		"operation-content-trust-object": {
+			propertyNamePatternProps: []string{"outputs"},
+		},
+		"workflow-content-trust-object": {
+			propertyNamePatternProps: []string{"inputs"},
+		},
 		"info": {
 			required: []string{"title", "version"},
 		},

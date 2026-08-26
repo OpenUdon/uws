@@ -7,6 +7,24 @@ already-published artifacts may land without an entry; any change that adjusts
 the meaning or scope of a published schema or sub-spec is recorded as an
 "Amended" note under the affected release.
 
+## 1.9.1 Content Trust - 2026-08-26
+
+- Added the optional root `contentTrust` registry with source-description,
+  operation default/output, trigger, and workflow default/input provenance
+  declarations. Existing operation, workflow, and step output shapes are
+  unchanged.
+- Added patch-aware semantic gating and identifier/output/input integrity
+  checks. Malformed declarations are invalid; every 1.9.0 and earlier document
+  retains its validation and execution behavior.
+- Added deterministic advisory analysis in package `contenttrust`, with
+  resolver-defined data/instruction/authority channels, separate provenance and
+  value capability, control-flow-aware expression references, and stable
+  findings that contain no runtime values or content excerpts.
+- Kept findings outside `ValidationResult` and all execution paths. Reserved
+  1.9.2 through 1.9.9 for evidence-driven compatible refinements; breaking
+  defaults, enforcement, or wire changes remain UWS 2.0 work.
+- Preserved UWS 1.9.0 and every existing profile artifact byte-for-byte.
+
 ## Browser Registration 1.0 - 2026-08-25
 
 - Added the separate `uws.browser-registration.1.0` inert, secret-free account-

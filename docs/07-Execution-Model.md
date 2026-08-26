@@ -118,6 +118,8 @@ func main() {
 
 `doc.Execute(ctx)` runs three checks automatically before handing off to the orchestrator: `Validate()`, `ValidateExecutable()`, and `ValidateExecutionEntrypoint()`.
 
+UWS 1.9.1 content-trust analysis is intentionally not a fourth automatic check. Applications invoke `contenttrust.Analyze` explicitly before or after validation when they want advisory provenance findings. The analyzer never changes execution records, runtime inputs, orchestration, authorization, or executor results.
+
 ## Example 3: Trigger Dispatch
 
 Accepting an inbound event and routing it through UWS core:
@@ -206,7 +208,7 @@ if err := d.ValidateExecutionEntrypoint(); err != nil {
 For AI agent use cases, UWS acts as the contract between intent extraction and execution:
 
 ```
-natural language  →  structured intent  →  UWS document  →  Validate()  →  Execute()
+natural language  →  structured intent  →  UWS document  →  Validate()  →  optional Analyze()  →  Execute()
 ```
 
 ```go

@@ -17,9 +17,9 @@ UWS is a workflow overlay for API- and event-source-backed operations. Source do
 
 The coordinated artifacts must stay in sync:
 
-1. `versions/1.9.0.json` — the latest canonical JSON Schema for UWS 1.x documents. All earlier schemas remain published and immutable. `versions/browser.1.7.json` adds portable scalar accessibility-text conversion while browser 1.5/1.6 remain accepted. `versions/browser-authentication.1.1.json` and its call supplement retain the sign-in context contract. `versions/ansible.1.0.json` is historical UWS 1.6 material; UWS 1.9 does not support Ansible.
+1. `versions/1.9.1.json` — the latest canonical JSON Schema for UWS 1.x documents. All earlier schemas, including 1.9.0, remain published and immutable. `versions/browser.1.7.json` adds portable scalar accessibility-text conversion while browser 1.5/1.6 remain accepted. `versions/browser-authentication.1.1.json` and its call supplement retain the sign-in context contract. `versions/ansible.1.0.json` is historical UWS 1.6 material; UWS 1.9 does not support Ansible.
 2. `uws1/` — the Go model and semantic validator.
-3. `versions/1.9.0.md` — the latest human-readable spec. Earlier numbered specifications, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are historical or comparison documents. `versions/browser.1.7.md` is the latest browser capability profile and `versions/ansible.1.0.md` is retained only for historical UWS 1.6 documents.
+3. `versions/1.9.1.md` — the latest human-readable spec. Earlier numbered specifications, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are historical or comparison documents. `versions/browser.1.7.md` is the latest browser capability profile and `versions/ansible.1.0.md` is retained only for historical UWS 1.6 documents.
 4. `schemas/` — Go lookup and profile-validation helpers plus the generated embedded document archive. `versions/` is document-only; regenerate the archive with `go generate ./schemas` after changing a JSON document.
 
 ## Execution Model
@@ -79,6 +79,7 @@ When changing validation rules:
 
 - The versioned JSON Schema covers structural and shape checks.
 - `(*Document).Validate()` / `ValidateResult()` in `uws1/validation.go` cover semantic checks the schema cannot: duplicate identifiers, source binding rules, reference integrity across operations/workflows/steps/triggers/parallel groups/sourceDescriptions, action and criterion rules, trigger routes, and standard request-binding keys.
+- `contenttrust.Analyze()` is an explicit advisory pass. Its findings do not enter ordinary validation or execution; profile-specific input/output semantics are supplied by resolvers.
 - Use `Validate()` when a single `error` is enough.
 - Use `ValidateResult()` when callers need path-tagged errors.
 

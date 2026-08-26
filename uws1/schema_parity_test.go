@@ -27,6 +27,9 @@ type schemaParityEntry struct {
 func schemaParityEntries() []schemaParityEntry {
 	return []schemaParityEntry{
 		{label: "Document", defName: "", goType: reflect.TypeOf(Document{}), knownFields: documentKnownFields},
+		{label: "ContentTrust", defName: "content-trust-object", goType: reflect.TypeOf(ContentTrust{}), knownFields: contentTrustKnownFields},
+		{label: "OperationContentTrust", defName: "operation-content-trust-object", goType: reflect.TypeOf(OperationContentTrust{}), knownFields: operationContentTrustKnownFields},
+		{label: "WorkflowContentTrust", defName: "workflow-content-trust-object", goType: reflect.TypeOf(WorkflowContentTrust{}), knownFields: workflowContentTrustKnownFields},
 		{label: "Info", defName: "info", goType: reflect.TypeOf(Info{}), knownFields: infoKnownFields},
 		{label: "SourceDescription", defName: "source-description-object", goType: reflect.TypeOf(SourceDescription{}), knownFields: sourceDescriptionKnownFields},
 		{label: "Operation", defName: "operation-object", goType: reflect.TypeOf(Operation{}), knownFields: operationKnownFields},
@@ -98,6 +101,7 @@ func TestSchemaParity_DefCoverageIsExhaustive(t *testing.T) {
 	// Meta defs that describe JSON Schema plumbing, not UWS object shapes.
 	tracked["specification-extensions"] = true
 	tracked["structural-type-constraints"] = true
+	tracked["content-trust-level"] = true
 	// request-binding-object is a bag of free-form locations backed by
 	// map[string]any on Operation, not a dedicated Go type.
 	tracked["request-binding-object"] = true
@@ -117,23 +121,26 @@ func TestSchemaParity_SpecFixedFieldsMatchSchema(t *testing.T) {
 	schema := loadSchemaDoc(t)
 	spec := loadSpecMarkdown(t)
 	specTables := map[string]string{
-		"":                          "Document Object",
-		"info":                      "Info Object",
-		"source-description-object": "Source Description Object",
-		"operation-object":          "Operation Object",
-		"request-binding-object":    "Request Binding Object",
-		"workflow-object":           "Workflow Object",
-		"step-object":               "Step Object",
-		"case-object":               "Case Object",
-		"trigger-object":            "Trigger Object",
-		"trigger-route-object":      "Trigger Route Object",
-		"criterion-object":          "Criterion Object",
-		"failure-action-object":     "Failure Action Object",
-		"success-action-object":     "Success Action Object",
-		"structural-result-object":  "Structural Result Object",
-		"components-object":         "Components Object",
-		"param-schema-object":       "ParamSchema Object",
-		"idempotency-object":        "Idempotency Object",
+		"":                               "Document Object",
+		"content-trust-object":           "Content Trust Object",
+		"operation-content-trust-object": "Operation Content Trust Object",
+		"workflow-content-trust-object":  "Workflow Content Trust Object",
+		"info":                           "Info Object",
+		"source-description-object":      "Source Description Object",
+		"operation-object":               "Operation Object",
+		"request-binding-object":         "Request Binding Object",
+		"workflow-object":                "Workflow Object",
+		"step-object":                    "Step Object",
+		"case-object":                    "Case Object",
+		"trigger-object":                 "Trigger Object",
+		"trigger-route-object":           "Trigger Route Object",
+		"criterion-object":               "Criterion Object",
+		"failure-action-object":          "Failure Action Object",
+		"success-action-object":          "Success Action Object",
+		"structural-result-object":       "Structural Result Object",
+		"components-object":              "Components Object",
+		"param-schema-object":            "ParamSchema Object",
+		"idempotency-object":             "Idempotency Object",
 	}
 
 	for defName, heading := range specTables {

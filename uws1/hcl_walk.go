@@ -19,6 +19,25 @@ func walkDocumentHCL(doc *Document, h documentHCLWalkHandlers) error {
 	if err := walkHCLDynamicMap("variables", &doc.Variables, h); err != nil {
 		return err
 	}
+	if doc.ContentTrust != nil {
+		if err := walkHCLExtensions("contentTrust", doc.ContentTrust.Extensions, h); err != nil {
+			return err
+		}
+		for id, declaration := range doc.ContentTrust.Operations {
+			if declaration != nil {
+				if err := walkHCLExtensions("contentTrust.operations."+id, declaration.Extensions, h); err != nil {
+					return err
+				}
+			}
+		}
+		for id, declaration := range doc.ContentTrust.Workflows {
+			if declaration != nil {
+				if err := walkHCLExtensions("contentTrust.workflows."+id, declaration.Extensions, h); err != nil {
+					return err
+				}
+			}
+		}
+	}
 	if doc.Info != nil {
 		if err := walkHCLExtensions("info", doc.Info.Extensions, h); err != nil {
 			return err

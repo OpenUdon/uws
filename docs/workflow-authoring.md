@@ -249,10 +249,19 @@ Before handing a workflow to a runtime:
 - Extension-owned operations declare an explicit `x-uws-operation-profile`.
 - `uws.runtime.1.0` operations include `x-uws-runtime.type`; HTTP and event calls remain source-bound.
 
+For UWS 1.9.1 documents that process externally influenced content:
+
+- Add `contentTrust` declarations for reviewed source, operation-output, trigger, or external workflow-input provenance.
+- Keep operation, workflow, and step `outputs` values as expression strings; trust metadata belongs only in the parallel root registry.
+- Run `contenttrust.Analyze` with the source/runtime resolvers used by your product and review its advisory findings separately from `Document.Validate`.
+- Treat trigger payloads as untrusted and external workflow inputs as unknown unless an explicit declaration says otherwise. Same-document workflow calls preserve the provenance of values they pass.
+- Remember that Boolean, numeric, and enum narrowing removes free-text capability but does not make attacker-controlled content trusted.
+
 ## Where To Go Next
 
 - [Source Operation Binding](01-OpenAPI-Operation-Binding.md)
 - [Six Structural Constructs](02-Six-Structural-Constructs.md)
 - [Runtime Expression Grammar](03-Runtime-Expression-Grammar.md)
 - [Triggers and Route Dispatch](04-Triggers-and-Route-Dispatch.md)
+- [Content Trust](content-trust.md)
 - [Validation](09-Validation.md)

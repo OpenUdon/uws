@@ -24,6 +24,7 @@ var publishedVersionSHA256 = map[string]string{
 	"1.7.0.json":                           "ca032c02f1ad51e9386a1d55d32f11d66137bd0f9c2af459e8c2a1910e4ddff8",
 	"1.8.0.json":                           "ea842defb84380c6f9f6d79c3c54575c703902dd89d75322968cb80bc073e7d6",
 	"1.9.0.json":                           "87b72744ea71785613cd1775968503e81312b38d2cee3a00ec5b8bf04bc976e1",
+	"1.9.1.json":                           "a055a67d393dacf3c9beac30732adb59e7a81427eb8701e56e5662359c5e624d",
 	"ansible.1.0.json":                     "c67738d98732a177863421f3edd062f98aadba325a672e9be344478dfb41c6d6",
 	"browser-authentication-call.1.0.json": "586af5315001334ba7ceb69048f31b278ef16b0984ab05da6b7b361a2e035672",
 	"browser-authentication-call.1.1.json": "361aa798cefb4a172ecfda8c794a970faeb05919557a73bacb143af57332d35a",

@@ -42,9 +42,16 @@ The supplement does not standardize credentials, hosts, provider selection, clie
 security configuration, result schemas, or execution side effects. Those belong to the bound runtime
 or product-owned extension profiles.
 
+For UWS 1.9.1 advisory content-trust analysis, a runtime implementation may
+provide a resolver that classifies its own inputs and outputs. In particular,
+LLM data and instruction channels must be distinguished, and command, SQL, or
+other side-effect authority channels should be declared explicitly. This
+resolver is analysis-only: it is not called by UWS validation or execution.
+
 ## References
 
 - [Runtime Supplement 1.0](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md)
 - [Runtime Supplement JSON Schema](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json)
 - [Extension Profiles](08-Extension-Profiles.md)
 - [Execution Model](07-Execution-Model.md)
+- [Content Trust](content-trust.md)

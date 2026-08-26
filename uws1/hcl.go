@@ -41,6 +41,9 @@ var (
 	_ dethcl.Unmarshaler = (*SuccessAction)(nil)
 	_ dethcl.Unmarshaler = (*FailureAction)(nil)
 	_ dethcl.Unmarshaler = (*Idempotency)(nil)
+	_ dethcl.Unmarshaler = (*ContentTrust)(nil)
+	_ dethcl.Unmarshaler = (*OperationContentTrust)(nil)
+	_ dethcl.Unmarshaler = (*WorkflowContentTrust)(nil)
 )
 
 type documentHCLAlias Document
@@ -57,6 +60,46 @@ func (d *Document) UnmarshalHCL(data []byte, labels ...string) error {
 	*d = Document(alias)
 	transformDynamicMapFromHCL(&d.Variables)
 	transformExtensionsFromHCL(d.Extensions)
+	return nil
+}
+
+func (c *ContentTrust) UnmarshalHCL(data []byte, labels ...string) error {
+	alias := contentTrustAlias(*c)
+	if err := dethcl.Unmarshal(data, &alias, labels...); err != nil {
+		return err
+	}
+	*c = ContentTrust(alias)
+	transformExtensionsFromHCL(c.Extensions)
+	for _, declaration := range c.Operations {
+		if declaration != nil {
+			transformExtensionsFromHCL(declaration.Extensions)
+		}
+	}
+	for _, declaration := range c.Workflows {
+		if declaration != nil {
+			transformExtensionsFromHCL(declaration.Extensions)
+		}
+	}
+	return nil
+}
+
+func (c *OperationContentTrust) UnmarshalHCL(data []byte, labels ...string) error {
+	alias := operationContentTrustAlias(*c)
+	if err := dethcl.Unmarshal(data, &alias, labels...); err != nil {
+		return err
+	}
+	*c = OperationContentTrust(alias)
+	transformExtensionsFromHCL(c.Extensions)
+	return nil
+}
+
+func (c *WorkflowContentTrust) UnmarshalHCL(data []byte, labels ...string) error {
+	alias := workflowContentTrustAlias(*c)
+	if err := dethcl.Unmarshal(data, &alias, labels...); err != nil {
+		return err
+	}
+	*c = WorkflowContentTrust(alias)
+	transformExtensionsFromHCL(c.Extensions)
 	return nil
 }
 

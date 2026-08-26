@@ -100,6 +100,7 @@ func (d *Document) ValidateResult() *ValidationResult {
 	d.validateVersionedFields(result)
 
 	idx := buildDocumentIndex(d, result)
+	d.validateContentTrust(idx, result)
 	d.validateDocumentReferences(idx, result)
 	detectDependencyCycles(idx, result)
 	detectWorkflowRecursion(idx, result)

@@ -25,13 +25,14 @@ type Document struct {
 	// Variables is an intentionally open-shape map; any JSON-compatible value is
 	// allowed. The JSON Schema enforces object shape; UWS does not restrict keys
 	// or values further.
-	Variables  map[string]any      `json:"variables,omitempty" yaml:"variables,omitempty" hcl:"variables,optional"`
-	Operations []*Operation        `json:"operations" yaml:"operations" hcl:"operation,block"`
-	Workflows  []*Workflow         `json:"workflows,omitempty" yaml:"workflows,omitempty" hcl:"workflow,block"`
-	Triggers   []*Trigger          `json:"triggers,omitempty" yaml:"triggers,omitempty" hcl:"trigger,block"`
-	Results    []*StructuralResult `json:"results,omitempty" yaml:"results,omitempty" hcl:"result,block"`
-	Components *Components         `json:"components,omitempty" yaml:"components,omitempty" hcl:"components,block"`
-	Extensions map[string]any      `json:"-" yaml:"-" hcl:"extensions,block"`
+	Variables    map[string]any      `json:"variables,omitempty" yaml:"variables,omitempty" hcl:"variables,optional"`
+	Operations   []*Operation        `json:"operations" yaml:"operations" hcl:"operation,block"`
+	Workflows    []*Workflow         `json:"workflows,omitempty" yaml:"workflows,omitempty" hcl:"workflow,block"`
+	Triggers     []*Trigger          `json:"triggers,omitempty" yaml:"triggers,omitempty" hcl:"trigger,block"`
+	Results      []*StructuralResult `json:"results,omitempty" yaml:"results,omitempty" hcl:"result,block"`
+	Components   *Components         `json:"components,omitempty" yaml:"components,omitempty" hcl:"components,block"`
+	ContentTrust *ContentTrust       `json:"contentTrust,omitempty" yaml:"contentTrust,omitempty" hcl:"contentTrust,block"`
+	Extensions   map[string]any      `json:"-" yaml:"-" hcl:"extensions,block"`
 
 	// Runtime is the specialized executor bound to this document. Runtime
 	// rebinding and execution-record reads are not synchronized; callers that
@@ -105,7 +106,7 @@ type documentAlias Document
 var documentKnownFields = []string{
 	"uws", "info", "sourceDescriptions", "variables",
 	"operations", "workflows", "triggers", "results",
-	"components",
+	"components", "contentTrust",
 }
 
 func (d *Document) UnmarshalJSON(data []byte) error {

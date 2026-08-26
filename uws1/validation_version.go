@@ -127,6 +127,13 @@ func validateVersionedIdempotency(idempotency *Idempotency, path string, support
 }
 
 func supportsUWSVersion(version string, major, minor int) bool {
+	return supportsUWSVersionAtLeast(version, major, minor, 0)
+}
+
+// supportsUWSVersionAtLeast compares all three numeric components of a UWS
+// version. Pre-release suffixes do not change feature availability; schemas
+// and semantic validation use the declared numeric patch as the wire gate.
+func supportsUWSVersionAtLeast(version string, major, minor, patch int) bool {
 	if !uws1VersionPattern.MatchString(version) {
 		return false
 	}
@@ -135,7 +142,7 @@ func supportsUWSVersion(version string, major, minor int) bool {
 		base = base[:idx]
 	}
 	parts := strings.Split(base, ".")
-	if len(parts) < 2 {
+	if len(parts) != 3 {
 		return false
 	}
 	gotMajor, err := strconv.Atoi(parts[0])
@@ -146,5 +153,12 @@ func supportsUWSVersion(version string, major, minor int) bool {
 	if err != nil {
 		return false
 	}
-	return gotMinor >= minor
+	gotPatch, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return false
+	}
+	if gotMinor != minor {
+		return gotMinor > minor
+	}
+	return gotPatch >= patch
 }

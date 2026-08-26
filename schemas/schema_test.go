@@ -58,7 +58,7 @@ func TestEmbeddedVersionDocumentsMatchSource(t *testing.T) {
 }
 
 func TestPathForVersionFindsReadableSchema(t *testing.T) {
-	for _, version := range []string{"", "1.0.0", "1.1.0", "1.1.1", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0"} {
+	for _, version := range []string{"", "1.0.0", "1.1.0", "1.1.1", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0", "1.9.1"} {
 		path := PathForVersion(t.TempDir(), version)
 		if _, err := os.Stat(path); err != nil {
 			t.Fatalf("schema path for version %q is not readable: %s: %v", version, path, err)
@@ -112,7 +112,7 @@ func TestProfilePathsHonorSchemaDir(t *testing.T) {
 }
 
 func TestEmbeddedSchemaPathFindsReadableSchema(t *testing.T) {
-	for _, name := range []string{"1.0.0.json", "1.1.0.json", "1.1.1.json", "1.2.0.json", "1.3.0.json", "1.4.0.json", "1.5.0.json", "1.6.0.json", "1.7.0.json", "1.8.0.json", "1.9.0.json", "runtime.1.0.json", "browser.1.5.json", "browser.1.6.json", "browser.1.7.json", "browser-authentication.1.0.json", "browser-authentication.1.1.json", "browser-authentication-call.1.0.json", "browser-authentication-call.1.1.json"} {
+	for _, name := range []string{"1.0.0.json", "1.1.0.json", "1.1.1.json", "1.2.0.json", "1.3.0.json", "1.4.0.json", "1.5.0.json", "1.6.0.json", "1.7.0.json", "1.8.0.json", "1.9.0.json", "1.9.1.json", "runtime.1.0.json", "browser.1.5.json", "browser.1.6.json", "browser.1.7.json", "browser-authentication.1.0.json", "browser-authentication.1.1.json", "browser-authentication-call.1.0.json", "browser-authentication-call.1.1.json"} {
 		path, ok := embeddedSchemaPath(name)
 		if !ok {
 			t.Fatalf("embedded schema path %s not found", name)
