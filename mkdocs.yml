@@ -37,6 +37,7 @@ nav:
   - Browser Capability Profiles: browser-capability-goal.md
   - Future Source Profiles: future-source-profiles.md
   - Content Trust: content-trust.md
+  - MCP Tool Calls: mcp-tool-calls.md
   - Historical UWS 1.6 Ansible Design: uws_1_6_ansible.md
   - Reference:
     - Specification: https://github.com/OpenUdon/uws/blob/main/versions/1.9.1.md

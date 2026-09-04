@@ -1,3 +1,5 @@
 ideas/
 site/
 .claude/
+.npm-cache/
+.pylibs/

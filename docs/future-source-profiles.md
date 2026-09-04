@@ -23,10 +23,10 @@ graduated into UWS 1.6 (`ansible-module`) and were **withdrawn in UWS 1.7**;
 `versions/ansible.1.0.{json,md}` remains only as historical UWS 1.6 material.
 UWS 1.9 defines no replacement Ansible operation profile.
 
-Examples in this note are illustrative future shapes unless a section explicitly
-labels them as valid today. Pre-1.5 documents that need browser/UI work used
-extension-owned operations with `x-uws-operation-profile`; UWS 1.5+ documents
-should use the first-class `browser-profile` source type instead.
+Examples in this note are illustrative roadmap or historical shapes unless a
+section identifies released behavior. Pre-1.5 documents that need browser/UI
+work used extension-owned operations with `x-uws-operation-profile`; UWS 1.5+
+documents should use the first-class `browser-profile` source type instead.
 
 The current UWS model remains source-document-first:
 
@@ -59,10 +59,16 @@ A family qualifies when there is a portable, machine-readable document that:
    `sourceOperationRef` JSON Pointer fragment can address it. A document that
    describes *types*, *shapes*, or *desired state* rather than invocable
    operations does not qualify, however well specified it is.
-2. **Is reviewable before execution.** A human reading the document can
-   determine what will be invoked, with which parameters, returning what.
-3. **Is diffable.** A change to the document is mechanically detectable, so a
-   changed upstream contract fails closed rather than drifting silently.
+2. **Materializes a reviewable operation contract.** A portable artifact is
+   available before execution and preserves enough operation, parameter, and
+   result semantics for a human and tooling to determine what will be invoked.
+   A live catalog may satisfy this criterion when it can be captured completely
+   into such an artifact; the artifact need not originate as a static file.
+3. **Binds that contract to executable capability and detects drift.** The
+   artifact has identity, pinning, freshness, and revalidation semantics that
+   let a runtime establish that the reviewed operation still describes the
+   capability it is about to invoke. Merely serializing a live catalog makes it
+   diffable, but does not by itself settle this binding.
 4. **Describes operations the remote party implements.** The document is a
    contract for something that exists on the other end of the call. UWS is a
    client-side workflow and a source description is a server-side contract; the
@@ -106,6 +112,31 @@ bind to. They are represented by `uws.runtime.1.0` (`cmd`, `ssh`, `fnct`), which
 is the deliberate floor for work whose only reviewable artifact is the command
 string itself.
 
+### Which criterion fails determines where the family belongs
+
+Failing the test is not a single outcome. Each criterion fails for a different
+reason, and the reason routes the family to a different part of UWS. A candidate
+that clears every criterion is the only one that becomes a
+`sourceDescriptions[].type`.
+
+| Criterion that fails | Why | Where the family belongs |
+| --- | --- | --- |
+| 1 — no contract exists at all | Nothing published to bind to | `uws.runtime.1.0` floor (`cmd`, `ssh`, `fnct`) |
+| 1 — names types, not operations | Operation roles are authoring work, not source metadata | Lowered into API source types by a converter |
+| 1 — data, not operations | A file is a workflow input, not a capability | `uws.runtime.1.0` `fileio`, or an API source that processes it |
+| 2 — catalog cannot be materialized | No portable artifact preserves enough operation semantics for review before execution | Product-owned capture or conversion tooling until an artifact exists |
+| 3 — artifact cannot be pinned or revalidated | A reviewable snapshot exists, but binding, freshness, or drift detection is unproven | Product-owned operation-profile experiment; consider a supplement only after multi-consumer evidence |
+| 4 — client ships the implementation | The far end exposes no pre-existing capability | Conversion or advisory tooling, never a binding |
+| None | — | A first-class source type |
+
+Criteria 2 and 3 are deliberately separate. Capturing a complete live catalog
+can produce a reviewable and mechanically diffable artifact, satisfying
+criterion 2, while still leaving no portable rule for proving that the snapshot
+matches the server about to execute it. That unresolved identity/freshness
+binding fails criterion 3. The first response is a product-owned experiment,
+not automatic publication of a UWS supplement. The worked evaluation is in
+[MCP Tool Calls](mcp-tool-calls.md).
+
 Applied to families evaluated so far:
 
 | Candidate | Names operations? | Contract source | Result |
@@ -113,6 +144,7 @@ Applied to families evaluated so far:
 | OpenAPI, Google Discovery, AWS Smithy, AsyncAPI, GraphQL, OpenRPC, gRPC/protobuf, OData | Yes | Provider | First-class, strong |
 | Ansible modules (`ansible-doc --json`) | Yes, but the host implements none of them | Collection maintainer, not the target | **Not supported in UWS 1.9** |
 | Browser capability profiles | Yes | Author-asserted | First-class, weak |
+| MCP tools (`tools/list`) | Yes; the live server implements them | Live server catalog; no standardized pinned, freshness-bound Tool artifact | Product-owned operation-profile experiment |
 | Salt execution modules | Yes, but client-shipped like Ansible | Collection maintainer | Not a source; operation profile |
 | Terraform / OpenTofu, Puppet, Chef, systemd units, Kubernetes CRDs | No — names types | Provider | Not a source; lower into API source types |
 | Shell/Python scripts, spreadsheet macros | No — no contract | None | `uws.runtime.1.0` (`cmd`, `ssh`, `fnct`) |
@@ -122,6 +154,12 @@ Meeting the criteria makes a family *eligible*, not scheduled. Graduation also
 requires that multiple runtimes need interoperable interchange rather than
 product-owned extension fields, and that a candidate's remaining design points
 are settled — see the per-family criteria and graduation records below.
+
+For MCP, a future source type could theoretically bind either an upstream MCP
+manifest or a proven UWS-defined reviewed snapshot with portable identity,
+freshness, and drift semantics. Upstream standardization is preferred because
+the server implementer can publish the contract, but it is not the only possible
+route. Neither route is established by the current OpenUdon experiment proposal.
 
 ## UWS 1.1-Compatible Import And Advisory Features
 
@@ -374,8 +412,6 @@ The same boundary rules apply to any later browser-profile work:
 The pre-1.5 candidate framing for browser capability profiles is preserved
 below for context. The proposed pattern was:
 
-The proposed pattern is:
-
 1. First run: an LLM-assisted browser session explores the target UI.
 2. The system produces a browser capability profile from the observed DOM,
    accessibility tree, screenshots, and successful/failed actions.
@@ -389,15 +425,16 @@ This separates understanding from commitment. The LLM may help understand an
 unknown UI, but the committed workflow should execute against a reviewed,
 bounded capability description.
 
-### Browser Profile Graduation Criteria
+### Historical Browser Profile Graduation Criteria
 
 These are the browser-specific design points, applied on top of the general
 [Source Type Admission Criteria](#source-type-admission-criteria). Browser
 capability profiles satisfy the general test in its author-asserted tier, which
 is why `browser-profile` is the weakest first-class source type.
 
-Browser capability profiles should graduate from roadmap candidate to UWS source
-profile only after the following design points are settled:
+The pre-1.5 position was that browser capability profiles should graduate from
+roadmap candidate to UWS source profile only after the following design points
+were settled:
 
 - The profile format is portable across runtimes and records reviewed evidence,
   not a runtime-specific browser command trace.
@@ -458,9 +495,9 @@ Do not use a browser profile when:
 - the action involves regulated or high-risk side effects without stronger
   runtime controls
 
-## Profile Shape
+## Historical Pre-1.5 Profile Shape
 
-A future profile should record at least:
+The pre-1.5 proposal required a profile to record at least:
 
 | Field | Purpose |
 | --- | --- |
@@ -478,7 +515,7 @@ A future profile should record at least:
 | `confidence` | `low`, `medium`, or `high` based on target stability and verification. |
 | `expiresAfter` | Revalidation window. |
 
-Illustrative future profile:
+Historical illustrative profile:
 
 ```yaml
 profile: uws.browser.0.1
@@ -515,10 +552,11 @@ actions:
     expiresAfter: P30D
 ```
 
-## Possible UWS Binding
+## Historical Pre-1.5 Possible UWS Binding
 
-A future UWS version could model browser profiles as source descriptions. This
-shape is not valid UWS 1.4:
+Before UWS 1.5, the proposed future binding modeled browser profiles as source
+descriptions. This shape was not valid UWS 1.4; it became valid when
+`browser-profile` graduated in UWS 1.5:
 
 ```yaml
 sourceDescriptions:
@@ -540,10 +578,10 @@ This mirrors the source-document pattern: the profile owns UI targets and action
 capabilities; UWS owns operation selection, request values, dependencies, and
 workflow structure.
 
-## Valid Today: Extension-Owned Browser Work
+## Historical Pre-1.5 Extension-Owned Browser Work
 
-Before browser profiles become a source type, current UWS 1.4 documents
-represent browser work as extension-owned operations:
+In UWS 1.4, before browser profiles became a source type, documents represented
+browser work as extension-owned operations:
 
 ```yaml
 operationId: send_weather_report_with_browser
@@ -557,26 +595,26 @@ request:
     report_body: $steps.render_report.outputs.body
 ```
 
-This form is valid today because the operation has no source binding. It uses
-`x-uws-operation-profile` to name the implementation profile, and product-owned
-`x-*` fields carry the browser profile path and action name.
+This form was valid in UWS 1.4 because the operation had no source binding. It
+used `x-uws-operation-profile` to name the implementation profile, and
+product-owned `x-*` fields carried the browser profile path and action name.
 
-Extension-owned browser operations must not set `sourceDescription`,
+Those extension-owned browser operations could not set `sourceDescription`,
 `sourceOperationId`, `sourceOperationRef`, `openapiOperationId`, or
 `openapiOperationRef`. Those fields remain reserved for source-bound operations.
-OpenUdon-like authoring tools should use this extension-owned shape today and
-must not emit `sourceDescriptions[].type: browser-profile` until a future UWS
-version adopts that source type.
+UWS 1.5 adopted `sourceDescriptions[].type: browser-profile`; UWS 1.5 and later
+documents can use the source-bound shape above. Browser 1.7 is the current
+capability profile and retains acceptance of Browser 1.5 and 1.6 documents.
 
-The future source-profile form becomes useful only after multiple runtimes need
-portable browser-profile interchange.
+The source-profile form became normative only after portable browser-profile
+interchange and its safety contract were accepted for UWS 1.5.
 
-## Safety Requirements
+## Historical Pre-1.5 Safety Requirements
 
-Browser profiles must be stricter than normal read-only scraping flows because
-browser actions commonly create side effects.
+The pre-1.5 proposal treated browser profiles more strictly than normal
+read-only scraping flows because browser actions commonly create side effects.
 
-Minimum future requirements:
+The pre-1.5 minimum requirements were:
 
 - Profiles must declare an origin allowlist and runtime execution must fail
   closed outside those origins.
@@ -626,8 +664,8 @@ way it references API operations:
 - AsyncAPI for event/message contracts
 - browser capability profile only when the workflow target is UI-only or API
   coverage is insufficient
-- extension-owned operation profiles while the browser profile contract is still
-  experimental
+- extension-owned operation profiles only for pre-1.5 documents or
+  product-specific behavior outside the current Browser 1.7 contract
 
 ## Adopted in UWS 1.6 and Withdrawn in UWS 1.7: Ansible Module Source Profiles
 
