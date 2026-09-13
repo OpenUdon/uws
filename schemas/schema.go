@@ -36,6 +36,12 @@ const uwsModulePath = "github.com/OpenUdon/uws"
 var embeddedVersionDocuments []byte
 
 var (
+	registration12SchemaOnce     sync.Once
+	registration12Schema         *jsonschema.Schema
+	registration12SchemaErr      error
+	registrationCall12SchemaOnce sync.Once
+	registrationCall12Schema     *jsonschema.Schema
+	registrationCall12SchemaErr  error
 	browser15SchemaOnce          sync.Once
 	browser15Schema              *jsonschema.Schema
 	browser15SchemaErr           error
@@ -451,8 +457,13 @@ func ValidateBrowserRegistrationProfile(data []byte) error {
 			return fmt.Errorf("flows.%s.success.path: must be an exact clean path", name)
 		}
 	}
-	if profile == "uws.browser-registration.1.1" {
-		return validateRegistrationInputsProfile(root, declaredOrigins)
+	if profile == "uws.browser-registration.1.1" || profile == "uws.browser-registration.1.2" {
+		if err := validateRegistrationInputsProfile(root, declaredOrigins); err != nil {
+			return err
+		}
+	}
+	if profile == "uws.browser-registration.1.2" {
+		return validateRegistrationVerification(root, declaredOrigins)
 	}
 	return nil
 }
@@ -878,6 +889,11 @@ func compiledBrowserAuthenticationCallSupplementSchema(profile string) (*jsonsch
 
 func compiledBrowserRegistrationProfileSchema(profile string) (*jsonschema.Schema, error) {
 	switch profile {
+	case "uws.browser-registration.1.2":
+		registration12SchemaOnce.Do(func() {
+			registration12Schema, registration12SchemaErr = compileEmbeddedSchema("browser-registration.1.2.json")
+		})
+		return registration12Schema, registration12SchemaErr
 	case "uws.browser-registration.1.0":
 		registration10SchemaOnce.Do(func() {
 			registration10Schema, registration10SchemaErr = compileEmbeddedSchema("browser-registration.1.0.json")
@@ -896,6 +912,9 @@ func compiledBrowserRegistrationProfileSchema(profile string) (*jsonschema.Schem
 func compiledBrowserRegistrationCallSupplementSchema(profile string) (*jsonschema.Schema, error) {
 	name := familySchemaName(profile, "browser-registration-call", "1.0")
 	switch name {
+	case "browser-registration-call.1.2.json":
+		registrationCall12SchemaOnce.Do(func() { registrationCall12Schema, registrationCall12SchemaErr = compileEmbeddedSchema(name) })
+		return registrationCall12Schema, registrationCall12SchemaErr
 	case "browser-registration-call.1.0.json":
 		registrationCall10SchemaOnce.Do(func() {
 			registrationCall10Schema, registrationCall10SchemaErr = compileEmbeddedSchema(name)

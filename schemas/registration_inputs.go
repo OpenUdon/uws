@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -234,7 +235,7 @@ func registrationInputRoot(profile []byte, flow string) (map[string]any, map[str
 	value, _, _ := decodeSchemaDocument(profile, "registration")
 	root := value.(map[string]any)
 	selected, ok := root["flows"].(map[string]any)[flow].(map[string]any)
-	if root["profile"] != "uws.browser-registration.1.1" || !ok {
+	if (root["profile"] != "uws.browser-registration.1.1" && root["profile"] != "uws.browser-registration.1.2") || !ok {
 		return nil, nil, fmt.Errorf("registration input: unsupported profile or flow")
 	}
 	return root, selected, nil
@@ -275,14 +276,26 @@ func BrowserRegistrationInputTemplate(profile []byte, flow string) ([]byte, erro
 // selected profile, including flow existence and exact credential-slot keys.
 // Resolving inputBinding and binding private values remain runtime operations.
 func ValidateBrowserRegistrationCallBinding(profile, call []byte) error {
-	if err := ValidateBrowserRegistrationCallSupplementForProfile(call, "uws.browser-registration-call.1.1"); err != nil {
+	return ValidateBrowserRegistrationCallBindingForProfile(profile, call, "uws.browser-registration-call.1.1")
+}
+
+// ValidateBrowserRegistrationCallBindingForProfile requires an explicit call
+// version and the matching actual profile; the default API remains 1.1.
+func ValidateBrowserRegistrationCallBindingForProfile(profile, call []byte, callProfile string) error {
+	if callProfile != "uws.browser-registration-call.1.1" && callProfile != "uws.browser-registration-call.1.2" {
+		return fmt.Errorf("registration call: unsupported version")
+	}
+	if err := ValidateBrowserRegistrationCallSupplementForProfile(call, callProfile); err != nil {
 		return err
 	}
 	value, _, _ := decodeSchemaDocument(call, "registration call")
 	op := value.(map[string]any)["x-uws-browser-registration"].(map[string]any)
-	_, flow, err := registrationInputRoot(profile, op["flow"].(string))
+	root, flow, err := registrationInputRoot(profile, op["flow"].(string))
 	if err != nil {
 		return err
+	}
+	if root["profile"] != strings.Replace(callProfile, "registration-call", "registration", 1) {
+		return fmt.Errorf("registration call: profile version mismatch")
 	}
 	used := map[string]bool{}
 	for _, raw := range flow["sequence"].([]any) {

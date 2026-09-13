@@ -24,6 +24,10 @@ const (
 	ProfileNameV11 = "uws.browser-registration.1.1"
 	// CallProfileNameV11 selects the private input binding supplement.
 	CallProfileNameV11 = "uws.browser-registration-call.1.1"
+	// ProfileNameV12 adds reviewed provider verification and submission binding.
+	ProfileNameV12 = "uws.browser-registration.1.2"
+	// CallProfileNameV12 explicitly selects reviewed verification authority.
+	CallProfileNameV12 = "uws.browser-registration-call.1.2"
 	// ExtensionRegistration is the operation-level registration-call key.
 	ExtensionRegistration = "x-uws-browser-registration"
 )
@@ -83,6 +87,7 @@ type Locator struct {
 
 // Flow is one explicitly selected account-registration alternative.
 type Flow struct {
+	HumanVerification  *HumanVerification `json:"humanVerification,omitempty" yaml:"humanVerification,omitempty"`
 	Description        string             `json:"description,omitempty" yaml:"description,omitempty"`
 	Sequence           []Step             `json:"sequence" yaml:"sequence"`
 	Effects            []string           `json:"effects" yaml:"effects"`
@@ -213,6 +218,7 @@ func (s *Step) UnmarshalYAML(node *yaml.Node) error {
 
 // OperationRegistration is the typed x-uws-browser-registration payload.
 type OperationRegistration struct {
+	Verification        string            `json:"verification,omitempty" hcl:"verification"`
 	Profile             string            `json:"profile" hcl:"profile"`
 	Flow                string            `json:"flow" hcl:"flow"`
 	CredentialBindings  map[string]string `json:"credentialBindings" hcl:"credentialBindings"`
