@@ -99,7 +99,7 @@ func TestJSONPathCriterionRejectsMalformedPath(t *testing.T) {
 }
 
 func TestParseCriterionIndexRejectsMalformedArrayIndexes(t *testing.T) {
-	for _, token := range []string{"", "1abc", "-1", "+1", "1.0"} {
+	for _, token := range []string{"", "01", "1abc", "-1", "-0", "+1", "1.0"} {
 		t.Run(token, func(t *testing.T) {
 			_, err := parseCriterionIndex(token)
 			require.Error(t, err)

@@ -212,7 +212,7 @@ func resolveCriterionJSONPointer(root any, pointer string) (any, error) {
 }
 
 func parseCriterionIndex(token string) (int, error) {
-	if token == "" {
+	if token == "" || (len(token) > 1 && token[0] == '0') {
 		return 0, fmt.Errorf("invalid array index %q", token)
 	}
 	for _, ch := range token {

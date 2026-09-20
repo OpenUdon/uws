@@ -31,6 +31,7 @@ type orderPosition struct {
 
 type stepMetadata struct {
 	workflow  string
+	parent    string
 	positions []orderPosition
 	contexts  map[string]bool
 	dependsOn []string
@@ -44,6 +45,7 @@ type evalEnvironment struct {
 	response       valueState
 	item           valueState
 	atWorkflowExit bool
+	atStepExit     bool
 }
 
 type analyzer struct {
@@ -59,6 +61,7 @@ type analyzer struct {
 	stepMeta         map[string]stepMetadata
 	parallelGroups   map[string][]string
 	operationResolve map[string]operationResolution
+	operationValues  map[string]any
 	referencedOps    map[string]bool
 
 	variables      map[string]valueState
@@ -66,9 +69,11 @@ type analyzer struct {
 	workflowOutput map[string]map[string]valueState
 	stepOutputs    map[string]map[string]valueState
 
-	trigger valueState
-	changed bool
-	emit    bool
+	trigger          valueState
+	workflowTriggers map[string]valueState
+	stepTriggers     map[string]valueState
+	changed          bool
+	emit             bool
 
 	edges       []Edge
 	edgeKeys    map[string]bool
@@ -98,10 +103,11 @@ func Analyze(ctx context.Context, doc *uws1.Document, resolvers ...Resolver) (*R
 		return nil, err
 	}
 
-	// Propagation is monotonic. Revisit the finite graph until no provenance or
-	// capability state changes, then make one reporting pass over the fixed point.
-	limit := 4 + len(a.steps)*2 + len(a.workflows)*2
-	for i := 0; i < limit; i++ {
+	// Propagation is monotonic over a finite provenance/capability lattice.
+	// Revisit the graph until it reaches an actual fixed point, then make one
+	// reporting pass. A document-size heuristic does not bound the propagation
+	// depth of inter-scope workflow calls and output bindings.
+	for {
 		a.changed = false
 		if err := a.runPass(); err != nil {
 			return nil, err
@@ -154,11 +160,14 @@ func newAnalyzer(ctx context.Context, doc *uws1.Document) *analyzer {
 		stepMeta:         make(map[string]stepMetadata),
 		parallelGroups:   make(map[string][]string),
 		operationResolve: make(map[string]operationResolution),
+		operationValues:  make(map[string]any),
 		referencedOps:    make(map[string]bool),
 		variables:        make(map[string]valueState),
 		workflowInputs:   make(map[string]map[string]valueState),
 		workflowOutput:   make(map[string]map[string]valueState),
 		stepOutputs:      make(map[string]map[string]valueState),
+		workflowTriggers: make(map[string]valueState),
+		stepTriggers:     make(map[string]valueState),
 		edgeKeys:         make(map[string]bool),
 		findingKeys:      make(map[string]bool),
 	}
@@ -168,6 +177,12 @@ func newAnalyzer(ctx context.Context, doc *uws1.Document) *analyzer {
 		}
 		a.operations[operation.OperationID] = operation
 		a.operationPaths[operation.OperationID] = fmt.Sprintf("operations[%d]", i)
+		if operation.ParallelGroup != "" {
+			a.parallelGroups[operation.ParallelGroup] = append(a.parallelGroups[operation.ParallelGroup], operation.OperationID)
+		}
+		if normalized, ok := normalizeWireValue(operation); ok {
+			a.operationValues[operation.OperationID] = normalized
+		}
 	}
 	for i, workflow := range doc.Workflows {
 		if workflow == nil {
@@ -176,34 +191,32 @@ func newAnalyzer(ctx context.Context, doc *uws1.Document) *analyzer {
 		a.workflows[workflow.WorkflowID] = workflow
 		a.workflowPaths[workflow.WorkflowID] = fmt.Sprintf("workflows[%d]", i)
 		rootContexts := make(map[string]bool)
-		if workflow.When != "" || workflow.ForEach != "" {
-			rootContexts[workflow.WorkflowID+":conditional"] = true
-		}
 		if workflow.Type == uws1.WorkflowTypeLoop {
 			rootContexts[workflow.WorkflowID+":loop"] = true
 		}
-		a.collectStepList(workflow.WorkflowID, workflow.Steps, a.workflowPaths[workflow.WorkflowID]+".steps", workflow.WorkflowID+":steps", workflow.Type != uws1.WorkflowTypeParallel, nil, rootContexts)
-		a.collectCaseLists(workflow.WorkflowID, workflow.Cases, a.workflowPaths[workflow.WorkflowID]+".cases", workflow.WorkflowID+":cases", nil, rootContexts)
+		a.collectStepList(workflow.WorkflowID, workflow.Steps, a.workflowPaths[workflow.WorkflowID]+".steps", workflow.WorkflowID+":steps", workflow.Type != uws1.WorkflowTypeParallel, nil, rootContexts, "")
+		a.collectCaseLists(workflow.WorkflowID, workflow.Cases, a.workflowPaths[workflow.WorkflowID]+".cases", workflow.WorkflowID+":cases", nil, rootContexts, "")
 		defaultContexts := cloneContexts(rootContexts)
 		defaultContexts[workflow.WorkflowID+":default"] = true
-		a.collectStepList(workflow.WorkflowID, workflow.Default, a.workflowPaths[workflow.WorkflowID]+".default", workflow.WorkflowID+":default", true, nil, defaultContexts)
+		a.collectStepList(workflow.WorkflowID, workflow.Default, a.workflowPaths[workflow.WorkflowID]+".default", workflow.WorkflowID+":default", true, nil, defaultContexts, "")
 	}
 	for name, raw := range doc.Variables {
-		a.variables[name] = literalState(raw, "variables."+name)
+		a.variables[name] = literalState(raw, appendObjectPath("variables", name))
 	}
 	if doc.Components != nil {
 		for name, raw := range doc.Components.Variables {
 			if _, exists := a.variables[name]; !exists {
-				a.variables[name] = literalState(raw, "components.variables."+name)
+				a.variables[name] = literalState(raw, appendObjectPath("components.variables", name))
 			}
 		}
 	}
 	a.initializeWorkflowInputs()
 	a.trigger = a.documentTriggerState()
+	a.initializeTriggerStates()
 	return a
 }
 
-func (a *analyzer) collectStepList(workflow string, steps []*uws1.Step, path, container string, sequential bool, positions []orderPosition, contexts map[string]bool) {
+func (a *analyzer) collectStepList(workflow string, steps []*uws1.Step, path, container string, sequential bool, positions []orderPosition, contexts map[string]bool, parent string) {
 	for i, step := range steps {
 		if step == nil {
 			continue
@@ -219,7 +232,7 @@ func (a *analyzer) collectStepList(workflow string, steps []*uws1.Step, path, co
 			a.referencedOps[step.OperationRef] = true
 		}
 		a.stepPaths[step.StepID] = stepPath
-		a.stepMeta[step.StepID] = stepMetadata{workflow: workflow, positions: stepPositions, contexts: stepContexts, dependsOn: append([]string(nil), step.DependsOn...)}
+		a.stepMeta[step.StepID] = stepMetadata{workflow: workflow, parent: parent, positions: stepPositions, contexts: stepContexts, dependsOn: append([]string(nil), step.DependsOn...)}
 		if step.ParallelGroup != "" {
 			a.parallelGroups[step.ParallelGroup] = append(a.parallelGroups[step.ParallelGroup], step.StepID)
 		}
@@ -227,30 +240,30 @@ func (a *analyzer) collectStepList(workflow string, steps []*uws1.Step, path, co
 		childContexts := cloneContexts(stepContexts)
 		switch step.Type {
 		case uws1.WorkflowTypeSwitch:
-			a.collectCaseLists(workflow, step.Cases, stepPath+".cases", step.StepID+":cases", stepPositions, childContexts)
+			a.collectCaseLists(workflow, step.Cases, stepPath+".cases", step.StepID+":cases", stepPositions, childContexts, step.StepID)
 			defaultContexts := cloneContexts(childContexts)
 			defaultContexts[step.StepID+":default"] = true
-			a.collectStepList(workflow, step.Default, stepPath+".default", step.StepID+":default", true, stepPositions, defaultContexts)
+			a.collectStepList(workflow, step.Default, stepPath+".default", step.StepID+":default", true, stepPositions, defaultContexts, step.StepID)
 		case uws1.WorkflowTypeLoop:
 			childContexts[step.StepID+":loop"] = true
-			a.collectStepList(workflow, step.Steps, stepPath+".steps", step.StepID+":steps", true, stepPositions, childContexts)
+			a.collectStepList(workflow, step.Steps, stepPath+".steps", step.StepID+":steps", true, stepPositions, childContexts, step.StepID)
 		default:
 			childSequential := step.Type != uws1.WorkflowTypeParallel
-			a.collectStepList(workflow, step.Steps, stepPath+".steps", step.StepID+":steps", childSequential, stepPositions, childContexts)
-			a.collectCaseLists(workflow, step.Cases, stepPath+".cases", step.StepID+":cases", stepPositions, childContexts)
-			a.collectStepList(workflow, step.Default, stepPath+".default", step.StepID+":default", true, stepPositions, childContexts)
+			a.collectStepList(workflow, step.Steps, stepPath+".steps", step.StepID+":steps", childSequential, stepPositions, childContexts, step.StepID)
+			a.collectCaseLists(workflow, step.Cases, stepPath+".cases", step.StepID+":cases", stepPositions, childContexts, step.StepID)
+			a.collectStepList(workflow, step.Default, stepPath+".default", step.StepID+":default", true, stepPositions, childContexts, step.StepID)
 		}
 	}
 }
 
-func (a *analyzer) collectCaseLists(workflow string, cases []*uws1.Case, path, container string, positions []orderPosition, contexts map[string]bool) {
+func (a *analyzer) collectCaseLists(workflow string, cases []*uws1.Case, path, container string, positions []orderPosition, contexts map[string]bool, parent string) {
 	for i, c := range cases {
 		if c == nil {
 			continue
 		}
 		caseContexts := cloneContexts(contexts)
 		caseContexts[fmt.Sprintf("%s:%d", container, i)] = true
-		a.collectStepList(workflow, c.Steps, fmt.Sprintf("%s[%d].steps", path, i), fmt.Sprintf("%s:%d", container, i), true, positions, caseContexts)
+		a.collectStepList(workflow, c.Steps, fmt.Sprintf("%s[%d].steps", path, i), fmt.Sprintf("%s:%d", container, i), true, positions, caseContexts, parent)
 	}
 }
 
@@ -275,7 +288,7 @@ func (a *analyzer) initializeWorkflowInputs() {
 				inputs[name] = valueState{
 					provenance: a.workflowInputTrust(id, name),
 					capability: capabilityForSchema(schema),
-					from:       a.workflowPaths[id] + ".inputs.properties." + name,
+					from:       appendObjectPath(a.workflowPaths[id]+".inputs.properties", name),
 				}
 			}
 		}
@@ -308,6 +321,162 @@ func (a *analyzer) documentTriggerState() valueState {
 		}
 	}
 	return state
+}
+
+func (a *analyzer) initializeTriggerStates() {
+	for _, trigger := range a.doc.Triggers {
+		if trigger == nil {
+			continue
+		}
+		state := valueState{
+			provenance: uws1.ContentTrustUntrusted,
+			capability: CapabilityUnknown,
+			from:       "$trigger",
+		}
+		if a.doc.ContentTrust != nil {
+			if declared, ok := a.doc.ContentTrust.Triggers[trigger.TriggerID]; ok {
+				state.provenance = declared
+			}
+		}
+		reachedWorkflows := make(map[string]bool)
+		reachedSteps := make(map[string]bool)
+		seen := make(map[string]bool)
+		for _, route := range trigger.Routes {
+			if route == nil {
+				continue
+			}
+			for _, target := range route.To {
+				a.collectTriggerRouteTarget(target, reachedWorkflows, reachedSteps, seen)
+			}
+		}
+		for workflow := range reachedWorkflows {
+			a.workflowTriggers[workflow] = joinOptionalState(a.workflowTriggers[workflow], state)
+		}
+		for step := range reachedSteps {
+			a.stepTriggers[step] = joinOptionalState(a.stepTriggers[step], state)
+		}
+	}
+}
+
+func (a *analyzer) collectTriggerRouteTarget(target string, workflows, steps, seen map[string]bool) {
+	// Trigger dispatch gives workflow IDs precedence over top-level step IDs.
+	// Keep that entry-point rule distinct from dependency lookup, whose runtime
+	// precedence is step, workflow, then operation.
+	if a.workflows[target] != nil {
+		a.collectTriggerWorkflow(target, workflows, steps, seen)
+		return
+	}
+	a.collectTriggerStep(target, workflows, steps, seen)
+}
+
+func (a *analyzer) collectTriggerDependency(target string, workflows, steps, seen map[string]bool) {
+	if a.steps[target] != nil {
+		a.collectTriggerStep(target, workflows, steps, seen)
+		return
+	}
+	if a.workflows[target] != nil {
+		a.collectTriggerWorkflow(target, workflows, steps, seen)
+		return
+	}
+	if a.operations[target] != nil {
+		a.collectTriggerOperation(target, workflows, steps, seen)
+		return
+	}
+	for _, member := range a.parallelGroups[target] {
+		a.collectTriggerDependency(member, workflows, steps, seen)
+	}
+}
+
+func (a *analyzer) collectTriggerWorkflow(target string, workflows, steps, seen map[string]bool) {
+	key := "workflow\x00" + target
+	if target == "" || seen[key] {
+		return
+	}
+	workflow := a.workflows[target]
+	if workflow == nil {
+		return
+	}
+	seen[key] = true
+	workflows[target] = true
+	for _, dependency := range workflow.DependsOn {
+		a.collectTriggerDependency(dependency, workflows, steps, seen)
+	}
+	switch workflow.Type {
+	case uws1.WorkflowTypeSequence, uws1.WorkflowTypeParallel, uws1.WorkflowTypeLoop, uws1.WorkflowTypeAwait:
+		a.collectTriggerStepList(workflow.Steps, workflows, steps, seen)
+	case uws1.WorkflowTypeSwitch:
+		for _, c := range workflow.Cases {
+			if c != nil {
+				a.collectTriggerStepList(c.Steps, workflows, steps, seen)
+			}
+		}
+		a.collectTriggerStepList(workflow.Default, workflows, steps, seen)
+	}
+}
+
+func (a *analyzer) collectTriggerStep(target string, workflows, steps, seen map[string]bool) {
+	key := "step\x00" + target
+	if target == "" || seen[key] {
+		return
+	}
+	step := a.steps[target]
+	if step == nil {
+		return
+	}
+	seen[key] = true
+	steps[target] = true
+	for _, dependency := range step.DependsOn {
+		a.collectTriggerDependency(dependency, workflows, steps, seen)
+	}
+	// operationRef and workflow are typed bindings, not generic dependency
+	// names. A colliding ID in another namespace must not redirect them.
+	if step.OperationRef != "" {
+		a.collectTriggerOperation(step.OperationRef, workflows, steps, seen)
+	}
+	if step.Workflow != "" {
+		a.collectTriggerWorkflow(step.Workflow, workflows, steps, seen)
+	}
+	switch step.Type {
+	case uws1.WorkflowTypeSequence, uws1.WorkflowTypeParallel, uws1.WorkflowTypeLoop, uws1.WorkflowTypeAwait:
+		a.collectTriggerStepList(step.Steps, workflows, steps, seen)
+	case uws1.WorkflowTypeSwitch:
+		for _, c := range step.Cases {
+			if c != nil {
+				a.collectTriggerStepList(c.Steps, workflows, steps, seen)
+			}
+		}
+		a.collectTriggerStepList(step.Default, workflows, steps, seen)
+	}
+}
+
+func (a *analyzer) collectTriggerOperation(target string, workflows, steps, seen map[string]bool) {
+	key := "operation\x00" + target
+	if target == "" || seen[key] {
+		return
+	}
+	operation := a.operations[target]
+	if operation == nil {
+		return
+	}
+	seen[key] = true
+	for _, dependency := range operation.DependsOn {
+		a.collectTriggerDependency(dependency, workflows, steps, seen)
+	}
+}
+
+func (a *analyzer) collectTriggerStepList(values []*uws1.Step, workflows, steps, seen map[string]bool) {
+	for _, step := range values {
+		if step != nil {
+			a.collectTriggerStep(step.StepID, workflows, steps, seen)
+		}
+	}
+}
+
+func joinOptionalState(left, right valueState) valueState {
+	if left.from == "" {
+		return right
+	}
+	return joinState(left, right)
 }
 
 func (a *analyzer) resolveOperations(resolvers []Resolver) {
@@ -472,13 +641,17 @@ func (a *analyzer) analyzeStructuralResults() {
 			continue
 		}
 		workflowID := result.From
+		stepID := ""
 		if index := strings.IndexByte(workflowID, '.'); index >= 0 {
+			stepID = workflowID[index+1:]
 			workflowID = workflowID[:index]
 		}
 		env := evalEnvironment{
 			workflow:       workflowID,
 			inputs:         a.workflowInputs[workflowID],
-			atWorkflowExit: true,
+			currentStep:    stepID,
+			atWorkflowExit: stepID == "",
+			atStepExit:     stepID != "",
 		}
 		a.evalString(result.Value, fmt.Sprintf("results[%d].value", i), env)
 	}
@@ -499,15 +672,15 @@ func (a *analyzer) analyzeWorkflow(id string) map[string]valueState {
 	if workflow.Idempotency != nil {
 		a.analyzeControl(workflow.Idempotency.Key, path+".idempotency.key", env)
 	}
-	a.analyzeSteps(workflow.Steps, path+".steps", env)
-	a.analyzeCases(workflow.Cases, path+".cases", env)
-	a.analyzeSteps(workflow.Default, path+".default", env)
+	a.analyzeStructuralChildren(workflow.Type, workflow.Steps, workflow.Cases, workflow.Default, path, env)
 
 	outputs := make(map[string]valueState, len(workflow.Outputs))
 	env.atWorkflowExit = true
+	env.outputs = outputs
 	for _, name := range sortedStringKeys(workflow.Outputs) {
-		state := a.evalString(workflow.Outputs[name], path+".outputs."+name, env)
-		state.from = path + ".outputs." + name
+		outputPath := appendObjectPath(path+".outputs", name)
+		state := a.evalString(workflow.Outputs[name], outputPath, env)
+		state.from = outputPath
 		outputs[name] = state
 		a.setNestedState(a.workflowOutput, id, name, state)
 	}
@@ -553,11 +726,11 @@ func (a *analyzer) analyzeStep(step *uws1.Step, path string, parent evalEnvironm
 
 	boundInputs := make(map[string]valueState, len(step.Inputs))
 	for _, name := range sortedAnyKeys(step.Inputs) {
-		boundInputs[name] = a.evalValue(step.Inputs[name], path+".inputs."+name, env)
+		boundInputs[name] = a.evalValue(step.Inputs[name], appendObjectPath(path+".inputs", name), env)
 	}
 
 	localOutputs := map[string]valueState{}
-	response := unknownState(a.operationPaths[step.OperationRef] + ".response")
+	var response valueState
 	if step.OperationRef != "" {
 		callEnv := env
 		callEnv.inputs = boundInputs
@@ -568,19 +741,38 @@ func (a *analyzer) analyzeStep(step *uws1.Step, path string, parent evalEnvironm
 		}
 		localOutputs = cloneStateMap(a.workflowOutput[step.Workflow])
 	} else {
-		a.analyzeSteps(step.Steps, path+".steps", env)
-		a.analyzeCases(step.Cases, path+".cases", env)
-		a.analyzeSteps(step.Default, path+".default", env)
+		a.analyzeStructuralChildren(step.Type, step.Steps, step.Cases, step.Default, path, env)
 	}
 
 	outputEnv := env
 	outputEnv.inputs = boundInputs
-	outputEnv.outputs = localOutputs
+	availableOutputs := cloneStateMap(localOutputs)
+	if availableOutputs == nil {
+		availableOutputs = make(map[string]valueState)
+	}
+	outputEnv.outputs = availableOutputs
 	outputEnv.response = response
 	for _, name := range sortedStringKeys(step.Outputs) {
-		state := a.evalString(step.Outputs[name], path+".outputs."+name, outputEnv)
-		state.from = path + ".outputs." + name
+		outputPath := appendObjectPath(path+".outputs", name)
+		state := a.evalString(step.Outputs[name], outputPath, outputEnv)
+		state.from = outputPath
+		availableOutputs[name] = state
 		a.setNestedState(a.stepOutputs, step.StepID, name, state)
+	}
+}
+
+func (a *analyzer) analyzeStructuralChildren(typeName string, steps []*uws1.Step, cases []*uws1.Case, defaultSteps []*uws1.Step, path string, env evalEnvironment) {
+	switch typeName {
+	case uws1.WorkflowTypeSequence, uws1.WorkflowTypeParallel, uws1.WorkflowTypeLoop, uws1.WorkflowTypeAwait:
+		a.analyzeSteps(steps, path+".steps", env)
+	case uws1.WorkflowTypeSwitch:
+		a.analyzeCases(cases, path+".cases", env)
+		a.analyzeSteps(defaultSteps, path+".default", env)
+	case uws1.WorkflowTypeMerge:
+		// Nested declarations can still be named by an explicit dependency
+		// elsewhere in the document, so inspect their flows. Merge itself does
+		// not execute them, and executingAncestor therefore grants no dominance.
+		a.analyzeSteps(steps, path+".steps", env)
 	}
 }
 
@@ -598,6 +790,12 @@ func (a *analyzer) analyzeOperation(id string, env evalEnvironment, callerStep s
 	resolution := a.operationResolve[id]
 	inputState := trustedState(path + ".request")
 	if resolution.resolved {
+		if len(resolution.contract.Inputs) == 0 {
+			// An output-only resolver does not make request expressions trusted.
+			// Preserve core data-flow visibility when no semantic input channels
+			// were supplied.
+			inputState = a.scanValue(operation.Request, path+".request", env)
+		}
 		for _, channel := range resolution.contract.Inputs {
 			channelPath := pointerDocumentPath(path, channel.Path)
 			var state valueState
@@ -613,7 +811,7 @@ func (a *analyzer) analyzeOperation(id string, env evalEnvironment, callerStep s
 					}
 					state = joinState(state, a.evalParsed(parsed, target, env))
 				}
-			} else if raw, ok := operationValueAtPointer(operation, channel.Path); ok {
+			} else if raw, ok := a.operationValueAtPointer(id, channel.Path); ok {
 				state = a.evalValue(raw, channelPath, env)
 			} else {
 				a.addFinding(CodeResolverFailure, path)
@@ -640,9 +838,17 @@ func (a *analyzer) analyzeOperation(id string, env evalEnvironment, callerStep s
 	outputs := make(map[string]valueState, len(operation.Outputs))
 	outputEnv := env
 	outputEnv.response = response
+	outputEnv.outputs = outputs
 	for _, name := range sortedStringKeys(operation.Outputs) {
-		state := a.evalString(operation.Outputs[name], path+".outputs."+name, outputEnv)
-		state.provenance = a.operationOutputTrust(operation, name, resolution)
+		outputPath := appendObjectPath(path+".outputs", name)
+		declaredTrust := a.operationOutputTrust(operation, name, resolution)
+		currentEnv := outputEnv
+		currentEnv.response.provenance = declaredTrust
+		state := a.evalString(operation.Outputs[name], outputPath, currentEnv)
+		// A declaration classifies the operation-produced value but cannot
+		// erase taint inherited through $outputs, inputs, trigger data, or
+		// another expression reference.
+		state.provenance = joinTrust(state.provenance, declaredTrust)
 		if output, ok := resolution.contract.Outputs[name]; ok {
 			state.capability = output.Capability
 			inherits := resolution.contract.InheritsInputProvenance
@@ -655,7 +861,7 @@ func (a *analyzer) analyzeOperation(id string, env evalEnvironment, callerStep s
 		} else if resolution.contract.InheritsInputProvenance {
 			state.provenance = joinTrust(state.provenance, inputState.provenance)
 		}
-		state.from = path + ".outputs." + name
+		state.from = outputPath
 		outputs[name] = state
 	}
 
@@ -725,7 +931,7 @@ func (a *analyzer) evalValue(raw any, path string, env evalEnvironment) valueSta
 		state := trustedState(path)
 		state.capability = CapabilityComposite
 		for _, key := range sortedAnyKeys(value) {
-			state = joinState(state, a.evalValue(value[key], path+"."+key, env))
+			state = joinState(state, a.evalValue(value[key], appendObjectPath(path, key), env))
 		}
 		state.capability = CapabilityComposite
 		return state
@@ -821,6 +1027,12 @@ func (a *analyzer) resolveReference(ref expressionReference, env evalEnvironment
 		state, ok := a.variables[ref.name]
 		return state, ok
 	case "trigger":
+		if state, ok := a.stepTriggers[env.currentStep]; ok {
+			return state, true
+		}
+		if state, ok := a.workflowTriggers[env.workflow]; ok {
+			return state, true
+		}
 		return a.trigger, true
 	case "inputs":
 		if ref.name == "" {
@@ -839,6 +1051,9 @@ func (a *analyzer) resolveReference(ref expressionReference, env evalEnvironment
 		state, ok := outputs[ref.name]
 		if !exists || !ok {
 			return unknownState("$steps." + ref.id + ".outputs." + ref.name), false
+		}
+		if env.atStepExit && ref.id == env.currentStep {
+			return state, true
 		}
 		if env.currentStep != "" {
 			if !a.dominates(ref.id, env.currentStep) {
@@ -919,6 +1134,12 @@ func (a *analyzer) dominates(source, target string) bool {
 			return false
 		}
 	}
+	// A structural step finalizes its outputs after children that its runtime
+	// actually executes. Conditional branches and possibly-empty loops carry
+	// contexts absent from the ancestor, and merge ignores nested steps.
+	if a.executingAncestor(target, source) {
+		return true
+	}
 	if a.explicitlyDependsOn(target, source, make(map[string]bool)) {
 		return true
 	}
@@ -936,6 +1157,22 @@ func (a *analyzer) dominates(source, target string) bool {
 		}
 	}
 	return false
+}
+
+func (a *analyzer) stepExecutesNestedSteps(stepID string) bool {
+	step := a.steps[stepID]
+	if step == nil {
+		return false
+	}
+	switch step.Type {
+	case uws1.WorkflowTypeSequence, uws1.WorkflowTypeParallel, uws1.WorkflowTypeAwait:
+		return true
+	default:
+		// switch and loop children are guarded by branch/iteration contexts.
+		// merge ignores steps entirely, so mere tree ancestry is not execution
+		// dominance for that construct.
+		return false
+	}
 }
 
 func (a *analyzer) explicitlyDependsOn(target, source string, seen map[string]bool) bool {
@@ -956,17 +1193,32 @@ func (a *analyzer) explicitlyDependsOn(target, source string, seen map[string]bo
 }
 
 func (a *analyzer) dependencyCoversSource(dependency, source string, seen map[string]bool) bool {
-	if dependency == source || a.isStepAncestor(dependency, source) {
+	if dependency == source || a.executingAncestor(dependency, source) {
 		return true
 	}
 	if members := a.parallelGroups[dependency]; len(members) > 0 {
 		for _, member := range members {
-			if member == source || a.isStepAncestor(member, source) || a.explicitlyDependsOn(member, source, seen) {
+			if member == source || a.executingAncestor(member, source) || a.explicitlyDependsOn(member, source, seen) {
 				return true
 			}
 		}
 	}
 	return a.explicitlyDependsOn(dependency, source, seen)
+}
+
+func (a *analyzer) executingAncestor(ancestor, descendant string) bool {
+	if !a.isStepAncestor(ancestor, descendant) {
+		return false
+	}
+	current := descendant
+	for current != ancestor {
+		meta, ok := a.stepMeta[current]
+		if !ok || meta.parent == "" || !a.stepExecutesNestedSteps(meta.parent) {
+			return false
+		}
+		current = meta.parent
+	}
+	return true
 }
 
 func (a *analyzer) isStepAncestor(ancestor, descendant string) bool {
@@ -1069,14 +1321,22 @@ func (a *analyzer) setNestedState(target map[string]map[string]valueState, outer
 }
 
 func operationValueAtPointer(operation *uws1.Operation, pointer string) (any, bool) {
-	data, err := json.Marshal(operation)
-	if err != nil {
+	root, ok := normalizeWireValue(operation)
+	if !ok {
 		return nil, false
 	}
-	var root any
-	if json.Unmarshal(data, &root) != nil {
+	return operationValueAtPointerRoot(root, pointer)
+}
+
+func (a *analyzer) operationValueAtPointer(operationID, pointer string) (any, bool) {
+	root, ok := a.operationValues[operationID]
+	if !ok {
 		return nil, false
 	}
+	return operationValueAtPointerRoot(root, pointer)
+}
+
+func operationValueAtPointerRoot(root any, pointer string) (any, bool) {
 	if pointer == "" || pointer == "/" {
 		pointer = "/request"
 	} else if !strings.HasPrefix(pointer, "/request") && !strings.HasPrefix(pointer, "/x-") {
@@ -1103,8 +1363,8 @@ func resolveJSONPointer(root any, pointer string) (any, bool) {
 			}
 			current = value
 		case []any:
-			index, err := strconv.Atoi(token)
-			if err != nil || index < 0 || index >= len(typed) {
+			index, ok := parseArrayIndex(token)
+			if !ok || index >= len(typed) {
 				return nil, false
 			}
 			current = typed[index]
@@ -1132,16 +1392,42 @@ func pointerSuffix(pointer string) string {
 	var result strings.Builder
 	for _, raw := range strings.Split(strings.TrimPrefix(pointer, "/"), "/") {
 		token := strings.ReplaceAll(strings.ReplaceAll(raw, "~1", "/"), "~0", "~")
-		if _, err := strconv.Atoi(token); err == nil {
+		if _, ok := parseArrayIndex(token); ok {
 			result.WriteString("[")
 			result.WriteString(token)
 			result.WriteString("]")
 		} else {
-			result.WriteString(".")
-			result.WriteString(token)
+			result.WriteString(objectPathSuffix(token))
 		}
 	}
 	return result.String()
+}
+
+func parseArrayIndex(token string) (int, bool) {
+	if token == "0" {
+		return 0, true
+	}
+	if token == "" || token[0] < '1' || token[0] > '9' {
+		return 0, false
+	}
+	for i := 1; i < len(token); i++ {
+		if token[i] < '0' || token[i] > '9' {
+			return 0, false
+		}
+	}
+	index, err := strconv.Atoi(token)
+	return index, err == nil
+}
+
+func appendObjectPath(base, key string) string {
+	return base + objectPathSuffix(key)
+}
+
+func objectPathSuffix(key string) string {
+	if idSegmentPattern.MatchString(key) && !strings.Contains(key, ".") {
+		return "." + key
+	}
+	return "[" + strconv.Quote(key) + "]"
 }
 
 func literalState(raw any, from string) valueState {

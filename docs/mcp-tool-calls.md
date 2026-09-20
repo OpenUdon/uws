@@ -286,10 +286,10 @@ is experimental and is not evidence for Stage 1 support. Later MCP draft work
 may change sessions, list stability, or tool execution, but draft behavior is
 not treated here as stable protocol fact.
 
-## UWS 1.9.1 content trust
+## UWS 1.9 content trust
 
 The Stage 1 resolver must integrate with the existing advisory
-[UWS 1.9.1 content-trust model](content-trust.md); it must not invent a parallel
+[UWS 1.9 content-trust model](content-trust.md); it must not invent a parallel
 trust system.
 
 Each selected tool review classifies every argument channel that can receive a

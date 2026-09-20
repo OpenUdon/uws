@@ -74,6 +74,10 @@ func (s *Step) validate(path string, idx *documentIndex, result *ValidationResul
 	hasOperationRef := s.OperationRef != ""
 	hasWorkflow := s.Workflow != ""
 	hasType := s.Type != ""
+	// Non-nil slices preserve the presence of explicit JSON/YAML arrays even
+	// when they are empty. The schema rejects these properties on reference
+	// steps, so semantic validation must not reduce presence to len > 0.
+	hasNestedBlocks := s.Steps != nil || s.Cases != nil || s.Default != nil
 	// Mirror the schema-level oneOf intent: a step is exactly one of an
 	// operation reference, a workflow reference, or a structural construct.
 	// Two or more of these together are ambiguous and rejected here.
@@ -84,6 +88,12 @@ func (s *Step) validate(path string, idx *documentIndex, result *ValidationResul
 		result.addError(path, "operationRef cannot be combined with structural type")
 	case hasWorkflow && hasType:
 		result.addError(path, "workflow cannot be combined with structural type")
+	}
+	if hasOperationRef && hasNestedBlocks {
+		result.addError(path, "operation-reference steps cannot also declare nested child blocks")
+	}
+	if hasWorkflow && hasNestedBlocks {
+		result.addError(path, "workflow-reference steps cannot also declare nested child blocks")
 	}
 	if hasType {
 		if !IsWorkflowType(s.Type) {
@@ -101,9 +111,6 @@ func (s *Step) validate(path string, idx *documentIndex, result *ValidationResul
 	isWorkflowReference := hasWorkflow && !hasOperationRef && !hasType
 	if isWorkflowReference && idx.workflows[s.Workflow] == nil {
 		result.addError(path+".workflow", fmt.Sprintf("references unknown workflowId %q", s.Workflow))
-	}
-	if isWorkflowReference && (len(s.Steps) > 0 || len(s.Cases) > 0 || len(s.Default) > 0) {
-		result.addError(path, "workflow-reference steps cannot also declare structural type or nested child blocks")
 	}
 	validateDependencyList(s.DependsOn, path+".dependsOn", idx, result)
 	validateOutputs(s.Outputs, path+".outputs", result)

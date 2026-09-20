@@ -10,7 +10,7 @@
 
 ### Layer 1: Structural (JSON Schema)
 
-The latest published JSON Schema (`versions/1.9.1.json`) validates document shape:
+The latest published JSON Schema (`versions/1.9.2.json`) validates document shape:
 
 - Required fields (`uws`, `info`, `operations`)
 - Type and format constraints
@@ -27,9 +27,11 @@ The latest published JSON Schema (`versions/1.9.1.json`) validates document shap
 - Duplicate identifiers (operationId, workflowId, stepId, triggerId, result names)
 - Reference integrity across operations, source descriptions, workflows, steps, trigger routes
 - Operation binding mutual exclusivity
+- Reference steps cannot declare structural child blocks, including empty arrays
 - Structural-type field constraints (`loop` requires `items`, `await` requires `wait`, etc.)
 - `StructuralResult.from` linkage and kind/type match
 - `dependsOn` cycle detection
+- Canonical decimal array indexes in JSON Pointer criteria
 - Direct and indirect recursive workflow-call detection
 - Component variable key patterns
 - UWS 1.9.1 patch gating and identifier/output/input integrity for `contentTrust`
@@ -229,9 +231,9 @@ Errors like `operations[0].onFailure[0]: retry requires retryLimit > 0` give the
 The three artifacts that define UWS are kept in sync by a reflection-driven test suite:
 
 - **`TestSchemaParity_StructTagsMatchKnownFields`** — for every Go struct with an `Extensions` field, verifies that struct JSON tags exactly match its `knownFields` list. A mismatch means the unmarshaller would reject valid documents or silently accept invalid ones.
-- **`TestSchemaParity_KnownFieldsMatchSchema`** — compares each type's `knownFields` against the corresponding `$def` in `versions/1.9.1.json`. Drift in either direction fails the build.
-- **`TestSchemaParity_DefCoverageIsExhaustive`** — fails when `versions/1.9.1.json` grows a `$def` that no parity entry tracks. Tripwire for adding a new type without wiring it through the extension machinery.
-- **`TestSchemaConformance_*`** — reads `versions/1.9.1.json` and asserts that every `required`, `enum`, and `pattern` rule the schema declares is also covered by the Go validator.
+- **`TestSchemaParity_KnownFieldsMatchSchema`** — compares each type's `knownFields` against the corresponding `$def` in `versions/1.9.2.json`. Drift in either direction fails the build.
+- **`TestSchemaParity_DefCoverageIsExhaustive`** — fails when `versions/1.9.2.json` grows a `$def` that no parity entry tracks. Tripwire for adding a new type without wiring it through the extension machinery.
+- **`TestSchemaConformance_*`** — reads `versions/1.9.2.json` and asserts that every `required`, `enum`, and `pattern` rule the schema declares is also covered by the Go validator.
 
 Adding a property to one artifact without updating the others fails the build immediately.
 

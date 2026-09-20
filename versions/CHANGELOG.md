@@ -7,6 +7,19 @@ already-published artifacts may land without an entry; any change that adjusts
 the meaning or scope of a published schema or sub-spec is recorded as an
 "Amended" note under the affected release.
 
+## 1.9.2 Compatible Corrections - 2026-09-19
+
+- Rejected `steps`, `cases`, and `default` properties on operation- and
+  workflow-reference steps, including explicitly present empty arrays.
+- Required canonical decimal array-index tokens in JSON Pointer criteria.
+- Aligned advisory content-trust analysis with core lexical output evaluation,
+  retained untrusted provenance through operation-output aliases, and stopped
+  treating ignored merge children as executable or dominating.
+- Matched trigger reachability to runtime namespace rules: trigger targets use
+  workflow-first dispatch, generic dependencies use step/workflow/operation
+  precedence, and `operationRef` and `workflow` remain typed edges.
+- Preserved UWS 1.9.1 and every earlier published artifact byte-for-byte.
+
 ## 1.9.1 Content Trust - 2026-08-26
 
 - Added the optional root `contentTrust` registry with source-description,
@@ -21,8 +34,8 @@ the meaning or scope of a published schema or sub-spec is recorded as an
   value capability, control-flow-aware expression references, and stable
   findings that contain no runtime values or content excerpts.
 - Kept findings outside `ValidationResult` and all execution paths. Reserved
-  1.9.2 through 1.9.9 for evidence-driven compatible refinements; breaking
-  defaults, enforcement, or wire changes remain UWS 2.0 work.
+  the remaining 1.9 patch line for evidence-driven compatible refinements;
+  breaking defaults, enforcement, or wire changes remain UWS 2.0 work.
 - Preserved UWS 1.9.0 and every existing profile artifact byte-for-byte.
 
 ## Browser Registration 1.0 - 2026-08-25

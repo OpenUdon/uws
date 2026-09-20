@@ -254,6 +254,56 @@ func TestSchemaConformance_ValidatorMatchesSelectedRules(t *testing.T) {
 		WorkflowID: "main",
 		Type:       WorkflowTypeSequence,
 		Steps: []*Step{{
+			StepID:       "s",
+			OperationRef: "fetch",
+			Steps:        []*Step{{StepID: "nested", OperationRef: "fetch"}},
+		}},
+	}}
+	require.ErrorContains(t, doc.Validate(), "operation-reference steps cannot also declare nested child blocks")
+
+	doc = validDocument()
+	doc.Workflows = []*Workflow{
+		{WorkflowID: "main", Type: WorkflowTypeSequence, Steps: []*Step{{
+			StepID: "s",
+			StepExecutionFields: StepExecutionFields{
+				Workflow: "child",
+			},
+			Default: []*Step{{StepID: "nested", OperationRef: "fetch"}},
+		}}},
+		{WorkflowID: "child", Type: WorkflowTypeSequence},
+	}
+	require.ErrorContains(t, doc.Validate(), "workflow-reference steps cannot also declare nested child blocks")
+
+	doc = validDocument()
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		Steps: []*Step{{
+			StepID:       "s",
+			OperationRef: "fetch",
+			Steps:        []*Step{},
+		}},
+	}}
+	require.ErrorContains(t, doc.Validate(), "operation-reference steps cannot also declare nested child blocks")
+
+	doc = validDocument()
+	doc.Workflows = []*Workflow{
+		{WorkflowID: "main", Type: WorkflowTypeSequence, Steps: []*Step{{
+			StepID: "s",
+			StepExecutionFields: StepExecutionFields{
+				Workflow: "child",
+			},
+			Cases: []*Case{},
+		}}},
+		{WorkflowID: "child", Type: WorkflowTypeSequence},
+	}
+	require.ErrorContains(t, doc.Validate(), "workflow-reference steps cannot also declare nested child blocks")
+
+	doc = validDocument()
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		Steps: []*Step{{
 			StepID: "s",
 			StepExecutionFields: StepExecutionFields{
 				Workflow: "child",
@@ -508,6 +558,33 @@ func TestSchemaConformance_JSONSchemaValidator(t *testing.T) {
 		"workflows": [{"workflowId": "main", "type": "sequence", "steps": [{"stepId": "s", "workflow": "child", "type": "sequence"}]}]
 	}`))
 	require.Error(t, schema.Validate(stepWorkflowAndType))
+
+	stepRefAndChildren := decodeJSONValue(t, []byte(`{
+		"uws": "1.9.1",
+		"info": {"title": "Step", "version": "1.0.0"},
+		"operations": [{"operationId": "run", "x-uws-operation-profile": "test.runtime.1"}],
+		"workflows": [{"workflowId": "main", "type": "sequence", "steps": [{"stepId": "s", "operationRef": "run", "steps": [{"stepId": "nested", "operationRef": "run"}]}]}]
+	}`))
+	require.Error(t, schema.Validate(stepRefAndChildren))
+
+	stepWorkflowAndChildren := decodeJSONValue(t, []byte(`{
+		"uws": "1.9.1",
+		"info": {"title": "Step", "version": "1.0.0"},
+		"operations": [{"operationId": "run", "x-uws-operation-profile": "test.runtime.1"}],
+		"workflows": [
+			{"workflowId": "main", "type": "sequence", "steps": [{"stepId": "s", "workflow": "child", "default": [{"stepId": "nested", "operationRef": "run"}]}]},
+			{"workflowId": "child", "type": "sequence"}
+		]
+	}`))
+	require.Error(t, schema.Validate(stepWorkflowAndChildren))
+
+	stepRefAndEmptyChildren := decodeJSONValue(t, []byte(`{
+		"uws": "1.9.1",
+		"info": {"title": "Step", "version": "1.0.0"},
+		"operations": [{"operationId": "run", "x-uws-operation-profile": "test.runtime.1"}],
+		"workflows": [{"workflowId": "main", "type": "sequence", "steps": [{"stepId": "s", "operationRef": "run", "steps": []}]}]
+	}`))
+	require.Error(t, schema.Validate(stepRefAndEmptyChildren))
 }
 
 func TestSchemaConformance_Draft202012CrossValidator(t *testing.T) {

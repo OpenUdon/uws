@@ -1,8 +1,8 @@
 # Content Trust: Integrity of Data Flowing Through a Workflow
 
 This guide explains the additive UWS 1.9.1 `contentTrust` registry and the
-advisory analyzer in `github.com/OpenUdon/uws/contenttrust`. The normative wire
-contract is [versions/1.9.1.md](https://github.com/OpenUdon/uws/blob/main/versions/1.9.1.md);
+advisory analyzer in `github.com/OpenUdon/uws/contenttrust`. The current normative
+contract is [versions/1.9.2.md](https://github.com/OpenUdon/uws/blob/main/versions/1.9.2.md);
 this page focuses on why the feature exists and how authors and resolvers use it.
 
 ## The gap
@@ -166,11 +166,23 @@ Operation output precedence is:
 4. resolver-provided default;
 5. `unknown`.
 
+The selected declaration classifies the operation-produced value; it cannot
+upgrade provenance already inherited through `$outputs` or another expression
+reference. In particular, a trusted alias of an untrusted output remains
+untrusted.
+
 Trigger payloads default to `untrusted`. External workflow-entry inputs default
 to `unknown`. Document literals, `variables`, and `components.variables` are
 trusted only because analysis assumes the document itself has been reviewed.
 An internal workflow call passes its computed provenance into the callee; a
 callee's external-entry declaration cannot upgrade it.
+
+Trigger overrides are scoped through declared routes. A trusted trigger routed
+only to one workflow is not degraded by an unrelated untrusted trigger routed
+elsewhere; scopes reachable from more than one trigger conservatively join
+those declarations. Reachability mirrors execution: route targets prefer a
+workflow over a colliding top-level step, dependencies prefer step, workflow,
+then operation, and `operationRef` and `workflow` remain typed references.
 
 ## Provenance is not capability
 
@@ -238,6 +250,15 @@ branch-only producer does not dominate a consumer outside the branch, and a
 loop-body producer does not dominate a later consumer because the loop may have
 zero iterations.
 
+Workflow-level `when` and `forEach` expressions gate the workflow as a whole;
+they do not make unconditional steps non-dominating at that workflow's own
+output boundary. A nested child dominates its structural container only when
+that structural type executes the child; in particular, `merge` consumes
+dependency records and ignores nested steps. Nested structural results use the
+named target step's context. Same-scope `$outputs` aliases are evaluated in
+lexical output-name order, matching execution, so forward aliases are
+unresolved. Propagation runs until the graph reaches a fixed point.
+
 An extension resolver can provide references for its own interpolation syntax.
 Without those references, the analyzer scans the resolver-declared channel
 subtree only for exact UWS expressions. Ambiguous syntax is reported as
@@ -250,6 +271,11 @@ non-empty trust/capability labels must be recognized, and output contracts may
 name only declared operation outputs. A malformed claim is discarded and
 reported as `content_trust.resolver_failure`; if no valid resolver claim
 remains, core request scanning still runs.
+
+Array positions in resolver pointers use canonical decimal tokens (`0` or a
+non-zero digit followed by digits). A valid resolver that declares outputs but
+no input channels also falls back to core request scanning, so an output-only
+contract cannot implicitly upgrade request expressions to trusted.
 
 ## Findings and policy
 
@@ -272,8 +298,8 @@ Warning codes are:
 - `content_trust.resolver_failure`
 - `content_trust.resolver_conflict`
 
-All severities are advisory in 1.9.1. Applications may present findings or
+All severities are advisory in UWS 1.9. Applications may present findings or
 apply an explicit stricter policy, but UWS validation and execution behavior do
-not change. UWS 1.9.2 through 1.9.9 are reserved for compatible refinements
+not change. UWS 1.9.3 through 1.9.9 are reserved for compatible refinements
 supported by analyzer evidence; mandatory enforcement, incompatible defaults,
 or wire restructuring require UWS 2.0.

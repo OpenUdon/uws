@@ -235,7 +235,7 @@ x-my-custom-profile:
 - **Runtime**: if the runtime does not implement `my_custom_profile`, it returns an error at execution time.
 - **HCL conversion**: preserves extension fields inside `extensions { ... }` blocks and flattens them back to `x-*` fields when converting to JSON or YAML.
 
-UWS 1.9.1 applies the same boundary to static content flow. Core expressions in
+UWS 1.9 applies the same boundary to static content flow. Core expressions in
 declared request fields remain recoverable, but implementation-specific
 interpolation and channel meaning require a content-trust resolver for that
 profile. A resolver declares `data`, `instruction`, and `authority` channels,

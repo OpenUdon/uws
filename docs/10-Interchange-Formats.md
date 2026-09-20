@@ -299,7 +299,7 @@ YAML → HCL → YAML  produces a structurally identical document
 
 `MarshalHCL` works on a deep copy — the caller's document is never mutated during conversion.
 
-UWS 1.9.1 `contentTrust`, operation defaults/output overrides, and workflow
+UWS 1.9 `contentTrust`, operation defaults/output overrides, and workflow
 defaults/input overrides follow the same deterministic JSON, YAML, and HCL
 round-trip guarantee. In HCL the root registry is a `contentTrust` block; its
 identifier maps remain attributes, and any object-level `x-*` metadata remains

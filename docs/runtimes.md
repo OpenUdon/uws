@@ -42,7 +42,7 @@ The supplement does not standardize credentials, hosts, provider selection, clie
 security configuration, result schemas, or execution side effects. Those belong to the bound runtime
 or product-owned extension profiles.
 
-For UWS 1.9.1 advisory content-trust analysis, a runtime implementation may
+For UWS 1.9 advisory content-trust analysis, a runtime implementation may
 provide a resolver that classifies its own inputs and outputs. In particular,
 LLM data and instruction channels must be distinguished, and command, SQL, or
 other side-effect authority channels should be declared explicitly. This

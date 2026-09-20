@@ -249,7 +249,7 @@ Before handing a workflow to a runtime:
 - Extension-owned operations declare an explicit `x-uws-operation-profile`.
 - `uws.runtime.1.0` operations include `x-uws-runtime.type`; HTTP and event calls remain source-bound.
 
-For UWS 1.9.1 documents that process externally influenced content:
+For UWS 1.9 documents that process externally influenced content:
 
 - Add `contentTrust` declarations for reviewed source, operation-output, trigger, or external workflow-input provenance.
 - Keep operation, workflow, and step `outputs` values as expression strings; trust metadata belongs only in the parallel root registry.

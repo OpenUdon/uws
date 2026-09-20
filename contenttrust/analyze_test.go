@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -524,6 +525,496 @@ func TestAnalyzeNilResolversAndEmptyOptionalContracts(t *testing.T) {
 	}
 	if findingAtPath(report, CodeResolverFailure, "operations[1]") {
 		t.Fatalf("empty optional trust or capability was rejected: %#v", report.Findings)
+	}
+}
+
+func TestAnalyzeEmptyResolverInputsFallsBackToRequestScan(t *testing.T) {
+	doc := pipelineDocument()
+	resolver := resolverFunc(func(_ context.Context, _ *uws1.Document, operation *uws1.Operation) (bool, OperationContract, error) {
+		switch operation.OperationID {
+		case "model":
+			return true, OperationContract{
+				Outputs:                 map[string]OutputContract{"summary": {Capability: CapabilityFreeText}},
+				InheritsInputProvenance: true,
+			}, nil
+		case "send":
+			return true, OperationContract{Inputs: []InputChannel{{Path: "/request/body/target", Kind: ChannelAuthority}}}, nil
+		default:
+			return false, OperationContract{}, nil
+		}
+	})
+
+	report, err := Analyze(context.Background(), doc, resolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !hasFinding(report, CodeUntrustedAuthority) {
+		t.Fatalf("empty input contract hid inherited request provenance: %#v", report.Findings)
+	}
+	if !hasEdge(report, "workflows[0].steps[0].outputs.body", "operations[1].request.body.prompt", uws1.ContentTrustUntrusted) {
+		t.Fatalf("fallback request scan did not retain the input edge: %#v", report.Edges)
+	}
+}
+
+func TestAnalyzeWorkflowGateDoesNotBreakExitDominance(t *testing.T) {
+	for name, configure := range map[string]func(*uws1.Workflow){
+		"when":    func(workflow *uws1.Workflow) { workflow.When = "$variables.enabled" },
+		"forEach": func(workflow *uws1.Workflow) { workflow.ForEach = "$trigger.items" },
+	} {
+		t.Run(name, func(t *testing.T) {
+			doc := pipelineDocument()
+			doc.Variables = map[string]any{"enabled": true}
+			doc.Workflows[0].Outputs = map[string]string{"summary": "$steps.model_step.outputs.summary"}
+			configure(doc.Workflows[0])
+
+			report, err := Analyze(context.Background(), doc, pipelineResolver(ChannelData, CapabilityFreeText))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if findingAtPath(report, CodeNonDominatingRef, "workflows[0].outputs.summary") {
+				t.Fatalf("workflow-level gate produced a false exit-dominance finding: %#v", report.Findings)
+			}
+		})
+	}
+}
+
+func TestAnalyzeStructuralContainerOutputSeesUnconditionalChild(t *testing.T) {
+	doc := pipelineDocument()
+	doc.Workflows[0].Steps = []*uws1.Step{{
+		StepID: "container",
+		Type:   uws1.WorkflowTypeSequence,
+		Steps: []*uws1.Step{{
+			StepID:       "read_step",
+			OperationRef: "read",
+			Outputs:      map[string]string{"body": "$outputs.body"},
+		}},
+		Outputs: map[string]string{"result": "$steps.read_step.outputs.body"},
+	}}
+
+	report, err := Analyze(context.Background(), doc, pipelineResolver(ChannelData, CapabilityFreeText))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if findingAtPath(report, CodeNonDominatingRef, "workflows[0].steps[0].outputs.result") {
+		t.Fatalf("unconditional child did not dominate its container output: %#v", report.Findings)
+	}
+}
+
+func TestAnalyzeSameScopeOutputAliasesInLexicalOrder(t *testing.T) {
+	doc := &uws1.Document{
+		UWS:  "1.9.1",
+		Info: &uws1.Info{Title: "Output aliases", Version: "1"},
+		Operations: []*uws1.Operation{{
+			OperationID: "read",
+			Extensions:  operationProfile(),
+			Outputs: map[string]string{
+				"a": "$response.body",
+				"z": "$outputs.a",
+			},
+		}},
+		Workflows: []*uws1.Workflow{{
+			WorkflowID: "main",
+			Type:       uws1.WorkflowTypeSequence,
+			Steps: []*uws1.Step{{
+				StepID:       "read_step",
+				OperationRef: "read",
+				Outputs: map[string]string{
+					"a": "$outputs.a",
+					"z": "$outputs.a",
+				},
+			}},
+			Outputs: map[string]string{
+				"a": "$steps.read_step.outputs.z",
+				"z": "$outputs.a",
+			},
+		}},
+	}
+
+	report, err := Analyze(context.Background(), doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if hasFinding(report, CodeUnresolvedReference) {
+		t.Fatalf("same-scope output alias remained unresolved: %#v", report.Findings)
+	}
+	if !hasEdge(report, "workflows[0].outputs.a", "workflows[0].outputs.z", uws1.ContentTrustUnknown) {
+		t.Fatalf("workflow output alias edge is missing: %#v", report.Edges)
+	}
+
+	doc.Workflows[0].Outputs = map[string]string{
+		"a": "$outputs.z",
+		"z": "$steps.read_step.outputs.z",
+	}
+	report, err = Analyze(context.Background(), doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !findingAtPath(report, CodeUnresolvedReference, "workflows[0].outputs.a") {
+		t.Fatalf("forward output alias did not match runtime lexical evaluation: %#v", report.Findings)
+	}
+}
+
+func TestAnalyzeOperationOutputAliasPreservesTaint(t *testing.T) {
+	doc := &uws1.Document{
+		UWS:  "1.9.1",
+		Info: &uws1.Info{Title: "Operation alias taint", Version: "1"},
+		Operations: []*uws1.Operation{
+			{
+				OperationID: "read",
+				Extensions:  operationProfile(),
+				Outputs: map[string]string{
+					"raw":   "$response.body",
+					"value": "$outputs.raw",
+				},
+			},
+			{
+				OperationID: "send",
+				Extensions:  operationProfile(),
+				Request:     map[string]any{"body": map[string]any{"target": "$inputs.target"}},
+			},
+		},
+		Workflows: []*uws1.Workflow{{
+			WorkflowID: "main",
+			Type:       uws1.WorkflowTypeSequence,
+			Steps: []*uws1.Step{
+				{StepID: "read_step", OperationRef: "read", Outputs: map[string]string{"value": "$outputs.value"}},
+				{StepID: "send_step", OperationRef: "send", Inputs: map[string]any{"target": "$steps.read_step.outputs.value"}},
+			},
+		}},
+		ContentTrust: &uws1.ContentTrust{Operations: map[string]*uws1.OperationContentTrust{
+			"read": {Outputs: map[string]uws1.ContentTrustLevel{
+				"raw":   uws1.ContentTrustUntrusted,
+				"value": uws1.ContentTrustTrusted,
+			}},
+		}},
+	}
+	resolver := resolverFunc(func(_ context.Context, _ *uws1.Document, operation *uws1.Operation) (bool, OperationContract, error) {
+		switch operation.OperationID {
+		case "read":
+			return true, OperationContract{Outputs: map[string]OutputContract{
+				"raw":   {Capability: CapabilityFreeText},
+				"value": {Capability: CapabilityFreeText},
+			}}, nil
+		case "send":
+			return true, OperationContract{Inputs: []InputChannel{{Path: "/request/body/target", Kind: ChannelAuthority}}}, nil
+		default:
+			return false, OperationContract{}, nil
+		}
+	})
+
+	report, err := Analyze(context.Background(), doc, resolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !hasFinding(report, CodeUntrustedAuthority) {
+		t.Fatalf("trusted alias declaration laundered untrusted source output: %#v", report.Findings)
+	}
+	if !hasEdge(report, "workflows[0].steps[0].outputs.value", "workflows[0].steps[1].inputs.target", uws1.ContentTrustUntrusted) {
+		t.Fatalf("aliased output did not retain untrusted provenance: %#v", report.Edges)
+	}
+}
+
+func TestAnalyzeMergeDoesNotExecuteNestedSteps(t *testing.T) {
+	doc := pipelineDocument()
+	doc.Workflows[0].Steps = []*uws1.Step{
+		{StepID: "upstream", OperationRef: "read", Outputs: map[string]string{"body": "$outputs.body"}},
+		{
+			StepID: "merge",
+			Type:   uws1.WorkflowTypeMerge,
+			StepExecutionFields: uws1.StepExecutionFields{
+				DependsOn: []string{"upstream"},
+			},
+			Steps: []*uws1.Step{{
+				StepID:       "ignored",
+				OperationRef: "read",
+				Outputs:      map[string]string{"body": "$outputs.body"},
+			}},
+			Outputs: map[string]string{"body": "$steps.ignored.outputs.body"},
+		},
+	}
+
+	report, err := Analyze(context.Background(), doc, pipelineResolver(ChannelData, CapabilityFreeText))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !findingAtPath(report, CodeNonDominatingRef, "workflows[0].steps[1].outputs.body") {
+		t.Fatalf("ignored merge child incorrectly dominated its container: %#v", report.Findings)
+	}
+}
+
+func TestAnalyzeStructuralStepResponseIsUnresolved(t *testing.T) {
+	doc := pipelineDocument()
+	doc.Workflows[0].Steps = []*uws1.Step{{
+		StepID: "container",
+		Type:   uws1.WorkflowTypeSequence,
+		Outputs: map[string]string{
+			"invalid": "$response.body",
+		},
+	}}
+
+	report, err := Analyze(context.Background(), doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !findingAtPath(report, CodeUnresolvedReference, "workflows[0].steps[0].outputs.invalid") {
+		t.Fatalf("structural step unexpectedly exposed an operation response: %#v", report.Findings)
+	}
+	for _, edge := range report.Edges {
+		if edge.From == ".response" {
+			t.Fatalf("report retained the synthetic response sentinel: %#v", report.Edges)
+		}
+	}
+}
+
+func TestAnalyzeNestedStructuralResultUsesTargetStepContext(t *testing.T) {
+	doc := pipelineDocument()
+	doc.Workflows[0].Steps = []*uws1.Step{{
+		StepID: "choice",
+		Type:   uws1.WorkflowTypeSwitch,
+		Cases: []*uws1.Case{{
+			CaseFields: uws1.CaseFields{Name: "selected", When: "$variables.enabled"},
+			Steps: []*uws1.Step{
+				{StepID: "read_step", OperationRef: "read", Outputs: map[string]string{"body": "$outputs.body"}},
+				{StepID: "merge_step", Type: uws1.WorkflowTypeMerge, StepExecutionFields: uws1.StepExecutionFields{DependsOn: []string{"read_step"}}},
+			},
+		}},
+	}}
+	doc.Variables = map[string]any{"enabled": true}
+	doc.Results = []*uws1.StructuralResult{{
+		Name:  "merged",
+		Kind:  uws1.StructuralResultKindMerge,
+		From:  "main.merge_step",
+		Value: "$steps.read_step.outputs.body",
+	}}
+
+	report, err := Analyze(context.Background(), doc, pipelineResolver(ChannelData, CapabilityFreeText))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if findingAtPath(report, CodeNonDominatingRef, "results[0].value") {
+		t.Fatalf("nested result discarded its target-step dependency context: %#v", report.Findings)
+	}
+}
+
+func TestAnalyzeTriggerTrustIsScopedByRoutes(t *testing.T) {
+	doc := &uws1.Document{
+		UWS:  "1.9.1",
+		Info: &uws1.Info{Title: "Trigger routes", Version: "1"},
+		Operations: []*uws1.Operation{{
+			OperationID: "noop",
+			Extensions:  operationProfile(),
+		}},
+		Workflows: []*uws1.Workflow{
+			{WorkflowID: "housekeeping", Type: uws1.WorkflowTypeSequence, Outputs: map[string]string{"payload": "$trigger.body"}},
+			{WorkflowID: "public_intake", Type: uws1.WorkflowTypeSequence, Outputs: map[string]string{"payload": "$trigger.body"}},
+		},
+		Triggers: []*uws1.Trigger{
+			{TriggerID: "cron", Outputs: []string{"run"}, Routes: []*uws1.TriggerRoute{{TriggerRouteFields: uws1.TriggerRouteFields{Output: "run", To: []string{"housekeeping"}}}}},
+			{TriggerID: "webhook", Outputs: []string{"run"}, Routes: []*uws1.TriggerRoute{{TriggerRouteFields: uws1.TriggerRouteFields{Output: "run", To: []string{"public_intake"}}}}},
+		},
+		ContentTrust: &uws1.ContentTrust{Triggers: map[string]uws1.ContentTrustLevel{
+			"cron":    uws1.ContentTrustTrusted,
+			"webhook": uws1.ContentTrustUntrusted,
+		}},
+	}
+
+	report, err := Analyze(context.Background(), doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !hasEdge(report, "$trigger", "workflows[0].outputs.payload", uws1.ContentTrustTrusted) {
+		t.Fatalf("trusted route was degraded by an unrelated trigger: %#v", report.Edges)
+	}
+	if !hasEdge(report, "$trigger", "workflows[1].outputs.payload", uws1.ContentTrustUntrusted) {
+		t.Fatalf("untrusted route lost its provenance: %#v", report.Edges)
+	}
+}
+
+func TestAnalyzeTriggerReachabilityUsesRuntimeNamespaces(t *testing.T) {
+	doc := &uws1.Document{
+		UWS:  "1.9.1",
+		Info: &uws1.Info{Title: "Trigger namespace collisions", Version: "1"},
+		Operations: []*uws1.Operation{{
+			OperationID: "invoke",
+			Extensions:  operationProfile(),
+			OperationExecutionFields: uws1.OperationExecutionFields{
+				DependsOn: []string{"operation_dependency"},
+			},
+		}},
+		Workflows: []*uws1.Workflow{
+			{
+				WorkflowID: "main",
+				Type:       uws1.WorkflowTypeParallel,
+				Steps: []*uws1.Step{
+					{StepID: "shared", Type: uws1.WorkflowTypeSequence, Outputs: map[string]string{"payload": "$trigger.body"}},
+					{StepID: "operation_dependency", Type: uws1.WorkflowTypeSequence, Outputs: map[string]string{"payload": "$trigger.body"}},
+					{
+						StepID:       "target",
+						OperationRef: "invoke",
+						StepExecutionFields: uws1.StepExecutionFields{
+							DependsOn: []string{"shared"},
+						},
+					},
+				},
+			},
+			{WorkflowID: "shared", Type: uws1.WorkflowTypeSequence},
+			{WorkflowID: "invoke", Type: uws1.WorkflowTypeSequence},
+			{WorkflowID: "public", Type: uws1.WorkflowTypeSequence, Outputs: map[string]string{"payload": "$trigger.body"}},
+		},
+		Triggers: []*uws1.Trigger{
+			{TriggerID: "cron", Outputs: []string{"run"}, Routes: []*uws1.TriggerRoute{{TriggerRouteFields: uws1.TriggerRouteFields{Output: "run", To: []string{"target"}}}}},
+			{TriggerID: "webhook", Outputs: []string{"run"}, Routes: []*uws1.TriggerRoute{{TriggerRouteFields: uws1.TriggerRouteFields{Output: "run", To: []string{"public"}}}}},
+		},
+		ContentTrust: &uws1.ContentTrust{Triggers: map[string]uws1.ContentTrustLevel{
+			"cron":    uws1.ContentTrustTrusted,
+			"webhook": uws1.ContentTrustUntrusted,
+		}},
+	}
+
+	report, err := Analyze(context.Background(), doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !hasEdge(report, "$trigger", "workflows[0].steps[0].outputs.payload", uws1.ContentTrustTrusted) {
+		t.Fatalf("step-first dependency lookup was redirected to a colliding workflow: %#v", report.Edges)
+	}
+	if !hasEdge(report, "$trigger", "workflows[0].steps[1].outputs.payload", uws1.ContentTrustTrusted) {
+		t.Fatalf("typed operationRef lookup was redirected to a colliding workflow: %#v", report.Edges)
+	}
+}
+
+func TestJSONPointerArrayIndexesAreCanonical(t *testing.T) {
+	root := []any{"zero", "one"}
+	for _, pointer := range []string{"/01", "/+1", "/-0"} {
+		if _, ok := resolveJSONPointer(root, pointer); ok {
+			t.Fatalf("non-canonical array pointer %q was accepted", pointer)
+		}
+	}
+	for _, pointer := range []string{"/0", "/1"} {
+		if _, ok := resolveJSONPointer(root, pointer); !ok {
+			t.Fatalf("canonical array pointer %q was rejected", pointer)
+		}
+	}
+	if got := pointerSuffix("/items/01"); got != ".items.01" {
+		t.Fatalf("pointer suffix = %q, want object-key form", got)
+	}
+}
+
+func TestAnalyzeRejectsNonCanonicalResolverArrayIndex(t *testing.T) {
+	doc := pipelineDocument()
+	doc.Operations[1].Request = map[string]any{"body": map[string]any{
+		"items": []any{"zero", "$trigger.body"},
+	}}
+	resolver := resolverFunc(func(_ context.Context, _ *uws1.Document, operation *uws1.Operation) (bool, OperationContract, error) {
+		if operation.OperationID != "model" {
+			return false, OperationContract{}, nil
+		}
+		return true, OperationContract{Inputs: []InputChannel{{
+			Path: "/request/body/items/01",
+			Kind: ChannelData,
+		}}}, nil
+	})
+
+	report, err := Analyze(context.Background(), doc, resolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !findingAtPath(report, CodeResolverFailure, "operations[1]") {
+		t.Fatalf("non-canonical resolver array index was accepted: %#v", report.Findings)
+	}
+}
+
+func TestAnalyzeDiagnosticPathsDistinguishDottedKeys(t *testing.T) {
+	doc := &uws1.Document{
+		UWS:  "1.9.1",
+		Info: &uws1.Info{Title: "Paths", Version: "1"},
+		Operations: []*uws1.Operation{{
+			OperationID: "inspect",
+			Extensions:  operationProfile(),
+			Request: map[string]any{"body": map[string]any{
+				"user.name": "$trigger.flat",
+				"user":      map[string]any{"name": "$trigger.nested"},
+			}},
+		}},
+	}
+
+	report, err := Analyze(context.Background(), doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !hasEdge(report, "$trigger", `operations[0].request.body["user.name"]`, uws1.ContentTrustUntrusted) {
+		t.Fatalf("flat dotted key has no distinct path: %#v", report.Edges)
+	}
+	if !hasEdge(report, "$trigger", "operations[0].request.body.user.name", uws1.ContentTrustUntrusted) {
+		t.Fatalf("nested key path is missing: %#v", report.Edges)
+	}
+}
+
+func TestAnalyzeRunsToActualFixedPoint(t *testing.T) {
+	const chainLength = 24
+	properties := make(map[string]*uws1.ParamSchema, chainLength+1)
+	calleeOutputs := make(map[string]string, chainLength+1)
+	firstInputs := make(map[string]any, chainLength+1)
+	secondInputs := make(map[string]any, chainLength+1)
+	stepOutputs := make(map[string]string, chainLength+1)
+	inputTrust := make(map[string]uws1.ContentTrustLevel, chainLength+1)
+	for i := 0; i <= chainLength; i++ {
+		name := fmt.Sprintf("v%02d", i)
+		properties[name] = &uws1.ParamSchema{Type: "string"}
+		calleeOutputs[name] = "$inputs." + name
+		firstInputs[name] = "literal"
+		secondInputs[name] = "literal"
+		if i == 0 {
+			firstInputs[name] = "$trigger.body"
+		} else {
+			secondInputs[name] = fmt.Sprintf("$steps.first.outputs.v%02d", i-1)
+		}
+		stepOutputs[name] = "$outputs." + name
+		inputTrust[name] = uws1.ContentTrustTrusted
+	}
+
+	doc := &uws1.Document{
+		UWS:  "1.9.1",
+		Info: &uws1.Info{Title: "Fixed point", Version: "1"},
+		Operations: []*uws1.Operation{{
+			OperationID: "sink",
+			Extensions:  operationProfile(),
+			Request:     map[string]any{"body": map[string]any{"target": "$inputs.target"}},
+		}},
+		Workflows: []*uws1.Workflow{
+			{
+				WorkflowID: "callee",
+				Type:       uws1.WorkflowTypeSequence,
+				Inputs:     &uws1.ParamSchema{Type: "object", Properties: properties},
+				Outputs:    calleeOutputs,
+			},
+			{
+				WorkflowID: "main",
+				Type:       uws1.WorkflowTypeSequence,
+				Steps: []*uws1.Step{
+					{StepID: "first", StepExecutionFields: uws1.StepExecutionFields{Workflow: "callee"}, Inputs: firstInputs, Outputs: stepOutputs},
+					{StepID: "second", StepExecutionFields: uws1.StepExecutionFields{Workflow: "callee"}, Inputs: secondInputs, Outputs: stepOutputs},
+					{StepID: "publish", OperationRef: "sink", Inputs: map[string]any{"target": fmt.Sprintf("$steps.second.outputs.v%02d", chainLength)}},
+				},
+			},
+		},
+		ContentTrust: &uws1.ContentTrust{Workflows: map[string]*uws1.WorkflowContentTrust{
+			"callee": {Inputs: inputTrust},
+		}},
+	}
+	resolver := resolverFunc(func(_ context.Context, _ *uws1.Document, operation *uws1.Operation) (bool, OperationContract, error) {
+		if operation.OperationID == "sink" {
+			return true, OperationContract{Inputs: []InputChannel{{Path: "/request/body/target", Kind: ChannelAuthority}}}, nil
+		}
+		return false, OperationContract{}, nil
+	})
+
+	report, err := Analyze(context.Background(), doc, resolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !hasFinding(report, CodeUntrustedAuthority) {
+		t.Fatalf("analysis stopped before the provenance chain converged: %#v", report.Findings)
 	}
 }
 

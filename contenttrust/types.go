@@ -1,5 +1,5 @@
 // Package contenttrust performs deterministic, advisory integrity analysis of
-// UWS 1.9.1 documents. It never evaluates runtime values, changes validation
+// UWS 1.9 documents. It never evaluates runtime values, changes validation
 // results, blocks execution, or mutates the analyzed document.
 package contenttrust
 

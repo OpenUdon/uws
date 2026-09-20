@@ -118,7 +118,7 @@ func main() {
 
 `doc.Execute(ctx)` runs three checks automatically before handing off to the orchestrator: `Validate()`, `ValidateExecutable()`, and `ValidateExecutionEntrypoint()`.
 
-UWS 1.9.1 content-trust analysis is intentionally not a fourth automatic check. Applications invoke `contenttrust.Analyze` explicitly before or after validation when they want advisory provenance findings. The analyzer never changes execution records, runtime inputs, orchestration, authorization, or executor results.
+UWS 1.9 content-trust analysis is intentionally not a fourth automatic check. Applications invoke `contenttrust.Analyze` explicitly before or after validation when they want advisory provenance findings. The analyzer never changes execution records, runtime inputs, orchestration, authorization, or executor results.
 
 ## Example 3: Trigger Dispatch
 
