@@ -6,6 +6,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"math"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -212,7 +213,7 @@ func (o *Orchestrator) recordKeysForDependencyLocked(ctx context.Context, dep st
 	for key := range set {
 		matches = append(matches, key)
 	}
-	sort.Strings(matches)
+	sortExecutionKeys(matches)
 	return matches
 }
 
@@ -223,7 +224,7 @@ func (o *Orchestrator) workflowInvocationKeysLocked(workflowID, scope string) []
 			matches = append(matches, key)
 		}
 	}
-	sort.Strings(matches)
+	sortExecutionKeys(matches)
 	return matches
 }
 
@@ -234,8 +235,48 @@ func (o *Orchestrator) operationInvocationKeysLocked(operationID, scope string) 
 			matches = append(matches, key)
 		}
 	}
-	sort.Strings(matches)
+	sortExecutionKeys(matches)
 	return matches
+}
+
+func sortExecutionKeys(keys []string) {
+	sort.Slice(keys, func(i, j int) bool {
+		return executionKeyLess(keys[i], keys[j])
+	})
+}
+
+func executionKeyLess(left, right string) bool {
+	leftBase, leftPath, leftHasPath := splitExecutionIterationKey(left)
+	rightBase, rightPath, rightHasPath := splitExecutionIterationKey(right)
+	if leftBase != rightBase {
+		return leftBase < rightBase
+	}
+	if leftHasPath != rightHasPath {
+		return !leftHasPath
+	}
+	for i := 0; i < len(leftPath) && i < len(rightPath); i++ {
+		if leftPath[i] != rightPath[i] {
+			return leftPath[i] < rightPath[i]
+		}
+	}
+	return len(leftPath) < len(rightPath)
+}
+
+func splitExecutionIterationKey(key string) (string, []int, bool) {
+	marker := strings.LastIndex(key, "#iter:")
+	if marker < 0 {
+		return key, nil, false
+	}
+	parts := strings.Split(key[marker+len("#iter:"):], ".")
+	path := make([]int, len(parts))
+	for i, part := range parts {
+		index, err := strconv.Atoi(part)
+		if err != nil || index < 0 {
+			return key, nil, false
+		}
+		path[i] = index
+	}
+	return key[:marker], path, true
 }
 
 func executionKeyInScope(key, scope string) bool {

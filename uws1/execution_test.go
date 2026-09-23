@@ -820,6 +820,39 @@ func TestOrchestratorExecuteMergeUsesDeclaredDependenciesOnly(t *testing.T) {
 	}
 }
 
+func TestMergeDependencyRecordsSortsNestedIterationIndexesNumerically(t *testing.T) {
+	doc := testDocument(&Operation{OperationID: "op"})
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		Steps:      []*Step{{StepID: "leaf_step", OperationRef: "op"}},
+	}}
+	orch := NewOrchestrator(doc, &mockRuntime{})
+	stepBase := stepKey("leaf_step")
+	operationBase := stepOperationKey("leaf_step", "op")
+	for i := 0; i < 12; i++ {
+		path := []int{i, 0}
+		orch.setRecord(compositeIterationKey(stepBase, path), ExecutionRecord{
+			ID: "leaf_step", Kind: "step:operation", Status: "success",
+			Outputs: map[string]any{"index": i},
+		})
+		orch.setRecord(compositeIterationKey(operationBase, path), ExecutionRecord{
+			ID: "op", Kind: "operation", Status: "success",
+			Outputs: map[string]any{"index": i},
+		})
+	}
+
+	for _, dependency := range []string{"leaf_step", "op"} {
+		merged := orch.mergeDependencyRecords(context.Background(), []string{dependency})
+		require.Len(t, merged, 12)
+		for want, record := range merged {
+			outputs, ok := record["outputs"].(map[string]any)
+			require.True(t, ok, "dependency %q returned outputs %#v", dependency, record["outputs"])
+			require.Equal(t, want, outputs["index"], "dependency %q order at position %d", dependency, want)
+		}
+	}
+}
+
 func TestOrchestratorColonOperationDependencyDoesNotMatchSuffix(t *testing.T) {
 	doc := testDocument(
 		&Operation{OperationID: "a:b"},
