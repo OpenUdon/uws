@@ -23,6 +23,16 @@ the meaning or scope of a published schema or sub-spec is recorded as an
 - This policy clarifies version selection and validator behavior; it does not
   amend the bytes or normative requirements of earlier published artifacts.
 
+## Browser 1.8 - 2026-09-23
+
+- Added `uws.browser.1.8` with single-pass `{{name}}` parameter templates in
+  navigation path/query values, text/selection values, and confirmation
+  prompts. URI components use RFC 3986 encoding; text sinks use literal scalar
+  formatting. Ambiguous, malformed, non-scalar, and unsafe placements fail
+  closed.
+- Retained browser 1.5–1.7 artifacts and behavior unchanged. Browser 1.8
+  requires UWS 1.9 and does not change the UWS core schema or wire model.
+
 ## 1.9.2 Compatible Corrections - 2026-09-19
 
 - Rejected `steps`, `cases`, and `default` properties on operation- and

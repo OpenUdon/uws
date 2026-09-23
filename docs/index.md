@@ -10,7 +10,7 @@ UWS is a compact, execution-oriented workflow specification that sits directly o
 
 This is what distinguishes UWS from full client-side workflow tools such as Arazzo and IaC engines such as OpenTofu and Terraform. Arazzo describes full client-side action sequences and treats each step as a bespoke client action. OpenTofu and Terraform act as full client-side workflow engines for infrastructure: each resource and provider call is described in the client configuration and resolved against a provider plugin at apply time. Neither approach assumes the underlying operations are already defined by a server contract. UWS takes the opposite position: server actions are pre-defined by the source document, and UWS workflows reference those operations by ID rather than re-describing them. The result is a much smaller overlay: UWS does not duplicate request/response shapes, does not redeclare endpoints, and does not encode anything the source document already specifies.
 
-UWS 1.9.2 is the latest release. It keeps OpenAPI compatibility, supports first-class source descriptions for `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`, and retains the optional content-provenance declarations introduced in 1.9.1 with compatible validation and analyzer corrections. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources. Browser 1.7 remains the latest browser profile while browser 1.5/1.6 remain accepted. The `ansible-module` source type added in 1.6 was removed in 1.7 without a replacement UWS-owned Ansible profile.
+UWS 1.9.2 is the latest release. It keeps OpenAPI compatibility, supports first-class source descriptions for `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, and `browser-profile`, and retains the optional content-provenance declarations introduced in 1.9.1 with compatible validation and analyzer corrections. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources. Browser 1.8 is the latest browser profile while browser 1.5–1.7 remain accepted. The `ansible-module` source type added in 1.6 was removed in 1.7 without a replacement UWS-owned Ansible profile.
 
 ## Why UWS?
 
@@ -91,7 +91,7 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 - **Specification**: [`versions/1.9.2.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.9.2.md)
 - **JSON Schema**: [`versions/1.9.2.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.9.2.json)
 - **Content trust**: [declarations, resolvers, propagation, and advisory findings](content-trust.md)
-- **Browser scalar outputs and contexts**: [`versions/browser.1.7.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser.1.7.md)
+- **Browser parameter templates, scalar outputs, and contexts**: [`versions/browser.1.8.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser.1.8.md)
 - **Browser registration profile**: [`versions/browser-registration.1.2.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser-registration.1.2.md)
 - **Browser registration call supplement**: [`versions/browser-registration-call.1.2.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser-registration-call.1.2.md)
 - **Private registration input envelope**: [`versions/browser-registration-input.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser-registration-input.1.0.md)

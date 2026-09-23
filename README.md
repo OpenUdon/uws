@@ -44,7 +44,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - Content trust guide: [docs/content-trust.md](docs/content-trust.md)
 - Runtime supplement: [versions/runtime.1.0.md](versions/runtime.1.0.md)
 - Runtime supplement schema: [versions/runtime.1.0.json](versions/runtime.1.0.json)
-- Browser profile supplement: [versions/browser.1.7.md](versions/browser.1.7.md) / [versions/browser.1.7.json](versions/browser.1.7.json)
+- Browser profile supplement: [versions/browser.1.8.md](versions/browser.1.8.md) / [versions/browser.1.8.json](versions/browser.1.8.json)
 - Browser authentication profile: [versions/browser-authentication.1.1.md](versions/browser-authentication.1.1.md) / [versions/browser-authentication.1.1.json](versions/browser-authentication.1.1.json)
 - Browser authentication call supplement: [versions/browser-authentication-call.1.1.md](versions/browser-authentication-call.1.1.md) / [versions/browser-authentication-call.1.1.json](versions/browser-authentication-call.1.1.json)
 - Browser registration profile: [versions/browser-registration.1.2.md](versions/browser-registration.1.2.md) / [versions/browser-registration.1.2.json](versions/browser-registration.1.2.json)
@@ -67,7 +67,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - `browserregistration` contains the separate additive secret-free account-registration profile and explicitly approved mutation extension types.
 - `versions/1.9.2.md` is the latest human-readable UWS 1.9 specification.
 - `versions/1.9.2.json` is the latest JSON Schema for UWS 1.9 documents; 1.9.1 and earlier remain immutable and accepted.
-- `versions/browser.1.7.*` publishes portable scalar accessibility-text conversion on top of browser 1.6 contexts; immutable browser 1.5/1.6 documents remain accepted.
+- `versions/browser.1.8.*` publishes context-sensitive parameter templates and scalar formatting on top of browser 1.7; immutable browser 1.5–1.7 documents remain accepted.
 - `versions/browser-authentication.1.1.*` and `versions/browser-authentication-call.1.1.*` publish context-capable sign-in recipes and explicit named-session establishment; immutable 1.0 documents remain accepted.
 - `versions/browser-registration.1.0.*` and `versions/browser-registration-call.1.0.*` publish account-creation recipes with symbolic credentials, an explicit submit approval, fail-on-duplicate behavior, no ambiguous retry, and a preselected cleanup disposition.
 - `versions/browser-registration.1.1.*` and `versions/browser-registration-call.1.1.*` add typed private inputs and explicit input checkpoints; `versions/browser-registration.1.2.*` and its call supplement add a reviewed, bounded human-verification policy. Earlier registration documents remain accepted.

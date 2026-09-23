@@ -23,10 +23,11 @@ profile change formed the evidence.
 |---|---|---|---|
 | C20 | P2 | P1 | Confirmed contract gap in `versions/browser.1.7.md` (template substitution and parameter typing); same-origin checks do not define path/query escaping. |
 
-**Review gate.** Ordinary intake; 0 of 10 iterations. Start only after task
-acceptance checks.
+**Review gate.** Ordinary intake; iteration 1 of 10 passed after reviewing the
+complete browser 1.8 profile publication, validator, tests, compatibility
+surface, and documentation diff. No P1/P2 findings; no review fixes were needed.
 
 | Item | State | Notes |
 |---|---|---|
 | Specify safe substitution and scalar formatting | `[+]` | Decision completed 2026-09-23 for browser 1.8. Placeholders are exactly `{{name}}` with names matching `[A-Za-z][A-Za-z0-9_-]*`; they substitute once and inserted text is never rescanned. Allowed sinks are navigate URL path segments, query values only, type_text/select_option values, and confirmation prompts. URL scheme/authority, query names, fragments, locators, waits, and all other fields are non-templatable. Path/query values percent-encode UTF-8 bytes using RFC 3986 unreserved characters only and uppercase hex; query structure is not interpolated. Dot-segment navigation is rejected, including a substituted path segment equal to `.` or `..`. Human text sinks use literal UTF-8 string values. Booleans format as lowercase JSON tokens; integers use canonical signed 64-bit base-10; numbers use RFC 8785 finite binary64 serialization; null, arrays, objects, non-finite/out-of-range numbers, malformed braces, unknown parameters, and non-scalar parameter schemas fail closed. Parameter values/defaults are validated against their declared schema before any sequence step. Browser 1.5–1.7 retain their historical behavior. Owner: C20. |
-| Publish isolated browser profile update | `[~]` | Add the browser 1.8 version/schema, static template validator, adversarial fixtures, and discovery-surface references. Prove exact version selection and preservation of 1.5–1.7. Owner: C20. |
+| Publish isolated browser profile update | `[+]` | Added immutable `browser.1.8.{json,md}`, static validation of placeholder syntax/placement/declarations/URL safety, accepted and rejected fixtures, latest-profile schema selection and embedded archive, SHA-256 membership, and current discovery pointers. Full tests/race/vet, strict MkDocs, and diff checks pass. Browser 1.5–1.7 artifacts remain unchanged and are accepted by exact selection tests. No browser driver exists here; concrete substitution/runtime behavior is specified but not claimed as driver-tested. Owner: C20. |

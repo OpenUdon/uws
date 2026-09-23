@@ -7,11 +7,13 @@ credentials, sessions, and browser execution remain downstream concerns.
 
 ## UWS-B01 — Browser Profile Interoperability Baseline
 
-State: Complete; superseded by `uws.browser.1.7` for UWS 1.9 consumers.
+State: Complete; this historical distribution milestone was superseded first by
+`uws.browser.1.7` and then by `uws.browser.1.8` for UWS 1.9 consumers.
 
 This ledger records the browser 1.5 interoperability milestone. Browser 1.5
-remains immutable and accepted, while the current capability profile is browser
-1.7 with bounded contexts and portable scalar accessibility-text conversion.
+remains immutable and accepted. At the time of the original 1.7 update,
+browser 1.7 added bounded contexts and portable scalar accessibility-text
+conversion; browser 1.8 is now the current capability profile.
 
 ### Goal
 
