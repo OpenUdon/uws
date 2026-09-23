@@ -60,9 +60,13 @@ func (r *StructuralResult) validate(path string, idx *documentIndex, seenNames m
 	}
 }
 
-func (c *Components) validate(path string, result *ValidationResult) {
+func (c *Components) validate(path, version string, result *ValidationResult) {
 	for name := range c.Variables {
-		if !componentNamePattern.MatchString(name) {
+		valid := componentNamePattern.MatchString(name)
+		if supportsUWSVersionAtLeast(version, 1, 10, 0) {
+			valid = constructIDPattern.MatchString(name)
+		}
+		if !valid {
 			result.addError(path+".variables."+name, fmt.Sprintf("component name %q is not valid", name))
 		}
 	}

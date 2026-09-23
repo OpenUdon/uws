@@ -100,6 +100,7 @@ func (d *Document) ValidateResult() *ValidationResult {
 	}
 	d.validateTopLevelSourceDescriptions(result)
 	d.validateVersionedFields(result)
+	d.validateExpressionAccessibleNames(result)
 
 	idx := buildDocumentIndex(d, result)
 	d.validateContentTrust(idx, result)
@@ -162,7 +163,58 @@ func (d *Document) validateDocumentReferences(idx *documentIndex, result *Valida
 		resultDecl.validate(resultPath, idx, seenResultNames, result)
 	}
 	if d.Components != nil {
-		d.Components.validate("components", result)
+		d.Components.validate("components", d.UWS, result)
+	}
+}
+
+func (d *Document) validateExpressionAccessibleNames(result *ValidationResult) {
+	if !supportsUWSVersionAtLeast(d.UWS, 1, 10, 0) {
+		return
+	}
+	for name := range d.Variables {
+		if !constructIDPattern.MatchString(name) {
+			result.addError("variables."+name, fmt.Sprintf("variable name %q is not addressable by the UWS expression grammar", name))
+		}
+	}
+	for i, workflow := range d.Workflows {
+		if workflow == nil {
+			continue
+		}
+		if workflow.Inputs != nil {
+			for name := range workflow.Inputs.Properties {
+				if !constructIDPattern.MatchString(name) {
+					result.addError(fmt.Sprintf("workflows[%d].inputs.properties.%s", i, name), fmt.Sprintf("input name %q is not addressable by the UWS expression grammar", name))
+				}
+			}
+		}
+		validateExpressionStepNames(workflow.Steps, fmt.Sprintf("workflows[%d].steps", i), d.UWS, result)
+		validateExpressionCaseNames(workflow.Cases, fmt.Sprintf("workflows[%d].cases", i), d.UWS, result)
+		validateExpressionStepNames(workflow.Default, fmt.Sprintf("workflows[%d].default", i), d.UWS, result)
+	}
+}
+
+func validateExpressionStepNames(steps []*Step, path, version string, result *ValidationResult) {
+	for i, step := range steps {
+		if step == nil {
+			continue
+		}
+		stepPath := fmt.Sprintf("%s[%d]", path, i)
+		for name := range step.Inputs {
+			if !constructIDPattern.MatchString(name) {
+				result.addError(stepPath+".inputs."+name, fmt.Sprintf("input name %q is not addressable by the UWS expression grammar", name))
+			}
+		}
+		validateExpressionStepNames(step.Steps, stepPath+".steps", version, result)
+		validateExpressionCaseNames(step.Cases, stepPath+".cases", version, result)
+		validateExpressionStepNames(step.Default, stepPath+".default", version, result)
+	}
+}
+
+func validateExpressionCaseNames(cases []*Case, path, version string, result *ValidationResult) {
+	for i, c := range cases {
+		if c != nil {
+			validateExpressionStepNames(c.Steps, fmt.Sprintf("%s[%d].steps", path, i), version, result)
+		}
 	}
 }
 

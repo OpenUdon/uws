@@ -72,7 +72,7 @@ func (op *Operation) validate(path string, idx *documentIndex, result *Validatio
 	validateCriteria(op.SuccessCriteria, path+".successCriteria", result)
 	validateFailureActions(op.OnFailure, path+".onFailure", idx, result)
 	validateSuccessActions(op.OnSuccess, path+".onSuccess", idx, result)
-	validateOutputs(op.Outputs, path+".outputs", result)
+	validateOutputs(op.Outputs, path+".outputs", idx.uws, result)
 }
 
 // validateRequest enforces request-binding shape rules. Body is intentionally
@@ -122,9 +122,13 @@ func validateDependencyList(deps []string, path string, idx *documentIndex, resu
 	}
 }
 
-func validateOutputs(outputs map[string]string, path string, result *ValidationResult) {
+func validateOutputs(outputs map[string]string, path, version string, result *ValidationResult) {
 	for key := range outputs {
-		if !outputNamePattern.MatchString(key) {
+		valid := outputNamePattern.MatchString(key)
+		if supportsUWSVersionAtLeast(version, 1, 10, 0) {
+			valid = constructIDPattern.MatchString(key)
+		}
+		if !valid {
 			result.addError(path+"."+key, fmt.Sprintf("output name %q is not valid", key))
 		}
 	}

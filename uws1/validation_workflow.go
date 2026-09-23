@@ -22,7 +22,7 @@ func (w *Workflow) validate(path string, idx *documentIndex, result *ValidationR
 		}
 	}
 	validateDependencyList(w.DependsOn, path+".dependsOn", idx, result)
-	validateOutputs(w.Outputs, path+".outputs", result)
+	validateOutputs(w.Outputs, path+".outputs", idx.uws, result)
 	w.Inputs.validate(path+".inputs", result)
 	validateSteps(w.Steps, path+".steps", idx, result)
 	validateCases(w.Cases, path+".cases", idx, result)
@@ -116,7 +116,7 @@ func (s *Step) validate(path string, idx *documentIndex, result *ValidationResul
 		result.addError(path+".workflow", fmt.Sprintf("references unknown workflowId %q", s.Workflow))
 	}
 	validateDependencyList(s.DependsOn, path+".dependsOn", idx, result)
-	validateOutputs(s.Outputs, path+".outputs", result)
+	validateOutputs(s.Outputs, path+".outputs", idx.uws, result)
 }
 
 func validateCases(cases []*Case, path string, idx *documentIndex, result *ValidationResult) {

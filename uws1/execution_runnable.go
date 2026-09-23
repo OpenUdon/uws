@@ -448,7 +448,7 @@ func (o *Orchestrator) evaluateTruthy(ctx context.Context, expr string) (bool, e
 	if err != nil {
 		return false, err
 	}
-	return truthyValue(value), nil
+	return o.truthy(value)
 }
 
 func workflowCallKey(id, callerKey string) string {
