@@ -38,10 +38,11 @@ assigns `type: http` in `x-uws-runtime` is invalid. The spelling is exact.
 `ldaps` is defined; plain `ldap` is not.
 
 `type: ssh` and `type: cmd` select runtime-owned imperative command execution
-and are distinct from the historical UWS 1.6 `ansible-module` source binding,
-even though both can run work on a remote host: the former carries an opaque
-command chosen by the author, while the latter bound to a module contract from
-a reviewed argspec document produced by conversion tooling.
+and are distinct from the historical UWS 1.6 `ansible-module` source binding.
+Both can run work on a remote host, but the runtime types carry opaque commands
+chosen by the author, whereas the historical source binding referred to a
+module contract from a reviewed argspec document produced by conversion
+tooling.
 
 ## Operation Runtime Payload
 
