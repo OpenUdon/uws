@@ -7,12 +7,16 @@ compatible under C02's policy. Full tests, race tests, vet, strict MkDocs
 build, diff check, and the bounded whole-milestone review pass. No release
 number is preselected; choose it under C02's version policy.
 
-**Dependencies.** [M03](../docs/history/status-M03.md) and
-[C01](../docs/history/status-C01.md) completed and accepted; C02 and B01 must
-also be accepted first. C01 establishes deterministic caller-step identity
+**Dependencies.** [M03](../docs/history/status-M03.md),
+[C01](../docs/history/status-C01.md), and
+[C02](../docs/history/status-C02.md) completed and accepted; B01 must also be
+accepted first. C01 establishes deterministic caller-step identity
 for workflow invocations, per-call scoping of nested steps, operations,
 dependencies, and merge records, clear rejection of recursive workflow calls,
-and numeric ordering of nested iteration results. M03's
+and numeric ordering of nested iteration results. C02 establishes exact
+declared-version schema selection, no fallback for prerelease or unpublished
+versions, SemVer-aware feature gates, and compatibility coverage for all
+published UWS 1.x schemas. M03's
 accepted Go mapping escapes ordinary dynamic keys with `__uws_literal__` when
 they collide with legacy dollar-key spellings, while preserving legacy dollar
 decoding. C03 must preserve that behavior and decide only whether a separate

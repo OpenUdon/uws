@@ -1,42 +1,19 @@
 # Milestones
 
-M01, M02, M03, and C01 completed acceptance and bounded review; their IDs
-remain reserved in the history index. C02, B01, and C03 remain active from the
+M01, M02, M03, C01, and C02 completed acceptance and bounded review; their IDs
+remain reserved in the history index. B01 and C03 remain active from the
 2026-09-23 review remediation.
 
 ## Active Horizon
 
-Required remaining execution order: **C02 -> B01 -> C03**. C02 and B01 have
-no dependencies on one another; the order prioritizes review impact. C03
-depends on completed M03, C01, C02, and B01. Downstream impacts are C02 -> C03
-and B01 -> C03. All three remaining milestones are required, not conditional.
+Required remaining execution order: **B01 -> C03**. C03 depends on completed
+M03, C01, and C02, plus pending B01. The remaining downstream impact is
+B01 -> C03. Both remaining milestones are required, not conditional.
 
 | Milestone | Goal | Status |
 |---|---|---|
-| [C02](status-C02.md) | Version compatibility | Pending |
 | [B01](status-B01.md) | Browser template safety | Pending |
 | [C03](status-C03.md) | Portable execution contract | Pending |
-
-## C02 - Version Compatibility
-
-**Goal.** Align schema selection, semantic validation, and execution rules
-with a document's declared UWS version.
-
-**Scope.** Decide and document a policy for published releases, prereleases,
-and unpublished versions. Gate the 1.9.2 reference-step and criterion-pointer
-rules, plus 1.5 step inputs, to declared versions rather than applying later
-rules retroactively. Test a cross-version schema/semantic corpus with explicit
-exceptions; reconcile validation layers and release wording. This plan adopts
-version gating, not a retroactive erratum. The eventual release number is
-chosen under that policy, not assumed to be 1.9.3.
-
-**Acceptance.** Older published documents retain their declared-version
-behavior; prerelease and unpublished-version handling is explicit; immutable
-historical artifacts remain unchanged. Focused schema/semantic parity,
-validation, full and race tests, vet, and diff check pass.
-
-**Dependencies.** None. **Downstream impact.** C03 uses this policy for any
-new versioned specification and compatibility claims.
 
 ## B01 - Browser Template Safety
 
@@ -79,13 +56,17 @@ fixtures, and embedded archive agree; prior versions are protected. Full and
 race tests, vet, strict MkDocs build, and diff check pass. The bounded
 whole-milestone review gate passes.
 
-**Dependencies.** [M03](../docs/history/status-M03.md) and
-[C01](../docs/history/status-C01.md) completed and accepted; C02 and B01
-pending. C01 establishes deterministic caller-step identity for workflow
+**Dependencies.** [M03](../docs/history/status-M03.md),
+[C01](../docs/history/status-C01.md), and
+[C02](../docs/history/status-C02.md) completed and accepted; B01 pending. C01
+establishes deterministic caller-step identity for workflow
 invocations, per-call scoping of nested steps, operations, dependencies, and
 merge records, clear rejection of recursive workflow calls, and numeric
-ordering of nested iteration results. **Downstream impacts.** None currently
-active; candidate directions below may be reconsidered after C03.
+ordering of nested iteration results. C02 establishes exact declared-version
+schema selection, no fallback for prerelease or unpublished versions, and
+SemVer-aware feature gates, including 1.5 step inputs and 1.9.2 semantic
+changes. **Downstream impacts.** None currently active; candidate directions
+below may be reconsidered after C03.
 
 ## Candidate Directions
 

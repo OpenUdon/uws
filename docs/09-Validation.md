@@ -59,9 +59,11 @@ Feature gates compare valid UWS 1.x Semantic Versions using SemVer precedence.
 A prerelease sorts before the final release with the same numeric version, so
 `1.9.2-rc.1` does not acquire features introduced in `1.9.2`. A prerelease of a
 later version, such as `1.9.3-rc.1`, sorts after `1.9.2` and includes its
-features. A missing `uws` value remains invalid; schema lookup's historical
-1.0.0 default is only a bootstrap for structural validation and does not make
-an undeclared version valid.
+features. Prerelease text must follow SemVer syntax; the published schema's
+broad version pattern is not sufficient to make a malformed version valid. A
+missing `uws` value remains invalid; schema lookup's historical 1.0.0 default
+is only a bootstrap for structural validation and does not make an undeclared
+version valid.
 
 ## Advisory Content-Trust Analysis
 

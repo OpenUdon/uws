@@ -18,7 +18,8 @@ the meaning or scope of a published schema or sub-spec is recorded as an
 - Semantic feature gates use SemVer precedence. A prerelease sorts before the
   corresponding final release, and a later-version prerelease sorts after
   earlier stable releases. Later published rules are not applied retroactively
-  to an earlier declared version.
+  to an earlier declared version. Prerelease identifiers must use valid
+  SemVer syntax even though the published schema pattern is broader.
 - This policy clarifies version selection and validator behavior; it does not
   amend the bytes or normative requirements of earlier published artifacts.
 
