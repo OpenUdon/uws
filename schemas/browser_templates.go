@@ -62,7 +62,7 @@ func validateBrowser18Templates(root map[string]any) error {
 					}
 				}
 			case string:
-				if !strings.ContainsAny(typed, "{}") {
+				if !strings.Contains(typed, "{{") && !strings.Contains(typed, "}}") {
 					return nil
 				}
 				if !allowed[path] {
@@ -117,26 +117,20 @@ func browserParameterProperties(raw any) map[string]string {
 func parseBrowserTemplateNames(value string) ([]string, error) {
 	var names []string
 	for index := 0; index < len(value); {
-		relative := strings.IndexAny(value[index:], "{}")
-		if relative < 0 {
-			break
-		}
-		brace := value[index+relative]
-		if brace == '}' {
-			if index+relative+1 >= len(value) || value[index+relative+1] != '}' {
-				return nil, fmt.Errorf("unmatched template closing brace")
-			}
+		openRelative := strings.Index(value[index:], "{{")
+		closeRelative := strings.Index(value[index:], "}}")
+		if closeRelative >= 0 && (openRelative < 0 || closeRelative < openRelative) {
 			return nil, fmt.Errorf("unmatched template closing braces")
 		}
-		open := index + relative
-		if open+1 >= len(value) || value[open+1] != '{' {
-			return nil, fmt.Errorf("unmatched template opening brace")
+		if openRelative < 0 {
+			break
 		}
-		end := strings.Index(value[open+2:], "}}")
-		if end < 0 {
+		open := index + openRelative
+		endRelative := strings.Index(value[open+2:], "}}")
+		if endRelative < 0 {
 			return nil, fmt.Errorf("unmatched template opening braces")
 		}
-		end = open + 2 + end
+		end := open + 2 + endRelative
 		name := value[open+2 : end]
 		if strings.Contains(name, "{") || strings.Contains(name, "}") || !browserTemplateName.MatchString(name) {
 			return nil, fmt.Errorf("invalid template placeholder %q", name)

@@ -11,31 +11,39 @@ func TestBrowser18TemplatesAcceptDeclaredScalarsInApprovedSinks(t *testing.T) {
 	profile := browser18TestProfile()
 	action := profile["actions"].(map[string]any)["read_status"].(map[string]any)
 	action["parameters"] = map[string]any{"type": "object", "properties": map[string]any{
-		"id": map[string]any{"type": "integer"}, "query": map[string]any{"type": "string"},
+		"id": map[string]any{"type": "string", "pattern": `^[A-Z]{2,5}$`}, "query": map[string]any{"type": "string"},
 		"comment": map[string]any{"type": "string"}, "choice": map[string]any{"type": "boolean"},
 	}}
+	action["description"] = "Count {records} and use the reviewed regex field."
 	action["sequence"] = []any{
 		map[string]any{"navigate": "/records/{{id}}?q={{query}}"},
-		map[string]any{"type_text": map[string]any{"locator": map[string]any{"role": "textbox"}, "value": "{{comment}}"}},
+		map[string]any{"type_text": map[string]any{"locator": map[string]any{"role": "textbox", "name": "Price {USD}"}, "value": "{{comment}}"}},
 		map[string]any{"select_option": map[string]any{"locator": map[string]any{"role": "combobox"}, "value": "{{choice}}"}},
+		map[string]any{"click": map[string]any{"locator": map[string]any{"role": "button", "name": "Record {ready}"}}},
+		map[string]any{"type_text": map[string]any{"locator": map[string]any{"role": "textbox"}, "value": "Price {USD}"}},
 	}
-	action["confirmationPolicy"] = map[string]any{"required": false, "prompt": "Review record {{id}}?"}
+	action["confirmationPolicy"] = map[string]any{"required": false, "prompt": "Review {record} {{id}}?"}
 	require.NoError(t, validateBrowser18Fixture(t, profile))
 
 	action["sequence"] = []any{map[string]any{"navigate": map[string]any{"url": "/records/{{id}}?q={{query}}", "context": "main"}}}
+	require.NoError(t, validateBrowser18Fixture(t, profile))
+
+	action["sequence"] = []any{map[string]any{"navigate": "/records/{literal}"}}
 	require.NoError(t, validateBrowser18Fixture(t, profile))
 }
 
 func TestBrowser18TemplatesRejectUnsafeOrAmbiguousCases(t *testing.T) {
 	tests := map[string]func(map[string]any){
-		"scheme":               func(action map[string]any) { setBrowser18Navigate(action, "https://{{id}}.example.test/") },
-		"authority":            func(action map[string]any) { setBrowser18Navigate(action, "//{{id}}/records") },
-		"query name":           func(action map[string]any) { setBrowser18Navigate(action, "/?{{id}}=value") },
-		"fragment":             func(action map[string]any) { setBrowser18Navigate(action, "/records#{{id}}") },
-		"dot segment":          func(action map[string]any) { setBrowser18Navigate(action, "/records/%2e%2e/private") },
-		"malformed braces":     func(action map[string]any) { setBrowser18Navigate(action, "/records/{{id") },
-		"single brace":         func(action map[string]any) { setBrowser18Navigate(action, "/records/{id}") },
-		"undeclared parameter": func(action map[string]any) { setBrowser18Navigate(action, "/records/{{missing}}") },
+		"scheme":                         func(action map[string]any) { setBrowser18Navigate(action, "https://{{id}}.example.test/") },
+		"authority":                      func(action map[string]any) { setBrowser18Navigate(action, "//{{id}}/records") },
+		"query name":                     func(action map[string]any) { setBrowser18Navigate(action, "/?{{id}}=value") },
+		"fragment":                       func(action map[string]any) { setBrowser18Navigate(action, "/records#{{id}}") },
+		"dot segment":                    func(action map[string]any) { setBrowser18Navigate(action, "/records/%2e%2e/private") },
+		"malformed braces":               func(action map[string]any) { setBrowser18Navigate(action, "/records/{{id") },
+		"undeclared parameter":           func(action map[string]any) { setBrowser18Navigate(action, "/records/{{missing}}") },
+		"template outside sink":          func(action map[string]any) { action["description"] = "Record {{id}}" },
+		"unmatched opening outside sink": func(action map[string]any) { action["description"] = "Record {{id" },
+		"unmatched closing outside sink": func(action map[string]any) { action["description"] = "Record id}}" },
 		"non scalar parameter": func(action map[string]any) {
 			setBrowser18Navigate(action, "/records/{{id}}")
 			action["parameters"] = map[string]any{"type": "object", "properties": map[string]any{"id": map[string]any{"type": "array"}}}
