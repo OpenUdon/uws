@@ -77,8 +77,9 @@ locate repository, configured, module-cache, embedded, or sibling schemas.
 then calls the semantic validator.
 
 Schema conformance and parity tests connect the latest core schema to Go rules,
-tags, known fields, and specification tables. SHA-256 fixtures freeze every
-published JSON document, and archive tests ensure embedded bytes match their
+tags, known fields, and specification tables. SHA-256 fixtures enforce exact
+membership and bytes for every published JSON document and every non-changelog
+Markdown document; archive tests ensure embedded JSON bytes match their
 sources. CI adds race testing, vet, diff checks, and strict documentation
 builds.
 
@@ -106,8 +107,7 @@ authorization, source fetching, and live provider compatibility remain
 consumer responsibilities.
 
 Known baseline discrepancies are preserved in the matching archives rather
-than silently normalized: Markdown specifications lack the JSON documents'
-automated digest guard, and some historical downstream compatibility claims
+than silently normalized. Some historical downstream compatibility claims
 require external repositories.
 
 ## Memory Bank Ownership

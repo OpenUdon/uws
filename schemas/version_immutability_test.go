@@ -44,18 +44,67 @@ var publishedVersionSHA256 = map[string]string{
 	"runtime.1.0.json":                     "c8ed61ae855c828767a30d94e667bd7f0b3bed75ee8e36407f815d789fe6cd31",
 }
 
+// publishedMarkdownSHA256 freezes every published Markdown document except
+// CHANGELOG.md, which remains the mutable release ledger.
+var publishedMarkdownSHA256 = map[string]string{
+	"1.0.0.md":                           "b4697ee580838bc7e6e0722d01219534086b8e9368b406c1ccae1c2440dad671",
+	"1.1.0.md":                           "f38d92ce04684f3aad9ee9012fb6ef1b7a1d1972e6af668ec98bb459070993f7",
+	"1.1.1.md":                           "57577c86fbaab8fdfa362be6dd6b8c01ceaa271084ed6e836e123081032e095e",
+	"1.2.0.md":                           "e12596201e6ba35cc32b5cb629e2d5ff0702ebd046bd7d96f01bb47d685fb34c",
+	"1.3.0.md":                           "13a71b79e3fd2868968e6fce6d31c73995ac7c549dcf20f94d72af01fa2b9486",
+	"1.4.0.md":                           "21c0c3d8461b62b0cf18326c83306ff354d9c4e79720e4a483a1eb0e224f170d",
+	"1.5.0.md":                           "cae9bf3d5a830031d7c85297e031450c809c44983baaf6b34d49b28a5c8761bc",
+	"1.6.0.md":                           "72a458723674c95765b416ed0a3efd82e46cb9dc585f5530887e9fa682d07615",
+	"1.7.0.md":                           "0d040e7cd390893d5999425fbe3dcb190ff39ff0b0b44eb41e42e79582c9bdfb",
+	"1.8.0.md":                           "cea8f392040ef4cc99f77869cf4875fba484a28027677dfee8b9b0824b59531d",
+	"1.9.0.md":                           "9e594f3326811947799805580d6a0f4e508b4ef880187171311fe0b34c69b98d",
+	"1.9.1.md":                           "de2ba4fe07aa22ecfcdfbfe243caf09e950a5592b3d98d9cf826a0bb5cf998f3",
+	"1.9.2.md":                           "92171354a3fe60faa468fe0e43f36733f535ab6a3de8b57b82afe245bf6a57dc",
+	"ansible.1.0.md":                     "fc7ac843633004e33bac0bee34e178a4de894491a222162875c6f6f0bfcea504",
+	"arazzo.md":                          "f4591078579df231f030d8877667fd2c2b50c8e713508361d516f67a6ed67490",
+	"article.md":                         "2a1b30f5515efa95e906168033f3f8c305df9b34a026e32dabf60397ebb4bcda",
+	"browser-authentication-call.1.0.md": "c1b3ace683f2bb301c25dff6ed0b49bc14f2e8ba6e964c7855c76f4a736ceb38",
+	"browser-authentication-call.1.1.md": "b0dbef259c3a8c2e8ea82b2cb741d62d781cf0aae60004b981bd465f12a81800",
+	"browser-authentication.1.0.md":      "4747e20a4f73bbb1c6205e822bf5dd188faee7eab31144ac45cb654679d70a74",
+	"browser-authentication.1.1.md":      "182691589ca39d28c983a79b6ad73f7b21fb7b0e9f15c0ac09352e70b451f128",
+	"browser-registration-call.1.0.md":   "18743f0817580466721c16208eb85b9e617e495ef3458cfbc585f25ecac97f84",
+	"browser-registration-call.1.1.md":   "a2d7b101ac5134b7f7165737f3f3b9db4afa8f18784b39d4b11cc7ef3a9eb3af",
+	"browser-registration-call.1.2.md":   "668b85d37b14e171d2197c3612d2373ec4deae8940f9d7b8194788c9fc9fa419",
+	"browser-registration-input.1.0.md":  "35d59168f4041e1a20406a655c3f7a381018afaac78467bae31e657fefaae735",
+	"browser-registration.1.0.md":        "089eae4bc81ec6e6dfa8d1b263218624f9d31bdbc236032570bf63a29e4db53c",
+	"browser-registration.1.1.md":        "ee1fb0842191f1df08276a2c751478509903e277db91a89cbf14de7461a4a97c",
+	"browser-registration.1.2.md":        "94e16ced40984a32a308bef7f9c13d40ea1b7c627c3519d49c3930d509887154",
+	"browser.1.5.md":                     "05be7331270084b4daa373632ef75b2db357c49836a376b8ab9b84444fb0d632",
+	"browser.1.6.md":                     "1e79e778060e458c078f3f3e65c8a87484887b144222dd3221e8b3262da5c0f1",
+	"browser.1.7.md":                     "76ff87cab25bee91300f38414c542d31c3d9a23a63eda8443fcec702b4785d83",
+	"runtime.1.0.md":                     "9f77d78f250d8a1e98a1e9c0ebc0536cd8091250f03701a53be2b0d7280a5576",
+}
+
 func TestPublishedVersionDocumentsAreImmutable(t *testing.T) {
-	paths, err := filepath.Glob(filepath.Join("..", "versions", "*.json"))
+	t.Run("JSON", func(t *testing.T) {
+		assertPublishedVersionDocumentsImmutable(t, "*.json", "JSON", "", publishedVersionSHA256)
+	})
+	t.Run("Markdown", func(t *testing.T) {
+		assertPublishedVersionDocumentsImmutable(t, "*.md", "Markdown", "CHANGELOG.md", publishedMarkdownSHA256)
+	})
+}
+
+func assertPublishedVersionDocumentsImmutable(t *testing.T, pattern, kind, excludedName string, manifest map[string]string) {
+	t.Helper()
+	paths, err := filepath.Glob(filepath.Join("..", "versions", pattern))
 	if err != nil {
 		t.Fatal(err)
 	}
 	actualNames := make([]string, 0, len(paths))
 	for _, path := range paths {
 		name := filepath.Base(path)
+		if name == excludedName {
+			continue
+		}
 		actualNames = append(actualNames, name)
-		want, ok := publishedVersionSHA256[name]
+		want, ok := manifest[name]
 		if !ok {
-			t.Errorf("published JSON document %s is missing from the SHA-256 manifest", name)
+			t.Errorf("published %s document %s is missing from the SHA-256 manifest", kind, name)
 			continue
 		}
 		data, err := os.ReadFile(path)
@@ -65,21 +114,21 @@ func TestPublishedVersionDocumentsAreImmutable(t *testing.T) {
 		}
 		sum := sha256.Sum256(data)
 		if got := hex.EncodeToString(sum[:]); got != want {
-			t.Errorf("published JSON document %s changed: SHA-256 = %s, want %s", name, got, want)
+			t.Errorf("published %s document %s changed: SHA-256 = %s, want %s", kind, name, got, want)
 		}
 	}
 	sort.Strings(actualNames)
-	wantNames := make([]string, 0, len(publishedVersionSHA256))
-	for name := range publishedVersionSHA256 {
+	wantNames := make([]string, 0, len(manifest))
+	for name := range manifest {
 		wantNames = append(wantNames, name)
 	}
 	sort.Strings(wantNames)
 	if len(actualNames) != len(wantNames) {
-		t.Fatalf("versions/*.json membership = %v, manifest membership = %v", actualNames, wantNames)
+		t.Fatalf("versions/%s membership = %v, manifest membership = %v", pattern, actualNames, wantNames)
 	}
 	for i := range actualNames {
 		if actualNames[i] != wantNames[i] {
-			t.Fatalf("versions/*.json membership = %v, manifest membership = %v", actualNames, wantNames)
+			t.Fatalf("versions/%s membership = %v, manifest membership = %v", pattern, actualNames, wantNames)
 		}
 	}
 }

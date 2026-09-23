@@ -15,4 +15,4 @@ the final corrected Markdown bytes are ready to hash.
 
 | Item | State | Notes |
 |---|---|---|
-| Freeze published Markdown artifacts | `[ ]` | Hash the final M01 bytes, enforce exact non-changelog Markdown membership, and update agent guidance plus architecture/technical current truth in the same commit. |
+| Freeze published Markdown artifacts | `[x]` | Completed 2026-09-23. The shared immutability test now enforces exact names and SHA-256 bytes for all 31 non-changelog `versions/*.md` files while retaining JSON coverage; agent guidance and architecture/technical current truth are synchronized. The focused test, full tests, race tests, vet, strict MkDocs build, scope check, and `git diff --check` passed; no protected Markdown, JSON, or embedded archive changed. |

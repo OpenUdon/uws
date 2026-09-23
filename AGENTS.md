@@ -54,6 +54,13 @@ The coordinated artifacts must stay in sync:
 3. `versions/1.9.2.md` — the latest human-readable spec. Earlier numbered specifications, `versions/arazzo.md`, `versions/article.md`, and `ideas/terraform.md` are historical or comparison documents. `versions/browser.1.7.md` is the latest browser capability profile and `versions/ansible.1.0.md` is retained only for historical UWS 1.6 documents.
 4. `schemas/` — Go lookup and profile-validation helpers plus the generated embedded document archive. `versions/` is document-only; regenerate the archive with `go generate ./schemas` after changing a JSON document.
 
+`schemas/version_immutability_test.go` freezes exact membership and SHA-256
+bytes for every published `versions/*.json` document and every
+`versions/*.md` document except the intentionally mutable `CHANGELOG.md`.
+Adding a published document requires adding its digest; changing an existing
+published contract requires the repository's explicit versioning or editorial
+correction policy rather than silently updating the expected hash.
+
 Browser registration is a separate extension: `versions/browser-registration.1.2.*`
 and its 1.2 call supplement retain typed private inputs and input checkpoints
 and add a reviewed human-verification contract.
