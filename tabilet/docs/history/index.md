@@ -12,3 +12,4 @@ Knowledge updates that replace current facts or lessons are recorded in
 | C02 | completed | 2026-09-23 | [status-C02.md](status-C02.md) | Exact declared-version schemas, SemVer feature gates, and cross-version behavior are covered without changing historical artifacts. |
 | B01 | completed | 2026-09-23 | [status-B01.md](status-B01.md) | Browser 1.8 defines reviewed scalar parameter substitution and safe URL-component encoding; browser 1.5–1.7 remain immutable and accepted. |
 | C03 | completed | 2026-09-23 | [status-C03.md](status-C03.md) | Published UWS 1.10.0's portable execution contract, schema, Go behavior, conformance evidence, and synchronized docs. |
+| C05 | completed | 2026-09-23 | [status-C05.md](status-C05.md) | Exact-version admission now rejects unpublished core versions across direct and file validation without retroactively applying later feature semantics. |
