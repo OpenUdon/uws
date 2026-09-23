@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-	"math/big"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -199,11 +198,20 @@ func truthyValueV110(value any) (bool, error) {
 		return false, nil
 	}
 	if number, ok := value.(json.Number); ok {
-		rational, valid := new(big.Rat).SetString(number.String())
-		if !valid {
+		text := number.String()
+		if !jsonNumberPattern.MatchString(text) {
 			return false, fmt.Errorf("runtime expression resolved to an invalid JSON number")
 		}
-		return rational.Sign() != 0, nil
+		significand := text
+		if exponentIndex := strings.IndexAny(significand, "eE"); exponentIndex >= 0 {
+			significand = significand[:exponentIndex]
+		}
+		for _, digit := range significand {
+			if digit >= '1' && digit <= '9' {
+				return true, nil
+			}
+		}
+		return false, nil
 	}
 	reflected := reflect.ValueOf(value)
 	switch reflected.Kind() {
@@ -213,7 +221,7 @@ func truthyValueV110(value any) (bool, error) {
 		return reflected.Len() != 0, nil
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return reflected.Int() != 0, nil
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		return reflected.Uint() != 0, nil
 	case reflect.Float32, reflect.Float64:
 		number := reflected.Float()
@@ -222,9 +230,62 @@ func truthyValueV110(value any) (bool, error) {
 		}
 		return number != 0, nil
 	case reflect.Slice, reflect.Array, reflect.Map:
+		if err := validateJSONTruthinessValue(value, 0); err != nil {
+			return false, err
+		}
 		return reflected.Len() != 0, nil
 	}
 	return false, fmt.Errorf("runtime expression resolved to unsupported non-JSON value %T", value)
+}
+
+var jsonNumberPattern = regexp.MustCompile(`^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$`)
+
+func validateJSONTruthinessValue(value any, depth int) error {
+	if depth > 10000 {
+		return fmt.Errorf("runtime expression resolved to a JSON value nested too deeply")
+	}
+	if value == nil {
+		return nil
+	}
+	if number, ok := value.(json.Number); ok {
+		if !jsonNumberPattern.MatchString(number.String()) {
+			return fmt.Errorf("runtime expression resolved to an invalid JSON number")
+		}
+		return nil
+	}
+	reflected := reflect.ValueOf(value)
+	switch reflected.Kind() {
+	case reflect.Bool, reflect.String,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return nil
+	case reflect.Float32, reflect.Float64:
+		number := reflected.Float()
+		if math.IsNaN(number) || math.IsInf(number, 0) {
+			return fmt.Errorf("runtime expression resolved to a non-finite number")
+		}
+		return nil
+	case reflect.Slice, reflect.Array:
+		for index := 0; index < reflected.Len(); index++ {
+			if err := validateJSONTruthinessValue(reflected.Index(index).Interface(), depth+1); err != nil {
+				return err
+			}
+		}
+		return nil
+	case reflect.Map:
+		if reflected.Type().Key().Kind() != reflect.String {
+			return fmt.Errorf("runtime expression resolved to an object with non-string keys")
+		}
+		iter := reflected.MapRange()
+		for iter.Next() {
+			if err := validateJSONTruthinessValue(iter.Value().Interface(), depth+1); err != nil {
+				return err
+			}
+		}
+		return nil
+	default:
+		return fmt.Errorf("runtime expression resolved to unsupported non-JSON value %T", value)
+	}
 }
 
 func (o *Orchestrator) resolveCriterionPointer(root any, pointer string, canonicalIndexes bool) (any, bool, error) {

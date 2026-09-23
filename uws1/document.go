@@ -22,9 +22,9 @@ type Document struct {
 	UWS                string               `json:"uws" yaml:"uws" hcl:"uws"`
 	Info               *Info                `json:"info" yaml:"info" hcl:"info,block"`
 	SourceDescriptions []*SourceDescription `json:"sourceDescriptions,omitempty" yaml:"sourceDescriptions,omitempty" hcl:"sourceDescription,block"`
-	// Variables is an intentionally open-shape map; any JSON-compatible value is
-	// allowed. The JSON Schema enforces object shape; UWS does not restrict keys
-	// or values further.
+	// Variables values remain open-shape JSON. Names use the historical schema
+	// rules before UWS 1.10; 1.10+ restricts names to those addressable by the
+	// runtime-expression grammar.
 	Variables    map[string]any      `json:"variables,omitempty" yaml:"variables,omitempty" hcl:"variables,optional"`
 	Operations   []*Operation        `json:"operations" yaml:"operations" hcl:"operation,block"`
 	Workflows    []*Workflow         `json:"workflows,omitempty" yaml:"workflows,omitempty" hcl:"workflow,block"`

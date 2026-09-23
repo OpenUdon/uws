@@ -311,16 +311,19 @@ when: $response.statusCode == 200
 when: $response.statusCode == 200 && $response.body.count > 0
 ```
 
-## From The Big Fixture
+## Portable Core Example
 
-The large fixture uses expressions in request bindings, controls, and outputs:
+The big fixture also exercises test-runtime-only `$signals.*` expressions;
+those are implementation extensions, not part of the portable grammar. The
+excerpt below uses core expressions and shows the UWS 1.10 numeric-delay form
+for non-`await` `wait`:
 
 ```hcl
 operation "run_llm_primary" {
   dependsOn = ["fetch_ticket", "load_customer"]
   when      = "$steps.step_collect_context.outputs.enabled == true"
   forEach   = "$variables.regions"
-  wait      = "$signals.runtime_slot_available"
+  wait      = "$variables.runtime_slot_wait_seconds" # finite delay seconds in UWS 1.10
   outputs = {
     audit  = "$response.body.auditId"
     result = "$response.body.result"

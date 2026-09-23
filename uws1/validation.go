@@ -44,9 +44,9 @@ var (
 	// version intentionally; future major versions need their own pattern.
 	uws1VersionPattern = regexp.MustCompile(`^1\.\d+\.\d+(-.+)?$`)
 	constructIDPattern = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
-	// dottedNamePattern is the shared pattern for component names, output
-	// names, and trigger output names. Allowing dots distinguishes these from
-	// constructIDPattern, which forbids them.
+	// dottedNamePattern is the historical pattern for component names, output
+	// names, and trigger output names. UWS 1.10 separately narrows only
+	// expression-addressable component/output names to constructIDPattern.
 	dottedNamePattern    = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
 	componentNamePattern = dottedNamePattern
 	outputNamePattern    = dottedNamePattern

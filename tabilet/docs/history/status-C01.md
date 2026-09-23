@@ -10,7 +10,7 @@ Worktree: `includes uncommitted changes`
 Review: `passed`
 Review iterations: `2`
 Verification: `go test ./...`; `go test -race ./...`; `go vet ./...`; `git diff --check`
-Consolidated into: [workflow execution](../../../uws1/execution.go), [workflow-call regression tests](../../../uws1/execution_test.go), [numeric merge ordering](../../../uws1/execution_structural.go), [downstream contract](../../memory-bank/status-C03.md)
+Consolidated into: [workflow execution](../../../uws1/execution.go), [workflow-call regression tests](../../../uws1/execution_test.go), [numeric merge ordering](../../../uws1/execution_structural.go), [downstream contract](status-C03.md)
 
 ## Final milestone specification
 

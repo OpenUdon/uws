@@ -44,8 +44,9 @@ type schemaDefRules struct {
 func schemaDefCoverage() map[string]schemaDefRules {
 	return map[string]schemaDefRules{
 		"": { // document root
-			required:     []string{"uws", "info", "operations"},
-			patternProps: []string{"uws"},
+			required:                 []string{"uws", "info", "operations"},
+			patternProps:             []string{"uws"},
+			propertyNamePatternProps: []string{"variables"},
 		},
 		"content-trust-object": {
 			propertyNamePatternProps: []string{"sourceDescriptions", "operations", "triggers", "workflows"},
@@ -86,7 +87,7 @@ func schemaDefCoverage() map[string]schemaDefRules {
 			required:                 []string{"stepId"},
 			enumProps:                []string{"type"},
 			patternProps:             []string{"stepId"},
-			propertyNamePatternProps: []string{"outputs"},
+			propertyNamePatternProps: []string{"inputs", "outputs"},
 		},
 		"case-object": {
 			required: []string{"name"},

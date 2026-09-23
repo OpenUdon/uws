@@ -41,12 +41,17 @@ func TestOrchestratorExecutesRegexCriterion(t *testing.T) {
 func TestUWS110TruthinessCoversJSONNumbersAndPreservesCollections(t *testing.T) {
 	legacy := &Orchestrator{Document: &Document{UWS: "1.9.2"}}
 	current := &Orchestrator{Document: &Document{UWS: "1.10.0"}}
-	for _, value := range []any{json.Number("0"), json.Number("0.0"), int8(0), uint32(0), float32(0)} {
+	for _, value := range []any{json.Number("0"), json.Number("0.0"), int8(0), uint32(0), uintptr(0), float32(0)} {
 		matched, err := current.truthy(value)
 		require.NoError(t, err)
 		assert.False(t, matched, "zero value %T(%v) is false", value, value)
 	}
-	for _, value := range []any{json.Number("-2.5e1"), int16(-1), uint64(1), float32(0.5)} {
+	for _, value := range []json.Number{"0e10", "-0.000E+999999999"} {
+		matched, err := current.truthy(value)
+		require.NoError(t, err)
+		assert.False(t, matched, "zero significand remains false regardless of exponent %q", value)
+	}
+	for _, value := range []any{json.Number("-2.5e1"), int16(-1), uint64(1), uintptr(1), float32(0.5)} {
 		matched, err := current.truthy(value)
 		require.NoError(t, err)
 		assert.True(t, matched, "nonzero value %T(%v) is true", value, value)
@@ -61,6 +66,27 @@ func TestUWS110TruthinessCoversJSONNumbersAndPreservesCollections(t *testing.T) 
 	assert.True(t, matched, "older versions retain the historical unhandled-number truthiness")
 	_, err = current.truthy(math.NaN())
 	require.ErrorContains(t, err, "non-finite")
+}
+
+func TestUWS110TruthinessRejectsNonJSONCompositeValues(t *testing.T) {
+	current := &Orchestrator{Document: &Document{UWS: "1.10.0"}}
+	for _, value := range []any{
+		map[bool]string{true: "not a JSON object"},
+		map[string]any{"nested": math.Inf(1)},
+		map[string]any{"nested": json.Number("1e+")},
+		[]any{make(chan int)},
+		struct{ Value string }{Value: "not a JSON scalar or collection"},
+	} {
+		_, err := current.truthy(value)
+		require.Error(t, err, "unsupported value %#v must not be truthy", value)
+	}
+}
+
+func TestUWS110TruthinessHandlesVeryLargeJSONNumberExponentsWithoutExpansion(t *testing.T) {
+	current := &Orchestrator{Document: &Document{UWS: "1.10.0"}}
+	matched, err := current.truthy(json.Number("1e999999999999999999999999999999999999999999999999"))
+	require.NoError(t, err)
+	assert.True(t, matched)
 }
 
 func TestUWS110JSONPointerDecodesURIFragmentsAndValidatesEscapes(t *testing.T) {

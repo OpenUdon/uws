@@ -12,6 +12,11 @@ The fixture covers:
 - Triggers, routes, structural results, criteria, actions, components, and `x-*` extensions.
 - HCL extension blocks and JSON/HCL dynamic-key round trips.
 
+Some fixture values use the test runtime's `$signals.*` expression extension to
+drive deterministic execution examples. Those expressions are not part of the
+portable UWS core grammar; core-only documents should use the sources and
+syntax defined by the declared-version specification.
+
 Full fixture files:
 
 - [`testdata/big/big.hcl`](https://github.com/OpenUdon/uws/blob/main/testdata/big/big.hcl)

@@ -10,7 +10,7 @@ Worktree: `includes uncommitted retirement reconciliation and pre-existing untra
 Review: `passed`
 Review iterations: `1`
 Verification: `go test ./schemas`; `go test ./...`; `go test -race ./...`; `go vet ./...`; `mkdocs build --strict`; `git diff --check`
-Consolidated into: [browser 1.8 profile](../../../versions/browser.1.8.md), [browser 1.8 schema](../../../versions/browser.1.8.json), [template validator](../../../schemas/browser_templates.go), [validator fixtures](../../../schemas/browser_templates_test.go), [release surfaces](../../../README.md), [downstream contract](../../memory-bank/status-C03.md)
+Consolidated into: [browser 1.8 profile](../../../versions/browser.1.8.md), [browser 1.8 schema](../../../versions/browser.1.8.json), [template validator](../../../schemas/browser_templates.go), [validator fixtures](../../../schemas/browser_templates_test.go), [release surfaces](../../../README.md), [downstream contract](status-C03.md)
 
 ## Final milestone specification
 

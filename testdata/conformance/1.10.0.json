@@ -1,0 +1,79 @@
+{
+  "uws": "1.10.0",
+  "description": "Language-neutral UWS 1.10.0 semantic conformance vectors. These vectors supplement the exact-version JSON Schema.",
+  "cases": [
+    {
+      "id": "truthiness-json-values",
+      "area": "expressions",
+      "input": [null, false, 0, "", [], {}, true, 1, "x", [0], {"x": null}],
+      "expected": [false, false, false, false, false, false, true, true, true, true, true]
+    },
+    {
+      "id": "expression-addressable-identifiers",
+      "area": "validation",
+      "input": ["alpha", "A_1", "dash-name", "first.name", "white space"],
+      "expected": [true, true, true, false, false]
+    },
+    {
+      "id": "json-pointer-fragment-decoding",
+      "area": "criteria",
+      "input": {
+        "document": {"a/b": {"space key": "present"}, "nothing": null},
+        "fragments": ["#/a~1b/space%20key", "#/nothing", "#/missing", "#/a~2b"]
+      },
+      "expected": ["present", null, "missing", "invalid-escape"]
+    },
+    {
+      "id": "switch-first-match",
+      "area": "structural",
+      "input": [false, "unguarded", true],
+      "expected": "unguarded"
+    },
+    {
+      "id": "entry-selection",
+      "area": "execution",
+      "input": {"workflowIds": ["secondary", "main"]},
+      "expected": "main"
+    },
+    {
+      "id": "non-await-wait-bounds",
+      "area": "execution",
+      "input": [-0.1, 0, 0.000000001, 86400, 86400.1],
+      "expected": [false, true, true, true, false]
+    },
+    {
+      "id": "loop-order-and-batches",
+      "area": "structural",
+      "input": {"items": ["a", "b", "c"], "batchSize": 2},
+      "expected": [
+        {"index": 0, "batchIndex": 0, "item": "a"},
+        {"index": 1, "batchIndex": 0, "item": "b"},
+        {"index": 2, "batchIndex": 1, "item": "c"}
+      ]
+    },
+    {
+      "id": "foreach-output-aggregation",
+      "area": "structural",
+      "input": {"items": ["a", "b"], "output": "$item"},
+      "expected": ["a", "b"]
+    },
+    {
+      "id": "merge-keeps-declared-dependency-order",
+      "area": "structural",
+      "input": {"dependsOn": ["right", "left"], "records": {"left": "L", "right": "R"}},
+      "expected": ["R", "L"]
+    },
+    {
+      "id": "retry-limit-counts-retries-after-initial",
+      "area": "actions",
+      "input": {"retryLimit": 2, "initialAttempt": 1},
+      "expected": {"maximumAttempts": 3, "maximumRetries": 2}
+    },
+    {
+      "id": "trigger-output-index-must-be-declared",
+      "area": "triggers",
+      "input": {"outputs": ["created"], "dispatchIndex": 1},
+      "expected": "error"
+    }
+  ]
+}

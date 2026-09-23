@@ -10,7 +10,7 @@ Worktree: `includes uncommitted changes`
 Review: `passed`
 Review iterations: `1`
 Verification: `go test ./uws1 ./convert`; `go test ./...`; `go test -race ./...`; `go vet ./...`; `git diff --check`
-Consolidated into: [HCL key mapping](../../../uws1/hcl.go), [HCL regression tests](../../../uws1/hcl_test.go), [conversion regression test](../../../convert/convert_test.go), [HCL unmarshaler guidance](../../../uws1/unmarshaler.md), [downstream contract](../../memory-bank/status-C03.md)
+Consolidated into: [HCL key mapping](../../../uws1/hcl.go), [HCL regression tests](../../../uws1/hcl_test.go), [conversion regression test](../../../convert/convert_test.go), [HCL unmarshaler guidance](../../../uws1/unmarshaler.md), [downstream contract](status-C03.md)
 
 ## Final milestone specification
 

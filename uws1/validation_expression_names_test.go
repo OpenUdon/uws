@@ -1,6 +1,7 @@
 package uws1
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -36,6 +37,10 @@ func TestExpressionAddressableNamesAreVersionGated(t *testing.T) {
 	for _, name := range []string{"first.name", "tenant.name", "shared.name", "input.name"} {
 		require.True(t, strings.Contains(err.Error(), name), "expected %q in %v", name, err)
 	}
+
+	encoded, marshalErr := json.Marshal(current)
+	require.NoError(t, marshalErr)
+	require.Error(t, compileUWSSchema(t).Validate(decodeJSONValue(t, encoded)), "1.10 schema must reject names the expression grammar cannot address")
 }
 
 func TestWorkflowReferenceIsALiteralWorkflowID(t *testing.T) {

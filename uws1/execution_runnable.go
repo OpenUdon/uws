@@ -145,6 +145,8 @@ func waitSecondsNumber(value any) (float64, bool) {
 		return float64(typed), true
 	case uint64:
 		return float64(typed), true
+	case uintptr:
+		return float64(typed), true
 	default:
 		return 0, false
 	}

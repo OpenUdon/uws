@@ -10,7 +10,7 @@ UWS is a workflow **overlay** over source documents — OpenAPI, AsyncAPI, Graph
 
 This is what distinguishes UWS from full client-side workflow tools such as Arazzo and IaC engines such as OpenTofu and Terraform. Arazzo describes full client-side action sequences and treats each step as a bespoke client action. OpenTofu and Terraform act as full client-side workflow engines for infrastructure: each resource and provider call is described in the client configuration and resolved against a provider plugin at apply time. Neither approach assumes that the underlying operations are already defined by a server contract. UWS takes the opposite position: server actions are pre-defined by the source document, and UWS workflows reference those operations by ID rather than re-describing them. The result is a much smaller overlay: UWS does not duplicate request/response shapes, does not redeclare endpoints, and does not encode anything the source document already specifies.
 
-UWS 1.9.2 is the latest release. It keeps OpenAPI compatibility and nine source description types, retains the 1.9.1 content-provenance model, and adds compatible validation and advisory-analysis corrections. The `ansible-module` source type added in 1.6 was removed in 1.7, and UWS 1.9 defines no replacement Ansible operation profile. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
+UWS 1.10.0 is the latest release. It keeps the UWS 1.x wire model and publishes portable execution semantics for expressions, delays, structural results, actions, and trigger dispatch, while retaining the 1.9.1 content-provenance model. UWS 1.10 also rejects expression-addressable names that its grammar cannot reference; earlier documents retain their existing behavior. Browser 1.8 remains a separate profile. The `ansible-module` source type added in 1.6 was removed in 1.7, and UWS 1.9+ defines no replacement Ansible operation profile. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
 
 ### Version highlights
 
@@ -28,6 +28,7 @@ UWS 1.9.2 is the latest release. It keeps OpenAPI compatibility and nine source 
 | **1.9.0** | Kept UWS core stable; added browser 1.7 locale-free scalar conversion for accessibility-text outputs while retaining browser authentication 1.1 and all older schemas. |
 | **1.9.1** | Added optional `contentTrust` declarations and deterministic advisory provenance/capability analysis without changing existing output shapes or execution behavior. |
 | **1.9.2** | Rejected child blocks on reference steps, required canonical criteria array indexes, and aligned advisory analysis with runtime output order, provenance, structural execution, and trigger reachability. |
+| **1.10.0** | Published versioned expression, wait, structural-result, action, trigger, and security semantics; required expression-addressable identifiers. |
 
 See [`versions/CHANGELOG.md`](versions/CHANGELOG.md) for the full changelog.
 
@@ -40,7 +41,8 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 ## Documentation
 
 - **Docs site**: [openudon.github.io/uws](https://openudon.github.io/uws/)
-- Human-readable specification: [versions/1.9.2.md](versions/1.9.2.md)
+- Previous UWS specification: [versions/1.9.2.md](versions/1.9.2.md)
+- Latest UWS specification: [versions/1.10.0.md](versions/1.10.0.md)
 - Content trust guide: [docs/content-trust.md](docs/content-trust.md)
 - Runtime supplement: [versions/runtime.1.0.md](versions/runtime.1.0.md)
 - Runtime supplement schema: [versions/runtime.1.0.json](versions/runtime.1.0.json)
@@ -53,7 +55,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - Browser capability distribution milestone: [docs/browser-capability-goal.md](docs/browser-capability-goal.md)
 - UWS 1.6 Ansible argspec (historical): [versions/ansible.1.0.md](versions/ansible.1.0.md) / [versions/ansible.1.0.json](versions/ansible.1.0.json)
 - UWS 1.6 Ansible design note (historical): [docs/uws_1_6_ansible.md](docs/uws_1_6_ansible.md)
-- JSON Schema: [versions/1.9.2.json](versions/1.9.2.json)
+- Latest JSON Schema: [versions/1.10.0.json](versions/1.10.0.json)
 
 ## Packages
 
@@ -65,8 +67,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - `runtimes` contains the public `uws.runtime.1.0` supplement constants, wire structs, and extension helpers.
 - `browserauthentication` contains the additive secret-free sign-in profile and named-session operation extension types.
 - `browserregistration` contains the separate additive secret-free account-registration profile and explicitly approved mutation extension types.
-- `versions/1.9.2.md` is the latest human-readable UWS 1.9 specification.
-- `versions/1.9.2.json` is the latest JSON Schema for UWS 1.9 documents; 1.9.1 and earlier remain immutable and accepted.
+- `versions/1.10.0.md` and `versions/1.10.0.json` are the latest core specification and schema; earlier numbered artifacts remain immutable and accepted.
 - `versions/browser.1.8.*` publishes context-sensitive parameter templates and scalar formatting on top of browser 1.7; immutable browser 1.5–1.7 documents remain accepted.
 - `versions/browser-authentication.1.1.*` and `versions/browser-authentication-call.1.1.*` publish context-capable sign-in recipes and explicit named-session establishment; immutable 1.0 documents remain accepted.
 - `versions/browser-registration.1.0.*` and `versions/browser-registration-call.1.0.*` publish account-creation recipes with symbolic credentials, an explicit submit approval, fail-on-duplicate behavior, no ambiguous retry, and a preselected cleanup disposition.
@@ -135,7 +136,7 @@ if !result.Valid() {
 
 Validation checks required root fields, source operation bindings, extension-owned operation profiles, duplicate identifiers, standard request-binding keys, known structural types, selected reference integrity, action/criterion rules, and trigger routes.
 
-`versions/1.9.2.json` provides structural JSON Schema validation. Use the Go validator for semantic checks such as duplicate identifiers, reference integrity, and malformed `contentTrust` declarations. Go callers resolve it with `schemas.PathForVersion`.
+`versions/1.10.0.json` provides structural JSON Schema validation. Use the Go validator for semantic checks such as duplicate identifiers, reference integrity, and malformed `contentTrust` declarations. Go callers resolve the exact declared version with `schemas.PathForVersion`.
 
 The separate `versions/runtime.1.0.json` schema validates the public runtime supplement payload. It requires `x-uws-runtime.type`, accepts only the non-HTTP runtime identifiers defined by the supplement, and rejects HTTP/API/event source metadata because HTTP and event calls are represented by core source operation binding fields.
 

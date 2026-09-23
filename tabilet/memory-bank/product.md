@@ -81,13 +81,15 @@ changing execution.
 
 ## Current Contract Surface
 
-UWS 1.9.2 is the current core contract. Browser 1.8 is the current browser
+UWS 1.10.0 is the current core contract. Browser 1.8 is the current browser
 capability profile; browser authentication/call 1.1 is current for sign-in;
 browser registration/call 1.2 is current for reviewed registration
 verification; and registration input 1.0 is the private envelope format.
 Runtime Supplement 1.0 remains the public metadata floor for common non-HTTP
-extension operations. Earlier published contracts remain accepted according to
-their version gates, while Ansible support is historical UWS 1.6 material only.
+extension operations. UWS 1.10 adds versioned portable execution semantics and
+expression-addressable-name restrictions while preserving the 1.x wire
+vocabulary; earlier published contracts remain accepted according to their
+version gates. Ansible support is historical UWS 1.6 material only.
 
 The MCP tool-call design is an OpenUdon experiment proposal, not an adopted UWS
 contract or implementation.

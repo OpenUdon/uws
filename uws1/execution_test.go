@@ -122,6 +122,17 @@ func TestNonAwaitWaitDelaysRunnableOnlyFromUWS110(t *testing.T) {
 	require.Equal(t, []string{"legacy"}, legacyRuntime.leafs())
 }
 
+func TestNonAwaitWaitAcceptsUintptrNumber(t *testing.T) {
+	runtime := &mockRuntime{expressions: map[string]any{"delay": uintptr(0)}}
+	doc := waitTestDocument(&Operation{
+		OperationID:              "zero_delay",
+		OperationExecutionFields: OperationExecutionFields{Wait: "delay"},
+	})
+	doc.Runtime = runtime
+	require.NoError(t, doc.Execute(context.Background()))
+	require.Equal(t, []string{"zero_delay"}, runtime.leafs())
+}
+
 func TestNonAwaitWaitRejectsInvalidDurationsBeforeLeafExecution(t *testing.T) {
 	for name, value := range map[string]any{
 		"text": "1", "boolean": true, "negative": -1.0,
@@ -341,6 +352,7 @@ func TestOrchestratorExecuteSwitch(t *testing.T) {
 
 func TestSwitchUsesDeclarationOrderAndFirstUnguardedCase(t *testing.T) {
 	doc := testDocument(&Operation{OperationID: "first"}, &Operation{OperationID: "later"})
+	doc.UWS = "1.10.0"
 	doc.Workflows = []*Workflow{{
 		WorkflowID: "main",
 		Type:       WorkflowTypeSwitch,
@@ -379,6 +391,7 @@ func TestOrchestratorExecuteLoop(t *testing.T) {
 
 func TestLoopResultUsesOrderedItemRecordsAndBatchIndexes(t *testing.T) {
 	doc := testDocument(&Operation{OperationID: "noop"})
+	doc.UWS = "1.10.0"
 	doc.Workflows = []*Workflow{{
 		WorkflowID: "main",
 		Type:       WorkflowTypeLoop,
@@ -407,11 +420,42 @@ func TestLoopResultUsesOrderedItemRecordsAndBatchIndexes(t *testing.T) {
 	}
 }
 
+func TestLoopWithNoItemsProducesEmptyResultArray(t *testing.T) {
+	doc := testDocument(&Operation{OperationID: "noop"})
+	doc.UWS = "1.10.0"
+	doc.Workflows = []*Workflow{{
+		WorkflowID:       "main",
+		Type:             WorkflowTypeLoop,
+		StructuralFields: StructuralFields{Items: "items"},
+	}}
+	doc.SetRuntime(&mockRuntime{items: map[string][]any{"items": {}}})
+
+	require.NoError(t, doc.Execute(context.Background()))
+	rows, ok := doc.ExecutionRecords()["wf:main"].Result.([]map[string]any)
+	require.True(t, ok, "unexpected empty loop result type: %#v", doc.ExecutionRecords()["wf:main"].Result)
+	assert.Empty(t, rows)
+}
+
+func TestLoopWithNoItemsPreservesLegacyNilResult(t *testing.T) {
+	doc := testDocument(&Operation{OperationID: "noop"})
+	doc.UWS = "1.9.2"
+	doc.Workflows = []*Workflow{{
+		WorkflowID:       "main",
+		Type:             WorkflowTypeLoop,
+		StructuralFields: StructuralFields{Items: "items"},
+	}}
+	doc.SetRuntime(&mockRuntime{items: map[string][]any{"items": {}}})
+
+	require.NoError(t, doc.Execute(context.Background()))
+	assert.Nil(t, doc.ExecutionRecords()["wf:main"].Result)
+}
+
 func TestForEachResultAndOutputsPreserveIterationOrder(t *testing.T) {
 	doc := testDocument(&Operation{
 		OperationID: "op",
 		Outputs:     map[string]string{"item": "$item"},
 	})
+	doc.UWS = "1.10.0"
 	doc.Workflows = []*Workflow{{
 		WorkflowID: "main", Type: WorkflowTypeSequence,
 		Steps: []*Step{{StepID: "each", OperationRef: "op", StepExecutionFields: StepExecutionFields{ForEach: "items"}, Outputs: map[string]string{"item": "$item"}}},

@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	latestUWSSchemaPath     = "../versions/1.9.2.json"
-	latestUWSSchemaResource = "versions/1.9.2.json"
-	latestUWSSpecPath       = "../versions/1.9.2.md"
+	latestUWSSchemaPath     = "../versions/1.10.0.json"
+	latestUWSSchemaResource = "versions/1.10.0.json"
+	latestUWSSpecPath       = "../versions/1.10.0.md"
 )
 
 func loadSchemaDoc(t *testing.T) map[string]any {
@@ -64,4 +64,30 @@ func dropExtensionKeys(keys []string) []string {
 		out = append(out, k)
 	}
 	return out
+}
+
+func TestUWS110LanguageNeutralConformanceVectors(t *testing.T) {
+	data, err := os.ReadFile("../testdata/conformance/1.10.0.json")
+	require.NoError(t, err)
+	var fixture struct {
+		UWS   string `json:"uws"`
+		Cases []struct {
+			ID       string          `json:"id"`
+			Area     string          `json:"area"`
+			Input    json.RawMessage `json:"input"`
+			Expected json.RawMessage `json:"expected"`
+		} `json:"cases"`
+	}
+	require.NoError(t, json.Unmarshal(data, &fixture))
+	require.Equal(t, "1.10.0", fixture.UWS)
+	require.NotEmpty(t, fixture.Cases)
+	seen := make(map[string]bool, len(fixture.Cases))
+	for _, testCase := range fixture.Cases {
+		require.NotEmpty(t, testCase.ID)
+		require.NotEmpty(t, testCase.Area)
+		require.NotEmpty(t, testCase.Input)
+		require.NotEmpty(t, testCase.Expected)
+		require.False(t, seen[testCase.ID], "duplicate conformance case %q", testCase.ID)
+		seen[testCase.ID] = true
+	}
 }

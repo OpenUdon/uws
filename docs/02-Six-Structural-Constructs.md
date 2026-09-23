@@ -74,11 +74,11 @@ steps:
     dependsOn: [validators]       # waits for ALL members of "validators"
 ```
 
-`dependsOn: [validators]` waits for every step in the `validators` group. Membership in a group does not create additional ordering among members themselves — they still run concurrently.
+`dependsOn: [validators]` waits for every step in the `validators` group. Membership in a group does not create additional ordering among members themselves — they still run concurrently. In UWS 1.10, a branch failure cancels sibling branch contexts; `goto` and `end` from a branch fail the parallel construct.
 
 ## `switch`
 
-Exactly one `case` whose `when` evaluates truthy runs its steps. If no case matches, `default` runs if present; otherwise the construct emits no result.
+Cases are evaluated in declaration order. The first truthy `when` runs; a case without `when` is an unconditional match at its position. If no case matches, `default` runs if present. No later case runs.
 
 ```yaml
 workflowId: route_event
@@ -189,7 +189,7 @@ results:
 
 ## `await`
 
-Blocks execution until its `wait` expression evaluates truthy. Use `await` to poll for an async job to complete, or to wait for an external signal.
+Blocks execution until its `wait` predicate evaluates truthy. UWS 1.10 evaluates once immediately, then polls at the executor's configured interval (200 ms by default); it runs nested steps once after a truthy result. Use `await` to poll for an async job to complete, or to wait for an external signal.
 
 ```yaml
 workflowId: wait_for_job
@@ -223,7 +223,7 @@ steps:
     operationRef: fetch_report_result
 ```
 
-`timeout` is a serialized UWS 1.1 field on operations, workflows, and steps. Runtime polling behavior remains executor-owned. `cases`, `default`, and `items` MUST NOT be set on `await`.
+`timeout` is a serialized UWS 1.1 field on operations, workflows, and steps. A serialized timeout bounds the await; an executor-owned timeout MAY apply when it is absent. Context cancellation also stops polling. For non-`await` constructs, UWS 1.10 defines `wait` as a cancellable delay expression resolving to a finite number of seconds from 0 to 86,400; it is evaluated once before the body. `cases`, `default`, and `items` MUST NOT be set on `await`. See the [UWS 1.10 execution contract](https://github.com/OpenUdon/uws/blob/main/versions/1.10.0.md#78-uws-110-portable-execution-semantics).
 
 ## Field Constraints Summary
 

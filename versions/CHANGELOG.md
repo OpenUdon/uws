@@ -33,6 +33,21 @@ the meaning or scope of a published schema or sub-spec is recorded as an
 - Retained browser 1.5–1.7 artifacts and behavior unchanged. Browser 1.8
   requires UWS 1.9 and does not change the UWS core schema or wire model.
 
+## 1.10.0 Portable Execution Contract - 2026-09-23
+
+- Published version-gated truthiness, criterion, JSON Pointer, wait, entry,
+  action, trigger, and structural-result execution semantics without changing
+  the UWS 1.x object vocabulary.
+- Restricted expression-addressable declaration names in UWS 1.10 documents
+  to the grammar's identifier characters; earlier UWS versions retain their
+  existing name rules and execution behavior.
+- Defined ordered loop, `forEach`, merge, action, switch, and trigger behavior;
+  rejected trigger dispatch output indexes outside the declared output list.
+- Added security guidance for exact source validation, trigger ingress,
+  credential handling, egress, budgets, retries, and advisory content-trust.
+- Preserved every previously published core schema/specification and all
+  separately versioned profiles.
+
 ## 1.9.2 Compatible Corrections - 2026-09-19
 
 - Rejected `steps`, `cases`, and `default` properties on operation- and

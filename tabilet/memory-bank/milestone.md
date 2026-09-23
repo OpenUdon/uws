@@ -1,53 +1,14 @@
 # Milestones
 
-M01, M02, M03, C01, C02, and B01 completed acceptance and bounded review; their IDs
-remain reserved in the history index. C03 remains active from the
-2026-09-23 review remediation.
+M01, M02, M03, C01, C02, B01, and C03 completed acceptance and bounded review;
+their IDs remain reserved in the history index. C03 closed the 2026-09-23
+review remediation and published UWS 1.10.0.
 
 ## Active Horizon
 
-Required remaining execution order: **C03**. C03 depends on completed M03,
-C01, C02, and B01. B01's downstream profile cross-reference has been
-reconciled. C03 is required, not conditional.
-
-| Milestone | Goal | Status |
-|---|---|---|
-| [C03](status-C03.md) | Portable execution contract | Pending |
-
-## C03 - Portable Execution Contract
-
-**Goal.** Make the executable UWS contract reviewable and implementable beyond
-the Go reference implementation without changing older published artifacts.
-
-**Scope.** Resolve the confirmed specification/code mismatches and ambiguities
-in its [status](status-C03.md), including non-`await` wait, criteria, expression
-and result shapes, structural/control-flow semantics, actions, triggers,
-security guidance, conformance classes, references, and examples. The
-orchestrator owns non-`await` wait as bounded numeric seconds; `await` retains
-its predicate meaning. Test compatibility before assigning this interpretation
-to older documents. Define currently implemented behavior where intentional;
-change implementation only where an approved portable contract requires it.
-Publish the appropriate new versioned core specification/schema, changelog,
-archive/parity updates, and documentation without modifying immutable history.
-
-**Acceptance.** Spec, schema, Go validation/execution, changelog, conformance
-fixtures, and embedded archive agree; prior versions are protected. Full and
-race tests, vet, strict MkDocs build, and diff check pass. The bounded
-whole-milestone review gate passes.
-
-**Dependencies.** [M03](../docs/history/status-M03.md),
-[C01](../docs/history/status-C01.md), [C02](../docs/history/status-C02.md),
-and [B01](../docs/history/status-B01.md) completed and accepted. Browser 1.8
-is a separate UWS 1.9 profile; C03 should update references only, not import
-its substitution semantics into core. C01
-establishes deterministic caller-step identity for workflow
-invocations, per-call scoping of nested steps, operations, dependencies, and
-merge records, clear rejection of recursive workflow calls, and numeric
-ordering of nested iteration results. C02 establishes exact declared-version
-schema selection, no fallback for prerelease or unpublished versions, and
-SemVer-aware feature gates, including 1.5 step inputs and 1.9.2 semantic
-changes. **Downstream impacts.** None currently active; candidate directions
-below may be reconsidered after C03.
+There is no active or pending milestone. Historical IDs remain reserved; new
+work requires a fresh proposal when a candidate trigger or other concrete need
+is established.
 
 ## Candidate Directions
 
@@ -64,6 +25,13 @@ work automatically.
 | Profile documentation | D7's remaining runtime-supplement ambiguity, D9's BCP 14 declarations, and D10's registration 1.2 authoring detail concern separately versioned profiles; editing frozen published documents is not an automatic review fix. | The next relevant profile version or an explicitly approved meaning-preserving editorial amendment. |
 | Interoperability formats | D6 file extensions, C16/E9 content-trust wire reports/resolvers, E4 stable error codes, E10 normative HCL mapping, E3 fixture expansion, and C10 portable error taxonomy require independent consumer and compatibility evidence beyond C03's core semantics. | A named independent consumer or portable conformance requirement and separately approved contract. |
 | `uws.*` profile-name namespace reservation | C18's proposed reservation is a governance change, not a correction to the present core list of `x-uws-*` fields. | An approved namespace/governance or 2.0 design with migration analysis. |
+
+After C03 acceptance, the listed candidate triggers were reconsidered against
+current evidence. None has been demonstrated: MCP still lacks Stage 1 evidence
+and a second consumer; no content-trust resolver owner, new browser gap,
+multi-runtime 2.0 need, independent interoperability consumer, or namespace
+decision is present. These directions remain unpromoted and require a fresh
+proposal when their trigger is met.
 
 ## Review Finding Severity
 

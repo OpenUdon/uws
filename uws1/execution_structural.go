@@ -308,6 +308,9 @@ func (o *Orchestrator) executeLoop(ctx context.Context, steps []*Step, itemsExpr
 	}
 
 	var results []map[string]any
+	if supportsUWSVersionAtLeast(o.documentVersion(), 1, 10, 0) {
+		results = make([]map[string]any, 0, len(items))
+	}
 	for batchIndex, start := 0, 0; start < len(items); batchIndex, start = batchIndex+1, start+batchSize {
 		if err := ctx.Err(); err != nil {
 			return err
