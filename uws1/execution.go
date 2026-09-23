@@ -136,14 +136,20 @@ func (o *Orchestrator) executeWorkflow(ctx context.Context, wf *Workflow, key st
 		return fmt.Errorf("uws1: recursive workflow invocation %q is not supported", wf.WorkflowID)
 	}
 	childScope := scopedExecutionKey(ctx, key)
-	return o.executeRunnable(ctx, runnableExecution{
+	workflowScope := ""
+	if scopeChildren {
+		workflowScope = childScope
+	}
+	workflowCtx := withActiveWorkflow(ctx, wf.WorkflowID)
+	return o.executeRunnable(workflowCtx, runnableExecution{
 		key: key, id: wf.WorkflowID,
 		kind: "workflow:" + wf.Type, responseID: wf.WorkflowID,
-		dependencies: wf.DependsOn, when: wf.When, forEach: wf.ForEach,
+		dependencies: wf.DependsOn, dependencyScope: workflowScope,
+		outputsScope: workflowScope, when: wf.When, forEach: wf.ForEach,
 		timeout: wf.Timeout, outputs: wf.Outputs,
 		run: func(ctx context.Context) error {
 			runKey := o.keyForContext(ctx, key)
-			structuralCtx := withActiveWorkflow(ctx, wf.WorkflowID)
+			structuralCtx := ctx
 			if scopeChildren {
 				structuralCtx = withWorkflowScope(structuralCtx, childScope)
 			}

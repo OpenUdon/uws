@@ -678,16 +678,17 @@ func TestOrchestratorExecuteStepWorkflowReference(t *testing.T) {
 }
 
 func TestWorkflowCallsFromDifferentStepsUseDistinctInputsAndRecords(t *testing.T) {
-	doc := testDocument(&Operation{OperationID: "leaf"})
+	doc := testDocument(&Operation{OperationID: "leaf"}, &Operation{OperationID: "dependency"})
 	doc.Workflows = []*Workflow{
 		{
-			WorkflowID: "secondary",
-			Type:       WorkflowTypeSequence,
+			WorkflowID:              "secondary",
+			Type:                    WorkflowTypeSequence,
+			WorkflowExecutionFields: WorkflowExecutionFields{DependsOn: []string{"dependency"}},
 			Steps: []*Step{
-				{StepID: "child", OperationRef: "leaf"},
+				{StepID: "child", OperationRef: "leaf", Outputs: map[string]string{"value": "input"}},
 				{StepID: "join", Type: WorkflowTypeMerge, StepExecutionFields: StepExecutionFields{DependsOn: []string{"child"}}},
 			},
-			Outputs: map[string]string{"received": "$inputs.value"},
+			Outputs: map[string]string{"received": "child-value"},
 		},
 		{
 			WorkflowID: "main",
@@ -699,22 +700,30 @@ func TestWorkflowCallsFromDifferentStepsUseDistinctInputsAndRecords(t *testing.T
 		},
 	}
 
-	var seenInputs []any
+	seenInputs := map[string][]any{}
 	runtime := &mockRuntime{
-		execute: func(ctx context.Context, _ *Operation) error {
+		execute: func(ctx context.Context, op *Operation) error {
 			state, _ := ExecutionContextFromContext(ctx)
-			seenInputs = append(seenInputs, state.Inputs["value"])
+			seenInputs[op.OperationID] = append(seenInputs[op.OperationID], state.Inputs["value"])
 			return nil
 		},
-		eval: func(ctx context.Context, _ string) (any, error) {
+		eval: func(ctx context.Context, expr string) (any, error) {
 			state, _ := ExecutionContextFromContext(ctx)
+			if expr == "child-value" {
+				child, ok := state.Records["step:child"]
+				if !ok {
+					return nil, errors.New("child step is not visible in the called workflow scope")
+				}
+				return child.Outputs["value"], nil
+			}
 			return state.Inputs["value"], nil
 		},
 	}
 	doc.SetRuntime(runtime)
 
 	require.NoError(t, doc.Execute(context.Background()))
-	assert.Equal(t, []any{"first", "second"}, seenInputs)
+	assert.Equal(t, []any{"first", "second"}, seenInputs["dependency"])
+	assert.Equal(t, []any{"first", "second"}, seenInputs["leaf"])
 
 	records := doc.ExecutionRecords()
 	first := records[workflowCallKey("secondary", "step:first_call")]

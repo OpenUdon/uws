@@ -1,40 +1,21 @@
 # Milestones
 
-M01, M02, and M03 completed acceptance and bounded review; their IDs remain
-reserved in the history index. C01, C02, B01, and C03 remain active from the
+M01, M02, M03, and C01 completed acceptance and bounded review; their IDs
+remain reserved in the history index. C02, B01, and C03 remain active from the
 2026-09-23 review remediation.
 
 ## Active Horizon
 
-Required remaining execution order: **C01 -> C02 -> B01 -> C03**. C01, C02,
-and B01 have no dependencies on one another; the order prioritizes review
-impact. C03 depends on completed M03 and the three remaining milestones.
-Downstream impacts are C01 -> C03, C02 -> C03, and B01 -> C03. All four are
-required, not conditional.
+Required remaining execution order: **C02 -> B01 -> C03**. C02 and B01 have
+no dependencies on one another; the order prioritizes review impact. C03
+depends on completed M03, C01, C02, and B01. Downstream impacts are C02 -> C03
+and B01 -> C03. All three remaining milestones are required, not conditional.
 
 | Milestone | Goal | Status |
 |---|---|---|
-| [C01](status-C01.md) | Workflow execution correctness | Pending |
 | [C02](status-C02.md) | Version compatibility | Pending |
 | [B01](status-B01.md) | Browser template safety | Pending |
 | [C03](status-C03.md) | Portable execution contract | Pending |
-
-## C01 - Workflow Execution Correctness
-
-**Goal.** Make independent workflow calls execute independently and preserve
-numeric iteration order in merged results.
-
-**Scope.** Separate workflow invocation identity from entry/dependency
-memoization so two calling steps can pass distinct inputs and receive distinct
-results. Order iteration keys numerically, not lexically, including after ten
-iterations. Keep deliberate memoization and dependency behavior intact.
-
-**Acceptance.** Focused tests cover two calls to the same workflow and merges
-with at least twelve iterations; full tests, race tests, vet, and diff check
-pass. No historical contract is silently rewritten.
-
-**Dependencies.** None. **Downstream impact.** C03 documents the verified
-invocation and result-order semantics.
 
 ## C02 - Version Compatibility
 
@@ -98,9 +79,13 @@ fixtures, and embedded archive agree; prior versions are protected. Full and
 race tests, vet, strict MkDocs build, and diff check pass. The bounded
 whole-milestone review gate passes.
 
-**Dependencies.** [M03](../docs/history/status-M03.md) completed and accepted;
-C01, C02, and B01 pending. **Downstream impacts.** None currently active;
-candidate directions below may be reconsidered after C03.
+**Dependencies.** [M03](../docs/history/status-M03.md) and
+[C01](../docs/history/status-C01.md) completed and accepted; C02 and B01
+pending. C01 establishes deterministic caller-step identity for workflow
+invocations, per-call scoping of nested steps, operations, dependencies, and
+merge records, clear rejection of recursive workflow calls, and numeric
+ordering of nested iteration results. **Downstream impacts.** None currently
+active; candidate directions below may be reconsidered after C03.
 
 ## Candidate Directions
 

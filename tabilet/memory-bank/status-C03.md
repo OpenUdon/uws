@@ -7,8 +7,12 @@ compatible under C02's policy. Full tests, race tests, vet, strict MkDocs
 build, diff check, and the bounded whole-milestone review pass. No release
 number is preselected; choose it under C02's version policy.
 
-**Dependencies.** [M03](../docs/history/status-M03.md) completed and accepted;
-C01, C02, and B01 must also be accepted first. M03's
+**Dependencies.** [M03](../docs/history/status-M03.md) and
+[C01](../docs/history/status-C01.md) completed and accepted; C02 and B01 must
+also be accepted first. C01 establishes deterministic caller-step identity
+for workflow invocations, per-call scoping of nested steps, operations,
+dependencies, and merge records, clear rejection of recursive workflow calls,
+and numeric ordering of nested iteration results. M03's
 accepted Go mapping escapes ordinary dynamic keys with `__uws_literal__` when
 they collide with legacy dollar-key spellings, while preserving legacy dollar
 decoding. C03 must preserve that behavior and decide only whether a separate

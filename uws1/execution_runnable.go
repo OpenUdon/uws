@@ -11,42 +11,49 @@ import (
 )
 
 type runnableExecution struct {
-	key          string
-	id           string
-	kind         string
-	responseID   string
-	dependencies []string
-	when         string
-	forEach      string
-	timeout      *float64
-	outputs      map[string]string
-	run          func(context.Context) error
+	key             string
+	id              string
+	kind            string
+	responseID      string
+	dependencies    []string
+	dependencyScope string
+	outputsScope    string
+	when            string
+	forEach         string
+	timeout         *float64
+	outputs         map[string]string
+	run             func(context.Context) error
 }
 
 type forEachExecution struct {
-	execKey    string
-	baseKey    string
-	id         string
-	kind       string
-	responseID string
-	expression string
-	outputs    map[string]string
-	run        func(context.Context) error
+	execKey      string
+	baseKey      string
+	id           string
+	kind         string
+	responseID   string
+	expression   string
+	outputs      map[string]string
+	outputsScope string
+	run          func(context.Context) error
 }
 
 func (o *Orchestrator) executeRunnable(ctx context.Context, spec runnableExecution) error {
 	execKey := o.keyForContext(ctx, spec.key)
 	return o.executeOnce(ctx, execKey, spec.id, spec.kind, func(ctx context.Context) error {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-		if err := o.executeDependencies(ctx, spec.dependencies); err != nil {
-			return err
+		dependencyCtx := ctx
+		if spec.dependencyScope != "" {
+			dependencyCtx = withWorkflowScope(dependencyCtx, spec.dependencyScope)
 		}
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		shouldRun, err := o.evaluateWhen(ctx, spec.when, execKey, spec.id, spec.kind)
+		if err := o.executeDependencies(dependencyCtx, spec.dependencies); err != nil {
+			return err
+		}
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		shouldRun, err := o.evaluateWhen(dependencyCtx, spec.when, execKey, spec.id, spec.kind)
 		if err != nil {
 			return err
 		}
@@ -58,13 +65,17 @@ func (o *Orchestrator) executeRunnable(ctx context.Context, spec runnableExecuti
 				return o.executeForEach(runCtx, forEachExecution{
 					execKey: execKey, baseKey: spec.key, id: spec.id, kind: spec.kind,
 					responseID: spec.responseID, expression: spec.forEach,
-					outputs: spec.outputs, run: spec.run,
+					outputs: spec.outputs, outputsScope: spec.outputsScope, run: spec.run,
 				})
 			}
 			if err := spec.run(runCtx); err != nil {
 				return err
 			}
-			return o.finalizeOutputs(runCtx, execKey, spec.id, spec.kind, spec.responseID, spec.outputs)
+			outputsCtx := runCtx
+			if spec.outputsScope != "" {
+				outputsCtx = withWorkflowScope(outputsCtx, spec.outputsScope)
+			}
+			return o.finalizeOutputs(outputsCtx, execKey, spec.id, spec.kind, spec.responseID, spec.outputs)
 		})
 	})
 }
@@ -160,7 +171,11 @@ func (o *Orchestrator) executeForEach(ctx context.Context, spec forEachExecution
 		}
 		var resolved map[string]any
 		if len(spec.outputs) > 0 {
-			outputsCtx := o.withRecordContext(itemCtx)
+			outputsCtx := itemCtx
+			if spec.outputsScope != "" {
+				outputsCtx = withWorkflowScope(outputsCtx, spec.outputsScope)
+			}
+			outputsCtx = o.withRecordContext(outputsCtx)
 			resolved, err = o.resolveOutputs(outputsCtx, itemKey, spec.id, spec.kind, spec.responseID, spec.outputs)
 			if err != nil {
 				o.setRecord(itemKey, ExecutionRecord{ID: spec.id, Kind: spec.kind, Status: "error", Error: err.Error()})

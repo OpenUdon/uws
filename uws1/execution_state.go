@@ -10,8 +10,28 @@ import (
 func (o *Orchestrator) withRecordContext(ctx context.Context) context.Context {
 	state, _ := ExecutionContextFromContext(ctx)
 	state = cloneExecutionContext(state)
-	state.Records = o.snapshotRecords()
+	state.Records = o.recordsForScope(workflowScopeFromContext(ctx))
 	return WithExecutionContext(ctx, state)
+}
+
+func (o *Orchestrator) recordsForScope(scope string) map[string]ExecutionRecord {
+	records := o.snapshotRecords()
+	if scope == "" {
+		return records
+	}
+	local := make(map[string]ExecutionRecord)
+	prefix := scope + "::"
+	for key, record := range records {
+		if !strings.HasPrefix(key, prefix) {
+			continue
+		}
+		localKey := strings.TrimPrefix(key, prefix)
+		if strings.Contains(localKey, "::") {
+			continue
+		}
+		local[localKey] = record
+	}
+	return local
 }
 
 func workflowScopeFromContext(ctx context.Context) string {
