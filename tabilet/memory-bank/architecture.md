@@ -106,10 +106,9 @@ authorization, source fetching, and live provider compatibility remain
 consumer responsibilities.
 
 Known baseline discrepancies are preserved in the matching archives rather
-than silently normalized: one browser profile sentence still calls 1.9.0 the
-current core schema, runtime prose retains present-tense Ansible wording,
-Markdown specifications lack the JSON documents' automated digest guard, and
-some historical downstream compatibility claims require external repositories.
+than silently normalized: Markdown specifications lack the JSON documents'
+automated digest guard, and some historical downstream compatibility claims
+require external repositories.
 
 ## Memory Bank Ownership
 

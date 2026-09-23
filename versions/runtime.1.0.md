@@ -30,16 +30,18 @@ The supplement defines these runtime type identifiers:
 `ssh`, `cmd`, `fnct`, `fileio`, `sql`, `s3`, `smtp`, `dns`, `ldaps`, `scp`,
 `sftp`, and `llm`.
 
-Source-bound calls — API, RPC, event, browser-profile, and ansible-module
-sources alike — are represented by core UWS operation binding fields, not by
-`x-uws-runtime`. A payload that assigns `type: http` in `x-uws-runtime` is
-invalid. The spelling is exact. `ldaps` is defined; plain `ldap` is not.
+Source-bound API, RPC, event, and browser-profile calls are represented by core
+UWS operation binding fields, not by `x-uws-runtime`. Historical UWS 1.6
+documents likewise represented `ansible-module` operations through core source
+binding; UWS 1.7 and later do not support that source type. A payload that
+assigns `type: http` in `x-uws-runtime` is invalid. The spelling is exact.
+`ldaps` is defined; plain `ldap` is not.
 
 `type: ssh` and `type: cmd` select runtime-owned imperative command execution
-and are distinct from an `ansible-module` source binding, even though both can
-run work on a remote host: the former carries an opaque command chosen by the
-author, while the latter binds to a module contract from a reviewed argspec
-document produced by conversion tooling.
+and are distinct from the historical UWS 1.6 `ansible-module` source binding,
+even though both can run work on a remote host: the former carries an opaque
+command chosen by the author, while the latter bound to a module contract from
+a reviewed argspec document produced by conversion tooling.
 
 ## Operation Runtime Payload
 
@@ -59,9 +61,10 @@ surface without standardizing runtime behavior. A bound runtime decides whether
 it can execute the selected type and how to interpret the selector fields.
 
 Source operation metadata is not part of `x-uws-runtime`. HTTP method, path,
-server, channels, messages, module argument specifications, request/response
-schemas, and operation security requirements belong in the referenced source
-document and core UWS source binding fields.
+server, channels, messages, request/response schemas, and operation security
+requirements belong in the referenced source document and core UWS source
+binding fields. In historical UWS 1.6 documents, this also applied to module
+argument specifications.
 
 Runtime-specific credentials, provider selection, client defaults, connection
 pools, security material, and other execution configuration belong in

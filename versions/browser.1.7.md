@@ -7,8 +7,8 @@ credentials, rendering, or any specific browser automation protocol
 (WebDriver, WebDriver BiDi, Chrome DevTools Protocol, Playwright, Puppeteer).
 Those remain runtime-private.
 
-UWS core (the current `versions/1.9.0.json` schema) only references this profile
-by *type name* and reuses the existing generic `sourceOperationId` /
+UWS 1.9+ core schemas only reference this profile by *type name* and reuse the
+existing generic `sourceOperationId` /
 `sourceOperationRef` selector rules. Validating a profile document against the
 constraints below — locator vocabulary, declarative action vocabulary, output
 extraction methods, safety controls — is the job of browser-aware tooling and
