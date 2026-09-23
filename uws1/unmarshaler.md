@@ -21,3 +21,12 @@ For `Document`, the current custom behavior is root-scoped: decode through
 `documentHCLAlias`, normalize `Document.Variables`, and normalize root
 `Document.Extensions`. Child structs own their own custom behavior for fields
 such as dynamic maps, extension payloads, and escaped description text.
+
+Dynamic HCL keys beginning with `__uws_literal__` encode literal keys that
+would otherwise use a legacy dollar-key spelling. For example, the JSON key
+`_ref` is written as `__uws_literal___ref`, while `$ref` continues to use the
+legacy HCL key `_ref`. The decoder checks the literal escape before legacy
+dollar aliases, so the two keys remain distinct. Literal keys beginning with
+`__uws_literal__` are escaped the same way. Existing HCL that uses `_ref` or
+`__dollar__name` for dollar keys continues to decode as before; authors who
+need those exact strings as ordinary keys must use the literal escape.

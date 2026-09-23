@@ -194,6 +194,61 @@ inputs = {
 	}
 }
 
+func TestDocumentHCLDecodesEscapedLiteralKeysAlongsideLegacyDollarKeys(t *testing.T) {
+	hclData := []byte(`
+uws = "1.0.0"
+variables = {
+  __uws_literal___id = "literal id"
+  __uws_literal___ref = "literal ref"
+  __uws_literal____dollar__x = "literal prefix"
+  _id = "legacy dollar id"
+  __dollar__x = "legacy dollar x"
+}
+info {
+  title = "Key decoding"
+  version = "1.0.0"
+}
+operation "op" {
+  request = {
+    body = {
+      __uws_literal___id = "nested literal"
+      _ref = "legacy dollar ref"
+    }
+  }
+  extensions {
+    x-meta = {
+      __uws_literal____dollar__x = "extension literal prefix"
+      __dollar__expr = "legacy dollar expression"
+    }
+  }
+}
+`)
+
+	var doc Document
+	if err := doc.UnmarshalHCL(hclData); err != nil {
+		t.Fatalf("UnmarshalHCL: %v", err)
+	}
+	for key, want := range map[string]any{
+		"_id":         "literal id",
+		"_ref":        "literal ref",
+		"__dollar__x": "literal prefix",
+		"$id":         "legacy dollar id",
+		"$x":          "legacy dollar x",
+	} {
+		if got := doc.Variables[key]; got != want {
+			t.Errorf("variables[%q] = %#v, want %#v", key, got, want)
+		}
+	}
+	body := doc.Operations[0].Request["body"].(map[string]any)
+	if body["_id"] != "nested literal" || body["$ref"] != "legacy dollar ref" {
+		t.Errorf("request body keys = %#v", body)
+	}
+	meta := doc.Operations[0].Extensions["x-meta"].(map[string]any)
+	if meta["__dollar__x"] != "extension literal prefix" || meta["$expr"] != "legacy dollar expression" {
+		t.Errorf("extension keys = %#v", meta)
+	}
+}
+
 func TestDocumentHCLInterfacesMarshalThroughDethcl(t *testing.T) {
 	doc := &Document{
 		UWS: "1.0.0",

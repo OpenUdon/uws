@@ -1,13 +1,106 @@
 # Milestones
 
-The active horizon is empty. M01 and M02 completed acceptance and bounded
-review, and their IDs remain reserved in the history index. This project
-remains initialized; candidate directions require a new approved proposal
-before receiving an active milestone ID.
+M01, M02, and M03 completed acceptance and bounded review; their IDs remain
+reserved in the history index. C01, C02, B01, and C03 remain active from the
+2026-09-23 review remediation.
 
 ## Active Horizon
 
-No active milestones. Execution order: none.
+Required remaining execution order: **C01 -> C02 -> B01 -> C03**. C01, C02,
+and B01 have no dependencies on one another; the order prioritizes review
+impact. C03 depends on completed M03 and the three remaining milestones.
+Downstream impacts are C01 -> C03, C02 -> C03, and B01 -> C03. All four are
+required, not conditional.
+
+| Milestone | Goal | Status |
+|---|---|---|
+| [C01](status-C01.md) | Workflow execution correctness | Pending |
+| [C02](status-C02.md) | Version compatibility | Pending |
+| [B01](status-B01.md) | Browser template safety | Pending |
+| [C03](status-C03.md) | Portable execution contract | Pending |
+
+## C01 - Workflow Execution Correctness
+
+**Goal.** Make independent workflow calls execute independently and preserve
+numeric iteration order in merged results.
+
+**Scope.** Separate workflow invocation identity from entry/dependency
+memoization so two calling steps can pass distinct inputs and receive distinct
+results. Order iteration keys numerically, not lexically, including after ten
+iterations. Keep deliberate memoization and dependency behavior intact.
+
+**Acceptance.** Focused tests cover two calls to the same workflow and merges
+with at least twelve iterations; full tests, race tests, vet, and diff check
+pass. No historical contract is silently rewritten.
+
+**Dependencies.** None. **Downstream impact.** C03 documents the verified
+invocation and result-order semantics.
+
+## C02 - Version Compatibility
+
+**Goal.** Align schema selection, semantic validation, and execution rules
+with a document's declared UWS version.
+
+**Scope.** Decide and document a policy for published releases, prereleases,
+and unpublished versions. Gate the 1.9.2 reference-step and criterion-pointer
+rules, plus 1.5 step inputs, to declared versions rather than applying later
+rules retroactively. Test a cross-version schema/semantic corpus with explicit
+exceptions; reconcile validation layers and release wording. This plan adopts
+version gating, not a retroactive erratum. The eventual release number is
+chosen under that policy, not assumed to be 1.9.3.
+
+**Acceptance.** Older published documents retain their declared-version
+behavior; prerelease and unpublished-version handling is explicit; immutable
+historical artifacts remain unchanged. Focused schema/semantic parity,
+validation, full and race tests, vet, and diff check pass.
+
+**Dependencies.** None. **Downstream impact.** C03 uses this policy for any
+new versioned specification and compatibility claims.
+
+## B01 - Browser Template Safety
+
+**Goal.** Define safe, portable `{{param}}` substitution for browser bindings.
+
+**Scope.** Specify context-sensitive escaping and numeric/Boolean formatting;
+reject ambiguous or unsafe substitutions. Publish any changed binding under a
+new browser profile version, with schema, validator, and fixtures. Preserve
+browser 1.5–1.7 and exact profile selection. The repository has no browser
+driver, so acceptance does not claim runtime exploit coverage.
+
+**Acceptance.** Tests demonstrate encoded-safe and fail-closed path/query
+cases, scalar formatting, version isolation, and validator behavior. Focused
+profile tests, full and race tests, vet, strict MkDocs build, and diff check
+pass.
+
+**Dependencies.** None; lineage to the completed browser documentation work
+in [M01](../docs/history/status-M01.md) is historical only. **Downstream
+impact.** C03 must cross-reference the accepted browser profile, not copy its
+contract into core.
+
+## C03 - Portable Execution Contract
+
+**Goal.** Make the executable UWS contract reviewable and implementable beyond
+the Go reference implementation without changing older published artifacts.
+
+**Scope.** Resolve the confirmed specification/code mismatches and ambiguities
+in its [status](status-C03.md), including non-`await` wait, criteria, expression
+and result shapes, structural/control-flow semantics, actions, triggers,
+security guidance, conformance classes, references, and examples. The
+orchestrator owns non-`await` wait as bounded numeric seconds; `await` retains
+its predicate meaning. Test compatibility before assigning this interpretation
+to older documents. Define currently implemented behavior where intentional;
+change implementation only where an approved portable contract requires it.
+Publish the appropriate new versioned core specification/schema, changelog,
+archive/parity updates, and documentation without modifying immutable history.
+
+**Acceptance.** Spec, schema, Go validation/execution, changelog, conformance
+fixtures, and embedded archive agree; prior versions are protected. Full and
+race tests, vet, strict MkDocs build, and diff check pass. The bounded
+whole-milestone review gate passes.
+
+**Dependencies.** [M03](../docs/history/status-M03.md) completed and accepted;
+C01, C02, and B01 pending. **Downstream impacts.** None currently active;
+candidate directions below may be reconsidered after C03.
 
 ## Candidate Directions
 
@@ -19,8 +112,11 @@ work automatically.
 |---|---|---|
 | MCP public supplement consideration | The OpenUdon experiment is unimplemented and has no interoperability evidence. | Stage 1 produces real workflow evidence and a second independent consumer requests interoperable exchange. |
 | Concrete content-trust resolvers | No source/profile resolver has a named in-repository owner or representative acceptance corpus. | A runtime or profile owner supplies reviewed channel contracts and fixtures. |
-| New browser or account-lifecycle profile version | No unmet portable semantic requiring another version is established. | Multi-runtime evidence demonstrates a portable contract gap that existing versions cannot express. |
-| UWS 2.0 enforcement or wire changes | The current outcome is backward-compatible documentation and tooling maintenance. | Evidence shows required behavior cannot be delivered compatibly in UWS 1.x. |
+| New browser or account-lifecycle profile direction beyond B01 | B01 owns the confirmed template-safety gap; broader profile or account-lifecycle changes lack a proved portable contract. | B01 acceptance or multi-runtime evidence demonstrates another gap existing versions cannot express. |
+| UWS 2.0 expression, trigger, and enforcement redesign | C2–C4 and E1/E2/E6/E8/E11 require new wire or governance choices: explicit expression marker/escape and interpolation, richer operators and names, literal `items`/`batchSize`, decoupled profile/core versions, extensible source types, trigger kinds, and possible content-trust enforcement. The review does not establish a compatible 1.x design or an injection exploit. | A concrete multi-runtime need and compatibility analysis support a separately approved 2.0 proposal. |
+| Profile documentation | D7's remaining runtime-supplement ambiguity, D9's BCP 14 declarations, and D10's registration 1.2 authoring detail concern separately versioned profiles; editing frozen published documents is not an automatic review fix. | The next relevant profile version or an explicitly approved meaning-preserving editorial amendment. |
+| Interoperability formats | D6 file extensions, C16/E9 content-trust wire reports/resolvers, E4 stable error codes, E10 normative HCL mapping, E3 fixture expansion, and C10 portable error taxonomy require independent consumer and compatibility evidence beyond C03's core semantics. | A named independent consumer or portable conformance requirement and separately approved contract. |
+| `uws.*` profile-name namespace reservation | C18's proposed reservation is a governance change, not a correction to the present core list of `x-uws-*` fields. | An approved namespace/governance or 2.0 design with migration analysis. |
 
 ## Review Finding Severity
 

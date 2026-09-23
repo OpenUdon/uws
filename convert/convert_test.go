@@ -181,36 +181,46 @@ func TestMarshalHCLDoesNotMutateDocument(t *testing.T) {
 	}
 }
 
-func TestJSONToHCLRejectsIrreversibleDynamicKeys(t *testing.T) {
-	for _, tc := range []struct {
-		name    string
-		payload string
-		path    string
-	}{
-		{
-			name:    "legacy reserved spelling",
-			payload: `"variables":{"nested":{"_ref":"literal"}},`,
-			path:    "variables",
-		},
-		{
-			name:    "dynamic dollar spelling",
-			payload: `"x-meta":{"nested":[[{"__dollar__expr":"literal"}]]},`,
-			path:    "document",
-		},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			data := []byte(`{
-  "uws":"1.9.0",
-  "info":{"title":"collision","version":"1.0.0"},
-  ` + tc.payload + `
-  "operations":[{"operationId":"op","x-uws-operation-profile":"test"}]
-}`)
-			_, err := JSONToHCL(data)
-			if err == nil || !strings.Contains(err.Error(), tc.path) || !strings.Contains(err.Error(), "irreversibly decoded") {
-				t.Fatalf("JSONToHCL error = %v", err)
-			}
-		})
+func TestHCLRoundTripPreservesUnderscoreAndDollarKeys(t *testing.T) {
+	doc := testDocument()
+	doc.Variables = map[string]any{
+		"_id":              "literal id",
+		"_ref":             "literal ref",
+		"__dollar__x":      "literal dollar prefix",
+		"__uws_literal__x": "literal escape prefix",
+		"$id":              "dollar id",
+		"$expr":            "dollar expression",
 	}
+	doc.Operations[0].Request = map[string]any{
+		"body": map[string]any{
+			"_id":         "nested literal id",
+			"__dollar__x": "nested literal prefix",
+			"$ref":        "nested dollar ref",
+		},
+	}
+	doc.Operations[0].Extensions = map[string]any{
+		"x-meta": map[string]any{
+			"_ref":        "extension literal ref",
+			"__dollar__x": "extension literal prefix",
+			"$expr":       "extension dollar expression",
+		},
+	}
+
+	encoded, err := MarshalHCL(doc)
+	if err != nil {
+		t.Fatalf("MarshalHCL: %v", err)
+	}
+	for _, key := range []string{"__uws_literal___id", "__uws_literal___ref", "__uws_literal____dollar__x", "__uws_literal____uws_literal__x"} {
+		if !strings.Contains(string(encoded), key) {
+			t.Errorf("HCL output missing literal-key escape %q:\n%s", key, encoded)
+		}
+	}
+
+	var got uws1.Document
+	if err := UnmarshalHCL(encoded, &got); err != nil {
+		t.Fatalf("UnmarshalHCL: %v\n%s", err, encoded)
+	}
+	compareUWSDocs(t, doc, &got)
 }
 
 func TestHCLRoundTripPreservesEscapedStringMatrix(t *testing.T) {

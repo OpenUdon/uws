@@ -8,7 +8,10 @@ import (
 	"github.com/genelet/horizon/dethcl"
 )
 
-const hclDollarKeyPrefix = "__dollar__"
+const (
+	hclDollarKeyPrefix  = "__dollar__"
+	hclLiteralKeyPrefix = "__uws_literal__"
+)
 
 var legacyDollarKeys = map[string]struct{}{
 	"$ref":           {},
@@ -298,16 +301,25 @@ func (i *Idempotency) UnmarshalHCL(data []byte, labels ...string) error {
 }
 
 func toHCLKey(key string) string {
-	if !strings.HasPrefix(key, "$") {
-		return key
+	if strings.HasPrefix(key, "$") {
+		if _, ok := legacyDollarKeys[key]; ok {
+			return "_" + key[1:]
+		}
+		return hclDollarKeyPrefix + key[1:]
 	}
-	if _, ok := legacyDollarKeys[key]; ok {
-		return "_" + key[1:]
+	// Keep legacy dollar-key spellings readable, but escape ordinary keys that
+	// would otherwise be mistaken for those spellings. Escape the escape prefix
+	// itself so every dynamic key has exactly one HCL representation.
+	if strings.HasPrefix(key, hclLiteralKeyPrefix) || fromHCLKey(key) != key {
+		return hclLiteralKeyPrefix + key
 	}
-	return hclDollarKeyPrefix + key[1:]
+	return key
 }
 
 func fromHCLKey(key string) string {
+	if strings.HasPrefix(key, hclLiteralKeyPrefix) {
+		return key[len(hclLiteralKeyPrefix):]
+	}
 	if strings.HasPrefix(key, hclDollarKeyPrefix) {
 		return "$" + key[len(hclDollarKeyPrefix):]
 	}
@@ -487,11 +499,14 @@ func validateHCLDynamicKeys(ownerPath string, value map[string]any) error {
 	visit = func(current any, valuePath string) error {
 		switch typed := current.(type) {
 		case map[string]any:
+			encodedKeys := make(map[string]string, len(typed))
 			for key, child := range typed {
 				childPath := valuePath + "." + key
-				if decoded := fromHCLKey(key); decoded != key {
-					return fmt.Errorf("%s: dynamic key %q at %s would be irreversibly decoded as %q in HCL", ownerPath, key, childPath, decoded)
+				encodedKey := toHCLKey(key)
+				if previous, ok := encodedKeys[encodedKey]; ok {
+					return fmt.Errorf("%s: dynamic keys %q and %q at %s map to the same HCL key %q", ownerPath, previous, key, childPath, encodedKey)
 				}
+				encodedKeys[encodedKey] = key
 				if err := visit(child, childPath); err != nil {
 					return err
 				}
