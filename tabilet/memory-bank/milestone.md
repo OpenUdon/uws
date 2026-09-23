@@ -1,39 +1,18 @@
 # Milestones
 
-M01, M02, M03, C01, and C02 completed acceptance and bounded review; their IDs
-remain reserved in the history index. B01 and C03 remain active from the
+M01, M02, M03, C01, C02, and B01 completed acceptance and bounded review; their IDs
+remain reserved in the history index. C03 remains active from the
 2026-09-23 review remediation.
 
 ## Active Horizon
 
-Required remaining execution order: **B01 -> C03**. C03 depends on completed
-M03, C01, and C02, plus pending B01. The remaining downstream impact is
-B01 -> C03. Both remaining milestones are required, not conditional.
+Required remaining execution order: **C03**. C03 depends on completed M03,
+C01, C02, and B01. B01's downstream profile cross-reference has been
+reconciled. C03 is required, not conditional.
 
 | Milestone | Goal | Status |
 |---|---|---|
-| [B01](status-B01.md) | Browser template safety | Pending |
 | [C03](status-C03.md) | Portable execution contract | Pending |
-
-## B01 - Browser Template Safety
-
-**Goal.** Define safe, portable `{{param}}` substitution for browser bindings.
-
-**Scope.** Specify context-sensitive escaping and numeric/Boolean formatting;
-reject ambiguous or unsafe substitutions. Publish any changed binding under a
-new browser profile version, with schema, validator, and fixtures. Preserve
-browser 1.5–1.7 and exact profile selection. The repository has no browser
-driver, so acceptance does not claim runtime exploit coverage.
-
-**Acceptance.** Tests demonstrate encoded-safe and fail-closed path/query
-cases, scalar formatting, version isolation, and validator behavior. Focused
-profile tests, full and race tests, vet, strict MkDocs build, and diff check
-pass.
-
-**Dependencies.** None; lineage to the completed browser documentation work
-in [M01](../docs/history/status-M01.md) is historical only. **Downstream
-impact.** C03 must cross-reference the accepted browser profile, not copy its
-contract into core.
 
 ## C03 - Portable Execution Contract
 
@@ -57,8 +36,10 @@ race tests, vet, strict MkDocs build, and diff check pass. The bounded
 whole-milestone review gate passes.
 
 **Dependencies.** [M03](../docs/history/status-M03.md),
-[C01](../docs/history/status-C01.md), and
-[C02](../docs/history/status-C02.md) completed and accepted; B01 pending. C01
+[C01](../docs/history/status-C01.md), [C02](../docs/history/status-C02.md),
+and [B01](../docs/history/status-B01.md) completed and accepted. Browser 1.8
+is a separate UWS 1.9 profile; C03 should update references only, not import
+its substitution semantics into core. C01
 establishes deterministic caller-step identity for workflow
 invocations, per-call scoping of nested steps, operations, dependencies, and
 merge records, clear rejection of recursive workflow calls, and numeric
@@ -78,7 +59,7 @@ work automatically.
 |---|---|---|
 | MCP public supplement consideration | The OpenUdon experiment is unimplemented and has no interoperability evidence. | Stage 1 produces real workflow evidence and a second independent consumer requests interoperable exchange. |
 | Concrete content-trust resolvers | No source/profile resolver has a named in-repository owner or representative acceptance corpus. | A runtime or profile owner supplies reviewed channel contracts and fixtures. |
-| New browser or account-lifecycle profile direction beyond B01 | B01 owns the confirmed template-safety gap; broader profile or account-lifecycle changes lack a proved portable contract. | B01 acceptance or multi-runtime evidence demonstrates another gap existing versions cannot express. |
+| New browser or account-lifecycle profile direction beyond browser 1.8 | Browser 1.8 resolves the confirmed template-safety gap; broader profile or account-lifecycle changes lack a proved portable contract. | A new concrete gap beyond browser 1.8 is demonstrated; portable semantics additionally require multi-runtime demand. |
 | UWS 2.0 expression, trigger, and enforcement redesign | C2–C4 and E1/E2/E6/E8/E11 require new wire or governance choices: explicit expression marker/escape and interpolation, richer operators and names, literal `items`/`batchSize`, decoupled profile/core versions, extensible source types, trigger kinds, and possible content-trust enforcement. The review does not establish a compatible 1.x design or an injection exploit. | A concrete multi-runtime need and compatibility analysis support a separately approved 2.0 proposal. |
 | Profile documentation | D7's remaining runtime-supplement ambiguity, D9's BCP 14 declarations, and D10's registration 1.2 authoring detail concern separately versioned profiles; editing frozen published documents is not an automatic review fix. | The next relevant profile version or an explicitly approved meaning-preserving editorial amendment. |
 | Interoperability formats | D6 file extensions, C16/E9 content-trust wire reports/resolvers, E4 stable error codes, E10 normative HCL mapping, E3 fixture expansion, and C10 portable error taxonomy require independent consumer and compatibility evidence beyond C03's core semantics. | A named independent consumer or portable conformance requirement and separately approved contract. |

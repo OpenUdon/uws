@@ -10,3 +10,4 @@ Knowledge updates that replace current facts or lessons are recorded in
 | M03 | completed | 2026-09-23 | [status-M03.md](status-M03.md) | HCL dynamic keys now preserve literal underscore/dollar spellings alongside legacy dollar-key aliases. |
 | C01 | completed | 2026-09-23 | [status-C01.md](status-C01.md) | Workflow calls now have independent scoped execution and merged iteration results use numeric order. |
 | C02 | completed | 2026-09-23 | [status-C02.md](status-C02.md) | Exact declared-version schemas, SemVer feature gates, and cross-version behavior are covered without changing historical artifacts. |
+| B01 | completed | 2026-09-23 | [status-B01.md](status-B01.md) | Browser 1.8 defines reviewed scalar parameter substitution and safe URL-component encoding; browser 1.5–1.7 remain immutable and accepted. |

@@ -8,10 +8,12 @@ build, diff check, and the bounded whole-milestone review pass. No release
 number is preselected; choose it under C02's version policy.
 
 **Dependencies.** [M03](../docs/history/status-M03.md),
-[C01](../docs/history/status-C01.md), and
-[C02](../docs/history/status-C02.md) completed and accepted; B01 must also be
-accepted first. C01 establishes deterministic caller-step identity
-for workflow invocations, per-call scoping of nested steps, operations,
+[C01](../docs/history/status-C01.md), [C02](../docs/history/status-C02.md),
+and [B01](../docs/history/status-B01.md) are completed and accepted. Browser
+1.8 is a separate UWS 1.9 profile; C03 should cross-reference it without
+importing its template or formatting semantics into the core contract. C01
+establishes deterministic caller-step identity for workflow invocations,
+per-call scoping of nested steps, operations,
 dependencies, and merge records, clear rejection of recursive workflow calls,
 and numeric ordering of nested iteration results. C02 establishes exact
 declared-version schema selection, no fallback for prerelease or unpublished
@@ -21,8 +23,8 @@ accepted Go mapping escapes ordinary dynamic keys with `__uws_literal__` when
 they collide with legacy dollar-key spellings, while preserving legacy dollar
 decoding. C03 must preserve that behavior and decide only whether a separate
 portable HCL mapping document is justified. C01 settles invocation and
-ordering; C02 settles release gating; B01 settles the browser profile
-cross-reference.
+ordering; C02 settles release gating; B01 settles the browser 1.8 profile
+cross-reference, while UWS core remains at 1.9.2 until C03 chooses its release.
 
 **Downstream impacts.** Reconsider the unnumbered interoperability, profile,
 and UWS 2.0 candidates after acceptance, without promoting them automatically.
