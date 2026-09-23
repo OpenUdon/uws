@@ -1,43 +1,13 @@
 # Milestones
 
-The active horizon now protects the accepted current-release Markdown surface
-from later drift. Work follows the order below, one pending status row and one
-task commit at a time.
+The active horizon is empty. M01 and M02 completed acceptance and bounded
+review, and their IDs remain reserved in the history index. This project
+remains initialized; candidate directions require a new approved proposal
+before receiving an active milestone ID.
 
 ## Active Horizon
 
-| Milestone | Goal | Dependencies | Status |
-|---|---|---|---|
-| M02 | Add an automated immutability guard for published Markdown artifacts. | [M01](../docs/history/status-M01.md) completed and accepted | [status-M02.md](status-M02.md) |
-
-Execution order: `M02`.
-
-## M02 - Published Markdown Immutability Guard
-
-**Goal.** Detect changes, removals, and unregistered additions among published
-Markdown documents under `versions/`, while leaving the release changelog
-intentionally mutable.
-
-**Scope.** Extend `schemas/version_immutability_test.go` with SHA-256 and exact
-membership coverage for every `versions/*.md` file except
-`versions/CHANGELOG.md`, using the final M01 bytes. Update `AGENTS.md`,
-`architecture.md`, and `tech-stack.md` in the same task to describe the new
-current rule. Do not modify the protected Markdown documents merely to satisfy
-their hashes.
-
-**Acceptance.** `go test ./schemas -run
-TestPublishedVersionDocumentsAreImmutable`, `go test ./...`, `go test -race
-./...`, `go vet ./...`, `mkdocs build --strict`, and `git diff --check` pass.
-The focused test proves exact non-changelog Markdown membership and SHA-256
-bytes. Review confirms that no versioned JSON document or embedded archive
-changed.
-
-**Dependencies.** [M01](../docs/history/status-M01.md) completed and accepted.
-
-**Downstream impacts.** none in the active horizon.
-
-**Task breakdown.** Add the Markdown digest/membership guard and reconcile the
-current instructions and memory-bank facts in one commit.
+No active milestones. Execution order: none.
 
 ## Candidate Directions
 
