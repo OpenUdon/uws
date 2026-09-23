@@ -35,6 +35,48 @@ func TestValidate_WorkflowAndStepReferences(t *testing.T) {
 	assert.ErrorContains(t, err, "not-a-step-type")
 }
 
+func TestValidateVersionGatesReferenceStepBlocksAndStepInputs(t *testing.T) {
+	t.Run("reference child blocks retain older-version behavior", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.9.1"
+		doc.Workflows = []*Workflow{{
+			WorkflowID: "main", Type: WorkflowTypeSequence,
+			Steps: []*Step{{StepID: "call", OperationRef: "get_data", Steps: []*Step{{StepID: "nested", OperationRef: "get_data"}}}},
+		}}
+		require.NoError(t, doc.Validate())
+	})
+
+	t.Run("reference child blocks rejected from 1.9.2", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.9.2"
+		doc.Workflows = []*Workflow{{
+			WorkflowID: "main", Type: WorkflowTypeSequence,
+			Steps: []*Step{{StepID: "call", OperationRef: "get_data", Steps: []*Step{{StepID: "nested", OperationRef: "get_data"}}}},
+		}}
+		require.ErrorContains(t, doc.Validate(), "operation-reference steps cannot also declare nested child blocks")
+	})
+
+	t.Run("step inputs require 1.5", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.4.0"
+		doc.Workflows = []*Workflow{{
+			WorkflowID: "main", Type: WorkflowTypeSequence,
+			Steps: []*Step{{StepID: "call", OperationRef: "get_data", Inputs: map[string]any{"id": "123"}}},
+		}}
+		require.ErrorContains(t, doc.Validate(), "workflows[0].steps[0].inputs requires UWS 1.5.0 or later")
+	})
+
+	t.Run("step inputs accepted from 1.5", func(t *testing.T) {
+		doc := validDocument()
+		doc.UWS = "1.5.0"
+		doc.Workflows = []*Workflow{{
+			WorkflowID: "main", Type: WorkflowTypeSequence,
+			Steps: []*Step{{StepID: "call", OperationRef: "get_data", Inputs: map[string]any{"id": "123"}}},
+		}}
+		require.NoError(t, doc.Validate())
+	})
+}
+
 func TestValidate_WorkflowAndStepIDsRejectDots(t *testing.T) {
 	t.Run("workflowId", func(t *testing.T) {
 		doc := validDocument()

@@ -98,6 +98,7 @@ func TestOrchestratorExecuteSequenceWorkflow(t *testing.T) {
 
 func TestStepInputsAreVisiblePerOperationInvocation(t *testing.T) {
 	doc := testDocument(&Operation{OperationID: "shared"})
+	doc.UWS = "1.5.0"
 	doc.Workflows = []*Workflow{{
 		WorkflowID: "main",
 		Type:       WorkflowTypeSequence,
@@ -679,6 +680,7 @@ func TestOrchestratorExecuteStepWorkflowReference(t *testing.T) {
 
 func TestWorkflowCallsFromDifferentStepsUseDistinctInputsAndRecords(t *testing.T) {
 	doc := testDocument(&Operation{OperationID: "leaf"}, &Operation{OperationID: "dependency"})
+	doc.UWS = "1.5.0"
 	doc.Workflows = []*Workflow{
 		{
 			WorkflowID:              "secondary",

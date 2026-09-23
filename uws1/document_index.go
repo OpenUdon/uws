@@ -3,6 +3,7 @@ package uws1
 import "fmt"
 
 type documentIndex struct {
+	uws                  string
 	operations           map[string]*Operation
 	workflows            map[string]*Workflow
 	workflowTypes        map[string]string
@@ -49,6 +50,7 @@ func buildDocumentIndex(d *Document, result *ValidationResult) *documentIndex {
 	if d == nil {
 		return idx
 	}
+	idx.uws = d.UWS
 	if entry := selectSemanticEntryWorkflow(d); entry != nil {
 		idx.entryWorkflowID = entry.WorkflowID
 		idx.entryWorkflow = entry

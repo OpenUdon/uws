@@ -224,6 +224,7 @@ func TestSchemaConformance_ValidatorMatchesSelectedRules(t *testing.T) {
 	// structural type. Mirrors the schema's step-object allOf clause that
 	// forbids any pairing of these three.
 	doc = validDocument()
+	doc.UWS = "1.9.2"
 	doc.Workflows = []*Workflow{{
 		WorkflowID: "main",
 		Type:       WorkflowTypeSequence,
@@ -238,6 +239,7 @@ func TestSchemaConformance_ValidatorMatchesSelectedRules(t *testing.T) {
 	require.ErrorContains(t, doc.Validate(), "operationRef and workflow")
 
 	doc = validDocument()
+	doc.UWS = "1.9.2"
 	doc.Workflows = []*Workflow{{
 		WorkflowID: "main",
 		Type:       WorkflowTypeSequence,
@@ -250,6 +252,7 @@ func TestSchemaConformance_ValidatorMatchesSelectedRules(t *testing.T) {
 	require.ErrorContains(t, doc.Validate(), "operationRef cannot be combined with structural type")
 
 	doc = validDocument()
+	doc.UWS = "1.9.2"
 	doc.Workflows = []*Workflow{{
 		WorkflowID: "main",
 		Type:       WorkflowTypeSequence,
@@ -262,6 +265,7 @@ func TestSchemaConformance_ValidatorMatchesSelectedRules(t *testing.T) {
 	require.ErrorContains(t, doc.Validate(), "operation-reference steps cannot also declare nested child blocks")
 
 	doc = validDocument()
+	doc.UWS = "1.9.2"
 	doc.Workflows = []*Workflow{
 		{WorkflowID: "main", Type: WorkflowTypeSequence, Steps: []*Step{{
 			StepID: "s",
@@ -275,6 +279,7 @@ func TestSchemaConformance_ValidatorMatchesSelectedRules(t *testing.T) {
 	require.ErrorContains(t, doc.Validate(), "workflow-reference steps cannot also declare nested child blocks")
 
 	doc = validDocument()
+	doc.UWS = "1.9.2"
 	doc.Workflows = []*Workflow{{
 		WorkflowID: "main",
 		Type:       WorkflowTypeSequence,
@@ -287,6 +292,7 @@ func TestSchemaConformance_ValidatorMatchesSelectedRules(t *testing.T) {
 	require.ErrorContains(t, doc.Validate(), "operation-reference steps cannot also declare nested child blocks")
 
 	doc = validDocument()
+	doc.UWS = "1.9.2"
 	doc.Workflows = []*Workflow{
 		{WorkflowID: "main", Type: WorkflowTypeSequence, Steps: []*Step{{
 			StepID: "s",

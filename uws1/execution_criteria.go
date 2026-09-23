@@ -73,17 +73,18 @@ func (o *Orchestrator) evaluateJSONPathCriterion(ctx context.Context, criterion 
 		return false, fmt.Errorf("evaluating jsonpath context %q: %w", criterion.Context, err)
 	}
 	target := normalizeCriterionTarget(criterion.Context, criterion.Condition)
+	canonicalIndexes := o.Document != nil && supportsUWSVersionAtLeast(o.Document.UWS, 1, 9, 2)
 	switch {
 	case target == "":
 		return truthyValue(source), nil
 	case strings.HasPrefix(target, "#"):
-		value, err := resolveCriterionJSONPointer(source, target)
+		value, err := resolveCriterionJSONPointerVersioned(source, target, canonicalIndexes)
 		if err != nil {
 			return false, err
 		}
 		return truthyValue(value), nil
 	case strings.HasPrefix(target, "/"):
-		value, err := resolveCriterionJSONPointer(source, "#"+target)
+		value, err := resolveCriterionJSONPointerVersioned(source, "#"+target, canonicalIndexes)
 		if err != nil {
 			return false, err
 		}
@@ -176,6 +177,10 @@ func truthyValue(value any) bool {
 }
 
 func resolveCriterionJSONPointer(root any, pointer string) (any, error) {
+	return resolveCriterionJSONPointerVersioned(root, pointer, true)
+}
+
+func resolveCriterionJSONPointerVersioned(root any, pointer string, canonicalIndexes bool) (any, error) {
 	if pointer == "" || pointer == "#" {
 		return root, nil
 	}
@@ -196,7 +201,7 @@ func resolveCriterionJSONPointer(root any, pointer string) (any, error) {
 		case map[string]any:
 			current = typed[token]
 		case []any:
-			index, err := parseCriterionIndex(token)
+			index, err := parseCriterionIndexVersioned(token, canonicalIndexes)
 			if err != nil {
 				return nil, err
 			}
@@ -212,7 +217,11 @@ func resolveCriterionJSONPointer(root any, pointer string) (any, error) {
 }
 
 func parseCriterionIndex(token string) (int, error) {
-	if token == "" || (len(token) > 1 && token[0] == '0') {
+	return parseCriterionIndexVersioned(token, true)
+}
+
+func parseCriterionIndexVersioned(token string, canonical bool) (int, error) {
+	if token == "" || (canonical && len(token) > 1 && token[0] == '0') {
 		return 0, fmt.Errorf("invalid array index %q", token)
 	}
 	for _, ch := range token {

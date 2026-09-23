@@ -108,6 +108,26 @@ func TestParseCriterionIndexRejectsMalformedArrayIndexes(t *testing.T) {
 	}
 }
 
+func TestCriterionJSONPointerArrayIndexIsVersionGated(t *testing.T) {
+	root := map[string]any{"items": []any{"zero", "one"}}
+	runtime := &mockRuntime{eval: func(context.Context, string) (any, error) {
+		return root, nil
+	}}
+
+	older := &Orchestrator{Document: &Document{UWS: "1.9.1"}, Runtime: runtime}
+	matched, err := older.evaluateCriterion(context.Background(), &Criterion{
+		Type: CriterionJSONPath, Context: "$response.body", Condition: "#/items/01",
+	})
+	require.NoError(t, err)
+	assert.True(t, matched, "older declared versions retain the pre-1.9.2 numeric index behavior")
+
+	current := &Orchestrator{Document: &Document{UWS: "1.9.2"}, Runtime: runtime}
+	_, err = current.evaluateCriterion(context.Background(), &Criterion{
+		Type: CriterionJSONPath, Context: "$response.body", Condition: "#/items/01",
+	})
+	require.ErrorContains(t, err, "invalid array index")
+}
+
 func TestOrchestratorExecutesXPathCriterion(t *testing.T) {
 	doc := testDocument(&Operation{
 		OperationID: "fetch",

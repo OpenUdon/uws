@@ -89,11 +89,14 @@ func (s *Step) validate(path string, idx *documentIndex, result *ValidationResul
 	case hasWorkflow && hasType:
 		result.addError(path, "workflow cannot be combined with structural type")
 	}
-	if hasOperationRef && hasNestedBlocks {
+	if hasOperationRef && hasNestedBlocks && supportsUWSVersionAtLeast(idx.uws, 1, 9, 2) {
 		result.addError(path, "operation-reference steps cannot also declare nested child blocks")
 	}
-	if hasWorkflow && hasNestedBlocks {
+	if hasWorkflow && hasNestedBlocks && supportsUWSVersionAtLeast(idx.uws, 1, 9, 2) {
 		result.addError(path, "workflow-reference steps cannot also declare nested child blocks")
+	}
+	if s.Inputs != nil && !supportsUWSVersion(idx.uws, 1, 5) {
+		result.addError(path+".inputs", "requires UWS 1.5.0 or later")
 	}
 	if hasType {
 		if !IsWorkflowType(s.Type) {
