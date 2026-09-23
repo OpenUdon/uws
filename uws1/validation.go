@@ -88,7 +88,9 @@ func (d *Document) ValidateResult() *ValidationResult {
 	} else if !uws1VersionPattern.MatchString(d.UWS) {
 		result.addError("uws", fmt.Sprintf("version %q does not match pattern 1.x.x", d.UWS))
 	} else if !validUWSVersion(d.UWS) {
-		result.addError("uws", fmt.Sprintf("version %q has invalid SemVer prerelease syntax", d.UWS))
+		result.addError("uws", fmt.Sprintf("version %q is not valid SemVer", d.UWS))
+	} else if !isPublishedUWSVersion(d.UWS) {
+		result.addError("uws", fmt.Sprintf("version %q is not a published UWS version", d.UWS))
 	}
 	if d.Info == nil {
 		result.addError("info", "is required")

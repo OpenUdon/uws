@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"golang.org/x/mod/semver"
 )
 
 const (
@@ -90,4 +92,39 @@ func TestUWS110LanguageNeutralConformanceVectors(t *testing.T) {
 		require.False(t, seen[testCase.ID], "duplicate conformance case %q", testCase.ID)
 		seen[testCase.ID] = true
 	}
+}
+
+func TestLatestUWSSchemaIsHighestPublishedCoreVersion(t *testing.T) {
+	paths, err := filepath.Glob("../versions/1.*.json")
+	require.NoError(t, err)
+	require.NotEmpty(t, paths)
+
+	var latest string
+	for _, path := range paths {
+		version := strings.TrimSuffix(filepath.Base(path), ".json")
+		if !semver.IsValid("v" + version) {
+			continue
+		}
+		if latest == "" || semver.Compare("v"+version, "v"+latest) > 0 {
+			latest = version
+		}
+	}
+	require.NotEmpty(t, latest)
+	require.Equal(t, latest, strings.TrimSuffix(filepath.Base(latestUWSSchemaPath), ".json"))
+}
+
+func TestPublishedUWSVersionRegistryMatchesSchemaArtifacts(t *testing.T) {
+	paths, err := filepath.Glob("../versions/1.*.json")
+	require.NoError(t, err)
+
+	artifacts := make(map[string]struct{}, len(paths))
+	for _, path := range paths {
+		version := strings.TrimSuffix(filepath.Base(path), ".json")
+		if semver.IsValid("v" + version) {
+			artifacts[version] = struct{}{}
+		}
+	}
+	require.NotEmpty(t, artifacts)
+	require.Equal(t, artifacts, publishedUWSVersions,
+		"publishedUWSVersions must match the core schema artifacts exactly")
 }

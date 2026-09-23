@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -244,6 +245,21 @@ func TestValidateDocumentFileRunsSchemaAndSemanticValidation(t *testing.T) {
 	}
 	if _, err := ValidateDocumentFile(semanticInvalid); err == nil || !strings.Contains(err.Error(), "duplicate") {
 		t.Fatalf("expected semantic duplicate failure, got %v", err)
+	}
+}
+
+func TestValidateDocumentFileRejectsUnpublishedVersions(t *testing.T) {
+	for _, version := range []string{"1.99.0", "1.10.1", "1.0.0-beta.1", "1.010.0"} {
+		t.Run(version, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "unsupported.uws.json")
+			body := fmt.Sprintf(`{"uws":%q,"info":{"title":"unsupported","version":"1.0.0"},"operations":[{"operationId":"op","x-uws-operation-profile":"uws.runtime.1.0"}]}`, version)
+			if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := ValidateDocumentFile(path); err == nil {
+				t.Fatalf("ValidateDocumentFile accepted unpublished version %q", version)
+			}
+		})
 	}
 }
 

@@ -1,6 +1,7 @@
 package uws1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -195,7 +196,42 @@ func TestValidate_BadVersionPattern(t *testing.T) {
 
 	doc = validDocument()
 	doc.UWS = "1.9.2-beta.01"
-	assert.ErrorContains(t, doc.Validate(), "invalid SemVer prerelease syntax")
+	assert.ErrorContains(t, doc.Validate(), "not valid SemVer")
+}
+
+func TestValidate_RequiresPublishedCoreVersion(t *testing.T) {
+	for _, version := range []string{"1.99.0", "1.10.1", "1.0.0-beta.1"} {
+		t.Run(version, func(t *testing.T) {
+			doc := validDocument()
+			doc.UWS = version
+			err := doc.Validate()
+			assert.ErrorContains(t, err, "is not a published UWS version")
+			assert.Contains(t, doc.ValidateResult().Error(), "is not a published UWS version")
+
+			doc.Runtime = &mockRuntime{}
+			assert.ErrorContains(t, doc.Execute(context.Background()), "is not a published UWS version")
+		})
+	}
+}
+
+func TestValidate_AcceptsEveryPublishedCoreVersion(t *testing.T) {
+	for version := range publishedUWSVersions {
+		t.Run(version, func(t *testing.T) {
+			doc := validDocument()
+			doc.UWS = version
+			assert.NoError(t, doc.Validate())
+		})
+	}
+}
+
+func TestValidate_LeadingZeroVersionDiagnostic(t *testing.T) {
+	doc := validDocument()
+	doc.UWS = "1.010.0"
+	err := doc.Validate()
+	assert.ErrorContains(t, err, "not valid SemVer")
+	if err != nil {
+		assert.NotContains(t, err.Error(), "prerelease")
+	}
 }
 
 func TestValidate_InfoRequiredFields(t *testing.T) {
