@@ -12,6 +12,11 @@ type ExecutionContext struct {
 	Inputs    map[string]any
 	Records   map[string]ExecutionRecord
 	Current   *CurrentExecutionContext
+	// WorkflowScope namespaces nested records for an individual workflow call.
+	WorkflowScope string
+	// WorkflowStack detects recursive workflow calls before they wait on their
+	// own in-flight execution record.
+	WorkflowStack []string
 }
 
 // IterationContext describes the current orchestrator-owned iteration scope.
@@ -80,11 +85,13 @@ func cloneExecutionContext(state *ExecutionContext) *ExecutionContext {
 		return &ExecutionContext{}
 	}
 	return &ExecutionContext{
-		Iteration: cloneIteration(state.Iteration),
-		Trigger:   cloneTriggerContext(state.Trigger),
-		Inputs:    cloneInputs(state.Inputs),
-		Records:   cloneExecutionRecords(state.Records),
-		Current:   cloneCurrentExecution(state.Current),
+		Iteration:     cloneIteration(state.Iteration),
+		Trigger:       cloneTriggerContext(state.Trigger),
+		Inputs:        cloneInputs(state.Inputs),
+		Records:       cloneExecutionRecords(state.Records),
+		Current:       cloneCurrentExecution(state.Current),
+		WorkflowScope: state.WorkflowScope,
+		WorkflowStack: append([]string(nil), state.WorkflowStack...),
 	}
 }
 

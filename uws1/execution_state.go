@@ -14,6 +14,48 @@ func (o *Orchestrator) withRecordContext(ctx context.Context) context.Context {
 	return WithExecutionContext(ctx, state)
 }
 
+func workflowScopeFromContext(ctx context.Context) string {
+	state, _ := ExecutionContextFromContext(ctx)
+	if state == nil {
+		return ""
+	}
+	return state.WorkflowScope
+}
+
+func withWorkflowScope(ctx context.Context, scope string) context.Context {
+	state, _ := ExecutionContextFromContext(ctx)
+	state = cloneExecutionContext(state)
+	state.WorkflowScope = scope
+	return WithExecutionContext(ctx, state)
+}
+
+func scopedExecutionKey(ctx context.Context, key string) string {
+	if scope := workflowScopeFromContext(ctx); scope != "" {
+		return scope + "::" + key
+	}
+	return key
+}
+
+func workflowIsActive(ctx context.Context, workflowID string) bool {
+	state, _ := ExecutionContextFromContext(ctx)
+	if state == nil {
+		return false
+	}
+	for _, activeID := range state.WorkflowStack {
+		if activeID == workflowID {
+			return true
+		}
+	}
+	return false
+}
+
+func withActiveWorkflow(ctx context.Context, workflowID string) context.Context {
+	state, _ := ExecutionContextFromContext(ctx)
+	state = cloneExecutionContext(state)
+	state.WorkflowStack = append(state.WorkflowStack, workflowID)
+	return WithExecutionContext(ctx, state)
+}
+
 func (o *Orchestrator) withIterationContext(ctx context.Context, item any, index int, batch []any, batchIndex int) context.Context {
 	state, _ := ExecutionContextFromContext(ctx)
 	state = cloneExecutionContext(state)
@@ -152,6 +194,7 @@ func cloneInputs(src map[string]any) map[string]any {
 }
 
 func (o *Orchestrator) keyForContext(ctx context.Context, key string) string {
+	key = scopedExecutionKey(ctx, key)
 	path := iterationPathFromContext(ctx)
 	if len(path) == 0 {
 		return key

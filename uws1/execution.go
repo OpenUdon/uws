@@ -125,16 +125,32 @@ func (o *Orchestrator) ExecuteWorkflow(ctx context.Context, wf *Workflow) error 
 	if wf == nil {
 		return nil
 	}
+	return o.executeWorkflow(ctx, wf, workflowKey(wf.WorkflowID), workflowScopeFromContext(ctx) != "")
+}
+
+func (o *Orchestrator) executeWorkflow(ctx context.Context, wf *Workflow, key string, scopeChildren bool) error {
+	if wf == nil {
+		return nil
+	}
+	if workflowIsActive(ctx, wf.WorkflowID) {
+		return fmt.Errorf("uws1: recursive workflow invocation %q is not supported", wf.WorkflowID)
+	}
+	childScope := scopedExecutionKey(ctx, key)
 	return o.executeRunnable(ctx, runnableExecution{
-		key: workflowKey(wf.WorkflowID), id: wf.WorkflowID,
+		key: key, id: wf.WorkflowID,
 		kind: "workflow:" + wf.Type, responseID: wf.WorkflowID,
 		dependencies: wf.DependsOn, when: wf.When, forEach: wf.ForEach,
 		timeout: wf.Timeout, outputs: wf.Outputs,
 		run: func(ctx context.Context) error {
-			return o.executeStructural(ctx, structuralExecution{
+			runKey := o.keyForContext(ctx, key)
+			structuralCtx := withActiveWorkflow(ctx, wf.WorkflowID)
+			if scopeChildren {
+				structuralCtx = withWorkflowScope(structuralCtx, childScope)
+			}
+			return o.executeStructural(structuralCtx, structuralExecution{
 				typeName: wf.Type, dependencies: wf.DependsOn, steps: wf.Steps,
 				cases: wf.Cases, defaultSteps: wf.Default, items: wf.Items,
-				batchSize: wf.BatchSize, wait: wf.Wait, key: workflowKey(wf.WorkflowID),
+				batchSize: wf.BatchSize, wait: wf.Wait, key: runKey, keyResolved: true,
 				useDefaultAwaitTimeout: wf.Timeout == nil,
 			})
 		},
@@ -165,7 +181,8 @@ func (o *Orchestrator) ExecuteStep(ctx context.Context, step *Step) error {
 				return o.executeOperationByIDForStep(ctx, step.OperationRef, step.StepID)
 			}
 			if step.Workflow != "" {
-				return o.executeWorkflowByID(ctx, step.Workflow)
+				callerKey := o.keyForContext(ctx, stepKey(step.StepID))
+				return o.executeWorkflowByID(ctx, step.Workflow, callerKey)
 			}
 			return o.executeStructural(ctx, structuralExecution{
 				typeName: step.Type, dependencies: step.DependsOn, steps: step.Steps,
@@ -177,12 +194,12 @@ func (o *Orchestrator) ExecuteStep(ctx context.Context, step *Step) error {
 	})
 }
 
-func (o *Orchestrator) executeWorkflowByID(ctx context.Context, workflowID string) error {
+func (o *Orchestrator) executeWorkflowByID(ctx context.Context, workflowID, callerKey string) error {
 	wf := o.workflowIndex[workflowID]
 	if wf == nil {
 		return fmt.Errorf("uws1: workflow %q not found", workflowID)
 	}
-	return o.ExecuteWorkflow(ctx, wf)
+	return o.executeWorkflow(ctx, wf, workflowCallKey(workflowID, callerKey), true)
 }
 
 func (o *Orchestrator) executeOperationByID(ctx context.Context, operationID string) error {

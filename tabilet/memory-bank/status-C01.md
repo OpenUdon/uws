@@ -26,5 +26,5 @@ acceptance checks.
 
 | Item | State | Notes |
 |---|---|---|
-| Distinguish workflow call invocations | `[ ]` | Give each calling step its own invocation identity and result, retain deliberate entry/dependency memoization, and add focused calls-with-different-inputs tests. Owner: A2. |
+| Distinguish workflow call invocations | `[+]` | Completed 2026-09-23. Workflow calls now use a deterministic caller-step identity; nested steps, operations, dependencies, and merge records are scoped to that invocation. Entry workflow keys remain unchanged, and dependency memoization remains within its caller scope. Recursive calls fail clearly rather than waiting on their own in-flight records. Regression tests verify distinct inputs, outputs, child execution, scoped merge results, and recursion failure. `go test ./uws1 -run 'TestOrchestratorExecuteStepWorkflowReference|TestWorkflowCallsFromDifferentStepsUseDistinctInputsAndRecords|TestRecursiveWorkflowCallFailsInsteadOfWaitingOnItself' -count=1`, `go test ./uws1 -count=1`, `go test ./uws1 -race`, `go test ./...`, `go vet ./...`, and `git diff --check` passed. Owner: A2. |
 | Preserve numeric iteration order | `[ ]` | Sort iteration identity numerically where merge/dependency results are collected; cover 12 or more iterations and nested cases. Owner: A6. |

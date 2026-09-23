@@ -674,7 +674,79 @@ func TestOrchestratorExecuteStepWorkflowReference(t *testing.T) {
 	assert.Equal(t, []string{"leaf"}, runtime.executedLeafs)
 	records := doc.ExecutionRecords()
 	require.Contains(t, records, "step:call_secondary")
-	require.Contains(t, records, "wf:secondary")
+	require.Contains(t, records, workflowCallKey("secondary", "step:call_secondary"))
+}
+
+func TestWorkflowCallsFromDifferentStepsUseDistinctInputsAndRecords(t *testing.T) {
+	doc := testDocument(&Operation{OperationID: "leaf"})
+	doc.Workflows = []*Workflow{
+		{
+			WorkflowID: "secondary",
+			Type:       WorkflowTypeSequence,
+			Steps: []*Step{
+				{StepID: "child", OperationRef: "leaf"},
+				{StepID: "join", Type: WorkflowTypeMerge, StepExecutionFields: StepExecutionFields{DependsOn: []string{"child"}}},
+			},
+			Outputs: map[string]string{"received": "$inputs.value"},
+		},
+		{
+			WorkflowID: "main",
+			Type:       WorkflowTypeSequence,
+			Steps: []*Step{
+				{StepID: "first_call", Inputs: map[string]any{"value": "first"}, StepExecutionFields: StepExecutionFields{Workflow: "secondary"}},
+				{StepID: "second_call", Inputs: map[string]any{"value": "second"}, StepExecutionFields: StepExecutionFields{Workflow: "secondary"}},
+			},
+		},
+	}
+
+	var seenInputs []any
+	runtime := &mockRuntime{
+		execute: func(ctx context.Context, _ *Operation) error {
+			state, _ := ExecutionContextFromContext(ctx)
+			seenInputs = append(seenInputs, state.Inputs["value"])
+			return nil
+		},
+		eval: func(ctx context.Context, _ string) (any, error) {
+			state, _ := ExecutionContextFromContext(ctx)
+			return state.Inputs["value"], nil
+		},
+	}
+	doc.SetRuntime(runtime)
+
+	require.NoError(t, doc.Execute(context.Background()))
+	assert.Equal(t, []any{"first", "second"}, seenInputs)
+
+	records := doc.ExecutionRecords()
+	first := records[workflowCallKey("secondary", "step:first_call")]
+	second := records[workflowCallKey("secondary", "step:second_call")]
+	require.Equal(t, "workflow:sequence", first.Kind)
+	require.Equal(t, "workflow:sequence", second.Kind)
+	assert.Equal(t, "first", first.Outputs["received"])
+	assert.Equal(t, "second", second.Outputs["received"])
+	for _, callKey := range []string{
+		workflowCallKey("secondary", "step:first_call"),
+		workflowCallKey("secondary", "step:second_call"),
+	} {
+		join, ok := records[callKey+"::step:join"]
+		require.True(t, ok, "missing merge record for workflow invocation %q", callKey)
+		merged, ok := join.Result.([]map[string]any)
+		require.True(t, ok, "unexpected scoped merge result: %#v", join.Result)
+		require.Len(t, merged, 1, "merge must include only its invocation's child records")
+	}
+}
+
+func TestRecursiveWorkflowCallFailsInsteadOfWaitingOnItself(t *testing.T) {
+	doc := testDocument()
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		Steps: []*Step{{
+			StepID:              "again",
+			StepExecutionFields: StepExecutionFields{Workflow: "main"},
+		}},
+	}}
+	err := NewOrchestrator(doc, &mockRuntime{}).Execute(context.Background())
+	require.ErrorContains(t, err, `recursive workflow invocation "main"`)
 }
 
 func TestOrchestratorExecuteMerge(t *testing.T) {

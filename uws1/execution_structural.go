@@ -6,6 +6,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"math"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -39,11 +40,15 @@ type structuralExecution struct {
 	batchSize              string
 	wait                   string
 	key                    string
+	keyResolved            bool
 	useDefaultAwaitTimeout bool
 }
 
 func (o *Orchestrator) executeStructural(ctx context.Context, spec structuralExecution) error {
-	key := o.keyForContext(ctx, spec.key)
+	key := spec.key
+	if !spec.keyResolved {
+		key = o.keyForContext(ctx, key)
+	}
 	switch spec.typeName {
 	case WorkflowTypeSequence:
 		return o.executeSteps(ctx, spec.steps)
@@ -121,7 +126,7 @@ func (o *Orchestrator) executeSwitch(ctx context.Context, cases []*Case, default
 }
 
 func (o *Orchestrator) executeMerge(ctx context.Context, deps []string, key string) error {
-	result := o.mergeDependencyRecords(deps)
+	result := o.mergeDependencyRecords(ctx, deps)
 	o.mu.Lock()
 	record := o.records[key]
 	record.Result = result
@@ -131,7 +136,7 @@ func (o *Orchestrator) executeMerge(ctx context.Context, deps []string, key stri
 	return nil
 }
 
-func (o *Orchestrator) mergeDependencyRecords(deps []string) []map[string]any {
+func (o *Orchestrator) mergeDependencyRecords(ctx context.Context, deps []string) []map[string]any {
 	if len(deps) == 0 {
 		return nil
 	}
@@ -162,7 +167,7 @@ func (o *Orchestrator) mergeDependencyRecords(deps []string) []map[string]any {
 	defer o.mu.Unlock()
 	out := make([]map[string]any, 0, len(ordered))
 	for _, dep := range ordered {
-		keys := o.recordKeysForDependencyLocked(dep)
+		keys := o.recordKeysForDependencyLocked(ctx, dep)
 		for _, key := range keys {
 			record := o.records[key]
 			out = append(out, map[string]any{
@@ -187,15 +192,15 @@ func (o *Orchestrator) mergeDependencyRecords(deps []string) []map[string]any {
 // executeOnce, whose inFlight channel ensures the depended-on runnable's
 // close(ch) fires before the merge proceeds; there is no race against
 // concurrently writing branches.
-func (o *Orchestrator) recordKeysForDependencyLocked(dep string) []string {
+func (o *Orchestrator) recordKeysForDependencyLocked(ctx context.Context, dep string) []string {
 	var base string
 	switch {
 	case o.stepIndex[dep] != nil:
-		base = stepKey(dep)
+		base = scopedExecutionKey(ctx, stepKey(dep))
 	case o.workflowIndex[dep] != nil:
-		base = workflowKey(dep)
+		return o.workflowInvocationKeysLocked(dep, workflowScopeFromContext(ctx))
 	case o.opIndex[dep] != nil:
-		return o.operationInvocationKeysLocked(dep)
+		return o.operationInvocationKeysLocked(dep, workflowScopeFromContext(ctx))
 	default:
 		return nil
 	}
@@ -211,15 +216,34 @@ func (o *Orchestrator) recordKeysForDependencyLocked(dep string) []string {
 	return matches
 }
 
-func (o *Orchestrator) operationInvocationKeysLocked(operationID string) []string {
+func (o *Orchestrator) workflowInvocationKeysLocked(workflowID, scope string) []string {
 	var matches []string
 	for key, record := range o.records {
-		if record.Kind == "operation" && record.ID == operationID {
+		if strings.HasPrefix(record.Kind, "workflow:") && record.ID == workflowID && executionKeyInScope(key, scope) {
 			matches = append(matches, key)
 		}
 	}
 	sort.Strings(matches)
 	return matches
+}
+
+func (o *Orchestrator) operationInvocationKeysLocked(operationID, scope string) []string {
+	var matches []string
+	for key, record := range o.records {
+		if record.Kind == "operation" && record.ID == operationID && executionKeyInScope(key, scope) {
+			matches = append(matches, key)
+		}
+	}
+	sort.Strings(matches)
+	return matches
+}
+
+func executionKeyInScope(key, scope string) bool {
+	if scope == "" {
+		return !strings.Contains(key, "::")
+	}
+	rest, ok := strings.CutPrefix(key, scope+"::")
+	return ok && !strings.Contains(rest, "::")
 }
 
 // executeLoop executes a loop construct.

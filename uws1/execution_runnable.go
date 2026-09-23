@@ -2,6 +2,8 @@ package uws1
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"strings"
@@ -317,7 +319,7 @@ func (o *Orchestrator) executeDependency(ctx context.Context, name string) error
 func (o *Orchestrator) waitForExistingOperationInvocation(ctx context.Context, operationID string) (bool, error) {
 	for {
 		o.mu.Lock()
-		keys := o.operationInvocationKeysLocked(operationID)
+		keys := o.operationInvocationKeysLocked(operationID, workflowScopeFromContext(ctx))
 		if len(keys) == 0 {
 			o.mu.Unlock()
 			return false, nil
@@ -362,6 +364,11 @@ func (o *Orchestrator) evaluateTruthy(ctx context.Context, expr string) (bool, e
 		return false, err
 	}
 	return truthyValue(value), nil
+}
+
+func workflowCallKey(id, callerKey string) string {
+	hash := sha256.Sum256([]byte(callerKey))
+	return workflowKey(id) + "#call:" + hex.EncodeToString(hash[:])
 }
 
 func operationKey(id string) string { return "op:" + id }
