@@ -32,3 +32,28 @@ core schemas covered by the compatibility corpus.
 `validation/version_compatibility_test.go`.
 
 **Replacement.** [Review Declared-Version Semantics Before Freezing Markdown](../../memory-bank/lessons.md#review-declared-version-semantics-before-freezing-markdown)
+
+## 2026-09-23 - Current Browser Profile Updated
+
+**Source heading.** `tabilet/memory-bank/product.md#current-contract-surface`
+
+**Previous wording.**
+
+> UWS 1.10.0 is the current core contract. Browser 1.8 is the current browser
+> capability profile; browser authentication/call 1.1 is current for sign-in;
+> browser registration/call 1.2 is current for reviewed registration
+> verification; and registration input 1.0 is the private envelope format.
+> Runtime Supplement 1.0 remains the public metadata floor for common non-HTTP
+> extension operations. UWS 1.10 adds versioned portable execution semantics and
+> expression-addressable-name restrictions while preserving the 1.x wire
+> vocabulary; earlier published contracts remain accepted according to their
+> version gates. Ansible support is historical UWS 1.6 material only.
+
+**Reason.** B02 published the separately versioned, opt-in Browser 1.9 profile.
+Browser 1.8 remains immutable and is still the empty-lookup compatibility
+default, but it is no longer the latest published browser capability contract.
+
+**Evidence.** `versions/browser.1.9.json`; `versions/browser.1.9.md`;
+`schemas/schema.go`; `schemas/version_immutability_test.go`.
+
+**Replacement.** [Current Contract Surface](../../memory-bank/product.md#current-contract-surface)

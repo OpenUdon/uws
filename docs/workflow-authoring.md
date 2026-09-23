@@ -95,7 +95,7 @@ Rules of thumb:
 
 - `name` is the stable local handle used by operations.
 - `url` can be a local path or reviewed remote location, depending on the runtime.
-- `type` may be `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, or `browser-profile`. Missing `type` defaults to `openapi`. The latest `browser-profile` sub-spec is published separately as `versions/browser.1.8.{json,md}`.
+- `type` may be `openapi`, `google-discovery`, `aws-smithy`, `asyncapi`, `graphql`, `openrpc`, `grpc-protobuf`, `odata`, or `browser-profile`. Missing `type` defaults to `openapi`. The current opt-in `browser-profile` sub-spec is `versions/browser.1.9.{json,md}`; Browser 1.8 remains the empty schema-lookup compatibility default.
 
 ## Step 2: Bind Operations
 

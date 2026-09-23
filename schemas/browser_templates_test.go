@@ -70,13 +70,13 @@ func TestBrowser18TemplatesRejectUnsafeOrAmbiguousCases(t *testing.T) {
 	}
 }
 
-func TestBrowserSourceProfileVersionSelectionKeepsHistoricalProfiles(t *testing.T) {
-	latest, err := BrowserSourceProfileSchema("")
+func TestBrowserSourceProfileVersionSelectionKeepsOptInAndDefaultCompatibility(t *testing.T) {
+	defaultSchema, err := BrowserSourceProfileSchema("")
 	require.NoError(t, err)
-	var latestDoc map[string]any
-	require.NoError(t, json.Unmarshal(latest, &latestDoc))
-	require.Equal(t, "uws.browser.1.8", latestDoc["properties"].(map[string]any)["profile"].(map[string]any)["const"])
-	for _, version := range []string{"1.5", "1.6", "1.7", "1.8"} {
+	var defaultDoc map[string]any
+	require.NoError(t, json.Unmarshal(defaultSchema, &defaultDoc))
+	require.Equal(t, "uws.browser.1.8", defaultDoc["properties"].(map[string]any)["profile"].(map[string]any)["const"])
+	for _, version := range []string{"1.5", "1.6", "1.7", "1.8", "1.9"} {
 		data, err := BrowserSourceProfileSchema(version)
 		require.NoError(t, err)
 		require.NotEmpty(t, data)
@@ -86,6 +86,7 @@ func TestBrowserSourceProfileVersionSelectionKeepsHistoricalProfiles(t *testing.
 		profile["profile"] = "uws.browser." + version
 		require.NoError(t, ValidateBrowserSourceProfile(mustBrowserJSON(t, profile)), "browser %s", version)
 	}
+	require.NoError(t, ValidateBrowserSourceProfile(mustBrowserJSON(t, readBrowser19TemplateFixture(t, "text-sinks-1.9.yaml"))))
 }
 
 func TestBrowser19TemplatesAcceptEscapesAndSafeText(t *testing.T) {

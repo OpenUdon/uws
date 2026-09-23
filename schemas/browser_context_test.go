@@ -17,6 +17,10 @@ func TestContextProfileFixturesValidate(t *testing.T) {
 	if err := schemas.ValidateBrowserSourceProfile(browser); err != nil {
 		t.Fatalf("browser context fixture: %v", err)
 	}
+	browser19 := strings.Replace(string(browser), "uws.browser.1.6", "uws.browser.1.9", 1)
+	if err := schemas.ValidateBrowserSourceProfile([]byte(browser19)); err != nil {
+		t.Fatalf("browser 1.9 inherited context fixture: %v", err)
+	}
 	authentication, err := os.ReadFile(filepath.Join("..", "testdata", "browser-authentication", "member-popup-frame.yaml"))
 	if err != nil {
 		t.Fatal(err)

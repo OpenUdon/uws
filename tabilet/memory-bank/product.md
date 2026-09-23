@@ -81,8 +81,9 @@ changing execution.
 
 ## Current Contract Surface
 
-UWS 1.10.0 is the current core contract. Browser 1.8 is the current browser
-capability profile; browser authentication/call 1.1 is current for sign-in;
+UWS 1.10.0 is the current core contract. Browser 1.9 is the current opt-in
+browser capability profile; empty profile lookup retains Browser 1.8 as its
+compatibility default. Browser authentication/call 1.1 is current for sign-in;
 browser registration/call 1.2 is current for reviewed registration
 verification; and registration input 1.0 is the private envelope format.
 Runtime Supplement 1.0 remains the public metadata floor for common non-HTTP

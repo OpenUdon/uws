@@ -37,6 +37,21 @@ func TestValidateBrowserSourceProfileCanonicalFixtures(t *testing.T) {
 	}
 }
 
+func TestBrowser19TextSinkFixturesUseExplicitProfileDispatch(t *testing.T) {
+	valid := readBrowserFixture(t, "text-sinks-1.9.yaml")
+	if err := schemas.ValidateBrowserSourceProfile(valid); err != nil {
+		t.Fatalf("Browser 1.9 positive text-sink fixture: %v", err)
+	}
+	for _, name := range []string{"text-sinks-1.9-invalid-control.yaml", "text-sinks-1.9-invalid-template.yaml"} {
+		t.Run(name, func(t *testing.T) {
+			data := readBrowserFixture(t, name)
+			if err := schemas.ValidateBrowserSourceProfile(data); err == nil {
+				t.Fatalf("Browser 1.9 accepted invalid fixture %s", name)
+			}
+		})
+	}
+}
+
 func TestCanonicalBrowserFixturesCoverClosedMacroVocabulary(t *testing.T) {
 	data := readBrowserFixture(t, "confirmed-side-effect.yaml")
 	var profile map[string]any

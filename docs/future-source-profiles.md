@@ -18,7 +18,7 @@ released UWS versions, JSON Schema changes, Go model changes, or new validator
 behavior by themselves. AsyncAPI has graduated into UWS 1.3; GraphQL, OpenRPC,
 gRPC/protobuf, and OData have graduated into UWS 1.4; browser capability
 profiles have graduated into UWS 1.5 (`browser-profile`), whose latest separate
-sub-spec is `versions/browser.1.8.{json,md}`. Ansible modules
+sub-spec is `versions/browser.1.9.{json,md}`. Ansible modules
 graduated into UWS 1.6 (`ansible-module`) and were **withdrawn in UWS 1.7**;
 `versions/ansible.1.0.{json,md}` remains only as historical UWS 1.6 material.
 UWS 1.9 defines no replacement Ansible operation profile.
@@ -360,7 +360,7 @@ Settled scope:
   repository keeps only the schema/spec fixtures needed to validate the UWS
   wire contract and `browser.1.5` sub-spec.
 
-### Browser 1.6 Contexts, Browser 1.7 Scalars, Browser 1.8 Templates, And Later Candidates
+### Browser 1.6 Contexts, Browser 1.7 Scalars, Browser 1.8 Templates, Browser 1.9 Text Safety, And Later Candidates
 
 UWS 1.5 is enough for the API-vs-UI boundary: UWS binds an operation to a
 reviewed browser capability profile, while browser-aware tooling and runtimes
@@ -377,7 +377,7 @@ Boolean match without text extraction, and rejects composite accessibility
 outputs. Neither adoption added browser command streams, session transfer, or
 any of the broader interaction candidates below. A later browser-profile
 revision should be considered only if real reviewed workflows repeatedly fall
-outside the current 1.8 capability shape while still needing portable, audited
+outside the current 1.9 capability shape while still needing portable, audited
 interchange.
 
 Browser 1.8 adds a bounded `{{name}}` substitution contract for declared scalar
@@ -385,6 +385,13 @@ parameters. It permits RFC 3986 component encoding in navigation path/query
 values and literal scalar formatting in text, selection, and confirmation
 prompts. It does not broaden the browser action vocabulary or add a driver API;
 the 1.5–1.7 profile artifacts remain immutable and accepted.
+
+Browser 1.9 is the current opt-in profile. It retains Browser 1.8 behavior and
+adds `{{{{` / `}}}}` escapes for literal double braces, value-setting
+`type_text` semantics without keyboard/Enter/form submission, text-only prompts
+with control/bidi rejection, and safe-integer consistency for parameters and
+accessibility outputs. The profile schema lookup keeps Browser 1.8 as its empty
+selector compatibility default; consumers choose 1.9 explicitly.
 Candidate areas include:
 
 - bounded file upload/download declarations, with explicit filename, MIME,
@@ -609,8 +616,9 @@ Those extension-owned browser operations could not set `sourceDescription`,
 `sourceOperationId`, `sourceOperationRef`, `openapiOperationId`, or
 `openapiOperationRef`. Those fields remain reserved for source-bound operations.
 UWS 1.5 adopted `sourceDescriptions[].type: browser-profile`; UWS 1.5 and later
-documents can use the source-bound shape above. Browser 1.8 is the current
-capability profile and retains acceptance of Browser 1.5, 1.6, and 1.7 documents.
+documents can use the source-bound shape above. Browser 1.9 is the current
+opt-in capability profile and retains acceptance of immutable Browser 1.5–1.8
+documents. Empty schema lookup remains pinned to 1.8 for compatibility.
 
 The source-profile form became normative only after portable browser-profile
 interchange and its safety contract were accepted for UWS 1.5.
@@ -671,7 +679,7 @@ way it references API operations:
 - browser capability profile only when the workflow target is UI-only or API
   coverage is insufficient
 - extension-owned operation profiles only for pre-1.5 documents or
-  product-specific behavior outside the current Browser 1.8 contract
+  product-specific behavior outside the current Browser 1.9 contract
 
 ## Adopted in UWS 1.6 and Withdrawn in UWS 1.7: Ansible Module Source Profiles
 

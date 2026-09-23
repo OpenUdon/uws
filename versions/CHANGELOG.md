@@ -39,6 +39,22 @@ the meaning or scope of a published schema or sub-spec is recorded as an
   string is valid SemVer syntax but is not a supported UWS version because no
   matching core schema is published.
 
+## Browser 1.9 - 2026-09-23
+
+- Added opt-in `uws.browser.1.9`, retaining the Browser 1.8 action, context,
+  output, and scalar-substitution contract while defining deterministic
+  `{{{{` / `}}}}` literal-brace escapes and one-pass substitution.
+- Kept navigation substitutions component-encoded and encoded escaped braces
+  as URI octets. Defined control/bidi rejection for `type_text.value` and
+  confirmation prompts, text-only prompt rendering, and value-setting
+  `type_text` behavior without keyboard/Enter/form-submit events.
+- Aligned integer parameter inputs with the existing accessibility-output
+  safe-integer range (`-9007199254740991` through `9007199254740991`). Added
+  BCP 14 language and current UWS 1.10.0 core references.
+- Preserved Browser 1.5–1.8 schemas/specs and behavior. Browser 1.9 requires an
+  explicit profile selector; empty schema lookup retains Browser 1.8 as its
+  compatibility default. No UWS core schema or wire-model change was made.
+
 ## Browser 1.8 - 2026-09-23
 
 - Added `uws.browser.1.8` with single-pass `{{name}}` parameter templates in
