@@ -12,9 +12,11 @@ the meaning or scope of a published schema or sub-spec is recorded as an
 - A published UWS document selects the schema whose filename exactly matches
   its declared `uws` version. The latest schema is not a fallback for older,
   prerelease, or unpublished versions.
-- A prerelease or unpublished version is usable only when the corresponding
-  exact schema artifact is available to the validator; otherwise validation
-  fails closed. This repository publishes no UWS prerelease schemas.
+- Core semantic validation and execution accept only declared versions for
+  which this distribution publishes an exact UWS core schema. An external
+  schema file for an unpublished or prerelease version does not make that
+  version supported; document validation fails closed. This repository
+  publishes no UWS prerelease schemas.
 - Semantic feature gates use SemVer precedence. A prerelease sorts before the
   corresponding final release, and a later-version prerelease sorts after
   earlier stable releases. Later published rules are not applied retroactively
@@ -22,6 +24,20 @@ the meaning or scope of a published schema or sub-spec is recorded as an
   SemVer syntax even though the published schema pattern is broader.
 - This policy clarifies version selection and validator behavior; it does not
   amend the bytes or normative requirements of earlier published artifacts.
+
+## Cross-Version Validator Correction - 2026-09-23
+
+- Direct UWS semantic validation and execution now reject syntactically valid
+  prerelease, future, or unpublished patch/minor versions even when an exact
+  external schema file is available. File validation continues to select only
+  the exact declared schema and also rejects versions outside the published
+  core-version set.
+- This admission guard intentionally applies to every declared version,
+  including older documents. It is an explicit bug-fix exception to the
+  general promise that an older declaration retains prior behavior; it does
+  not apply later published feature semantics retroactively. The `1.0.0-beta.1`
+  string is valid SemVer syntax but is not a supported UWS version because no
+  matching core schema is published.
 
 ## Browser 1.8 - 2026-09-23
 

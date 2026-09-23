@@ -51,21 +51,26 @@ vocabulary.
 Published UWS versions select the schema with the exact matching filename
 (for example, `uws: 1.9.1` selects `versions/1.9.1.json`). Schema lookup does
 not infer a version from the newest available schema and does not silently
-substitute another version. A prerelease or unpublished version can be
-validated only when its exact schema artifact is supplied through the normal
-schema lookup paths; otherwise validation fails with the missing-schema error.
-This also applies to a prerelease of an otherwise published version: a
-`1.9.2-rc.1` declaration requires `1.9.2-rc.1.json`.
+substitute another version. Core semantic validation and execution also require
+the declared version to have a published core schema. A custom or externally
+supplied schema does not make an unpublished version supported; a
+prerelease, future version, or unpublished patch/minor version fails closed
+even if a same-named file is available. The generic `validation.ValidateFile`
+API may validate against any explicitly supplied schema, but it does not
+establish that the document is a supported UWS core version.
 
-Feature gates compare valid UWS 1.x Semantic Versions using SemVer precedence.
-A prerelease sorts before the final release with the same numeric version, so
-`1.9.2-rc.1` does not acquire features introduced in `1.9.2`. A prerelease of a
-later version, such as `1.9.3-rc.1`, sorts after `1.9.2` and includes its
-features. Prerelease text must follow SemVer syntax; the published schema's
-broad version pattern is not sufficient to make a malformed version valid. A
-missing `uws` value remains invalid; schema lookup's historical 1.0.0 default
-is only a bootstrap for structural validation and does not make an undeclared
-version valid.
+Feature gates compare valid, supported UWS 1.x Semantic Versions using SemVer
+precedence. Prerelease text must follow SemVer syntax; the published schema's
+broad version pattern is not sufficient to make malformed syntax valid. A
+syntactically valid prerelease such as `1.9.2-rc.1` is still unsupported
+unless that exact core version is published. Missing `uws` remains invalid;
+schema lookup's historical 1.0.0 default is only a bootstrap for structural
+validation and does not make an undeclared version valid.
+
+The exact-version admission guard is an intentional cross-version bug fix:
+documents declaring older published versions now fail closed when the declared
+version itself is unpublished. This guard does not apply later feature rules to
+older documents; those rules remain gated by their declared version.
 
 ## Advisory Content-Trust Analysis
 

@@ -263,6 +263,25 @@ func TestValidateDocumentFileRejectsUnpublishedVersions(t *testing.T) {
 	}
 }
 
+func TestValidateDocumentFileRejectsUnpublishedVersionWithExternalSchema(t *testing.T) {
+	const version = "1.99.0"
+	schemaDir := t.TempDir()
+	t.Setenv("UWS_SCHEMA_DIR", schemaDir)
+	schemaPath := filepath.Join(schemaDir, version+".json")
+	if err := os.WriteFile(schemaPath, []byte(`{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	documentPath := filepath.Join(t.TempDir(), "unsupported.uws.json")
+	body := fmt.Sprintf(`{"uws":%q,"info":{"title":"unsupported","version":"1.0.0"},"operations":[{"operationId":"op","x-uws-operation-profile":"uws.runtime.1.0"}]}`, version)
+	if err := os.WriteFile(documentPath, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := ValidateDocumentFile(documentPath); err == nil || !strings.Contains(err.Error(), "is not a published UWS version") {
+		t.Fatalf("ValidateDocumentFile with an external exact schema error = %v, want unpublished-version rejection", err)
+	}
+}
+
 func TestValidateDocumentFileAcceptsOperationRefStepFromJSONMarshal(t *testing.T) {
 	dir := t.TempDir()
 	doc := &uws1.Document{
