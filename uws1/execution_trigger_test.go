@@ -107,6 +107,28 @@ func TestTriggerNumericLabelTakesPrecedenceOverIndex(t *testing.T) {
 	assert.Equal(t, []string{"fetch"}, runtime.leafs())
 }
 
+func TestDocumentDispatchTriggerRejectsOutOfRangeOutputIndex(t *testing.T) {
+	doc := testDocument(&Operation{OperationID: "fetch"})
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		Steps:      []*Step{{StepID: "fetch_step", OperationRef: "fetch"}},
+	}}
+	doc.Triggers = []*Trigger{{
+		TriggerID: "incoming",
+		Outputs:   []string{"primary"},
+		Routes: []*TriggerRoute{{
+			TriggerRouteFields: TriggerRouteFields{Output: "1", To: []string{"fetch_step"}},
+		}},
+	}}
+	runtime := &mockRuntime{}
+	doc.SetRuntime(runtime)
+
+	err := NewOrchestrator(doc, runtime).ExecuteTrigger(context.Background(), "incoming", 1, nil)
+	require.ErrorContains(t, err, "output index 1 is out of range")
+	assert.Empty(t, runtime.leafs())
+}
+
 func TestDocumentDispatchTriggerRejectsUnknownTarget(t *testing.T) {
 	doc := testDocument(&Operation{OperationID: "fetch"})
 	doc.Workflows = []*Workflow{{

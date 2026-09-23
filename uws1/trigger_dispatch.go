@@ -54,6 +54,9 @@ func (o *Orchestrator) resolveTriggerTargets(trigger *Trigger, output int) ([]st
 	if trigger == nil {
 		return nil, fmt.Errorf("uws1: trigger is required")
 	}
+	if output < 0 || output >= len(trigger.Outputs) {
+		return nil, fmt.Errorf("uws1: trigger %q output index %d is out of range", trigger.TriggerID, output)
+	}
 	outputKey := strconv.Itoa(output)
 	targetSet := make(map[string]struct{})
 	var targets []string
