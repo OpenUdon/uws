@@ -146,7 +146,7 @@ func (o *Orchestrator) executeWorkflow(ctx context.Context, wf *Workflow, key st
 		kind: "workflow:" + wf.Type, responseID: wf.WorkflowID,
 		dependencies: wf.DependsOn, dependencyScope: workflowScope,
 		outputsScope: workflowScope, when: wf.When, forEach: wf.ForEach,
-		timeout: wf.Timeout, outputs: wf.Outputs,
+		wait: wf.Wait, timeout: wf.Timeout, outputs: wf.Outputs,
 		run: func(ctx context.Context) error {
 			runKey := o.keyForContext(ctx, key)
 			structuralCtx := ctx
@@ -178,7 +178,7 @@ func (o *Orchestrator) ExecuteStep(ctx context.Context, step *Step) error {
 		key: stepKey(step.StepID), id: step.StepID,
 		kind: "step:" + step.Type, responseID: responseID,
 		dependencies: step.DependsOn, when: step.When, forEach: step.ForEach,
-		timeout: step.Timeout, outputs: step.Outputs,
+		wait: step.Wait, timeout: step.Timeout, outputs: step.Outputs,
 		run: func(ctx context.Context) error {
 			if step.Inputs != nil {
 				ctx = withInputsContext(ctx, step.Inputs)
@@ -224,7 +224,7 @@ func (o *Orchestrator) executeOperationByIDWithKey(ctx context.Context, operatio
 	return o.executeRunnable(ctx, runnableExecution{
 		key: key, id: op.OperationID, kind: "operation", responseID: op.OperationID,
 		dependencies: op.DependsOn, when: op.When, forEach: op.ForEach,
-		outputs: op.Outputs,
+		wait: op.Wait, outputs: op.Outputs,
 		run: func(ctx context.Context) error {
 			return o.executeOperation(ctx, op, key)
 		},

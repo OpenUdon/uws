@@ -3,6 +3,7 @@ package uws1
 import (
 	"context"
 	"errors"
+	"math"
 	"sync"
 	"testing"
 	"time"
@@ -94,6 +95,110 @@ func TestOrchestratorExecuteSequenceWorkflow(t *testing.T) {
 	if len(runtime.executedLeafs) != 2 || runtime.executedLeafs[0] != "op1" || runtime.executedLeafs[1] != "op2" {
 		t.Fatalf("unexpected execution order: %v", runtime.executedLeafs)
 	}
+}
+
+func TestNonAwaitWaitDelaysRunnableOnlyFromUWS110(t *testing.T) {
+	runtime := &mockRuntime{expressions: map[string]any{"delay": 0.02}}
+	doc := waitTestDocument(&Operation{
+		OperationID:              "delayed",
+		OperationExecutionFields: OperationExecutionFields{Wait: "delay"},
+	})
+	doc.Runtime = runtime
+	start := time.Now()
+	require.NoError(t, doc.Execute(context.Background()))
+	require.GreaterOrEqual(t, time.Since(start), 15*time.Millisecond)
+	require.Equal(t, []string{"delayed"}, runtime.leafs())
+
+	legacyRuntime := &mockRuntime{expressions: map[string]any{"delay": 1.0}}
+	legacy := waitTestDocument(&Operation{
+		OperationID:              "legacy",
+		OperationExecutionFields: OperationExecutionFields{Wait: "delay"},
+	})
+	legacy.UWS = "1.9.2"
+	legacy.Runtime = legacyRuntime
+	start = time.Now()
+	require.NoError(t, legacy.Execute(context.Background()))
+	require.Less(t, time.Since(start), 100*time.Millisecond)
+	require.Equal(t, []string{"legacy"}, legacyRuntime.leafs())
+}
+
+func TestNonAwaitWaitRejectsInvalidDurationsBeforeLeafExecution(t *testing.T) {
+	for name, value := range map[string]any{
+		"text": "1", "boolean": true, "negative": -1.0,
+		"too large": float64(maxWaitSeconds) + 1, "nan": math.NaN(), "infinity": math.Inf(1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			runtime := &mockRuntime{expressions: map[string]any{"delay": value}}
+			doc := waitTestDocument(&Operation{
+				OperationID:              "invalid_wait",
+				OperationExecutionFields: OperationExecutionFields{Wait: "delay"},
+			})
+			doc.Runtime = runtime
+			err := doc.Execute(context.Background())
+			require.ErrorContains(t, err, "wait duration")
+			require.Empty(t, runtime.leafs())
+		})
+	}
+}
+
+func TestNonAwaitWaitHonorsContextCancellation(t *testing.T) {
+	runtime := &mockRuntime{expressions: map[string]any{"delay": 1.0}}
+	doc := waitTestDocument(&Operation{
+		OperationID:              "cancelled_wait",
+		OperationExecutionFields: OperationExecutionFields{Wait: "delay"},
+	})
+	doc.Runtime = runtime
+	ctx, cancel := context.WithCancel(context.Background())
+	time.AfterFunc(10*time.Millisecond, cancel)
+	err := doc.Execute(ctx)
+	require.ErrorIs(t, err, context.Canceled)
+	require.Empty(t, runtime.leafs())
+}
+
+func TestNonAwaitWaitAppliesToWorkflowStepAndOperation(t *testing.T) {
+	runtime := &mockRuntime{expressions: map[string]any{"delay": 0.01}}
+	doc := waitTestDocument(&Operation{
+		OperationID:              "nested_wait",
+		OperationExecutionFields: OperationExecutionFields{Wait: "delay"},
+	})
+	doc.Workflows[0].Wait = "delay"
+	doc.Workflows[0].Steps[0].Wait = "delay"
+	doc.Runtime = runtime
+	start := time.Now()
+	require.NoError(t, doc.Execute(context.Background()))
+	require.GreaterOrEqual(t, time.Since(start), 25*time.Millisecond)
+	require.Equal(t, []string{"nested_wait"}, runtime.leafs())
+}
+
+func TestAwaitWaitRemainsPredicateUnderUWS110(t *testing.T) {
+	runtime := &mockRuntime{expressions: map[string]any{"ready": true}}
+	doc := testDocument(&Operation{OperationID: "after_await"})
+	doc.UWS = "1.10.0"
+	doc.Workflows = []*Workflow{{
+		WorkflowID:              "main",
+		Type:                    WorkflowTypeAwait,
+		WorkflowExecutionFields: WorkflowExecutionFields{Wait: "ready"},
+		Steps:                   []*Step{{StepID: "run", OperationRef: "after_await"}},
+	}}
+	doc.Runtime = runtime
+	start := time.Now()
+	require.NoError(t, doc.Execute(context.Background()))
+	require.Less(t, time.Since(start), 100*time.Millisecond)
+	require.Equal(t, []string{"after_await"}, runtime.leafs())
+}
+
+func waitTestDocument(op *Operation) *Document {
+	doc := testDocument(op)
+	doc.UWS = "1.10.0"
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSequence,
+		Steps: []*Step{{
+			StepID:       "run",
+			OperationRef: op.OperationID,
+		}},
+	}}
+	return doc
 }
 
 func TestStepInputsAreVisiblePerOperationInvocation(t *testing.T) {

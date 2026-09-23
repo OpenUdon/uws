@@ -4,8 +4,10 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 )
@@ -20,6 +22,7 @@ type runnableExecution struct {
 	outputsScope    string
 	when            string
 	forEach         string
+	wait            string
 	timeout         *float64
 	outputs         map[string]string
 	run             func(context.Context) error
@@ -61,6 +64,11 @@ func (o *Orchestrator) executeRunnable(ctx context.Context, spec runnableExecuti
 			return nil
 		}
 		return executeWithTimeout(ctx, spec.timeout, func(runCtx context.Context) error {
+			if spec.wait != "" && !strings.HasSuffix(spec.kind, ":await") && o.Document != nil && supportsUWSVersionAtLeast(o.Document.UWS, 1, 10, 0) {
+				if err := o.waitBeforeRun(runCtx, spec.wait, spec.id); err != nil {
+					return err
+				}
+			}
 			if spec.forEach != "" {
 				return o.executeForEach(runCtx, forEachExecution{
 					execKey: execKey, baseKey: spec.key, id: spec.id, kind: spec.kind,
@@ -78,6 +86,68 @@ func (o *Orchestrator) executeRunnable(ctx context.Context, spec runnableExecuti
 			return o.finalizeOutputs(outputsCtx, execKey, spec.id, spec.kind, spec.responseID, spec.outputs)
 		})
 	})
+}
+
+const maxWaitSeconds = 86400
+
+func (o *Orchestrator) waitBeforeRun(ctx context.Context, expression, id string) error {
+	value, err := o.Runtime.EvaluateExpression(ctx, expression)
+	if err != nil {
+		return fmt.Errorf("evaluating wait duration for %q: %w", id, err)
+	}
+	seconds, ok := waitSecondsNumber(value)
+	if !ok || math.IsNaN(seconds) || math.IsInf(seconds, 0) || seconds < 0 || seconds > maxWaitSeconds {
+		return fmt.Errorf("wait duration for %q must resolve to a finite number from 0 through %d seconds", id, maxWaitSeconds)
+	}
+	if seconds == 0 {
+		return ctx.Err()
+	}
+	nanoseconds := math.Round(seconds * float64(time.Second))
+	if nanoseconds < 1 {
+		return ctx.Err()
+	}
+	timer := time.NewTimer(time.Duration(nanoseconds))
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return ctx.Err()
+	}
+}
+
+func waitSecondsNumber(value any) (float64, bool) {
+	switch typed := value.(type) {
+	case json.Number:
+		seconds, err := typed.Float64()
+		return seconds, err == nil
+	case float64:
+		return typed, true
+	case float32:
+		return float64(typed), true
+	case int:
+		return float64(typed), true
+	case int8:
+		return float64(typed), true
+	case int16:
+		return float64(typed), true
+	case int32:
+		return float64(typed), true
+	case int64:
+		return float64(typed), true
+	case uint:
+		return float64(typed), true
+	case uint8:
+		return float64(typed), true
+	case uint16:
+		return float64(typed), true
+	case uint32:
+		return float64(typed), true
+	case uint64:
+		return float64(typed), true
+	default:
+		return 0, false
+	}
 }
 
 func executeWithTimeout(ctx context.Context, timeout *float64, run func(context.Context) error) error {
