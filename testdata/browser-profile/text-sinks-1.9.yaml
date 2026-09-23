@@ -1,0 +1,35 @@
+profile: uws.browser.1.9
+info:
+  title: Reviewed text-sink example
+  origin: https://example.test
+observationKind: accessibility_snapshot
+evidence:
+  learnedAt: "2026-09-23T00:00:00Z"
+confidence: high
+expiresAfter: P30D
+verification:
+  lastVerifiedAt: "2026-09-23T00:00:00Z"
+  successfulRuns: 1
+actions:
+  review_record:
+    description: Review one record without submitting a form.
+    parameters:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+          default: 9007199254740991
+        comment:
+          type: string
+          default: Reviewed text
+    sequence:
+      - navigate: "/records/{{id}}?literal={{{{tag}}}}"
+      - type_text:
+          locator: { role: textbox, name: "Price {USD}" }
+          value: "{{{{literal}}}} {{comment}}"
+    sideEffects: [read_only]
+    confirmationPolicy:
+      required: false
+      prompt: "Review {{id}}: {{{{record}}}}"

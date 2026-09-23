@@ -13,10 +13,15 @@ var browserTemplateName = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9_-]*$`)
 // substitution contract. Concrete parameter values and defaults are checked
 // by a runtime before it begins executing an action sequence.
 func validateBrowser18Templates(root map[string]any) error {
+	return validateBrowserTemplates(root, parseBrowserTemplateNames, validateBrowserNavigateTemplate, nil)
+}
+
+func validateBrowserTemplates(root map[string]any, parseNames func(string) ([]string, error), validateNavigate func(string) error, validateText func(string, string) error) error {
 	actions, _ := root["actions"].(map[string]any)
 	for actionName, rawAction := range actions {
 		action, _ := rawAction.(map[string]any)
 		properties := browserParameterProperties(action["parameters"])
+		parameterDefaults := browserParameterDefaults(action["parameters"])
 		allowed := make(map[string]bool)
 		sequence, _ := action["sequence"].([]any)
 		for index, rawStep := range sequence {
@@ -32,7 +37,7 @@ func validateBrowser18Templates(root map[string]any) error {
 					path += ".url"
 				}
 				allowed[path] = true
-				if err := validateBrowserNavigateTemplate(target); err != nil {
+				if err := validateNavigate(target); err != nil {
 					return fmt.Errorf("%s: %w", path, err)
 				}
 			}
@@ -62,13 +67,18 @@ func validateBrowser18Templates(root map[string]any) error {
 					}
 				}
 			case string:
+				if validateText != nil {
+					if err := validateText(path, typed); err != nil {
+						return err
+					}
+				}
 				if !strings.Contains(typed, "{{") && !strings.Contains(typed, "}}") {
 					return nil
 				}
 				if !allowed[path] {
 					return fmt.Errorf("%s: parameter templates are not permitted in this field", path)
 				}
-				names, err := parseBrowserTemplateNames(typed)
+				names, err := parseNames(typed)
 				if err != nil {
 					return fmt.Errorf("%s: %w", path, err)
 				}
@@ -80,6 +90,13 @@ func validateBrowser18Templates(root map[string]any) error {
 					if typeName == "" {
 						return fmt.Errorf("%s: parameter %q must have exactly one scalar type (string, boolean, integer, or number)", path, name)
 					}
+					if validateText != nil {
+						if defaultValue, ok := parameterDefaults[name].(string); ok {
+							if err := validateText(path, defaultValue); err != nil {
+								return fmt.Errorf("%s: default for parameter %q: %w", path, name, err)
+							}
+						}
+					}
 				}
 			}
 			return nil
@@ -89,6 +106,19 @@ func validateBrowser18Templates(root map[string]any) error {
 		}
 	}
 	return nil
+}
+
+func browserParameterDefaults(raw any) map[string]any {
+	result := make(map[string]any)
+	parameters, _ := raw.(map[string]any)
+	properties, _ := parameters["properties"].(map[string]any)
+	for name, rawProperty := range properties {
+		property, _ := rawProperty.(map[string]any)
+		if value, ok := property["default"]; ok {
+			result[name] = value
+		}
+	}
+	return result
 }
 
 func browserParameterProperties(raw any) map[string]string {

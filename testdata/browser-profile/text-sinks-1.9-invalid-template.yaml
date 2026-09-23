@@ -1,0 +1,22 @@
+profile: uws.browser.1.9
+info:
+  title: Invalid template placement example
+  origin: https://example.test
+observationKind: accessibility_snapshot
+evidence:
+  learnedAt: "2026-09-23T00:00:00Z"
+confidence: high
+expiresAfter: P30D
+verification:
+  lastVerifiedAt: "2026-09-23T00:00:00Z"
+  successfulRuns: 1
+actions:
+  review_record:
+    description: "Template escapes are forbidden in descriptions: {{{{literal}}}}"
+    sequence:
+      - wait_for:
+          role: status
+          name: Ready
+    sideEffects: [read_only]
+    confirmationPolicy:
+      required: false
