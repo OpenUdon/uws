@@ -118,16 +118,38 @@ func (o *Orchestrator) gotoTarget(ctx context.Context, signal *gotoSignal) (func
 		if step == nil {
 			return nil, fmt.Errorf("uws1: goto step target %q not found", signal.stepID)
 		}
-		return func(ctx context.Context) error { return o.ExecuteStep(ctx, step) }, nil
+		guard := gotoTargetGuard{key: stepKey(signal.stepID), description: fmt.Sprintf("step %q", signal.stepID)}
+		return func(ctx context.Context) error {
+			return o.ExecuteStep(withGotoTargetGuard(ctx, guard), step)
+		}, nil
 	}
 	if signal.workflowID != "" {
 		workflow := o.workflowIndex[signal.workflowID]
 		if workflow == nil {
 			return nil, fmt.Errorf("uws1: goto workflow target %q not found", signal.workflowID)
 		}
-		return func(ctx context.Context) error { return o.ExecuteWorkflow(ctx, workflow) }, nil
+		guard := gotoTargetGuard{key: workflowKey(signal.workflowID), description: fmt.Sprintf("workflow %q", signal.workflowID)}
+		return func(ctx context.Context) error {
+			return o.ExecuteWorkflow(withGotoTargetGuard(ctx, guard), workflow)
+		}, nil
 	}
 	return nil, fmt.Errorf("uws1: goto target is required")
+}
+
+type gotoTargetGuard struct {
+	key         string
+	description string
+}
+
+type gotoTargetGuardContextKey struct{}
+
+func withGotoTargetGuard(ctx context.Context, guard gotoTargetGuard) context.Context {
+	return context.WithValue(ctx, gotoTargetGuardContextKey{}, guard)
+}
+
+func gotoTargetGuardFromContext(ctx context.Context) (gotoTargetGuard, bool) {
+	guard, ok := ctx.Value(gotoTargetGuardContextKey{}).(gotoTargetGuard)
+	return guard, ok
 }
 
 type gotoSignal struct {

@@ -296,6 +296,19 @@ func (o *Orchestrator) executeOnce(ctx context.Context, key, id, kind string, ru
 		return err
 	}
 	o.mu.Lock()
+	if guard, ok := gotoTargetGuardFromContext(ctx); ok && guard.key == key && supportsUWSVersionAtLeast(o.documentVersion(), 1, 11, 0) {
+		if _, inFlight := o.inFlight[key]; inFlight {
+			o.mu.Unlock()
+			return fmt.Errorf("uws1: goto target %s is in flight", guard.description)
+		}
+		if record, exists := o.records[key]; exists {
+			switch record.Status {
+			case "success", "error", "skipped":
+				o.mu.Unlock()
+				return fmt.Errorf("uws1: goto target %s is already completed", guard.description)
+			}
+		}
+	}
 	if record, ok := o.records[key]; ok && record.Status != "running" {
 		cachedErr := o.recordErrors[key]
 		o.mu.Unlock()

@@ -169,6 +169,9 @@ func (o *Orchestrator) mergeDependencyRecords(ctx context.Context, deps []string
 	out := make([]map[string]any, 0, len(ordered))
 	for _, dep := range ordered {
 		keys := o.recordKeysForDependencyLocked(ctx, dep)
+		if supportsUWSVersionAtLeast(o.documentVersion(), 1, 11, 0) {
+			keys = removeIterationAggregateKeys(keys)
+		}
 		for _, key := range keys {
 			record := o.records[key]
 			out = append(out, map[string]any{
@@ -182,6 +185,31 @@ func (o *Orchestrator) mergeDependencyRecords(ctx context.Context, deps []string
 		}
 	}
 	return out
+}
+
+// removeIterationAggregateKeys keeps iteration records at the deepest level
+// present for a dependency. Parent records remain when there are no iteration
+// records (for example, a skipped or zero-item forEach dependency).
+func removeIterationAggregateKeys(keys []string) []string {
+	aggregates := make(map[string]struct{})
+	for _, key := range keys {
+		base, path, hasPath := splitExecutionIterationKey(key)
+		if !hasPath {
+			continue
+		}
+		for depth := 0; depth < len(path); depth++ {
+			parent := compositeIterationKey(base, path[:depth])
+			aggregates[parent] = struct{}{}
+		}
+	}
+
+	filtered := make([]string, 0, len(keys))
+	for _, key := range keys {
+		if _, aggregate := aggregates[key]; !aggregate {
+			filtered = append(filtered, key)
+		}
+	}
+	return filtered
 }
 
 // recordKeysForDependencyLocked returns the record keys associated with a
