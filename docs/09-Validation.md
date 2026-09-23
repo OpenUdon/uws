@@ -10,7 +10,9 @@
 
 ### Layer 1: Structural (JSON Schema)
 
-The latest published JSON Schema (`versions/1.9.2.json`) validates document shape:
+The JSON Schema selected by the document's exact `uws` value validates
+document shape. The latest published core schema is
+`versions/1.9.2.json`; it is not substituted for older or unpublished versions.
 
 - Required fields (`uws`, `info`, `operations`)
 - Type and format constraints
@@ -41,6 +43,25 @@ built-in JSON Schema format assertions used by UWS contracts. The lower-level
 generic `validation.ValidateFile` follows JSON Schema draft 2020-12 and leaves
 `format` as an annotation unless the supplied schema requires the assertion
 vocabulary.
+
+### Version and Schema Selection
+
+Published UWS versions select the schema with the exact matching filename
+(for example, `uws: 1.9.1` selects `versions/1.9.1.json`). Schema lookup does
+not infer a version from the newest available schema and does not silently
+substitute another version. A prerelease or unpublished version can be
+validated only when its exact schema artifact is supplied through the normal
+schema lookup paths; otherwise validation fails with the missing-schema error.
+This also applies to a prerelease of an otherwise published version: a
+`1.9.2-rc.1` declaration requires `1.9.2-rc.1.json`.
+
+Feature gates compare valid UWS 1.x Semantic Versions using SemVer precedence.
+A prerelease sorts before the final release with the same numeric version, so
+`1.9.2-rc.1` does not acquire features introduced in `1.9.2`. A prerelease of a
+later version, such as `1.9.3-rc.1`, sorts after `1.9.2` and includes its
+features. A missing `uws` value remains invalid; schema lookup's historical
+1.0.0 default is only a bootstrap for structural validation and does not make
+an undeclared version valid.
 
 ## Advisory Content-Trust Analysis
 

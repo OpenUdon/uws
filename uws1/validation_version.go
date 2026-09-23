@@ -2,8 +2,9 @@ package uws1
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
+
+	"golang.org/x/mod/semver"
 )
 
 func (d *Document) validateVersionedFields(result *ValidationResult) {
@@ -130,35 +131,18 @@ func supportsUWSVersion(version string, major, minor int) bool {
 	return supportsUWSVersionAtLeast(version, major, minor, 0)
 }
 
-// supportsUWSVersionAtLeast compares all three numeric components of a UWS
-// version. Pre-release suffixes do not change feature availability; schemas
-// and semantic validation use the declared numeric patch as the wire gate.
+// supportsUWSVersionAtLeast compares a UWS version using SemVer precedence.
+// A pre-release sorts before the corresponding release (1.9.2-rc.1 is less
+// than 1.9.2), while a pre-release of a later patch sorts after earlier
+// releases (1.9.3-rc.1 is greater than 1.9.2).
 func supportsUWSVersionAtLeast(version string, major, minor, patch int) bool {
-	if !uws1VersionPattern.MatchString(version) {
+	if !validUWSVersion(version) {
 		return false
 	}
-	base := version
-	if idx := strings.Index(base, "-"); idx >= 0 {
-		base = base[:idx]
-	}
-	parts := strings.Split(base, ".")
-	if len(parts) != 3 {
-		return false
-	}
-	gotMajor, err := strconv.Atoi(parts[0])
-	if err != nil || gotMajor != major {
-		return false
-	}
-	gotMinor, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return false
-	}
-	gotPatch, err := strconv.Atoi(parts[2])
-	if err != nil {
-		return false
-	}
-	if gotMinor != minor {
-		return gotMinor > minor
-	}
-	return gotPatch >= patch
+	minimum := fmt.Sprintf("v%d.%d.%d", major, minor, patch)
+	return semver.Compare("v"+version, minimum) >= 0
+}
+
+func validUWSVersion(version string) bool {
+	return uws1VersionPattern.MatchString(version) && semver.IsValid("v"+version)
 }

@@ -7,6 +7,21 @@ already-published artifacts may land without an entry; any change that adjusts
 the meaning or scope of a published schema or sub-spec is recorded as an
 "Amended" note under the affected release.
 
+## Version and Schema Selection Policy
+
+- A published UWS document selects the schema whose filename exactly matches
+  its declared `uws` version. The latest schema is not a fallback for older,
+  prerelease, or unpublished versions.
+- A prerelease or unpublished version is usable only when the corresponding
+  exact schema artifact is available to the validator; otherwise validation
+  fails closed. This repository publishes no UWS prerelease schemas.
+- Semantic feature gates use SemVer precedence. A prerelease sorts before the
+  corresponding final release, and a later-version prerelease sorts after
+  earlier stable releases. Later published rules are not applied retroactively
+  to an earlier declared version.
+- This policy clarifies version selection and validator behavior; it does not
+  amend the bytes or normative requirements of earlier published artifacts.
+
 ## 1.9.2 Compatible Corrections - 2026-09-19
 
 - Rejected `steps`, `cases`, and `default` properties on operation- and

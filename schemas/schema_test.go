@@ -74,6 +74,16 @@ func TestPathForVersionHonorsSchemaDir(t *testing.T) {
 	}
 }
 
+func TestPathForVersionRequiresExactUnpublishedPrereleaseSchema(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("UWS_SCHEMA_DIR", dir)
+	path := PathForVersion(".", "1.9.3-rc.1")
+	want := filepath.Join(dir, "1.9.3-rc.1.json")
+	if path != want {
+		t.Fatalf("PathForVersion = %q, want exact prerelease schema path %q", path, want)
+	}
+}
+
 func TestPathForVersionHonorsOpenUdonAlias(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("UWS_SCHEMA_DIR", "")

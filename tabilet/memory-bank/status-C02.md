@@ -31,6 +31,6 @@ acceptance checks.
 
 | Item | State | Notes |
 |---|---|---|
-| Decide version and schema selection policy | `[ ]` | Define published, prerelease, and unpublished handling with SemVer-aware comparison and documented schema selection; reconcile versioning prose without mutating immutable history. Owners: A5, C13, D12. |
+| Decide version and schema selection policy | `[+]` | Completed 2026-09-23. Published documents use the exact matching schema artifact; prerelease and unpublished versions require a matching artifact and never fall back to the latest published schema. Feature gates use SemVer precedence, including prerelease ordering, and malformed prerelease identifiers are rejected. Documented in the validation guide and changelog without modifying immutable specifications or schemas. `go test ./uws1 ./schemas ./validation` and `git diff --check` passed. Owners: A5, C13, D12. |
 | Gate semantic and execution rules by declared version | `[ ]` | Isolate 1.9.2 reference-step and canonical-pointer rules and 1.5 step inputs; add older-version regressions. Owner: A4. |
 | Add cross-version compatibility corpus | `[ ]` | Compare each published 1.x schema and semantic validator with declared-version fixtures; list intended exceptions and test release/prerelease behavior. Owner: E5. |

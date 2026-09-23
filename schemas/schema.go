@@ -83,7 +83,9 @@ var (
 const maxBrowserAuthenticationProfileBytes = 1 << 20
 const maxBrowserRegistrationProfileBytes = 1 << 20
 
-// PathForVersion returns the best local schema path for a UWS document version.
+// PathForVersion returns the local schema path named by the exact UWS version.
+// Unpublished stable and pre-release versions do not silently fall back to a
+// different published schema; callers must provide the matching schema file.
 func PathForVersion(anchorDir, version string) string {
 	version = strings.TrimSpace(version)
 	if version == "" {

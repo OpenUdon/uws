@@ -192,6 +192,10 @@ func TestValidate_BadVersionPattern(t *testing.T) {
 	doc := validDocument()
 	doc.UWS = "2.0.0"
 	assert.ErrorContains(t, doc.Validate(), "does not match pattern")
+
+	doc = validDocument()
+	doc.UWS = "1.9.2-beta.01"
+	assert.ErrorContains(t, doc.Validate(), "invalid SemVer prerelease syntax")
 }
 
 func TestValidate_InfoRequiredFields(t *testing.T) {
