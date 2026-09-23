@@ -769,7 +769,7 @@
                     "type": "string"
                 },
                 "parameters": {
-                    "description": "Inline JSON Schema for action parameters. Browser 1.9 accepts {{name}} templates and {{{{ / }}}} literal-brace escapes only in navigate path/query values, type_text.value, select_option.value, and confirmationPolicy.prompt; referenced parameters must be declared scalar properties. Integer parameter values and integer outputs are limited to ±9007199254740991.",
+                    "description": "Inline JSON Schema for action parameters. Browser 1.9 accepts {{name}} templates and {{{{ / }}}} literal-brace escapes only in navigate path/query values, type_text.value, select_option.value, and confirmationPolicy.prompt; referenced parameters must be declared scalar properties. Integer parameters and integer accessibility-text outputs are limited to ±9007199254740991.",
                     "type": "object"
                 },
                 "sequence": {

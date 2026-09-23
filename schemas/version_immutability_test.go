@@ -43,7 +43,7 @@ var publishedVersionSHA256 = map[string]string{
 	"browser.1.6.json":                     "396d36fff165b2bf4fd6ada45cacad7365f330ab3ae16fc95d9a244e34f819bc",
 	"browser.1.7.json":                     "feed4f71655b232fe6a87db285ac686615f9e2076c64b751e5c945c9463f446b",
 	"browser.1.8.json":                     "5e91a2b05845fb37e484e6f818259b5b19ea85d1532afbe11742ac4fb2caa034",
-	"browser.1.9.json":                     "9dbfdd88af732cca76f77b3026370c6fdd4b218bcfe4007b33b6f90add0a5fa4",
+	"browser.1.9.json":                     "5e2792c8192b71e3d66482ff042aad33243d83def288f2c00750e2eef9237469",
 	"runtime.1.0.json":                     "c8ed61ae855c828767a30d94e667bd7f0b3bed75ee8e36407f815d789fe6cd31",
 }
 
