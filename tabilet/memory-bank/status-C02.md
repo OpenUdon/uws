@@ -26,11 +26,11 @@ schema/validator change formed the evidence. The approved decision is to gate
 | D12 | P3 | P2 | Confirmed policy inconsistency between `versions/1.9.2.md` §1.1 and release history in `versions/CHANGELOG.md`. |
 | E5 | Recommendation | P2 | Confirmed test gap: current version fixtures and `schemas/version_immutability_test.go` do not form a cross-version schema/semantic parity corpus. |
 
-**Review gate.** Ordinary intake; 0 of 10 iterations. Start only after task
-acceptance checks.
+**Review gate.** Iteration 1 of 10 started 2026-09-23 after all task rows and
+acceptance checks completed.
 
 | Item | State | Notes |
 |---|---|---|
 | Decide version and schema selection policy | `[+]` | Completed 2026-09-23. Published documents use the exact matching schema artifact; prerelease and unpublished versions require a matching artifact and never fall back to the latest published schema. Feature gates use SemVer precedence, including prerelease ordering, and malformed prerelease identifiers are rejected. Documented in the validation guide and changelog without modifying immutable specifications or schemas. `go test ./uws1 ./schemas ./validation` and `git diff --check` passed. Owners: A5, C13, D12. |
 | Gate semantic and execution rules by declared version | `[+]` | Completed 2026-09-23. Semantic validation now rejects child blocks on reference steps only from 1.9.2 and step-local inputs before 1.5. JSON Pointer criterion evaluation rejects noncanonical array-index tokens from 1.9.2 while preserving earlier numeric-index behavior. Regression tests cover 1.9.1/1.9.2, 1.4/1.5, and execution of a leading-zero pointer index under the older version. Existing tests using step inputs now declare UWS 1.5. `go test ./uws1 -count=1` and `git diff --check` passed. Owner: A4. |
-| Add cross-version compatibility corpus | `[ ]` | Compare each published 1.x schema and semantic validator with declared-version fixtures; list intended exceptions and test release/prerelease behavior. Owner: E5. |
+| Add cross-version compatibility corpus | `[+]` | Completed 2026-09-23. Added exact-schema plus semantic-validation baseline fixtures for all thirteen published UWS 1.x versions, with explicit boundary cases for 1.1 operation timeouts, 1.5 step inputs, 1.9.1 content trust, and 1.9.2 reference-step blocks. Confirmed unpublished stable and prerelease versions fail when their exact schema is unavailable. Intentional exception: the temporary Ansible source kind remains valid at 1.6 and is rejected from 1.7; all frozen schemas retain their exact historical behavior. `go test ./validation -run 'TestPublishedCoreSchemaAndSemanticCompatibilityCorpus|TestVersionedCompatibilityBoundaries|TestUnpublishedVersionsRequireTheirExactSchemaArtifact' -count=1` and `git diff --check` passed. Owner: E5. |
