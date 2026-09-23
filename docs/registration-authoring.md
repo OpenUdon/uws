@@ -12,9 +12,19 @@ Keep coverage (`unknown` or `partial`) separate from owner review (`pending` or
 list guarantees discovery of every route: authentication, invitations,
 conditional content and unknown routes can hide additional registration types.
 
-The published registration 1.1 schema and Go wire model remain unchanged.
-Existing profiles containing the optional `discovery` member remain valid;
-its historical `coverage: owner_reviewed` value never promises completeness.
+Registration 1.2 is the current profile and call supplement. It retains the 1.1
+typed private inputs, checkpoints and one-attempt controls, and requires a
+reviewed `humanVerification` policy. Consumers must explicitly support the 1.2
+profile and call supplement before browser execution; they must not strip the
+verification field to downgrade a recipe. See the
+[registration 1.2 profile](https://github.com/OpenUdon/uws/blob/main/versions/browser-registration.1.2.md)
+and [1.2 call supplement](https://github.com/OpenUdon/uws/blob/main/versions/browser-registration-call.1.2.md)
+for the bounded provider, frame, request and submission rules.
+
+The published registration 1.1 schema and accepted 1.1 wire contract remain
+unchanged, and existing profiles containing the optional `discovery` member
+remain valid. Its historical `coverage: owner_reviewed` value never promises
+completeness.
 Preserve such profiles through ordinary parsing and round trips. Do not strip
 metadata from an already reviewed or digest-bound profile; author a new profile
 and repeat its applicable reviews if changing those bytes is intended.
@@ -24,4 +34,5 @@ flow and exact profile digest. Filled values, including optional fields and
 checkpoint updates, remain outside packages, Git, prompts and logs. Discovery
 review does not authorize target contact, submission, retries or account cleanup.
 This guidance does not introduce a crawler, alter version defaults, or add typed
-input execution to consumers that have not adopted registration 1.1.
+input or verification execution to consumers that have not adopted the
+corresponding registration version.

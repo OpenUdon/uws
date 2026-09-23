@@ -20,6 +20,30 @@ the meaning or scope of a published schema or sub-spec is recorded as an
   precedence, and `operationRef` and `workflow` remain typed edges.
 - Preserved UWS 1.9.1 and every earlier published artifact byte-for-byte.
 
+## Browser Registration 1.2 - 2026-09-13
+
+- Added `uws.browser-registration.1.2` and
+  `uws.browser-registration-call.1.2`, retaining the 1.1 typed private inputs,
+  checkpoints, and one-attempt controls while requiring a reviewed
+  human-verification policy.
+- Bounded supported Turnstile, reCAPTCHA v2, and hCaptcha adapters by exact
+  provider policy, request/response budgets, frame ancestry, application POST,
+  and nonrenewable operation deadline. Human challenges remain human-operated.
+- Required explicit 1.2 selection and support before browser execution. Kept
+  UWS core, the private input envelope, earlier registration documents, 1.0
+  schema/call defaults, and the 1.1 binding-helper default unchanged.
+
+## Browser Registration 1.1 - 2026-09-07
+
+- Added `uws.browser-registration.1.1` and
+  `uws.browser-registration-call.1.1` with typed private form fields, explicit
+  input checkpoints, and a symbolic runtime-owned input binding.
+- Added `uws.browser-registration-input.1.0` plus browser-free template and
+  update validation helpers. Filled input documents and their digests remain
+  private and outside packages, source control, prompts, logs, and reports.
+- Retained registration profile/call 1.0 and the existing 1.0 schema and call
+  supplement defaults; the unversioned binding helper selects 1.1.
+
 ## 1.9.1 Content Trust - 2026-08-26
 
 - Added the optional root `contentTrust` registry with source-description,

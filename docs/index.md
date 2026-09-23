@@ -92,6 +92,9 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 - **JSON Schema**: [`versions/1.9.2.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.9.2.json)
 - **Content trust**: [declarations, resolvers, propagation, and advisory findings](content-trust.md)
 - **Browser scalar outputs and contexts**: [`versions/browser.1.7.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser.1.7.md)
+- **Browser registration profile**: [`versions/browser-registration.1.2.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser-registration.1.2.md)
+- **Browser registration call supplement**: [`versions/browser-registration-call.1.2.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser-registration-call.1.2.md)
+- **Private registration input envelope**: [`versions/browser-registration-input.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser-registration-input.1.0.md)
 - **Runtime supplement**: [`versions/runtime.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md)
 - **Runtime supplement schema**: [`versions/runtime.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json)
 - **Historical UWS 1.6 Ansible argspec**: [`versions/ansible.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/ansible.1.0.md)
@@ -102,7 +105,7 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 
 ## Start Authoring
 
-If you need to hand-write a workflow, start with the practical [workflow authoring guide](workflow-authoring.md). It shows the minimal YAML shape, operation binding, request values, output flow, workflow steps, triggers, extensions, and a validation checklist before the full specification.
+If you need to hand-write a workflow, start with the practical [workflow authoring guide](workflow-authoring.md). It shows the minimal YAML shape, operation binding, request values, output flow, workflow steps, triggers, extensions, and a validation checklist before the full specification. Authors of browser account-creation profiles should also review the [registration authoring boundaries](registration-authoring.md), including the current 1.2 verification contract and private-input rules.
 
 ## The 10 Major Features
 

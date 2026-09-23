@@ -47,8 +47,8 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - Browser profile supplement: [versions/browser.1.7.md](versions/browser.1.7.md) / [versions/browser.1.7.json](versions/browser.1.7.json)
 - Browser authentication profile: [versions/browser-authentication.1.1.md](versions/browser-authentication.1.1.md) / [versions/browser-authentication.1.1.json](versions/browser-authentication.1.1.json)
 - Browser authentication call supplement: [versions/browser-authentication-call.1.1.md](versions/browser-authentication-call.1.1.md) / [versions/browser-authentication-call.1.1.json](versions/browser-authentication-call.1.1.json)
-- Browser registration profile: [versions/browser-registration.1.1.md](versions/browser-registration.1.1.md) / [versions/browser-registration.1.1.json](versions/browser-registration.1.1.json)
-- Browser registration call supplement: [versions/browser-registration-call.1.1.md](versions/browser-registration-call.1.1.md) / [versions/browser-registration-call.1.1.json](versions/browser-registration-call.1.1.json)
+- Browser registration profile: [versions/browser-registration.1.2.md](versions/browser-registration.1.2.md) / [versions/browser-registration.1.2.json](versions/browser-registration.1.2.json)
+- Browser registration call supplement: [versions/browser-registration-call.1.2.md](versions/browser-registration-call.1.2.md) / [versions/browser-registration-call.1.2.json](versions/browser-registration-call.1.2.json)
 - Private registration input envelope: [versions/browser-registration-input.1.0.md](versions/browser-registration-input.1.0.md) / [versions/browser-registration-input.1.0.json](versions/browser-registration-input.1.0.json)
 - Browser capability distribution milestone: [docs/browser-capability-goal.md](docs/browser-capability-goal.md)
 - UWS 1.6 Ansible argspec (historical): [versions/ansible.1.0.md](versions/ansible.1.0.md) / [versions/ansible.1.0.json](versions/ansible.1.0.json)
@@ -70,6 +70,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - `versions/browser.1.7.*` publishes portable scalar accessibility-text conversion on top of browser 1.6 contexts; immutable browser 1.5/1.6 documents remain accepted.
 - `versions/browser-authentication.1.1.*` and `versions/browser-authentication-call.1.1.*` publish context-capable sign-in recipes and explicit named-session establishment; immutable 1.0 documents remain accepted.
 - `versions/browser-registration.1.0.*` and `versions/browser-registration-call.1.0.*` publish account-creation recipes with symbolic credentials, an explicit submit approval, fail-on-duplicate behavior, no ambiguous retry, and a preselected cleanup disposition.
+- `versions/browser-registration.1.1.*` and `versions/browser-registration-call.1.1.*` add typed private inputs and explicit input checkpoints; `versions/browser-registration.1.2.*` and its call supplement add a reviewed, bounded human-verification policy. Earlier registration documents remain accepted.
 - `versions/ansible.1.0.md` / `versions/ansible.1.0.json` are retained only with the historical UWS 1.6 contract.
 
 The UWS-owned Ansible module-call supplement, its `ansiblemodulecall` Go package,
@@ -105,13 +106,19 @@ optional discovery metadata remains accepted for compatibility. Discovery
 inventory, coverage limitations and owner review belong in authoring tools
 such as OpenUdon's iCoT; new portable recipes should omit that metadata. See
 [registration authoring boundaries](docs/registration-authoring.md).
+Registration 1.2 retains those private-input and one-attempt controls and
+requires a reviewed, bounded human-verification policy. Consumers must select
+and support the 1.2 profile and call supplement explicitly before browser
+execution; they must not remove the verification contract to downgrade it.
 A local form or editable JSON draft can collect all
 inputs for one registration type, including optional and conditional fields.
 The filled input envelope remains owner-private outside the package. Use
 `schemas.BrowserRegistrationInputTemplate` and
 `schemas.ValidateBrowserRegistrationInputUpdate` for browser-free preparation
-and validation. Profile/call 1.0, the unversioned call validator and schema
-lookup defaults retain their original meanings; select 1.1 explicitly.
+and validation. Profile/call schema lookup defaults and the unversioned call
+supplement validator retain their 1.0 meanings;
+`ValidateBrowserRegistrationCallBinding` retains its 1.1 default. Select 1.2
+through the explicit versioned APIs.
 The extension defines runtime obligations but does not itself discover pages,
 provide a form UI or add execution support to a downstream browser driver.
 
