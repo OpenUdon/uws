@@ -339,6 +339,23 @@ func TestOrchestratorExecuteSwitch(t *testing.T) {
 	}
 }
 
+func TestSwitchUsesDeclarationOrderAndFirstUnguardedCase(t *testing.T) {
+	doc := testDocument(&Operation{OperationID: "first"}, &Operation{OperationID: "later"})
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeSwitch,
+		Cases: []*Case{
+			{CaseFields: CaseFields{Name: "fallback"}, Steps: []*Step{{StepID: "first_step", OperationRef: "first"}}},
+			{CaseFields: CaseFields{Name: "later", When: "true"}, Steps: []*Step{{StepID: "later_step", OperationRef: "later"}}},
+		},
+	}}
+	runtime := &mockRuntime{expressions: map[string]any{"true": true}}
+	doc.SetRuntime(runtime)
+
+	require.NoError(t, doc.Execute(context.Background()))
+	assert.Equal(t, []string{"first"}, runtime.executedLeafs)
+}
+
 func TestOrchestratorExecuteLoop(t *testing.T) {
 	doc := testDocument(&Operation{OperationID: "op1"})
 	doc.Workflows = []*Workflow{{
@@ -357,6 +374,69 @@ func TestOrchestratorExecuteLoop(t *testing.T) {
 	}
 	if len(runtime.executedLeafs) != 3 {
 		t.Fatalf("expected 3 loop executions, got %v", runtime.executedLeafs)
+	}
+}
+
+func TestLoopResultUsesOrderedItemRecordsAndBatchIndexes(t *testing.T) {
+	doc := testDocument(&Operation{OperationID: "noop"})
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main",
+		Type:       WorkflowTypeLoop,
+		StructuralFields: StructuralFields{
+			Items:     "items",
+			BatchSize: "batch",
+		},
+	}}
+	doc.SetRuntime(&mockRuntime{
+		items:       map[string][]any{"items": {"a", "b", "c"}},
+		expressions: map[string]any{"batch": 2},
+	})
+
+	require.NoError(t, doc.Execute(context.Background()))
+	result := doc.ExecutionRecords()["wf:main"].Result
+	rows, ok := result.([]map[string]any)
+	require.True(t, ok, "unexpected loop result type: %#v", result)
+	require.Len(t, rows, 3)
+	for i, want := range []struct {
+		item       string
+		batchIndex int
+	}{{"a", 0}, {"b", 0}, {"c", 1}} {
+		assert.Equal(t, i, rows[i]["index"])
+		assert.Equal(t, want.batchIndex, rows[i]["batchIndex"])
+		assert.Equal(t, want.item, rows[i]["item"])
+	}
+}
+
+func TestForEachResultAndOutputsPreserveIterationOrder(t *testing.T) {
+	doc := testDocument(&Operation{
+		OperationID: "op",
+		Outputs:     map[string]string{"item": "$item"},
+	})
+	doc.Workflows = []*Workflow{{
+		WorkflowID: "main", Type: WorkflowTypeSequence,
+		Steps: []*Step{{StepID: "each", OperationRef: "op", StepExecutionFields: StepExecutionFields{ForEach: "items"}, Outputs: map[string]string{"item": "$item"}}},
+	}}
+	doc.SetRuntime(&mockRuntime{
+		items: map[string][]any{"items": {"a", "b", "c"}},
+		eval: func(ctx context.Context, expr string) (any, error) {
+			state, _ := ExecutionContextFromContext(ctx)
+			if expr == "$item" && state != nil && state.Iteration != nil {
+				return state.Iteration.Item, nil
+			}
+			return nil, nil
+		},
+	})
+
+	require.NoError(t, doc.Execute(context.Background()))
+	record := doc.ExecutionRecords()["step:each"]
+	rows, ok := record.Result.([]map[string]any)
+	require.True(t, ok, "unexpected forEach result type: %#v", record.Result)
+	require.Len(t, rows, 3)
+	assert.Equal(t, []any{"a", "b", "c"}, record.Outputs["item"])
+	for i, row := range rows {
+		assert.Equal(t, i, row["index"])
+		assert.Equal(t, []any{"a", "b", "c"}[i], row["item"])
+		assert.Equal(t, "success", row["status"])
 	}
 }
 
