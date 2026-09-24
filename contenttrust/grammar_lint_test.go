@@ -41,7 +41,7 @@ func TestExpressionGrammarDocsAndVersionedFixtures(t *testing.T) {
 		if err := yaml.Unmarshal(block, &example); err != nil {
 			t.Fatalf("docs/03 YAML example %d: %v", i, err)
 		}
-		lintExpressions(t, example, "1.11.0", false, fmt.Sprintf("docs/03/yaml[%d]", i), docAllowances, seenDocAllowances)
+		lintExpressions(t, example, "1.11.0", false, fmt.Sprintf("docs/03/yaml[%d]", i), docAllowances, seenDocAllowances, false)
 	}
 	for path := range docAllowances {
 		if !seenDocAllowances[path] {
@@ -60,7 +60,7 @@ func TestExpressionGrammarDocsAndVersionedFixtures(t *testing.T) {
 	if version != "1.11.0" {
 		t.Fatalf("grammar fixture declares UWS %q, want 1.11.0", version)
 	}
-	lintExpressions(t, value, version, false, "testdata/grammar/1.11.0.json", nil, nil)
+	lintExpressions(t, value, version, false, "testdata/grammar/1.11.0.json", nil, nil, false)
 
 	legacyAllowances := map[string]legacyGrammarAllowance{
 		"/operations/0/outputs/petList": {
@@ -89,7 +89,7 @@ func TestExpressionGrammarDocsAndVersionedFixtures(t *testing.T) {
 		t.Fatalf("sample fixture declares UWS %q, want 1.0.0", sampleVersion)
 	}
 	seenAllowances := make(map[string]bool)
-	lintExpressions(t, sampleValue, sampleVersion, false, "", legacyAllowances, seenAllowances)
+	lintExpressions(t, sampleValue, sampleVersion, false, "", legacyAllowances, seenAllowances, false)
 	for path, allowance := range legacyAllowances {
 		if !seenAllowances[path] {
 			t.Errorf("stale legacy expression allowance at %s (%s)", path, allowance.reason)
@@ -197,10 +197,11 @@ func lintHCLExpressionStrings(t *testing.T, block []byte, blockPath string) {
 	}
 }
 
-func lintExpressions(t *testing.T, value any, version string, loopContext bool, path string, allowances map[string]legacyGrammarAllowance, seen map[string]bool) {
+func lintExpressions(t *testing.T, value any, version string, loopContext bool, path string, allowances map[string]legacyGrammarAllowance, seen map[string]bool, awaitWait bool) {
 	t.Helper()
 	switch typed := value.(type) {
 	case map[string]any:
+		isAwait := typed["type"] == "await"
 		childLoop := loopContext
 		if typed["type"] == "loop" {
 			childLoop = true
@@ -214,15 +215,16 @@ func lintExpressions(t *testing.T, value any, version string, loopContext bool, 
 		sort.Strings(keys)
 		for _, key := range keys {
 			fieldLoop := childLoop
+			fieldAwaitWait := isAwait && key == "wait"
 			switch key {
 			case "when", "forEach", "wait", "items", "batchSize", "condition", "context":
 				fieldLoop = loopContext
 			}
-			lintExpressions(t, typed[key], version, fieldLoop, jsonPointer(path, key), allowances, seen)
+			lintExpressions(t, typed[key], version, fieldLoop, jsonPointer(path, key), allowances, seen, fieldAwaitWait)
 		}
 	case []any:
 		for index, item := range typed {
-			lintExpressions(t, item, version, loopContext, jsonPointer(path, fmt.Sprint(index)), allowances, seen)
+			lintExpressions(t, item, version, loopContext, jsonPointer(path, fmt.Sprint(index)), allowances, seen, awaitWait)
 		}
 	case string:
 		key := path[strings.LastIndex(path, "/")+1:]
@@ -230,7 +232,11 @@ func lintExpressions(t *testing.T, value any, version string, loopContext bool, 
 		if !strings.Contains(typed, "$") && !isFieldExpression {
 			return
 		}
-		allowNumeric := key == "wait" || key == "batchSize"
+		constructType := ""
+		if awaitWait {
+			constructType = "await"
+		}
+		allowNumeric := numericLiteralAllowedForField(key, constructType)
 		if _, ok := parseExpressionValue(typed, version, loopContext, allowNumeric); ok {
 			if allowance, exists := allowances[path]; exists {
 				t.Errorf("legacy expression at %s is now core grammar; remove stale allowance (%s)", path, allowance.reason)

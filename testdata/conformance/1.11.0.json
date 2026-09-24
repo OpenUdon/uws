@@ -27,6 +27,12 @@
       "expected": { "valid": true }
     },
     {
+      "id": "grammar-numeric-await-predicate-rejected",
+      "operation": "expression.parse",
+      "input": { "declaredVersion": "1.11.0", "field": "wait", "constructType": "await", "expression": "30", "loopContext": false },
+      "expected": { "valid": false }
+    },
+    {
       "id": "grammar-complete-numeric-batchsize-literal",
       "operation": "expression.parse",
       "input": { "declaredVersion": "1.11.0", "field": "batchSize", "expression": "2e0", "loopContext": false },

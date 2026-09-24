@@ -42,10 +42,11 @@ func TestUWS111ExpressionConformanceVectorsExecuteAgainstParser(t *testing.T) {
 				Field           string `json:"field"`
 				Expression      string `json:"expression"`
 				LoopContext     bool   `json:"loopContext"`
+				ConstructType   string `json:"constructType"`
 			}
 			inputDecoder := json.NewDecoder(bytes.NewReader(vector.Input))
 			require.NoError(t, inputDecoder.Decode(&input))
-			allowNumeric := input.Field == "wait" || input.Field == "batchSize"
+			allowNumeric := numericLiteralAllowedForField(input.Field, input.ConstructType)
 			_, valid := parseExpressionValue(input.Expression, input.DeclaredVersion, input.LoopContext, allowNumeric)
 			var expected struct {
 				Valid bool `json:"valid"`

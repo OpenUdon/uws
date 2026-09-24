@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const uws111ConformanceCorpusSHA256 = "c9939aef1081a4204bb7081ac8e7daa7a7f4371d6ea0388bd821a4a453de675c"
+const uws111ConformanceCorpusSHA256 = "51ea40b3f392125a22a95d515ee5002071dd8f4d98ab49415819b62f61ef26b5"
 
 type conformanceVectorCase struct {
 	ID        string          `json:"id"`

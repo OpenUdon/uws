@@ -77,3 +77,15 @@ func TestParseUWS111ExpressionsAndFieldScopedNumericLiterals(t *testing.T) {
 		}
 	}
 }
+
+func TestNumericWaitLiteralIsNotValidForAwaitPredicate(t *testing.T) {
+	if _, ok := parseExpressionValue("30", "1.11.0", false, numericLiteralAllowedForField("wait", "await")); ok {
+		t.Fatal("bare numeric await predicate was accepted as a delay")
+	}
+	if _, ok := parseExpressionValue("30", "1.11.0", false, numericLiteralAllowedForField("wait", "sequence")); !ok {
+		t.Fatal("bare numeric non-await wait literal was rejected")
+	}
+	if _, ok := parseExpressionValue("2", "1.11.0", false, numericLiteralAllowedForField("batchSize", "loop")); !ok {
+		t.Fatal("bare numeric batchSize literal was rejected")
+	}
+}

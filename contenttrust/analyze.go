@@ -665,13 +665,13 @@ func (a *analyzer) analyzeWorkflow(id string) map[string]valueState {
 	}
 	path := a.workflowPaths[id]
 	env := evalEnvironment{workflow: id, inputs: a.workflowInputs[id]}
-	a.analyzeControl(workflow.When, path+".when", env)
-	a.analyzeControl(workflow.ForEach, path+".forEach", env)
-	a.analyzeControl(workflow.Wait, path+".wait", env)
-	a.analyzeControl(workflow.Items, path+".items", env)
-	a.analyzeControl(workflow.BatchSize, path+".batchSize", env)
+	a.analyzeControl(workflow.When, path+".when", env, false)
+	a.analyzeControl(workflow.ForEach, path+".forEach", env, false)
+	a.analyzeControl(workflow.Wait, path+".wait", env, numericLiteralAllowedForField("wait", workflow.Type))
+	a.analyzeControl(workflow.Items, path+".items", env, false)
+	a.analyzeControl(workflow.BatchSize, path+".batchSize", env, numericLiteralAllowedForField("batchSize", workflow.Type))
 	if workflow.Idempotency != nil {
-		a.analyzeControl(workflow.Idempotency.Key, path+".idempotency.key", env)
+		a.analyzeControl(workflow.Idempotency.Key, path+".idempotency.key", env, false)
 	}
 	childrenEnv := env
 	if workflow.ForEach != "" {
@@ -710,7 +710,7 @@ func (a *analyzer) analyzeCases(cases []*uws1.Case, path string, env evalEnviron
 			continue
 		}
 		casePath := fmt.Sprintf("%s[%d]", path, i)
-		a.analyzeControl(c.When, casePath+".when", env)
+		a.analyzeControl(c.When, casePath+".when", env, false)
 		a.scanValue(c.Body, casePath+".body", env)
 		a.analyzeSteps(c.Steps, casePath+".steps", env)
 	}
@@ -719,17 +719,17 @@ func (a *analyzer) analyzeCases(cases []*uws1.Case, path string, env evalEnviron
 func (a *analyzer) analyzeStep(step *uws1.Step, path string, parent evalEnvironment) {
 	env := parent
 	env.currentStep = step.StepID
-	a.analyzeControl(step.When, path+".when", env)
-	item := a.analyzeControl(step.ForEach, path+".forEach", env)
+	a.analyzeControl(step.When, path+".when", env, false)
+	item := a.analyzeControl(step.ForEach, path+".forEach", env, false)
 	if item.from != "" {
 		env.item = item
 	}
-	a.analyzeControl(step.Wait, path+".wait", env)
-	loopItem := a.analyzeControl(step.Items, path+".items", env)
+	a.analyzeControl(step.Wait, path+".wait", env, numericLiteralAllowedForField("wait", step.Type))
+	loopItem := a.analyzeControl(step.Items, path+".items", env, false)
 	if loopItem.from != "" {
 		env.item = loopItem
 	}
-	a.analyzeControl(step.BatchSize, path+".batchSize", env)
+	a.analyzeControl(step.BatchSize, path+".batchSize", env, numericLiteralAllowedForField("batchSize", step.Type))
 
 	executionEnv := env
 	if step.ForEach != "" {
@@ -802,9 +802,9 @@ func (a *analyzer) analyzeOperation(id string, env evalEnvironment, callerStep s
 	}
 	path := a.operationPaths[id]
 	env.currentStep = callerStep
-	a.analyzeControl(operation.When, path+".when", env)
-	a.analyzeControl(operation.ForEach, path+".forEach", env)
-	a.analyzeControl(operation.Wait, path+".wait", env)
+	a.analyzeControl(operation.When, path+".when", env, false)
+	a.analyzeControl(operation.ForEach, path+".forEach", env, false)
+	a.analyzeControl(operation.Wait, path+".wait", env, numericLiteralAllowedForField("wait", ""))
 	operationEnv := env
 	if operation.ForEach != "" {
 		operationEnv.batchIndexAvailable = false
@@ -917,15 +917,14 @@ func (a *analyzer) analyzeCriterion(criterion *uws1.Criterion, path string, env 
 	if criterion == nil {
 		return
 	}
-	a.analyzeControl(criterion.Condition, path+".condition", env)
-	a.analyzeControl(criterion.Context, path+".context", env)
+	a.analyzeControl(criterion.Condition, path+".condition", env, false)
+	a.analyzeControl(criterion.Context, path+".context", env, false)
 }
 
-func (a *analyzer) analyzeControl(raw, path string, env evalEnvironment) valueState {
+func (a *analyzer) analyzeControl(raw, path string, env evalEnvironment, allowNumericLiteral bool) valueState {
 	if raw == "" {
 		return valueState{}
 	}
-	allowNumericLiteral := strings.HasSuffix(path, ".wait") || strings.HasSuffix(path, ".batchSize")
 	state := a.evalExpressionString(raw, path, env, allowNumericLiteral)
 	switch state.provenance {
 	case uws1.ContentTrustUntrusted:

@@ -180,6 +180,17 @@ func parseableNumericLiteral(raw, version string) bool {
 	return supportsExpressionVersion(version, 1, 11, 0) && jsonNumberPattern.MatchString(raw)
 }
 
+func numericLiteralAllowedForField(field, constructType string) bool {
+	switch field {
+	case "batchSize":
+		return true
+	case "wait":
+		return constructType != "await"
+	default:
+		return false
+	}
+}
+
 func validSegments(parts []string) bool {
 	if len(parts) == 0 {
 		return false

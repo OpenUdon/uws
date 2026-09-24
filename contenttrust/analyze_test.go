@@ -183,9 +183,17 @@ func TestAnalyzerScopesBatchIndexToLoopExecution(t *testing.T) {
 
 func TestNumericJSONLiteralsAreLimitedToWaitAndBatchSizeControls(t *testing.T) {
 	a := newAnalyzer(context.Background(), &uws1.Document{UWS: "1.11.0"})
-	wait := a.analyzeControl("1.25e2", "workflows[0].wait", evalEnvironment{})
+	wait := a.analyzeControl("1.25e2", "workflows[0].wait", evalEnvironment{}, numericLiteralAllowedForField("wait", "sequence"))
 	if wait.capability != CapabilityConstrainedScalar {
 		t.Fatalf("numeric wait capability = %q, want constrained scalar", wait.capability)
+	}
+	awaitPredicate := a.analyzeControl("1.25e2", "workflows[0].wait", evalEnvironment{}, numericLiteralAllowedForField("wait", uws1.WorkflowTypeAwait))
+	if awaitPredicate.capability != CapabilityFreeText {
+		t.Fatalf("numeric await predicate capability = %q, want unparsed free text", awaitPredicate.capability)
+	}
+	batchSize := a.analyzeControl("2", "workflows[0].batchSize", evalEnvironment{}, numericLiteralAllowedForField("batchSize", uws1.WorkflowTypeLoop))
+	if batchSize.capability != CapabilityConstrainedScalar {
+		t.Fatalf("numeric batchSize capability = %q, want constrained scalar", batchSize.capability)
 	}
 	output := a.evalString("1.25e2", "operations[0].outputs.wait", evalEnvironment{})
 	if output.capability != CapabilityFreeText {

@@ -113,4 +113,27 @@ not a review-gate iteration.
   acceptance verification passed.
 - Scope: the complete C04 implementation and documentation change set; C05 and
   B02 are reviewed as completed dependencies, not reopened work.
-- Findings: review pending.
+- Findings (iteration 1):
+  - **P2 — await predicate is treated as a numeric delay in advisory grammar
+    checks.** `versions/1.11.0.md` §4.5.4, §4.5.5, §4.5.6, and §5.6 permit bare
+    JSON-number strings for non-`await` `wait` fields only; `await.wait` remains
+    a truthiness predicate. `contenttrust/analyze.go` enables numeric parsing
+    for every path ending in `.wait`; `contenttrust/grammar_lint_test.go` and
+    `contenttrust/conformance_vectors_test.go` do the same based only on the
+    field name. Consequently these required advisory/lint/conformance checks
+    accept a duration such as `"30"` as an `await.wait` predicate. This is a
+    contract-accuracy and required-verification defect, not an execution
+    validator finding. Fixed by making numeric-literal admission depend on
+    field and structural construct, adding a rejected numeric-await conformance
+    vector and parser/analyzer regressions, and updating the pinned corpus
+    digest and its specification. Focused verification passed:
+    `go test ./contenttrust ./uws1 -count=1`.
+- Iteration 2 started 2026-09-24 UTC after the iteration 1 fix's focused
+  verification passed. Scope: repeat the complete C04 implementation and
+  documentation review, including the fix and its conformance updates.
+- Iteration 2 completed 2026-09-24 UTC. The whole-milestone review found no
+  remaining P1/P2 or higher-severity issue; the bounded review-fix gate passes
+  after two iterations.
+- Final acceptance verification passed after the review fix:
+  `go test ./... -count=1`, `go test -race ./...`, `go vet ./...`,
+  `mkdocs build --strict`, and `git diff --check`.
