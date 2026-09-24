@@ -2,8 +2,11 @@ package contenttrust
 
 import (
 	"encoding/json"
+	"fmt"
 	"regexp"
 	"strings"
+
+	"golang.org/x/mod/semver"
 )
 
 type expressionReference struct {
@@ -23,7 +26,19 @@ var (
 )
 
 func parseExpression(raw string) (parsedExpression, bool) {
-	if ref, ok := parseSourceExpression(raw); ok {
+	return parseExpressionForVersion(raw, "1.10.0", false)
+}
+
+func parseExpressionForVersion(raw, version string, loopContext bool) (parsedExpression, bool) {
+	return parseExpressionValue(raw, version, loopContext, false)
+}
+
+func parseExpressionValue(raw, version string, loopContext, allowNumericLiteral bool) (parsedExpression, bool) {
+	if allowNumericLiteral && supportsExpressionVersion(version, 1, 11, 0) && jsonNumberPattern.MatchString(raw) {
+		return parsedExpression{}, true
+	}
+	version111 := supportsExpressionVersion(version, 1, 11, 0)
+	if ref, ok := parseSourceExpressionVersion(raw, version111, loopContext); ok {
 		return parsedExpression{references: []expressionReference{ref}}, true
 	}
 	for _, op := range []string{" == ", " != ", " <= ", " >= ", " < ", " > "} {
@@ -31,7 +46,7 @@ func parseExpression(raw string) (parsedExpression, bool) {
 		if index < 0 {
 			continue
 		}
-		left, ok := parseSourceExpression(raw[:index])
+		left, ok := parseSourceExpressionVersion(raw[:index], version111, loopContext)
 		if !ok {
 			// The token can occur inside the right-hand JSON string of a
 			// different comparison operator. Keep looking for the operator whose
@@ -40,7 +55,7 @@ func parseExpression(raw string) (parsedExpression, bool) {
 		}
 		parsed := parsedExpression{references: []expressionReference{left}, condition: true}
 		rightOperand := raw[index+len(op):]
-		if right, ok := parseSourceExpression(rightOperand); ok {
+		if right, ok := parseSourceExpressionVersion(rightOperand, version111, loopContext); ok {
 			parsed.references = append(parsed.references, right)
 			return parsed, true
 		}
@@ -53,6 +68,10 @@ func parseExpression(raw string) (parsedExpression, bool) {
 }
 
 func parseSourceExpression(raw string) (expressionReference, bool) {
+	return parseSourceExpressionVersion(raw, false, false)
+}
+
+func parseSourceExpressionVersion(raw string, version111, loopContext bool) (expressionReference, bool) {
 	var ref expressionReference
 	switch {
 	case raw == "$response.statusCode":
@@ -65,6 +84,14 @@ func parseSourceExpression(raw string) (expressionReference, bool) {
 		return ref, true
 	case strings.HasPrefix(raw, "$response.body#"):
 		if !validJSONPointerFragment(strings.TrimPrefix(raw, "$response.body")) {
+			return expressionReference{}, false
+		}
+		ref.root = "response"
+		ref.name = "body"
+		return ref, true
+	case version111 && strings.HasPrefix(raw, "$response.body."):
+		path := strings.TrimPrefix(raw, "$response.body.")
+		if !validSegments(strings.Split(path, ".")) {
 			return expressionReference{}, false
 		}
 		ref.root = "response"
@@ -135,9 +162,22 @@ func parseSourceExpression(raw string) (expressionReference, bool) {
 	case raw == "$index":
 		ref.root = "index"
 		return ref, true
+	case version111 && loopContext && raw == "$batchIndex":
+		ref.root = "batchIndex"
+		return ref, true
 	default:
 		return expressionReference{}, false
 	}
+}
+
+func supportsExpressionVersion(version string, major, minor, patch int) bool {
+	parsed := "v" + version
+	minimum := fmt.Sprintf("v%d.%d.%d", major, minor, patch)
+	return semver.IsValid(parsed) && semver.Compare(parsed, minimum) >= 0
+}
+
+func parseableNumericLiteral(raw, version string) bool {
+	return supportsExpressionVersion(version, 1, 11, 0) && jsonNumberPattern.MatchString(raw)
 }
 
 func validSegments(parts []string) bool {

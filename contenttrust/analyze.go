@@ -38,14 +38,15 @@ type stepMetadata struct {
 }
 
 type evalEnvironment struct {
-	workflow       string
-	currentStep    string
-	inputs         map[string]valueState
-	outputs        map[string]valueState
-	response       valueState
-	item           valueState
-	atWorkflowExit bool
-	atStepExit     bool
+	workflow            string
+	currentStep         string
+	inputs              map[string]valueState
+	outputs             map[string]valueState
+	response            valueState
+	item                valueState
+	batchIndexAvailable bool
+	atWorkflowExit      bool
+	atStepExit          bool
 }
 
 type analyzer struct {
@@ -672,7 +673,14 @@ func (a *analyzer) analyzeWorkflow(id string) map[string]valueState {
 	if workflow.Idempotency != nil {
 		a.analyzeControl(workflow.Idempotency.Key, path+".idempotency.key", env)
 	}
-	a.analyzeStructuralChildren(workflow.Type, workflow.Steps, workflow.Cases, workflow.Default, path, env)
+	childrenEnv := env
+	if workflow.ForEach != "" {
+		childrenEnv.batchIndexAvailable = false
+	}
+	if workflow.Type == uws1.WorkflowTypeLoop {
+		childrenEnv.batchIndexAvailable = true
+	}
+	a.analyzeStructuralChildren(workflow.Type, workflow.Steps, workflow.Cases, workflow.Default, path, childrenEnv)
 
 	outputs := make(map[string]valueState, len(workflow.Outputs))
 	env.atWorkflowExit = true
@@ -722,17 +730,25 @@ func (a *analyzer) analyzeStep(step *uws1.Step, path string, parent evalEnvironm
 		env.item = loopItem
 	}
 	a.analyzeControl(step.BatchSize, path+".batchSize", env)
-	a.scanValue(step.Body, path+".body", env)
+
+	executionEnv := env
+	if step.ForEach != "" {
+		executionEnv.batchIndexAvailable = false
+	}
+	if step.Type == uws1.WorkflowTypeLoop {
+		executionEnv.batchIndexAvailable = true
+	}
+	a.scanValue(step.Body, path+".body", executionEnv)
 
 	boundInputs := make(map[string]valueState, len(step.Inputs))
 	for _, name := range sortedAnyKeys(step.Inputs) {
-		boundInputs[name] = a.evalValue(step.Inputs[name], appendObjectPath(path+".inputs", name), env)
+		boundInputs[name] = a.evalValue(step.Inputs[name], appendObjectPath(path+".inputs", name), executionEnv)
 	}
 
 	localOutputs := map[string]valueState{}
 	var response valueState
 	if step.OperationRef != "" {
-		callEnv := env
+		callEnv := executionEnv
 		callEnv.inputs = boundInputs
 		localOutputs, response = a.analyzeOperation(step.OperationRef, callEnv, step.StepID)
 	} else if step.Workflow != "" {
@@ -741,10 +757,13 @@ func (a *analyzer) analyzeStep(step *uws1.Step, path string, parent evalEnvironm
 		}
 		localOutputs = cloneStateMap(a.workflowOutput[step.Workflow])
 	} else {
-		a.analyzeStructuralChildren(step.Type, step.Steps, step.Cases, step.Default, path, env)
+		a.analyzeStructuralChildren(step.Type, step.Steps, step.Cases, step.Default, path, executionEnv)
 	}
 
 	outputEnv := env
+	if step.ForEach != "" {
+		outputEnv.batchIndexAvailable = false
+	}
 	outputEnv.inputs = boundInputs
 	availableOutputs := cloneStateMap(localOutputs)
 	if availableOutputs == nil {
@@ -786,6 +805,10 @@ func (a *analyzer) analyzeOperation(id string, env evalEnvironment, callerStep s
 	a.analyzeControl(operation.When, path+".when", env)
 	a.analyzeControl(operation.ForEach, path+".forEach", env)
 	a.analyzeControl(operation.Wait, path+".wait", env)
+	operationEnv := env
+	if operation.ForEach != "" {
+		operationEnv.batchIndexAvailable = false
+	}
 
 	resolution := a.operationResolve[id]
 	inputState := trustedState(path + ".request")
@@ -803,16 +826,16 @@ func (a *analyzer) analyzeOperation(id string, env evalEnvironment, callerStep s
 				state = trustedState(channelPath)
 				for _, supplied := range channel.References {
 					target := channelPath + pointerSuffix(supplied.Path)
-					parsed, ok := parseExpression(supplied.Expression)
+					parsed, ok := parseExpressionForVersion(supplied.Expression, a.doc.UWS, operationEnv.batchIndexAvailable)
 					if !ok {
 						a.addFinding(CodeOpaqueExpression, target)
 						state = joinState(state, unknownState(target))
 						continue
 					}
-					state = joinState(state, a.evalParsed(parsed, target, env))
+					state = joinState(state, a.evalParsed(parsed, target, operationEnv))
 				}
 			} else if raw, ok := a.operationValueAtPointer(id, channel.Path); ok {
-				state = a.evalValue(raw, channelPath, env)
+				state = a.evalValue(raw, channelPath, operationEnv)
 			} else {
 				a.addFinding(CodeResolverFailure, path)
 				state = unknownState(channelPath)
@@ -823,7 +846,7 @@ func (a *analyzer) analyzeOperation(id string, env evalEnvironment, callerStep s
 	} else {
 		// Core request flow remains statically visible, but without a resolver it
 		// is data rather than an instruction or authority sink.
-		inputState = a.scanValue(operation.Request, path+".request", env)
+		inputState = a.scanValue(operation.Request, path+".request", operationEnv)
 	}
 
 	response := valueState{
@@ -836,7 +859,7 @@ func (a *analyzer) analyzeOperation(id string, env evalEnvironment, callerStep s
 	}
 
 	outputs := make(map[string]valueState, len(operation.Outputs))
-	outputEnv := env
+	outputEnv := operationEnv
 	outputEnv.response = response
 	outputEnv.outputs = outputs
 	for _, name := range sortedStringKeys(operation.Outputs) {
@@ -865,7 +888,7 @@ func (a *analyzer) analyzeOperation(id string, env evalEnvironment, callerStep s
 		outputs[name] = state
 	}
 
-	criteriaEnv := env
+	criteriaEnv := operationEnv
 	criteriaEnv.outputs = outputs
 	criteriaEnv.response = response
 	for i, criterion := range operation.SuccessCriteria {
@@ -902,7 +925,8 @@ func (a *analyzer) analyzeControl(raw, path string, env evalEnvironment) valueSt
 	if raw == "" {
 		return valueState{}
 	}
-	state := a.evalString(raw, path, env)
+	allowNumericLiteral := strings.HasSuffix(path, ".wait") || strings.HasSuffix(path, ".batchSize")
+	state := a.evalExpressionString(raw, path, env, allowNumericLiteral)
 	switch state.provenance {
 	case uws1.ContentTrustUntrusted:
 		a.addFinding(CodeUntrustedControl, path)
@@ -990,7 +1014,14 @@ func (a *analyzer) scanValue(raw any, path string, env evalEnvironment) valueSta
 }
 
 func (a *analyzer) evalString(raw, path string, env evalEnvironment) valueState {
-	parsed, ok := parseExpression(raw)
+	return a.evalExpressionString(raw, path, env, false)
+}
+
+func (a *analyzer) evalExpressionString(raw, path string, env evalEnvironment, allowNumericLiteral bool) valueState {
+	if allowNumericLiteral && parseableNumericLiteral(raw, a.doc.UWS) {
+		return valueState{provenance: uws1.ContentTrustTrusted, capability: CapabilityConstrainedScalar, from: path}
+	}
+	parsed, ok := parseExpressionForVersion(raw, a.doc.UWS, env.batchIndexAvailable)
 	if ok {
 		return a.evalParsed(parsed, path, env)
 	}
@@ -1081,6 +1112,11 @@ func (a *analyzer) resolveReference(ref expressionReference, env evalEnvironment
 		return env.item, true
 	case "index":
 		return valueState{provenance: uws1.ContentTrustTrusted, capability: CapabilityConstrainedScalar, from: "$index"}, true
+	case "batchIndex":
+		if !env.batchIndexAvailable {
+			return unknownState("$batchIndex"), false
+		}
+		return valueState{provenance: uws1.ContentTrustTrusted, capability: CapabilityConstrainedScalar, from: "$batchIndex"}, true
 	default:
 		return unknownState(referenceLabel(ref, env)), false
 	}
@@ -1115,6 +1151,8 @@ func referenceLabel(ref expressionReference, env evalEnvironment) string {
 		return "$item"
 	case "index":
 		return "$index"
+	case "batchIndex":
+		return "$batchIndex"
 	default:
 		return "$unknown"
 	}

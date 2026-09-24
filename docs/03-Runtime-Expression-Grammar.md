@@ -4,7 +4,7 @@
 
 ---
 
-UWS uses runtime expression strings in control-flow fields (`when`, `forEach`, `wait`, `items`, `batchSize`), in criterion conditions, in the string values of `outputs` maps, in a step's `inputs` values, and in `request` binding values. The expression language is deliberately small and normative — a runtime that implements it verbatim is portable by construction.
+UWS uses runtime expression strings in control-flow fields (`when`, `forEach`, `wait`, `items`, `batchSize`), in criterion conditions, in the string values of `outputs` maps, in a step's `inputs` values, and in `request` binding values. The expression language is deliberately small and normative — a runtime that implements it verbatim is portable by construction. This page describes the current UWS 1.11 grammar; numbered specifications retain their own versioned rules.
 
 ## Expression Sources
 
@@ -14,6 +14,7 @@ Every expression references data through a leading `$` sigil. A dotted suffix `.
 |--------|---------|
 | `$response.statusCode` | HTTP response status code of the current operation |
 | `$response.body` | HTTP response body of the current operation |
+| `$response.body.<path>` | Dot-walk into the response body (UWS 1.11+) |
 | `$response.body#/json/pointer` | RFC 6901 JSON Pointer into the response body |
 | `$response.headers.<name>` | HTTP response header value by name |
 | `$outputs.<name>` | Same-scope output declared by the enclosing operation, workflow, or step |
@@ -28,6 +29,7 @@ Every expression references data through a leading `$` sigil. A dotted suffix `.
 | `$inputs.<path>` | Dot-walk into the current scope's inputs |
 | `$item` | The current iteration value. Valid only inside a `forEach` context. Resolves to the element at the current index of the items collection. Supports dot-walk: `$item.name`. |
 | `$index` | The 0-based integer index of the current iteration. Valid only inside a `forEach` context. |
+| `$batchIndex` | The 0-based integer index of the current batch. Valid only inside a `loop` context (UWS 1.11+), not inside `forEach`. |
 
 A resolved value may be any JSON type: string, number, boolean, null, object, or array.
 
@@ -43,13 +45,13 @@ outputs:
   # Whole body
   raw_response: $response.body
 
-  # Top-level field
+  # Top-level field (UWS 1.11+)
   total_count: $response.body.total
 
   # JSON Pointer — first item's id field
   first_id: $response.body#/items/0/id
 
-  # Nested field via dot-walk
+  # Nested field via dot-walk (UWS 1.11+)
   first_name: $response.body.items.0.name
 
   # HTTP status code
@@ -225,17 +227,18 @@ Rules:
 - A single space surrounds the operator; `==` / `!=` / `<=` / `>=` are always two-character tokens.
 
 ```yaml
-# Number comparison
-when: $response.body.count > 0
-when: $response.statusCode == 200
-when: $variables.retries <= 3
+comparisons:
+  # Number comparison
+  - when: $response.body.count > 0
+  - when: $response.statusCode == 200
+  - when: $variables.retries <= 3
 
-# String comparison
-when: $response.body.status == "active"
-when: $trigger.event != "ping"
+  # String comparison
+  - when: $response.body.status == "active"
+  - when: $trigger.event != "ping"
 
-# Null check
-when: $steps.load.outputs.result != null
+  # Null check
+  - when: $steps.load.outputs.result != null
 ```
 
 ## JSON Pointer Fragments
@@ -272,7 +275,8 @@ successCriteria:
 
 ## Normative ABNF Grammar (§5.6)
 
-The full grammar is defined in §5.6 of the spec. Key productions:
+The full grammar is defined in §5.6 of the spec. These core productions apply
+to all expression fields; the 1.11 additions are marked below.
 
 ```abnf
 expression     = condition / source-expr
@@ -282,9 +286,11 @@ operand        = source-expr / literal
 
 source-expr    = response-expr / outputs-expr / steps-expr / variables-expr
                / trigger-expr / inputs-expr / item-expr / index-expr
+               / batch-index-expr ; UWS 1.11+, only in loop context
 response-expr  = "$response.statusCode"
-               / "$response.body" [ json-pointer ]
+               / "$response.body" [ json-pointer / response-dot-walk ] ; dot-walk is UWS 1.11+
                / "$response.headers." header-name
+response-dot-walk = "." path
 outputs-expr   = "$outputs." name [ "." path ]
 steps-expr     = "$steps." identifier ".outputs." name [ "." path ]
 variables-expr = "$variables." name [ "." path ]
@@ -292,6 +298,11 @@ trigger-expr   = "$trigger" [ "." path ]
 inputs-expr    = "$inputs" [ "." path ]
 item-expr      = "$item" [ "." path ]
 index-expr     = "$index"
+batch-index-expr = "$batchIndex"
+
+; These field-specific values also admit a bare JSON number in UWS 1.11.
+wait-value       = expression / json-number
+batch-size-value = expression / json-number
 
 path           = segment *( "." segment )
 segment        = 1*id-char
@@ -304,19 +315,18 @@ literal        = json-string / json-number / json-bool / json-null
 Richer features — boolean connectives (`&&`, `||`, `!`), arithmetic, function calls — are implementation-defined. A conforming UWS core MUST NOT require them for documents using only the normative grammar. Documents that depend on extended syntax SHOULD declare the dependency via `x-uws-operation-profile`.
 
 ```yaml
-# This is UWS-core expression (normative — all runtimes support it):
-when: $response.statusCode == 200
-
-# This requires an implementation extension (non-portable):
-when: $response.statusCode == 200 && $response.body.count > 0
+examples:
+  - kind: core
+    when: $response.statusCode == 200
+  - kind: implementation-extension
+    when: $response.statusCode == 200 && $response.body.count > 0
 ```
 
 ## Portable Core Example
 
-The big fixture also exercises test-runtime-only `$signals.*` expressions;
-those are implementation extensions, not part of the portable grammar. The
-excerpt below uses core expressions and shows the UWS 1.10 numeric-delay form
-for non-`await` `wait`:
+The excerpt below is an illustrative UWS 1.11 expression fragment. Its
+source-based `wait` is portable, and its response-body output dot-walk uses the
+UWS 1.11 grammar addition:
 
 ```hcl
 operation "run_llm_primary" {
@@ -337,6 +347,39 @@ operation "run_llm_primary" {
   }
 }
 ```
+
+In UWS 1.11, numeric delays and batch sizes may also be written directly as
+JSON-number strings. `$batchIndex` is available only in a `loop` body:
+
+```yaml
+workflows:
+  - workflowId: main
+    type: loop
+    items: $variables.records
+    batchSize: "2"
+    steps:
+      - stepId: fetch_first_batch
+        operationRef: fetch_records
+        wait: "30"
+        when: $batchIndex == 0
+```
+
+## Versioned Grammar Fixtures
+
+`testdata/grammar/1.11.0.json` is the focused UWS 1.11 grammar fixture for
+response-body dot-walks, loop-only `$batchIndex`, and numeric `wait` and
+`batchSize` literals. The older `testdata/sample.uws.json` remains a UWS 1.0.0
+round-trip/schema fixture, not a grammar-conformance fixture; its documented
+legacy expressions are limited to these exact JSON Pointers:
+
+- `/operations/0/outputs/petList` — response-body dot-walk.
+- `/operations/1/when` — implementation-defined `length(...)` expression.
+- `/workflows/0/steps/0/outputs/isValid` — response-body dot-walk.
+- `/results/0/value` — legacy whole-step-output reference.
+
+The generated `testdata/big/big.json` fixture has a separate, exact
+file-level test-runtime exception described in [Big Fixture](big-fixture.md);
+it is not evidence that those implementation-defined expressions are portable.
 
 Full context: [`testdata/big/big.hcl`](https://github.com/OpenUdon/uws/blob/main/testdata/big/big.hcl).
 

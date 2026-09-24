@@ -1,0 +1,50 @@
+{
+  "uws": "1.11.0",
+  "info": {
+    "title": "UWS 1.11 expression grammar fixture",
+    "version": "1.0.0"
+  },
+  "variables": {
+    "customers": [
+      { "name": "Ada" },
+      { "name": "Grace" }
+    ]
+  },
+  "operations": [
+    {
+      "operationId": "fetch_customer",
+      "outputs": {
+        "name": "$response.body.customer.name",
+        "id": "$response.body.customer.id"
+      },
+      "x-uws-operation-profile": "test.runtime.1"
+    }
+  ],
+  "workflows": [
+    {
+      "workflowId": "main",
+      "type": "loop",
+      "items": "$variables.customers",
+      "batchSize": "2",
+      "steps": [
+        {
+          "stepId": "fetch",
+          "operationRef": "fetch_customer",
+          "wait": "30"
+        },
+        {
+          "stepId": "first_batch_only",
+          "type": "sequence",
+          "when": "$batchIndex == 0",
+          "steps": [
+            {
+              "stepId": "nested_fetch",
+              "operationRef": "fetch_customer",
+              "wait": "1.25e2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

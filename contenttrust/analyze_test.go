@@ -105,6 +105,94 @@ func TestAnalyzeInstructionAndConstrainedScalar(t *testing.T) {
 	}
 }
 
+func TestExpressionTrustParsingIsVersionAndLoopAware(t *testing.T) {
+	for _, tc := range []struct {
+		version        string
+		expression     string
+		loopContext    bool
+		wantOpaque     bool
+		wantProvenance uws1.ContentTrustLevel
+	}{
+		{version: "1.10.0", expression: "$response.body.customer.name", wantOpaque: true, wantProvenance: uws1.ContentTrustUnknown},
+		{version: "1.11.0", expression: "$response.body.customer.name", wantProvenance: uws1.ContentTrustUntrusted},
+		{version: "1.10.0", expression: "$batchIndex", loopContext: true, wantOpaque: true, wantProvenance: uws1.ContentTrustUnknown},
+		{version: "1.11.0", expression: "$batchIndex", loopContext: true, wantProvenance: uws1.ContentTrustTrusted},
+		{version: "1.11.0", expression: "$batchIndex", wantOpaque: true, wantProvenance: uws1.ContentTrustUnknown},
+	} {
+		t.Run(tc.version+"/"+tc.expression, func(t *testing.T) {
+			doc := &uws1.Document{UWS: tc.version}
+			a := newAnalyzer(context.Background(), doc)
+			a.emit = true
+			state := a.evalString(tc.expression, "expression", evalEnvironment{
+				batchIndexAvailable: tc.loopContext,
+				response: valueState{
+					provenance: uws1.ContentTrustUntrusted,
+					capability: CapabilityComposite,
+					from:       "operation.response",
+				},
+			})
+			if state.provenance != tc.wantProvenance {
+				t.Fatalf("expression provenance = %q, want %q", state.provenance, tc.wantProvenance)
+			}
+			hasOpaque := false
+			for _, finding := range a.findings {
+				if finding.Code == CodeOpaqueExpression {
+					hasOpaque = true
+				}
+			}
+			if hasOpaque != tc.wantOpaque {
+				t.Fatalf("opaque finding = %v, want %v; findings %#v", hasOpaque, tc.wantOpaque, a.findings)
+			}
+		})
+	}
+}
+
+func TestAnalyzerScopesBatchIndexToLoopExecution(t *testing.T) {
+	doc := &uws1.Document{
+		UWS:  "1.11.0",
+		Info: &uws1.Info{Title: "Batch Index", Version: "1.0.0"},
+		Workflows: []*uws1.Workflow{{
+			WorkflowID: "main",
+			Type:       uws1.WorkflowTypeLoop,
+			StructuralFields: uws1.StructuralFields{
+				Items: "items",
+			},
+			Steps: []*uws1.Step{
+				{StepID: "loop_step", StepExecutionFields: uws1.StepExecutionFields{When: "$batchIndex > 0"}},
+				{StepID: "foreach_step", StepExecutionFields: uws1.StepExecutionFields{ForEach: "items", When: "$batchIndex > 0"}, Inputs: map[string]any{"nested": "$batchIndex"}},
+			},
+		}},
+	}
+	a := newAnalyzer(context.Background(), doc)
+	a.emit = true
+	a.analyzeWorkflow("main")
+
+	for _, finding := range a.findings {
+		if finding.Code != CodeOpaqueExpression {
+			continue
+		}
+		if finding.Path == "workflows[0].steps[0].when" || finding.Path == "workflows[0].steps[1].when" {
+			t.Fatalf("loop batchIndex was treated as opaque at %s", finding.Path)
+		}
+		if finding.Path == "workflows[0].steps[1].inputs.nested" {
+			return
+		}
+	}
+	t.Fatalf("expected foreach body batchIndex to be rejected as opaque; findings %#v", a.findings)
+}
+
+func TestNumericJSONLiteralsAreLimitedToWaitAndBatchSizeControls(t *testing.T) {
+	a := newAnalyzer(context.Background(), &uws1.Document{UWS: "1.11.0"})
+	wait := a.analyzeControl("1.25e2", "workflows[0].wait", evalEnvironment{})
+	if wait.capability != CapabilityConstrainedScalar {
+		t.Fatalf("numeric wait capability = %q, want constrained scalar", wait.capability)
+	}
+	output := a.evalString("1.25e2", "operations[0].outputs.wait", evalEnvironment{})
+	if output.capability != CapabilityFreeText {
+		t.Fatalf("numeric output literal capability = %q, want free text", output.capability)
+	}
+}
+
 func TestInheritedProvenanceDoesNotWidenOutputCapability(t *testing.T) {
 	doc := pipelineDocument()
 	doc.Workflows[0].Steps[2].Inputs = map[string]any{"target": "$steps.model_step.outputs.summary"}
