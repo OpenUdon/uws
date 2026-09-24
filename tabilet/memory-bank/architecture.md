@@ -140,8 +140,8 @@ lives in this memory bank; use each archive only at its recorded baseline.
 
 | Archive | Context | Baseline | Coverage | Supersedes |
 |---|---|---|---|---|
-| [C01](../docs/archive-C01.md) | Core workflow contract and execution | `8382d0f26b3b10870125760643078d1a1a3e31b6` | verified | none |
-| [T01](../docs/archive-T01.md) | Advisory content-trust analysis | `8382d0f26b3b10870125760643078d1a1a3e31b6` | verified | none |
-| [B01](../docs/archive-B01.md) | Browser capability and account lifecycle profiles | `8382d0f26b3b10870125760643078d1a1a3e31b6` | verified | none |
-| [X01](../docs/archive-X01.md) | Source admission and extension profiles | `8382d0f26b3b10870125760643078d1a1a3e31b6` | verified | none |
-| [M01](../docs/archive-M01.md) | Interchange, validation, and distribution tooling | `8382d0f26b3b10870125760643078d1a1a3e31b6` | verified | none |
+| [Archive C01](../docs/archive-C01.md) | Core workflow contract and execution | `8382d0f26b3b10870125760643078d1a1a3e31b6` | verified | none |
+| [Archive T01](../docs/archive-T01.md) | Advisory content-trust analysis | `8382d0f26b3b10870125760643078d1a1a3e31b6` | verified | none |
+| [Archive B01](../docs/archive-B01.md) | Browser capability and account lifecycle profiles | `8382d0f26b3b10870125760643078d1a1a3e31b6` | verified | none |
+| [Archive X01](../docs/archive-X01.md) | Source admission and extension profiles | `8382d0f26b3b10870125760643078d1a1a3e31b6` | verified | none |
+| [Archive M01](../docs/archive-M01.md) | Interchange, validation, and distribution tooling | `8382d0f26b3b10870125760643078d1a1a3e31b6` | verified | none |

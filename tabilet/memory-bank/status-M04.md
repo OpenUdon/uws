@@ -21,13 +21,24 @@ clone-visible. The empty local `ansiblemodulecall/` directory
 is outside this milestone and requires no repository action.
 
 **Compatibility and rollback.** Do not alter archive bytes, GOAL protocol,
-evolution v1/v2 history, or retired statuses. If an artifact fails the audit,
-stop the tracking row and obtain a revised evidence disposition; do not silently
-rewrite or drop current citations. Existing links and history remain valid.
+evolution v1-v4 snapshots, or retired status records. The ten old relative
+links in `evolution/result-v2.md` through `result-v4.md`, and legacy active-path
+links retained inside archived status specifications, are historical
+references, not maintained links: resolve their milestone IDs through
+`tabilet/docs/history/index.md` and the corresponding history records. Their
+literal hrefs remain non-clickable by the user's approved preservation
+disposition. The two evolution links to M04 still resolve while it is active;
+after retirement they become historical references to its indexed record.
+Maintained links in current memory-bank documents, the history index, and
+consolidated-into metadata must resolve normally. Do not silently rewrite or
+drop citations.
 
-**Acceptance and verification.** Confirm exact planned artifact set, hashes,
-links, and no private data; track the audited unchanged files in a later task
-commit; distinguish archive labels from milestone IDs in current prose. Check
+**Acceptance and verification.** Confirm exact planned artifact set and hashes,
+no private data, all historical milestone-link IDs in snapshots and archived
+status specifications against the history index and records, the two active
+M04 links while M04 is pending, and normal resolution of maintained links;
+track the audited unchanged files in a task commit; distinguish archive labels
+from milestone IDs in current prose. Check
 `git diff --check`, `mkdocs build --strict`, history/current-memory links,
 `go test ./...`, `go test -race ./...`, `go vet ./...`, and the bounded
 whole-milestone review gate. Product tests are regression checks, not evidence
@@ -56,8 +67,8 @@ status, not delivered evidence tracking. Ordinary intake, not a gate pass.
 
 | Item | State | Notes |
 |---|---|---|
-| Audit existing Tabilet evidence before tracking | `[x]` | Read-only audit completed 2026-09-24 against HEAD `34267299e33f7fae2cf4ecc3e956a6530806263f`. The exact 14-file set and SHA-256 digests are recorded below. All five archive baselines (`8382d0f26b3b10870125760643078d1a1a3e31b6`) resolve to an existing commit. Targeted scans found no credential/private-key/API-token values, email addresses, or absolute local paths. Link audit found 10 literal relative links in `evolution/result-v2.md` through `result-v4.md` that still point to retired `memory-bank/status-*.md` paths; the corresponding status records exist under `docs/history/`. Per this status's stop rule, evidence tracking is held pending a revised disposition. |
-| Track audited evidence and verify links | `[!]` | Blocked: do not stage or commit the 14 artifacts until the user decides how to treat the 10 stale links in the preserved evolution records. Owner: user. Unblock by approving a revised evidence disposition (link-only edits, preserve-and-document the historical links, or exclude the affected evolution files) and updating this status/acceptance accordingly. |
+| Audit existing Tabilet evidence before tracking | `[x]` | Read-only audit completed 2026-09-24 against HEAD `34267299e33f7fae2cf4ecc3e956a6530806263f`. The exact 14-file set and SHA-256 digests are recorded below and were rechecked before tracking. All five archive baselines (`8382d0f26b3b10870125760643078d1a1a3e31b6`) resolve to an existing commit. Targeted scans found no credential/private-key/API-token values, email addresses, or absolute local paths. Link audit found 10 literal relative links in `evolution/result-v2.md` through `result-v4.md` that point to retired `memory-bank/status-*.md` paths; each milestone ID resolves through `docs/history/index.md` to its history record. |
+| Track audited evidence and verify links | `[x]` | Completed 2026-09-24. Staged exactly the 14 audited evidence files byte-for-byte and retained all recorded hashes. The ten already-old evolution hrefs remain non-clickable; their milestone IDs resolve through `docs/history/index.md`. The two M04 hrefs resolve while active and will resolve through the index after retirement. Maintained current-memory, history-index, and consolidated-into links resolve. `architecture.md` distinguishes Archive IDs from milestone IDs. No frozen snapshot, retired record, schema, Go file, version artifact, or generated archive was changed. |
 
 ## M04 Evidence Audit (2026-09-24 UTC)
 
@@ -88,8 +99,24 @@ evolution v3 are provenance references, not embedded review contents.
 | `tabilet/evolution/result-v3.md` | `41fda40419b31cce9c874753c35814f2477587854d77b99c7fbb0e8723347291` |
 | `tabilet/evolution/result-v4.md` | `c9cce7ec59dd56280389e2b9cbedb7faab3c6a83edb11656166eb30e83d6dbce` |
 
-The 10 unresolved literal link targets are in `evolution/result-v2.md`
-(M03, C01, C02, B01, C03), `result-v3.md` (B02, C04), and `result-v4.md`
-(C05, B02, C04). All corresponding history records exist, but the preserved
-links target the removed active-status paths. No artifact was staged or
-modified during this audit.
+The 10 literal old-path targets at initial audit, accepted as historical
+references under the user's 2026-09-24 disposition, are in
+`evolution/result-v2.md` (M03, C01, C02, B01, C03), `result-v3.md` (B02, C04),
+and `result-v4.md` (C05, B02, C04). Their preserved hrefs target removed
+active-status paths and remain non-clickable; resolve each ID via
+`tabilet/docs/history/index.md`. `result-v3.md` and `result-v4.md` also link to
+active M04; those two hrefs are valid through this execution and become
+historical index-resolved references when M04 retires. The user approved
+preserving all evidence bytes rather than editing snapshots or updating their
+hashes. The audit itself staged or modified no evidence file.
+
+## M04 Review Gate
+
+Iteration 1 started 2026-09-24 UTC before review and passed 2026-09-24 UTC
+with no P1/P2 findings. The full change set, evidence hashes and baseline,
+historical-reference disposition, maintained links, privacy/scope, and
+verification were reviewed. `git diff --check`, `mkdocs build --strict`,
+`go test ./...`, `go test -race ./...`, and `go vet ./...` passed; the targeted
+private-content and history-index reference checks passed. The exact evidence
+set and architecture label clarification are the only tracked additions or
+edits beyond this status record.
