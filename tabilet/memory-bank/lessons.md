@@ -4,22 +4,29 @@ Read only the topics relevant to the current change. Product terminology,
 architecture contracts, commands, and active work remain in their dedicated
 memory-bank files.
 
-## Release Surfaces Must Move With A Profile Release
+## Release Surfaces Must Move With A Versioned Release
 
-**Scope.** Publishing or advancing a separately versioned profile.
+**Scope.** Publishing or advancing a core version or separately versioned
+profile.
 
 **Lesson.** Reconcile the top-level README, agent instructions, documentation
-home/reference navigation, release changelog, and current memory-bank facts in
-the same release task as the profile artifacts.
+home/reference navigation, feature guides and examples, release changelog,
+and current memory-bank facts in the same release task as the versioned
+artifacts. Check examples against the published grammar and actual behavior,
+not only against document structure.
 
 **Rationale.** Browser registration 1.2 was fully represented by schemas, Go
 helpers, fixtures, and version documents, while several discovery surfaces
 continued to identify 1.1 as current. Tests of the executable contract did not
-detect that documentation drift.
+detect that documentation drift. The UWS 1.10 release similarly left feature
+guides with stale or contradictory execution examples; passing Go and schema
+tests did not detect that mismatch.
 
 **Evidence.** `versions/browser-registration.1.2.*`;
 `versions/browser-registration-call.1.2.*`; `README.md`; `AGENTS.md`;
-`mkdocs.yml`; `tabilet/docs/archive-B01.md`.
+`mkdocs.yml`; `tabilet/docs/archive-B01.md`; `versions/1.10.0.md`;
+`docs/04-Triggers-and-Route-Dispatch.md`; `docs/05-Structural-Results.md`;
+`docs/06-Success-Criteria-and-Actions.md`; `docs/07-Execution-Model.md`.
 
 ## Separate Editorial Correction From Semantic Amendment
 

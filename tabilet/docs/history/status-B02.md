@@ -10,7 +10,7 @@ Worktree: `includes uncommitted changes`
 Review: `passed`
 Review iterations: `2`
 Verification: focused Browser 1.8/1.9 profile tests; `go test ./schemas -count=1`; `go test ./...`; `go test -race ./...`; `go vet ./...`; `mkdocs build --strict`; `git diff --check`; `jq empty versions/browser.1.9.json`; repeated `go generate ./schemas` produced an identical archive
-Consolidated into: [Browser 1.9 profile](../../../versions/browser.1.9.md), [Browser 1.9 schema](../../../versions/browser.1.9.json), [Browser profile validation](../../../schemas/browser19_templates.go), [profile dispatch](../../../schemas/schema.go), [current product facts](../../memory-bank/product.md), and pending [C04 release work](../../memory-bank/status-C04.md)
+Consolidated into: [Browser 1.9 profile](../../../versions/browser.1.9.md), [Browser 1.9 schema](../../../versions/browser.1.9.json), [Browser profile validation](../../../schemas/browser19_templates.go), [profile dispatch](../../../schemas/schema.go), [current product facts](../../memory-bank/product.md), and completed [C04 release work](status-C04.md)
 
 ## Final milestone specification
 

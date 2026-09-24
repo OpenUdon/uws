@@ -14,3 +14,4 @@ Knowledge updates that replace current facts or lessons are recorded in
 | C03 | completed | 2026-09-23 | [status-C03.md](status-C03.md) | Published UWS 1.10.0's portable execution contract, schema, Go behavior, conformance evidence, and synchronized docs. |
 | C05 | completed | 2026-09-23 | [status-C05.md](status-C05.md) | Exact-version admission now rejects unpublished core versions across direct and file validation without retroactively applying later feature semantics. |
 | B02 | completed | 2026-09-23 | [status-B02.md](status-B02.md) | Restored Browser 1.8 literal-brace validation and published opt-in Browser 1.9 text safety without changing UWS core. |
+| C04 | completed | 2026-09-24 | [status-C04.md](status-C04.md) | Published UWS 1.11's gated execution and expression contract with executable conformance vectors and synchronized guides. |

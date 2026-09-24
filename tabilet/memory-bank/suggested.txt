@@ -1,0 +1,21 @@
+# Disposable multi-milestone launch reference.
+# Reconcile this suggestion against milestone.md and the current status files.
+# Delete it after launching the goal, or whenever it becomes stale.
+
+Using tabilet/GOAL.md, execute this loop.
+
+STATUS_ORDER:
+M04
+
+STATUS_FILE_MAP:
+M04 = tabilet/memory-bank/status-M04.md
+
+DOWNSTREAM_IMPACTS:
+none
+
+COMMIT_POLICY: task
+EXTERNAL_MUTATIONS: none
+
+Completion condition: every required status is complete, every triggered
+conditional status is complete, and every milestone's documented verification
+passes.

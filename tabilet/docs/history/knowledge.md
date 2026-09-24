@@ -33,6 +33,40 @@ core schemas covered by the compatibility corpus.
 
 **Replacement.** [Review Declared-Version Semantics Before Freezing Markdown](../../memory-bank/lessons.md#review-declared-version-semantics-before-freezing-markdown)
 
+## 2026-09-23 - Release-Surface Lesson Expanded To Core Guides
+
+**Source heading.** `tabilet/memory-bank/lessons.md#release-surfaces-must-move-with-a-profile-release`
+
+**Previous wording.**
+
+> **Scope.** Publishing or advancing a separately versioned profile.
+>
+> **Lesson.** Reconcile the top-level README, agent instructions, documentation
+> home/reference navigation, release changelog, and current memory-bank facts in
+> the same release task as the profile artifacts.
+>
+> **Rationale.** Browser registration 1.2 was fully represented by schemas, Go
+> helpers, fixtures, and version documents, while several discovery surfaces
+> continued to identify 1.1 as current. Tests of the executable contract did not
+> detect that documentation drift.
+>
+> **Evidence.** `versions/browser-registration.1.2.*`;
+> `versions/browser-registration-call.1.2.*`; `README.md`; `AGENTS.md`;
+> `mkdocs.yml`; `tabilet/docs/archive-B01.md`.
+
+**Reason.** The second review found that a core 1.10 release also left feature
+guides and examples stale or inconsistent with published grammar and behavior.
+The profile-only scope was too narrow; this expansion records a current
+release-review lesson, not a claim that the guides are already fixed.
+
+**Evidence.** `versions/1.10.0.md`;
+`docs/04-Triggers-and-Route-Dispatch.md`;
+`docs/05-Structural-Results.md`;
+`docs/06-Success-Criteria-and-Actions.md`;
+`docs/07-Execution-Model.md`; `tabilet/docs/history/status-C04.md`.
+
+**Replacement.** [Release Surfaces Must Move With A Versioned Release](../../memory-bank/lessons.md#release-surfaces-must-move-with-a-versioned-release)
+
 ## 2026-09-23 - Current Browser Profile Updated
 
 **Source heading.** `tabilet/memory-bank/product.md#current-contract-surface`

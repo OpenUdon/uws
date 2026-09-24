@@ -10,7 +10,7 @@ Worktree: `includes uncommitted changes`
 Review: `passed`
 Review iterations: `1`
 Verification: `go test ./...`; `go test -race ./...`; `go vet ./...`; `mkdocs build --strict`; `git diff --check`; focused C05 version and file-validation tests
-Consolidated into: [validation guide](../../../docs/09-Validation.md), [release changelog](../../../versions/CHANGELOG.md), and pending [C04 status](../../memory-bank/status-C04.md)
+Consolidated into: [validation guide](../../../docs/09-Validation.md), [release changelog](../../../versions/CHANGELOG.md), and completed [C04 status](status-C04.md)
 
 ## Final milestone specification
 

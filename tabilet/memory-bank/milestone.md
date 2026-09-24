@@ -1,14 +1,28 @@
 # Milestones
 
-M01, M02, M03, C01, C02, B01, and C03 completed acceptance and bounded review;
-their IDs remain reserved in the history index. C03 closed the 2026-09-23
-review remediation and published UWS 1.10.0.
+M01, M02, M03, C01, C02, B01, B02, C03, C05, and C04 completed acceptance
+and bounded review; their IDs remain reserved in the history index. C03
+published UWS 1.10.0 and C04 published UWS 1.11.0.
 
 ## Active Horizon
 
-There is no active or pending milestone. Historical IDs remain reserved; new
-work requires a fresh proposal when a candidate trigger or other concrete need
-is established.
+The second 2026-09-23 engineering review opened the required remediation
+horizon. C05's exact-version admission correction, B02's Browser 1.9 profile,
+and C04's UWS 1.11 contract are implemented, reviewed, and retired in history.
+M04 remains pending. Planning does not implement other product findings;
+archive display labels were clarified editorially, while reproducible evidence
+remains M04 work.
+
+| Order | Milestone | Goal | Dependencies |
+|---|---|---|---|
+| 1 | [M04 - Reproducible Memory-Bank Evidence](status-M04.md) | Make already-cited Tabilet evidence reproducible without renaming frozen archives. | No product dependency; scheduled after completed [C04](../docs/history/status-C04.md). |
+
+**Active order.** M04. **Reconciled downstream impacts.** B02 -> C04 was
+reconciled: UWS 1.11 references the completed Browser 1.9 contract. C04 has no
+active product consumers; M04 remains independent in the dependency graph and
+runs after C04 for the approved goal order. M04 is the sole remaining required
+milestone; none is conditional. Published prior versions and the existing
+GOAL protocol remain unchanged.
 
 ## Candidate Directions
 
@@ -20,18 +34,19 @@ work automatically.
 |---|---|---|
 | MCP public supplement consideration | The OpenUdon experiment is unimplemented and has no interoperability evidence. | Stage 1 produces real workflow evidence and a second independent consumer requests interoperable exchange. |
 | Concrete content-trust resolvers | No source/profile resolver has a named in-repository owner or representative acceptance corpus. | A runtime or profile owner supplies reviewed channel contracts and fixtures. |
-| New browser or account-lifecycle profile direction beyond browser 1.8 | Browser 1.8 resolves the confirmed template-safety gap; broader profile or account-lifecycle changes lack a proved portable contract. | A new concrete gap beyond browser 1.8 is demonstrated; portable semantics additionally require multi-runtime demand. |
-| UWS 2.0 expression, trigger, and enforcement redesign | C2–C4 and E1/E2/E6/E8/E11 require new wire or governance choices: explicit expression marker/escape and interpolation, richer operators and names, literal `items`/`batchSize`, decoupled profile/core versions, extensible source types, trigger kinds, and possible content-trust enforcement. The review does not establish a compatible 1.x design or an injection exploit. | A concrete multi-runtime need and compatibility analysis support a separately approved 2.0 proposal. |
-| Profile documentation | D7's remaining runtime-supplement ambiguity, D9's BCP 14 declarations, and D10's registration 1.2 authoring detail concern separately versioned profiles; editing frozen published documents is not an automatic review fix. | The next relevant profile version or an explicitly approved meaning-preserving editorial amendment. |
-| Interoperability formats | D6 file extensions, C16/E9 content-trust wire reports/resolvers, E4 stable error codes, E10 normative HCL mapping, E3 fixture expansion, and C10 portable error taxonomy require independent consumer and compatibility evidence beyond C03's core semantics. | A named independent consumer or portable conformance requirement and separately approved contract. |
+| UWS 2.0 expression, trigger, polling, and enforcement redesign | C2–C4 and E1/E2/E6/E8/E11 require new wire or governance choices: an expression marker/escape and interpolation, richer operators and names, literal `items`, decoupled profile/core versions, extensible source types, trigger kinds, possible content-trust enforcement, and portable `await` operation reexecution. C04 added numeric `batchSize` literals and corrected the existing `await` guide; portable operation reexecution remains deferred. | A concrete multi-runtime need and compatibility analysis support a separately approved 2.0 proposal. |
+| Profile documentation | D7's remaining runtime-supplement ambiguity and D10's registration 1.2 authoring detail concern separately versioned profiles; editing frozen published documents is not an automatic review fix. Browser BCP 14 language belongs to B02. | The next relevant profile version or an explicitly approved meaning-preserving editorial amendment. |
+| Interoperability formats | D6 file extensions, C16/E9 content-trust wire reports/resolvers, E4 stable error codes, E10 normative HCL mapping, and C10 portable error taxonomy require independent consumer and compatibility evidence beyond C04's executable conformance corpus. | A named independent consumer or portable conformance requirement and separately approved contract. |
 | `uws.*` profile-name namespace reservation | C18's proposed reservation is a governance change, not a correction to the present core list of `x-uws-*` fields. | An approved namespace/governance or 2.0 design with migration analysis. |
+| Evaluation-cost hardening | N16 identifies repeated recursive truthiness scans and expression-pattern compilation, but supplies no measured cost or representative workload. | A reproducible benchmark shows material latency or resource impact and a compatible cache/validation design is approved. |
 
-After C03 acceptance, the listed candidate triggers were reconsidered against
-current evidence. None has been demonstrated: MCP still lacks Stage 1 evidence
-and a second consumer; no content-trust resolver owner, new browser gap,
-multi-runtime 2.0 need, independent interoperability consumer, or namespace
-decision is present. These directions remain unpromoted and require a fresh
-proposal when their trigger is met.
+The second review established a concrete Browser 1.8 gap and promoted that
+work to B02, together with the separate Browser 1.9 text-safety contract. It
+also promoted core defects to C04 and evidence reproducibility to M04. C05's
+urgent version-admission correction was completed first, followed by B02 and
+C04; only M04 remains active. MCP still lacks Stage 1 evidence and a second
+consumer; the remaining candidate directions require their own promotion
+triggers and approval.
 
 ## Review Finding Severity
 
