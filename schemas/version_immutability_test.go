@@ -65,7 +65,7 @@ var publishedMarkdownSHA256 = map[string]string{
 	"1.9.1.md":                           "de2ba4fe07aa22ecfcdfbfe243caf09e950a5592b3d98d9cf826a0bb5cf998f3",
 	"1.9.2.md":                           "92171354a3fe60faa468fe0e43f36733f535ab6a3de8b57b82afe245bf6a57dc",
 	"1.10.0.md":                          "bcb5d90bb0f70a4277c3a8505e14cd9c022c7292cb51dd636efe5503b858ea4e",
-	"1.11.0.md":                          "51dbe501bc6f97bb8e7eb7d68f27c8856f490fc0765323c33ccf2d4f737a0f8f",
+	"1.11.0.md":                          "6a525ede5a913a6bd8a25e0d443d42be40b8d2955e6a10032bbef6752ad42bd0",
 	"ansible.1.0.md":                     "fc7ac843633004e33bac0bee34e178a4de894491a222162875c6f6f0bfcea504",
 	"arazzo.md":                          "f4591078579df231f030d8877667fd2c2b50c8e713508361d516f67a6ed67490",
 	"article.md":                         "2a1b30f5515efa95e906168033f3f8c305df9b34a026e32dabf60397ebb4bcda",

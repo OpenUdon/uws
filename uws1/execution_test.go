@@ -2,6 +2,7 @@ package uws1
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"math"
 	"sync"
@@ -417,6 +418,36 @@ func TestLoopResultUsesOrderedItemRecordsAndBatchIndexes(t *testing.T) {
 		assert.Equal(t, i, rows[i]["index"])
 		assert.Equal(t, want.batchIndex, rows[i]["batchIndex"])
 		assert.Equal(t, want.item, rows[i]["item"])
+	}
+}
+
+func TestResolveBatchSizeAcceptsIntegralJSONNumbers(t *testing.T) {
+	for _, test := range []struct {
+		value json.Number
+		want  int
+		valid bool
+	}{
+		{value: "2", want: 2, valid: true},
+		{value: "2.0", want: 2, valid: true},
+		{value: "2e0", want: 2, valid: true},
+		{value: "2.5", valid: false},
+		{value: "9007199254740993.5", valid: false},
+		{value: "0", valid: false},
+		{value: "-1", valid: false},
+		{value: "1e1000", valid: false},
+		{value: "9223372036854775808", valid: false},
+	} {
+		t.Run(string(test.value), func(t *testing.T) {
+			runtime := &mockRuntime{expressions: map[string]any{"batch": test.value}}
+			orch := NewOrchestrator(testDocument(), runtime)
+			got, err := orch.resolveBatchSize(context.Background(), "batch")
+			if !test.valid {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, test.want, got)
+		})
 	}
 }
 

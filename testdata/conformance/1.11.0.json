@@ -1,0 +1,262 @@
+{
+  "uws": "1.11.0",
+  "description": "Typed UWS 1.11 semantic vectors. Each operation/input pair is executed by the Go conformance tests; expression vectors are additionally consumed by contenttrust's grammar tests.",
+  "cases": [
+    {
+      "id": "grammar-response-body-dotwalk",
+      "operation": "expression.parse",
+      "input": { "declaredVersion": "1.11.0", "field": "outputs", "expression": "$response.body.customer.name", "loopContext": false },
+      "expected": { "valid": true }
+    },
+    {
+      "id": "grammar-batch-index-in-loop",
+      "operation": "expression.parse",
+      "input": { "declaredVersion": "1.11.0", "field": "when", "expression": "$batchIndex == 1", "loopContext": true },
+      "expected": { "valid": true }
+    },
+    {
+      "id": "grammar-batch-index-outside-loop",
+      "operation": "expression.parse",
+      "input": { "declaredVersion": "1.11.0", "field": "outputs", "expression": "$batchIndex", "loopContext": false },
+      "expected": { "valid": false }
+    },
+    {
+      "id": "grammar-complete-numeric-wait-literal",
+      "operation": "expression.parse",
+      "input": { "declaredVersion": "1.11.0", "field": "wait", "expression": "1.25e2", "loopContext": false },
+      "expected": { "valid": true }
+    },
+    {
+      "id": "grammar-complete-numeric-batchsize-literal",
+      "operation": "expression.parse",
+      "input": { "declaredVersion": "1.11.0", "field": "batchSize", "expression": "2e0", "loopContext": false },
+      "expected": { "valid": true }
+    },
+    {
+      "id": "grammar-numeric-wait-version-gate",
+      "operation": "expression.parse",
+      "input": { "declaredVersion": "1.10.0", "field": "wait", "expression": "30", "loopContext": false },
+      "expected": { "valid": false }
+    },
+    {
+      "id": "grammar-numeric-batchsize-version-gate",
+      "operation": "expression.parse",
+      "input": { "declaredVersion": "1.10.0", "field": "batchSize", "expression": "2", "loopContext": false },
+      "expected": { "valid": false }
+    },
+    {
+      "id": "grammar-response-body-dotwalk-version-gate",
+      "operation": "expression.parse",
+      "input": { "declaredVersion": "1.10.0", "field": "outputs", "expression": "$response.body.customer.name", "loopContext": false },
+      "expected": { "valid": false }
+    },
+    {
+      "id": "grammar-batch-index-version-gate",
+      "operation": "expression.parse",
+      "input": { "declaredVersion": "1.10.0", "field": "when", "expression": "$batchIndex == 1", "loopContext": true },
+      "expected": { "valid": false }
+    },
+    {
+      "id": "grammar-json-pointer-rejects-invalid-tilde-escape",
+      "operation": "expression.parse",
+      "input": { "declaredVersion": "1.11.0", "field": "outputs", "expression": "$response.body#/a~2b", "loopContext": false },
+      "expected": { "valid": false }
+    },
+    {
+      "id": "validation-rejects-unpublished-minor",
+      "operation": "document.validate",
+      "input": {
+        "document": {
+          "uws": "1.99.0",
+          "info": { "title": "version vector", "version": "1" },
+          "operations": [{ "operationId": "noop", "x-uws-operation-profile": "test" }]
+        }
+      },
+      "expected": { "valid": false, "errorKind": "unsupported-version" }
+    },
+    {
+      "id": "validation-rejects-unpublished-prerelease",
+      "operation": "document.validate",
+      "input": {
+        "document": {
+          "uws": "1.0.0-beta.1",
+          "info": { "title": "version vector", "version": "1" },
+          "operations": [{ "operationId": "noop", "x-uws-operation-profile": "test" }]
+        }
+      },
+      "expected": { "valid": false, "errorKind": "unsupported-version" }
+    },
+    {
+      "id": "validation-rejects-unpublished-patch",
+      "operation": "document.validate",
+      "input": {
+        "document": {
+          "uws": "1.10.1",
+          "info": { "title": "version vector", "version": "1" },
+          "operations": [{ "operationId": "noop", "x-uws-operation-profile": "test" }]
+        }
+      },
+      "expected": { "valid": false, "errorKind": "unsupported-version" }
+    },
+    {
+      "id": "execution-forward-goto-runs-target-and-ends-root-run",
+      "operation": "document.execute",
+      "input": {
+        "document": {
+          "uws": "1.11.0",
+          "info": { "title": "forward goto vector", "version": "1" },
+          "operations": [
+            { "operationId": "jump-op", "x-uws-operation-profile": "test", "onSuccess": [{ "name": "jump", "type": "goto", "stepId": "target" }] },
+            { "operationId": "target-op", "x-uws-operation-profile": "test" },
+            { "operationId": "after-op", "x-uws-operation-profile": "test" }
+          ],
+          "workflows": [{
+            "workflowId": "main",
+            "type": "sequence",
+            "steps": [
+              { "stepId": "jump", "operationRef": "jump-op" },
+              { "stepId": "after", "operationRef": "after-op" },
+              { "stepId": "target", "operationRef": "target-op" }
+            ]
+          }]
+        },
+        "runtime": {},
+        "observe": { "recordStatuses": [
+          { "kind": "step", "id": "target" },
+          { "kind": "step", "id": "after" }
+        ] }
+      },
+      "expected": {
+        "errorKind": null,
+        "leafOrder": ["jump-op", "target-op"],
+        "recordStatuses": [
+          { "selector": { "kind": "step", "id": "target" }, "status": "success" },
+          { "selector": { "kind": "step", "id": "after" }, "status": null }
+        ],
+        "mergeResultIDs": [],
+        "loopBatchIndexes": []
+      }
+    },
+    {
+      "id": "execution-backward-goto-fails-on-completed-target",
+      "operation": "document.execute",
+      "input": {
+        "document": {
+          "uws": "1.11.0",
+          "info": { "title": "backward goto vector", "version": "1" },
+          "operations": [
+            { "operationId": "jump-op", "x-uws-operation-profile": "test", "onSuccess": [{ "name": "jump", "type": "goto", "stepId": "target" }] },
+            { "operationId": "target-op", "x-uws-operation-profile": "test" }
+          ],
+          "workflows": [{
+            "workflowId": "main",
+            "type": "sequence",
+            "steps": [
+              { "stepId": "target", "operationRef": "target-op" },
+              { "stepId": "jump", "operationRef": "jump-op" }
+            ]
+          }]
+        },
+        "runtime": {},
+        "observe": { "recordStatuses": [{ "kind": "step", "id": "target" }] }
+      },
+      "expected": {
+        "errorKind": "goto-target-already-completed",
+        "leafOrder": ["target-op", "jump-op"],
+        "recordStatuses": [
+          { "selector": { "kind": "step", "id": "target" }, "status": "success" }
+        ],
+        "mergeResultIDs": [],
+        "loopBatchIndexes": []
+      }
+    },
+    {
+      "id": "execution-merge-uses-foreach-iterations-not-parent",
+      "operation": "document.execute",
+      "input": {
+        "document": {
+          "uws": "1.11.0",
+          "info": { "title": "forEach merge vector", "version": "1" },
+          "operations": [{ "operationId": "each-op", "x-uws-operation-profile": "test" }],
+          "workflows": [{
+            "workflowId": "main",
+            "type": "sequence",
+            "steps": [
+              { "stepId": "each", "operationRef": "each-op", "forEach": "items" },
+              { "stepId": "join", "type": "merge", "dependsOn": ["each"] }
+            ]
+          }]
+        },
+        "runtime": { "items": { "items": ["a", "b"] } },
+        "observe": {
+          "recordStatuses": [{ "kind": "step", "id": "join" }],
+          "mergeResultIDsFrom": { "kind": "step", "id": "join" }
+        }
+      },
+      "expected": {
+        "errorKind": null,
+        "leafOrder": ["each-op", "each-op"],
+        "recordStatuses": [
+          { "selector": { "kind": "step", "id": "join" }, "status": "success" }
+        ],
+        "mergeResultIDs": ["each", "each"],
+        "loopBatchIndexes": []
+      }
+    },
+    {
+      "id": "execution-numeric-wait-and-batchsize-literals",
+      "operation": "document.execute",
+      "input": {
+        "document": {
+          "uws": "1.11.0",
+          "info": { "title": "numeric literals vector", "version": "1" },
+          "operations": [{ "operationId": "work", "x-uws-operation-profile": "test" }],
+          "workflows": [{
+            "workflowId": "main",
+            "type": "loop",
+            "items": "items",
+            "batchSize": "2",
+            "steps": [{ "stepId": "work-step", "operationRef": "work", "wait": "0" }]
+          }]
+        },
+        "runtime": { "items": { "items": ["a", "b"] } },
+        "observe": {
+          "recordStatuses": [{ "kind": "workflow", "id": "main" }],
+          "loopBatchIndexesFrom": { "kind": "workflow", "id": "main" }
+        }
+      },
+      "expected": {
+        "errorKind": null,
+        "leafOrder": ["work", "work"],
+        "recordStatuses": [
+          { "selector": { "kind": "workflow", "id": "main" }, "status": "success" }
+        ],
+        "mergeResultIDs": [],
+        "loopBatchIndexes": [0, 0]
+      }
+    },
+    {
+      "id": "execution-numeric-wait-over-limit-fails-before-leaf",
+      "operation": "document.execute",
+      "input": {
+        "document": {
+          "uws": "1.11.0",
+          "info": { "title": "wait boundary vector", "version": "1" },
+          "operations": [{ "operationId": "work", "x-uws-operation-profile": "test" }],
+          "workflows": [{ "workflowId": "main", "type": "sequence", "steps": [{ "stepId": "work-step", "operationRef": "work", "wait": "86400.1" }] }]
+        },
+        "runtime": {},
+        "observe": { "recordStatuses": [{ "kind": "step", "id": "work-step" }] }
+      },
+      "expected": {
+        "errorKind": "invalid-wait-duration",
+        "leafOrder": [],
+        "recordStatuses": [
+          { "selector": { "kind": "step", "id": "work-step" }, "status": "error" }
+        ],
+        "mergeResultIDs": [],
+        "loopBatchIndexes": []
+      }
+    }
+  ]
+}

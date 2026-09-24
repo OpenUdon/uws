@@ -2,13 +2,16 @@ package uws1
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"golang.org/x/sync/errgroup"
 	"math"
+	"math/big"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 const defaultAwaitPollInterval = 200 * time.Millisecond
@@ -387,18 +390,38 @@ func (o *Orchestrator) resolveBatchSize(ctx context.Context, batchSizeExpr strin
 		}
 		return typed, nil
 	case int64:
-		if typed <= 0 {
+		if typed <= 0 || uint64(typed) > uint64(^uint(0)>>1) {
 			return 0, fmt.Errorf("batchSize must resolve to a positive integer")
 		}
 		return int(typed), nil
 	case float64:
-		if typed <= 0 || math.Trunc(typed) != typed {
+		if !isPositiveIntFloat(typed) {
 			return 0, fmt.Errorf("batchSize must resolve to a positive integer")
 		}
 		return int(typed), nil
+	case json.Number:
+		text := typed.String()
+		var number big.Rat
+		if !jsonNumberPattern.MatchString(text) {
+			return 0, fmt.Errorf("batchSize must resolve to a positive integer")
+		}
+		if _, ok := number.SetString(text); !ok || !number.IsInt() {
+			return 0, fmt.Errorf("batchSize must resolve to a positive integer")
+		}
+		integer := number.Num()
+		if integer.Sign() <= 0 || integer.BitLen() > strconv.IntSize-1 {
+			return 0, fmt.Errorf("batchSize must resolve to a positive integer")
+		}
+		return int(integer.Int64()), nil
 	default:
 		return 0, fmt.Errorf("batchSize must resolve to a positive integer")
 	}
+}
+
+func isPositiveIntFloat(value float64) bool {
+	maxIntExclusive := math.Ldexp(1, strconv.IntSize-1)
+	return !math.IsNaN(value) && !math.IsInf(value, 0) && value > 0 &&
+		math.Trunc(value) == value && value < maxIntExclusive
 }
 
 func (o *Orchestrator) executeAwait(ctx context.Context, steps []*Step, waitExpr string, useDefaultTimeout bool) error {

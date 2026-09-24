@@ -32,8 +32,10 @@ the meaning or scope of a published schema or sub-spec is recorded as an
   Added opt-in response-body dot-walk, loop-only `$batchIndex`, complete JSON
   numeric literals for non-`await` `wait` and `batchSize`, root-scope terminal
   `goto`, and `forEach` merge selection that uses iteration records instead of
-  duplicating their parent aggregate. The 1.11 grammar and execution behavior
-  are gated by the declared, exactly published UWS version.
+  duplicating their parent aggregate. The executor also accepts JSON-number
+  runtime values for `batchSize` only when they are finite positive integers;
+  literal grammar remains version-gated. The 1.11 grammar and execution
+  behavior are gated by the declared, exactly published UWS version.
 - Corrected the 1.10 prose on step forms, expression-addressable variable
   names, loop-only `items`, criteria contexts, JSON Pointer tilde escapes,
   header-name matching, criterion pointer normalization, version gates, and
@@ -43,10 +45,11 @@ the meaning or scope of a published schema or sub-spec is recorded as an
 - Exact-version admission remains a deliberate cross-version validator
   correction as documented below. Other implemented bug fixes that repair
   existing behavior across declared versions are: per-call workflow execution
-  record isolation, deterministic merge dependency/member/iteration ordering,
-  and rejection of trigger output indexes outside the declared output list.
-  These corrections do not enable later UWS 1.11 expression or control-flow
-  features on older documents.
+  record isolation, exact JSON-number `batchSize` evaluation when the value is
+  a positive integer, deterministic merge dependency/member/iteration
+  ordering, and rejection of trigger output indexes outside the declared
+  output list. These corrections do not enable later UWS 1.11 expression or
+  control-flow features on older documents.
 - UWS 1.10.0 and every earlier published core schema/specification remain
   immutable. Browser 1.9 remains a separate opt-in profile; no core wire field
   or Go API is added by this release.
