@@ -1,3 +1,71 @@
+# M04 History
+
+Milestone: `M04`
+Outcome: `completed`
+Retired: `2026-09-24`
+Source status: `tabilet/memory-bank/status-M04.md`
+Source specification: `tabilet/memory-bank/status-M04.md#status-m04---reproducible-memory-bank-evidence`
+Evidence: `0c93a350a7f253687863872330e9d51929f25930`
+Worktree: `includes uncommitted changes`
+Review: `passed`
+Review iterations: `1`
+Verification: `git diff --check`; `mkdocs build --strict`; `go test ./...`; `go test -race ./...`; `go vet ./...`; targeted private-content scan; history-index and maintained-link checks; 14 evidence SHA-256 digests matched
+Consolidated into: [memory-bank architecture](../../memory-bank/architecture.md), [milestone roadmap](../../memory-bank/milestone.md), [tracked GOAL protocol](../../GOAL.md), [archive evidence](../archive-C01.md), and [evolution snapshots](../../evolution/)
+
+## Final milestone specification
+
+````markdown
+# Status M04 - Reproducible Memory-Bank Evidence
+
+**Goal.** Make the evidence already cited by the current memory bank
+reproducible in a clone, while preserving frozen archive identities and the
+user-owned GOAL protocol. This is later execution work, not tracking or
+committing those files during reconciliation.
+
+**Dependencies and order.** No product dependency; run after completed
+[C04](../docs/history/status-C04.md) in the remaining approved order M04.
+Completed historical M01–M03, B02, C05, and C04 remain retired.
+**Downstream impacts.** None active.
+
+**Scope and decision.** Audit the five existing, untracked, verified archive
+files, `tabilet/GOAL.md`, and `tabilet/evolution/` for baseline integrity,
+private content, and link targets. During M04 execution, track those unchanged
+approved artifacts as evidence after that audit. Archive IDs and milestone
+IDs occupy separate namespaces: `architecture.md` already uses “Archive C01”
+and similar editorial display labels, without renaming archive files or
+retired records. M04 must verify that distinction while making the evidence
+clone-visible. The empty local `ansiblemodulecall/` directory
+is outside this milestone and requires no repository action.
+
+**Compatibility and rollback.** Do not alter archive bytes, GOAL protocol,
+evolution v1-v4 snapshots, or retired status records. The ten old relative
+links in `evolution/result-v2.md` through `result-v4.md`, and legacy active-path
+links retained inside archived status specifications, are historical
+references, not maintained links: resolve their milestone IDs through
+`tabilet/docs/history/index.md` and the corresponding history records. Their
+literal hrefs remain non-clickable by the user's approved preservation
+disposition. The two evolution links to M04 still resolve while it is active;
+after retirement they become historical references to its indexed record.
+Maintained links in current memory-bank documents, the history index, and
+consolidated-into metadata must resolve normally. Do not silently rewrite or
+drop citations.
+
+**Acceptance and verification.** Confirm exact planned artifact set and hashes,
+no private data, all historical milestone-link IDs in snapshots and archived
+status specifications against the history index and records, the two active
+M04 links while M04 is pending, and normal resolution of maintained links;
+track the audited unchanged files in a task commit; distinguish archive labels
+from milestone IDs in current prose. Check
+`git diff --check`, `mkdocs build --strict`, history/current-memory links,
+`go test ./...`, `go test -race ./...`, `go vet ./...`, and the bounded
+whole-milestone review gate. Product tests are regression checks, not evidence
+that this planning phase implemented product fixes.
+
+````
+
+## Final status
+
+````markdown
 # Status M04 - Reproducible Memory-Bank Evidence
 
 **Goal.** Make the evidence already cited by the current memory bank
@@ -120,3 +188,4 @@ verification were reviewed. `git diff --check`, `mkdocs build --strict`,
 private-content and history-index reference checks passed. The exact evidence
 set and architecture label clarification are the only tracked additions or
 edits beyond this status record.
+````

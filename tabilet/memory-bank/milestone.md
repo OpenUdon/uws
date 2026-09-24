@@ -1,28 +1,25 @@
 # Milestones
 
-M01, M02, M03, C01, C02, B01, B02, C03, C05, and C04 completed acceptance
-and bounded review; their IDs remain reserved in the history index. C03
-published UWS 1.10.0 and C04 published UWS 1.11.0.
+M01, M02, M03, C01, C02, B01, B02, C03, C05, C04, and M04 completed
+acceptance and bounded review; their IDs remain reserved in the history index.
+C03 published UWS 1.10.0 and C04 published UWS 1.11.0.
 
 ## Active Horizon
 
 The second 2026-09-23 engineering review opened the required remediation
 horizon. C05's exact-version admission correction, B02's Browser 1.9 profile,
-and C04's UWS 1.11 contract are implemented, reviewed, and retired in history.
-M04 remains pending. Planning does not implement other product findings;
-archive display labels were clarified editorially, while reproducible evidence
-remains M04 work.
+C04's UWS 1.11 contract, and M04's evidence tracking are implemented, reviewed,
+and retired in history. Planning does not implement other product findings;
+archive display labels were clarified editorially and the reproducible
+evidence is now clone-visible. No active required or conditional milestone
+remains.
 
-| Order | Milestone | Goal | Dependencies |
-|---|---|---|---|
-| 1 | [M04 - Reproducible Memory-Bank Evidence](status-M04.md) | Make already-cited Tabilet evidence reproducible without renaming frozen archives. | No product dependency; scheduled after completed [C04](../docs/history/status-C04.md). |
-
-**Active order.** M04. **Reconciled downstream impacts.** B02 -> C04 was
-reconciled: UWS 1.11 references the completed Browser 1.9 contract. C04 has no
-active product consumers; M04 remains independent in the dependency graph and
-runs after C04 for the approved goal order. M04 is the sole remaining required
-milestone; none is conditional. Published prior versions and the existing
-GOAL protocol remain unchanged.
+**Active order.** None. **Reconciled downstream impacts.** B02 -> C04 was
+reconciled: UWS 1.11 references the completed Browser 1.9 contract. C04 had no
+active product consumers; M04 was independent in the dependency graph and ran
+after C04 for the approved goal order. All required milestones are now
+complete, and no conditional milestone was triggered. Published prior
+versions and the existing GOAL protocol remain unchanged.
 
 ## Candidate Directions
 
@@ -43,10 +40,9 @@ work automatically.
 The second review established a concrete Browser 1.8 gap and promoted that
 work to B02, together with the separate Browser 1.9 text-safety contract. It
 also promoted core defects to C04 and evidence reproducibility to M04. C05's
-urgent version-admission correction was completed first, followed by B02 and
-C04; only M04 remains active. MCP still lacks Stage 1 evidence and a second
-consumer; the remaining candidate directions require their own promotion
-triggers and approval.
+urgent version-admission correction was completed first, followed by B02, C04,
+and M04. MCP still lacks Stage 1 evidence and a second consumer; the remaining
+candidate directions require their own promotion triggers and approval.
 
 ## Review Finding Severity
 

@@ -15,3 +15,4 @@ Knowledge updates that replace current facts or lessons are recorded in
 | C05 | completed | 2026-09-23 | [status-C05.md](status-C05.md) | Exact-version admission now rejects unpublished core versions across direct and file validation without retroactively applying later feature semantics. |
 | B02 | completed | 2026-09-23 | [status-B02.md](status-B02.md) | Restored Browser 1.8 literal-brace validation and published opt-in Browser 1.9 text safety without changing UWS core. |
 | C04 | completed | 2026-09-24 | [status-C04.md](status-C04.md) | Published UWS 1.11's gated execution and expression contract with executable conformance vectors and synchronized guides. |
+| M04 | completed | 2026-09-24 | [status-M04.md](status-M04.md) | Tracked the preserved 14-file Tabilet evidence set with verified hashes and history-index resolution for historical status references. |
