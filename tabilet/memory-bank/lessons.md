@@ -4,6 +4,20 @@ Read only the topics relevant to the current change. Product terminology,
 architecture contracts, commands, and active work remain in their dedicated
 memory-bank files.
 
+## State Profile Compatibility As A Minimum Core Version
+
+**Scope.** Separately versioned profiles referenced by a core specification.
+
+**Lesson.** State the minimum compatible core version in a profile document,
+not whichever core release is current when that profile is published. Check
+those references when a later core version ships.
+
+**Rationale.** Browser 1.9 remains opt-in and compatible with UWS 1.9 and
+later, but its prose still calls UWS 1.10.0 current after UWS 1.11.0 shipped.
+
+**Evidence.** `versions/browser.1.9.md` §§1 and 8;
+`versions/1.11.0.md`; third-review R6.
+
 ## Release Surfaces Must Move With A Versioned Release
 
 **Scope.** Publishing or advancing a core version or separately versioned

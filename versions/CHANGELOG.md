@@ -28,6 +28,14 @@ the meaning or scope of a published schema or sub-spec is recorded as an
 
 ## UWS 1.11.0 Contract Correction - 2026-09-24
 
+Amended 2026-09-24: Corrected the published specification's expression-source
+table to include structural `loop` for `$item` and `$index`, and its JSONPath
+pointer clause to place the evaluated input in `Criterion.context` and the
+query or pointer in `Criterion.condition`. Expressed semantic validation and
+advisory analysis requirements without Go API names, and pinned the informative
+profile references to the reviewed commit. This amendment states existing
+behavior; it changes no schema, wire field, runtime rule, or public Go API.
+
 - Published the UWS 1.11 core schema and corrected human-readable contract.
   Added opt-in response-body dot-walk, loop-only `$batchIndex`, complete JSON
   numeric literals for non-`await` `wait` and `batchSize`, root-scope terminal

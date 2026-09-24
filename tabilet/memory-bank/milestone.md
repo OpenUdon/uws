@@ -1,25 +1,19 @@
 # Milestones
 
-M01, M02, M03, C01, C02, B01, B02, C03, C05, C04, and M04 completed
+M01, M02, M03, C01, C02, B01, B02, C03, C05, C04, M04, and C06 completed
 acceptance and bounded review; their IDs remain reserved in the history index.
 C03 published UWS 1.10.0 and C04 published UWS 1.11.0.
 
 ## Active Horizon
 
-The second 2026-09-23 engineering review opened the required remediation
-horizon. C05's exact-version admission correction, B02's Browser 1.9 profile,
-C04's UWS 1.11 contract, and M04's evidence tracking are implemented, reviewed,
-and retired in history. Planning does not implement other product findings;
-archive display labels were clarified editorially and the reproducible
-evidence is now clone-visible. No active required or conditional milestone
-remains.
+The third engineering review's [C06](../docs/history/status-C06.md) amendment
+to the published UWS 1.11 specification passed verification and its bounded
+review gate, then retired. Earlier milestones also remain in the
+[history index](../docs/history/index.md).
 
-**Active order.** None. **Reconciled downstream impacts.** B02 -> C04 was
-reconciled: UWS 1.11 references the completed Browser 1.9 contract. C04 had no
-active product consumers; M04 was independent in the dependency graph and ran
-after C04 for the approved goal order. All required milestones are now
-complete, and no conditional milestone was triggered. Published prior
-versions and the existing GOAL protocol remain unchanged.
+**Active order.** None. **Reconciled downstream impacts.** C06 had no active
+consumer. Published schemas, prior specifications, Browser profile documents,
+and the GOAL protocol remain unchanged. No conditional milestone was triggered.
 
 ## Candidate Directions
 
@@ -32,17 +26,20 @@ work automatically.
 | MCP public supplement consideration | The OpenUdon experiment is unimplemented and has no interoperability evidence. | Stage 1 produces real workflow evidence and a second independent consumer requests interoperable exchange. |
 | Concrete content-trust resolvers | No source/profile resolver has a named in-repository owner or representative acceptance corpus. | A runtime or profile owner supplies reviewed channel contracts and fixtures. |
 | UWS 2.0 expression, trigger, polling, and enforcement redesign | C2–C4 and E1/E2/E6/E8/E11 require new wire or governance choices: an expression marker/escape and interpolation, richer operators and names, literal `items`, decoupled profile/core versions, extensible source types, trigger kinds, possible content-trust enforcement, and portable `await` operation reexecution. C04 added numeric `batchSize` literals and corrected the existing `await` guide; portable operation reexecution remains deferred. | A concrete multi-runtime need and compatibility analysis support a separately approved 2.0 proposal. |
-| Profile documentation | D7's remaining runtime-supplement ambiguity and D10's registration 1.2 authoring detail concern separately versioned profiles; editing frozen published documents is not an automatic review fix. Browser BCP 14 language belongs to B02. | The next relevant profile version or an explicitly approved meaning-preserving editorial amendment. |
+| Profile documentation | D7's remaining runtime-supplement ambiguity, D10's registration 1.2 authoring detail, and third-review R6/R7's Browser 1.9 stale core-version and brace-escape wording concern separately versioned profiles; editing frozen published documents is not an automatic review fix. | The next relevant profile version or an explicitly approved meaning-preserving editorial amendment. |
+| Authoring diagnostics and examples | Third-review R3/R10: numeric `wait`/`batchSize` tokens must stay quoted under the existing string wire shape; raw-number diagnostics and the runtime-specific `$error.*` guide excerpt could be clearer. | A named authoring consumer and approved diagnostics or guide amendment with fixtures. Unquoted numbers require a separately versioned wire decision. |
+| Optional expression portability tooling | Third-review R4: core validation intentionally allows implementation-specific expressions under §5.5; strict grammar checking is not ordinary semantic validation. | A consumer requests an opt-in portability check with a specified interface and compatibility tests. |
+| Conformance corpus supplement | Third-review R9: Go tests cover behaviors absent from the pinned 1.11 corpus. Changing that frozen corpus would alter published evidence. | Design and approve a separately pinned supplement or a later release corpus with interoperable vectors. |
+| Browser text-safety expansion | Third-review R8: the Browser 1.9 text rule omits some Unicode `Cf` characters; a multilingual-safe replacement rule is undecided. | A reviewed allowlist or profile-version proposal with Unicode safety and compatibility evidence. |
+| Browser default migration | Third-review R12: empty profile lookup intentionally selects Browser 1.8 for compatibility, though Browser 1.9 is opt-in. | Caller migration analysis and an approved default/deprecation policy. |
 | Interoperability formats | D6 file extensions, C16/E9 content-trust wire reports/resolvers, E4 stable error codes, E10 normative HCL mapping, and C10 portable error taxonomy require independent consumer and compatibility evidence beyond C04's executable conformance corpus. | A named independent consumer or portable conformance requirement and separately approved contract. |
 | `uws.*` profile-name namespace reservation | C18's proposed reservation is a governance change, not a correction to the present core list of `x-uws-*` fields. | An approved namespace/governance or 2.0 design with migration analysis. |
 | Evaluation-cost hardening | N16 identifies repeated recursive truthiness scans and expression-pattern compilation, but supplies no measured cost or representative workload. | A reproducible benchmark shows material latency or resource impact and a compatible cache/validation design is approved. |
 
-The second review established a concrete Browser 1.8 gap and promoted that
-work to B02, together with the separate Browser 1.9 text-safety contract. It
-also promoted core defects to C04 and evidence reproducibility to M04. C05's
-urgent version-admission correction was completed first, followed by B02, C04,
-and M04. MCP still lacks Stage 1 evidence and a second consumer; the remaining
-candidate directions require their own promotion triggers and approval.
+The second-review remediation (C05, B02, C04, M04) is complete. The third
+review's two normative UWS 1.11 contradictions were corrected in C06; the
+other improvement directions remain unnumbered. MCP still lacks Stage 1
+evidence and a second consumer; candidates require fresh promotion approval.
 
 ## Review Finding Severity
 
