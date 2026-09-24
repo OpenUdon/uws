@@ -42,11 +42,11 @@ triggers:
         to: [handle_cancellation, send_refund_notification]
 ```
 
-`order.cancelled` routes to two targets simultaneously — both `handle_cancellation` and `send_refund_notification` execute when that output fires.
+`order.cancelled` routes to two targets. Trigger dispatch processes the route's targets in declaration order; targets run sequentially unless a target's own structural workflow introduces parallelism.
 
 ## Outputs and Uniqueness
 
-`outputs` is an ordered list of unique labels the trigger may emit. Each label MUST match `^[a-zA-Z0-9._-]+$`. Each invocation MUST emit exactly one label.
+`outputs` is an ordered list of unique labels the trigger may emit. Each label MUST match `^[a-zA-Z0-9._-]+$`. Each dispatch selects exactly one declared output by its zero-based index. Routes may address an output by label or by its zero-based decimal-string index; if a token matches both a label and an index, the label interpretation takes precedence. An index outside the declared list is an error.
 
 ```yaml
 outputs:
@@ -71,7 +71,7 @@ routes:
     to: [delete_flow]
 ```
 
-Both forms are equivalent. Label form is more readable; index form is useful when labels are dynamic.
+Both forms address the same output. Label form is more readable; index form is useful when labels are dynamic. Targets selected by matching routes are processed in route declaration order, and repeated targets execute only once per dispatch.
 
 ## Multi-Target Routing
 
@@ -86,7 +86,7 @@ routes:
       - crm_sync_workflow        # creates CRM contact
 ```
 
-Each target receives the same trigger payload and runs independently.
+Each target receives the same trigger context and runs in declaration order. A target must be a declared workflow or a top-level step in the document's selected entry workflow. Multiple targets are not implicitly concurrent; a target's own `parallel` construct may introduce concurrency.
 
 ## Trigger with Options
 

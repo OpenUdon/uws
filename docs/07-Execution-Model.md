@@ -4,7 +4,7 @@
 
 ---
 
-UWS defines a real orchestrator/runtime split. This is what distinguishes UWS from a document-only format: the specification defines portable execution semantics, not just document shape.
+UWS defines a real orchestrator/runtime split. This is what distinguishes UWS from a document-only format: the specification defines portable execution semantics, not just document shape. This guide describes current UWS 1.11 behavior, with version gates preserved for older documents.
 
 ## The Split
 
@@ -118,7 +118,7 @@ func main() {
 
 `doc.Execute(ctx)` runs three checks automatically before handing off to the orchestrator: `Validate()`, `ValidateExecutable()`, and `ValidateExecutionEntrypoint()`.
 
-UWS 1.9 content-trust analysis is intentionally not a fourth automatic check. Applications invoke `contenttrust.Analyze` explicitly before or after validation when they want advisory provenance findings. The analyzer never changes execution records, runtime inputs, orchestration, authorization, or executor results.
+UWS 1.9.1 and later content-trust analysis is intentionally not a fourth automatic check. Applications invoke `contenttrust.Analyze` explicitly before or after validation when they want advisory provenance findings. The analyzer never changes execution records, runtime inputs, orchestration, authorization, or executor results. See the [UWS 1.11 contract](https://github.com/OpenUdon/uws/blob/main/versions/1.11.0.md#78-uws-110-and-111-portable-execution-semantics) and [content-trust guide](content-trust.md).
 
 ## Example 3: Trigger Dispatch
 
@@ -171,7 +171,7 @@ op:send_report                 status=success    kind=operation
 wf:main                        status=success    kind=workflow
 ```
 
-The keying scheme is implementation-defined. UWS 1.0 does not standardize a serialized record store.
+The keys shown above are from this Go implementation only. UWS 1.11 leaves record keys, persistence, and serialized history implementation-defined, while defining portable `loop`, `forEach`, and `merge` result payload shapes. See [Structural Results](05-Structural-Results.md) and the [UWS 1.11 execution contract](https://github.com/OpenUdon/uws/blob/main/versions/1.11.0.md#78-uws-110-and-111-portable-execution-semantics).
 
 ## Execution Context Available to the Runtime
 
@@ -180,7 +180,7 @@ During each `ExecuteLeaf` call, the runtime can inspect:
 | Context | What it contains |
 |---------|-----------------|
 | Trigger context | Active trigger ID, emitted output label, and payload |
-| Iteration context | Current item value, index, batch number, position in batch |
+| Iteration context | Current item value, zero-based index, batch, zero-based batch index, and position in batch; `$batchIndex` is available only in a UWS 1.11 `loop` |
 | Input bindings | Current `$inputs` values, including step-local bindings when a step supplies `inputs` |
 | Current-execution context | The operation or step being run right now |
 | Execution records snapshot | All records accumulated so far |

@@ -6,6 +6,10 @@
 
 Operations are the leaves. Workflows and steps compose them using six structural control-flow constructs. Each workflow declares exactly one `type`; nested steps may also declare a structural `type` to form composite control flow.
 
+This guide describes current UWS 1.11 behavior unless it identifies an older
+version explicitly. Version-gated behavior is selected by the document's
+declared UWS version.
+
 ## `sequence`
 
 Steps execute in declaration order. Each step completes before the next begins. Use `sequence` for any pipeline where outputs flow from one step to the next.
@@ -74,7 +78,7 @@ steps:
     dependsOn: [validators]       # waits for ALL members of "validators"
 ```
 
-`dependsOn: [validators]` waits for every step in the `validators` group. Membership in a group does not create additional ordering among members themselves — they still run concurrently. In UWS 1.10, a branch failure cancels sibling branch contexts; `goto` and `end` from a branch fail the parallel construct.
+`dependsOn: [validators]` waits for every step in the `validators` group. Membership in a group does not create additional ordering among members themselves — they still run concurrently. From UWS 1.10, a branch failure cancels sibling branch contexts. A `goto` or `end` control signal from a branch fails the parallel construct because cross-branch control flow is undefined.
 
 ## `switch`
 
@@ -128,7 +132,7 @@ steps:
 
 ## `loop`
 
-Iterates over a JSON array. `items` is REQUIRED and must resolve to a JSON array at runtime. Each element is bound into the iteration scope for use in nested steps.
+Iterates over an ordered JSON array. `items` is REQUIRED and must resolve to a JSON array at runtime. Each element is bound into the iteration scope as `$item`, with a zero-based `$index`; nested steps execute sequentially in source order.
 
 ```yaml
 workflowId: notify_all
@@ -145,13 +149,13 @@ steps:
 workflowId: bulk_import
 type: loop
 items: $outputs.records           # e.g. array of 1000 records
-batchSize: "50"                   # process 50 at a time
+batchSize: "50"                   # UWS 1.11 numeric literal: 50 items per batch
 steps:
   - stepId: import_batch
     operationRef: bulk_upsert
 ```
 
-`batchSize` MUST resolve to a positive integer. Batches execute sequentially; within each batch the items are available as the iteration context. `cases` and `default` MUST NOT be set on a `loop`.
+`batchSize` MUST resolve to a positive integer. In UWS 1.11 and later, a complete JSON-number literal such as `"50"` is allowed; the numeric-literal grammar is not available to earlier declarations. Batches and iterations execute sequentially; `$batchIndex` is the zero-based batch number and is available only inside a `loop`. A successful `loop` produces an ordered array of `{index, batchIndex, item}` records, including an empty array when there are no items. `cases` and `default` MUST NOT be set on a `loop`.
 
 ## `merge`
 
@@ -189,41 +193,16 @@ results:
 
 ## `await`
 
-Blocks execution until its `wait` predicate evaluates truthy. UWS 1.10 evaluates once immediately, then polls at the executor's configured interval (200 ms by default); it runs nested steps once after a truthy result. Use `await` to poll for an async job to complete, or to wait for an external signal.
+Evaluates its `wait` predicate immediately, then polls it at the executor's configured interval (200 ms by default). Nested steps run once after the predicate becomes truthy. An `await` does not re-execute already-completed steps or operations, so it cannot portably poll a status endpoint by placing that endpoint in a preceding sequence step.
 
 ```yaml
-workflowId: wait_for_job
+workflowId: wait_for_external_signal
 type: await
-wait: $outputs.job_status == "done"
+wait: $inputs.signal_ready == true
+timeout: 300
 ```
 
-**`await` after kicking off an async job:**
-
-```yaml
-workflowId: run_report
-type: sequence
-steps:
-  - stepId: submit
-    operationRef: start_report_job
-    outputs:
-      job_id: $response.body.jobId
-
-  - stepId: check_status
-    operationRef: get_job_status
-    request:
-      path:
-        jobId: $steps.submit.outputs.job_id
-
-  - stepId: wait_until_complete
-    type: await
-    wait: $steps.check_status.outputs.status == "complete"
-    timeout: 300
-
-  - stepId: download
-    operationRef: fetch_report_result
-```
-
-`timeout` is a serialized UWS 1.1 field on operations, workflows, and steps. A serialized timeout bounds the await; an executor-owned timeout MAY apply when it is absent. Context cancellation also stops polling. For non-`await` constructs, UWS 1.10 defines `wait` as a cancellable delay expression resolving to a finite number of seconds from 0 to 86,400; it is evaluated once before the body. `cases`, `default`, and `items` MUST NOT be set on `await`. See the [UWS 1.10 execution contract](https://github.com/OpenUdon/uws/blob/main/versions/1.10.0.md#78-uws-110-portable-execution-semantics).
+The example requires a bound runtime or profile to supply an input whose value can change between predicate evaluations; UWS core does not define how an external signal is refreshed. Polling a remote job status requires an implementation-specific runtime/profile or separately scheduled invocations. `timeout` has been available on operations, workflows, and steps since UWS 1.1. A serialized timeout bounds the await; an executor-owned timeout MAY apply when it is absent. Context cancellation also stops polling. For non-`await` constructs, UWS 1.10 defines `wait` as a cancellable delay expression resolving to a finite number of seconds from 0 to 86,400, evaluated once before the body. In UWS 1.11 and later, a complete JSON-number literal may be used for this delay. `cases`, `default`, and `items` MUST NOT be set on `await`. See the [UWS 1.11 execution contract](https://github.com/OpenUdon/uws/blob/main/versions/1.11.0.md#78-uws-110-and-111-portable-execution-semantics).
 
 ## Field Constraints Summary
 

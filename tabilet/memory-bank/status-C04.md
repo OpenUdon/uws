@@ -3,8 +3,9 @@
 **Goal.** Publish a coherent UWS 1.11 contract that closes the confirmed
 control-flow, grammar, conformance, and guide gaps in 1.10 and incorporates
 [C05](../docs/history/status-C05.md)'s exact-version admission correction.
-This status records future work; no UWS 1.11 artifact exists because of this
-reconciliation.
+The UWS 1.11 schema/specification and executable conformance corpus have been
+published during C04 execution; the final guide/release-surface row and
+milestone acceptance review remain active.
 
 **Scope and contract choices.** In UWS 1.11, `goto` from a sub-workflow, loop,
 or `forEach` item unwinds the entire top-level run. Remaining siblings and
@@ -15,7 +16,7 @@ target record with terminal status `success`, `error`, or `skipped` counts as
 already completed and fails explicitly; an in-flight root target also fails
 rather than waiting or replaying. A same-named record in another workflow-call
 scope does not count. After the target completes, the top-level run ends; it
-does not resume after the target. The 1.11 grammar will admit
+does not resume after the target. The 1.11 grammar admits
 `$response.body.<path>`, `$batchIndex` in loop contexts, and complete
 JSON-number literals for numeric `wait` and `batchSize`, with version-aware
 advisory content-trust parsing. A merge over `forEach` includes iteration
@@ -23,7 +24,7 @@ records when present, otherwise its parent record for a skipped or zero-item
 dependency; it never counts both. A failed dependency still aborts merge.
 `await` re-evaluates its predicate but does not re-execute completed status
 operations; portable operation reexecution remains a UWS 2.0 candidate.
-Correct genuine omissions and contradictions in a new version; preserve
+Corrected genuine omissions and contradictions in UWS 1.11 while preserving
 frozen 1.10.0 artifacts.
 
 **Dependencies.** [C02](../docs/history/status-C02.md) established
@@ -50,13 +51,13 @@ Conformance vectors use typed inputs/operations and every vector is executed
 by Go, including forward/backward goto, merge over `forEach`, version
 rejection, and numeric waits. Grammar lint checks docs and fixtures against
 each example's declared version. Existing 1.0/1.1 conversion fixtures retain
-their versions and receive exact-path, documented allowlist entries for
-intentional legacy or §5.5 implementation-dependent expressions; they are not
-represented as conforming 1.11 examples. Separate 1.11 fixtures prove the
-new grammar. Test prior versions and regression-check C05's direct/file entry
-paths. Run focused tests, `go test ./...`, `go test -race ./...`, `go vet ./...`,
-`mkdocs build --strict`, `git diff --check`, then the bounded whole-milestone
-review gate in [milestone.md](milestone.md).
+their versions and use exact-path allowlist entries for intentional legacy or
+§5.5 implementation-dependent expressions; they are not represented as
+conforming 1.11 examples. Separate 1.11 fixtures prove the new grammar. Test
+prior versions and regression-check C05's direct/file entry paths. The final
+acceptance commands are `go test ./...`, `go test -race ./...`, `go vet ./...`,
+`mkdocs build --strict`, and `git diff --check`, followed by the bounded
+whole-milestone review gate in [milestone.md](milestone.md).
 
 **Review provenance.** Source: “UWS review, pass 2: 1.10.0, browser 1.8 and
 the remediation (2026-09-23)” (`uws-review-2.md`), stated baseline `5923cc0`;
@@ -84,7 +85,7 @@ not a review-gate iteration.
 | N6 | P2 | P2 | Confirmed: `uws1/schema_artifacts_test.go` checks only shape of `testdata/conformance/1.10.0.json`, not executable behavior or digest. |
 | N8 | P2 | P2 | Confirmed: `docs/02-Six-Structural-Constructs.md`, `docs/04-Triggers-and-Route-Dispatch.md`, `docs/05-Structural-Results.md`, `docs/06-Success-Criteria-and-Actions.md`, and `docs/07-Execution-Model.md` retain stale or contradictory 1.10 execution/result/action examples. |
 | N9 | P2 | P2 | Partially confirmed: `versions/1.10.0.md` has genuine definition, reference, and criteria inconsistencies; some “UWS 1.9” references describe history correctly and must not be rewritten blindly. |
-| N10 | P2 | P2 documentation / P3 new feature | Partially confirmed: `uws1/execution_structural.go` re-evaluates `await` but memoizes completed status steps; `docs/02-Six-Structural-Constructs.md` suggests portable polling that does not occur. Reexecution is deferred, guide correction active. |
+| N10 | P2 | P2 documentation / P3 new feature | Confirmed: `uws1/execution_structural.go` re-evaluates `await` but memoizes completed status steps. Portable operation reexecution remains a UWS 2.0 candidate; `docs/02-Six-Structural-Constructs.md` now states that `await` cannot portably poll a status operation by placing it in a preceding sequence step. |
 | N11 | P3 | P2 | Confirmed: `uws1/execution_structural.go` merge expansion includes both a `forEach` parent aggregate and its iteration records, double-counting the data. |
 | N12 | P3 | P3 | Confirmed: `uws1/execution_criteria.go` strips matching context prefixes and accepts bare `/` pointers, but `versions/1.10.0.md` does not describe both. |
 | N13 | P3 | P3 | Confirmed: `uws1` workflow-call isolation, merge ordering, and trigger output-index guard apply as bug fixes to older documents; `versions/CHANGELOG.md` needs explicit compatibility exceptions. |
@@ -101,7 +102,15 @@ not a review-gate iteration.
 | Item | State | Notes |
 |---|---|---|
 | Correct goto and merge structural behavior | `[x]` | N2/N11/F06/F07. Implemented root-scope goto dispatch with UWS 1.11 fail-closed handling for terminal and in-flight step/workflow targets; tests cover whole-run unwind from top-level, sub-workflow, loop, and `forEach`, distinct caller-scoped records, root dependencies, and completed targets. UWS 1.11 merge keeps deepest iteration records, falls back to the parent for zero/skipped dependencies, and preserves dependency-failure propagation. UWS 1.10 compatibility remains covered. Focused verification: `go test ./uws1 -run 'Test(Goto|MergeForEach)' -count=1`. |
-| Align expression grammar, numeric literals, and lint | `[x]` | N4/N5/N20/F01/F03. Added UWS 1.11-gated `$response.body.<path>`, loop-only `$batchIndex`, complete JSON-number literals for `wait`/`batchSize`, and version/context-aware content-trust parsing. Grammar lint executes YAML/HCL examples in `docs/03` and the versioned grammar fixture. The UWS 1.0 sample retains only four documented exact-JSON-Pointer exceptions; `testdata/big/big.json` has an exact file-level test-runtime exception and is explicitly not conformance evidence. Added `testdata/grammar/1.11.0.json`; schema/document validation is exercised with C04's publication/artifact task after its 1.11 schema exists. Verification: `go test ./contenttrust -count=1`, race equivalent, `go vet ./contenttrust`, strict MkDocs build, and `git diff --check`. |
+| Align expression grammar, numeric literals, and lint | `[x]` | N4/N5/N20/F01/F03. Added UWS 1.11-gated `$response.body.<path>`, loop-only `$batchIndex`, complete JSON-number literals for `wait`/`batchSize`, and version/context-aware content-trust parsing. Grammar lint executes YAML/HCL examples in `docs/03` and the versioned grammar fixture. The UWS 1.0 sample retains only four documented exact-JSON-Pointer exceptions; `testdata/big/big.json` has an exact file-level test-runtime exception and is explicitly not conformance evidence. Added `testdata/grammar/1.11.0.json`; schema/document validation was added with the 1.11 schema in the publication/artifact row. Verification: `go test ./contenttrust -count=1`, race equivalent, `go vet ./contenttrust`, strict MkDocs build, and `git diff --check`. |
 | Publish corrected UWS 1.11 contract and artifacts | `[x]` | N9/N12/N13/N15/F04/F05 and N18 reference portion. Published `versions/1.11.0.{json,md}` plus the changelog entry, corrected step/variable/loop/criteria/version-gate/grammar/extension/browser-reference wording, and pinned the normative RFC/XPath/RE2/YAML/JSON Schema references. The 1.11 schema aligns `contentTrust.operations.*.outputs` keys with expression-addressable operation output names; the Go published-version registry, latest-artifact tests, digest manifest, and embedded JSON archive are synchronized. Exact-version admission and cross-version workflow-call isolation, merge ordering, and trigger-index corrections are documented without enabling 1.11 features on earlier documents. Prior published schema/spec hashes remain unchanged. Added a schema-and-semantic-validation test for the 1.11 grammar fixture. The following row added the executable conformance corpus and pinned its digest. Verification: `go test ./uws1 ./schemas ./contenttrust -count=1`, matching `go vet`, `mkdocs build --strict`, and `git diff --check`. |
 | Make conformance vectors executable and protected | `[x]` | N6/N18. Added a typed UWS 1.11 corpus with `expression.parse`, `document.validate`, and `document.execute` operations; Go executes every core vector and `contenttrust` executes every parser vector. The UWS 1.10 corpus is now dispatched through Go semantic/execution tests instead of shape-only validation. Added version-gating, exact-version rejection, numeric wait/batch-size, goto, and merge cases. Execution observations use logical selectors, not Go record keys. The corpus SHA-256 is pinned in the spec and regression-tested. The vectors exposed and fixed exact `json.Number` handling for positive integral batch sizes, including fractional/overflow rejection; documented this representation correction without retroactively admitting 1.11 numeric-literal syntax. Verification: `go test ./uws1 ./contenttrust ./schemas -count=1`, race equivalent, `go vet ./uws1 ./contenttrust ./schemas`, `mkdocs build --strict`, `git diff --check`, and corpus/spec digest checks. |
-| Synchronize guides and release surfaces | `[ ]` | N8/N10. Update docs 02 and 04–07 plus affected examples/nav/README/AGENTS/current memory-bank facts; correct result shapes, trigger order, regex context, retry/goto wording, and `await` polling claims. Run grammar lint and full acceptance checks, then the whole-milestone review. |
+| Synchronize guides and release surfaces | `[x]` | N8/N10. Updated docs 02 and 04–07, the home and validation/content-trust guides, README, `AGENTS.md`, MkDocs references, and the current product/status facts. Corrected portable loop/forEach/merge result shapes, trigger target order/concurrency, regex context and matching, retry counts/fallback behavior, root-scoped terminal `goto`, and `await`'s inability to re-execute completed status operations. Current release pointers now identify UWS 1.11 while preserving accurately historical 1.10 semantics. Full verification passed: `go test ./...`, `go test -race ./...`, `go vet ./...`, `mkdocs build --strict`, and `git diff --check`. Whole-milestone review gate remains to be run. |
+
+## Whole-Milestone Review Gate
+
+- Iteration 1 started 2026-09-24 UTC after all five task rows and full
+  acceptance verification passed.
+- Scope: the complete C04 implementation and documentation change set; C05 and
+  B02 are reviewed as completed dependencies, not reopened work.
+- Findings: review pending.

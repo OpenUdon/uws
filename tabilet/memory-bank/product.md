@@ -81,15 +81,19 @@ changing execution.
 
 ## Current Contract Surface
 
-UWS 1.10.0 is the current core contract. Browser 1.9 is the current opt-in
+UWS 1.11.0 is the current core contract. It preserves the UWS 1.x wire model
+and adds version-gated response-body dot-walks, loop-only `$batchIndex`, numeric
+`wait`/`batchSize` literals, terminal root-scoped `goto`, and corrected
+`forEach` merge records. UWS 1.10 execution semantics remain active for 1.10
+and later; earlier declarations retain their versioned behavior. Browser 1.9 is the current opt-in
 browser capability profile; empty profile lookup retains Browser 1.8 as its
 compatibility default. Browser authentication/call 1.1 is current for sign-in;
 browser registration/call 1.2 is current for reviewed registration
 verification; and registration input 1.0 is the private envelope format.
 Runtime Supplement 1.0 remains the public metadata floor for common non-HTTP
-extension operations. UWS 1.10 adds versioned portable execution semantics and
-expression-addressable-name restrictions while preserving the 1.x wire
-vocabulary; earlier published contracts remain accepted according to their
+extension operations. The UWS 1.11 specification, exact-version schema, Go
+validator/executor, and executable conformance corpus are coordinated release
+artifacts; earlier published contracts remain accepted according to their
 version gates. Ansible support is historical UWS 1.6 material only.
 
 The MCP tool-call design is an OpenUdon experiment proposal, not an adopted UWS

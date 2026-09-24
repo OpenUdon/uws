@@ -2,7 +2,7 @@
 
 This guide explains the additive UWS 1.9.1 `contentTrust` registry and the
 advisory analyzer in `github.com/OpenUdon/uws/contenttrust`. The current core
-contract is [versions/1.10.0.md](https://github.com/OpenUdon/uws/blob/main/versions/1.10.0.md);
+contract is [versions/1.11.0.md](https://github.com/OpenUdon/uws/blob/main/versions/1.11.0.md);
 this page focuses on why the feature exists and how authors and resolvers use it.
 
 ## The gap

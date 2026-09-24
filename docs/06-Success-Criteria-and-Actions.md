@@ -4,7 +4,7 @@
 
 ---
 
-UWS defines a first-class vocabulary for deciding whether an operation succeeded, and for specifying what to do when it did or did not. Criteria and actions are declared inline on the operation — there is no shared registry.
+UWS defines a first-class vocabulary for deciding whether an operation succeeded, and for specifying what to do when it did or did not. Criteria and actions are declared inline on the operation — there is no shared registry. This guide describes current UWS 1.11 semantics unless it identifies an earlier version.
 
 ## Criterion Object
 
@@ -12,7 +12,7 @@ A `Criterion` describes a condition to evaluate:
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `condition` | REQUIRED | Runtime expression or literal condition |
+| `condition` | REQUIRED | For `simple`, a runtime expression or literal condition; otherwise a regex pattern, JSONPath query/pointer, or XPath 1.0 expression |
 | `type` | optional | `simple` (default), `regex`, `jsonpath`, or `xpath` |
 | `context` | REQUIRED when type is `regex`, `jsonpath`, or `xpath` | Value to apply the condition against |
 
@@ -25,7 +25,7 @@ successCriteria:
   - condition: $response.body.count > 0
 ```
 
-**`regex` type** — tests a string value against a regular expression:
+**`regex` type** — evaluates `context` first, converts its value to a string or UTF-8 byte sequence, then searches it using RE2-compatible semantics. `condition` is the pattern:
 
 ```yaml
 successCriteria:
@@ -52,9 +52,17 @@ successCriteria:
     context: $response.body
 ```
 
+For `jsonpath`, `context` is a JSON value and `condition` is a JSONPath query
+whose selected values are tested for truthiness, or a direct JSON Pointer
+lookup. For `xpath`, `context` is XML text and `condition` is an XPath 1.0
+expression. When any non-simple `condition` begins with the exact `context`
+expression, UWS removes that prefix before interpreting the remaining pattern
+or query. A missing pointer does not match; a present `null` value is found but
+false. See the [UWS 1.11 execution contract](https://github.com/OpenUdon/uws/blob/main/versions/1.11.0.md#78-uws-110-and-111-portable-execution-semantics).
+
 ## Failure Actions
 
-`onFailure` fires when the operation's `successCriteria` are not satisfied:
+`onFailure` handles a leaf runtime error or a false `successCriteria` result:
 
 | Field | Required | Description |
 |-------|----------|-------------|
@@ -62,9 +70,19 @@ successCriteria:
 | `type` | REQUIRED | `end`, `goto`, or `retry` |
 | `workflowId` | REQUIRED for `goto` (exactly one of `workflowId`/`stepId`) | Target workflow |
 | `stepId` | REQUIRED for `goto` (exactly one of `workflowId`/`stepId`) | Target step |
-| `retryAfter` | optional | Seconds to wait before retrying. MUST be ≥ 0 |
-| `retryLimit` | REQUIRED for `retry` | Maximum retry attempts. MUST be ≥ 1 |
+| `retryAfter` | optional | Cancellable seconds to wait before retrying. MUST be ≥ 0 |
+| `retryLimit` | REQUIRED for `retry` | Number of retries after the initial attempt. MUST be ≥ 1 |
 | `criteria` | optional | Additional conditions that scope this action |
+
+When `successCriteria` is non-empty, every criterion must match; an empty list
+adds no success condition. Within either action list, actions are considered in
+declaration order and the first matching action is applied. All criteria on an
+action must match, while an empty action `criteria` list matches immediately.
+If criterion evaluation itself fails, the operation fails directly without an
+action. If no failure action matches, the operation failure propagates. A retry limit
+counts retries after the first attempt, so `retryLimit: 3` permits four total
+attempts; every retry gets a fresh operation timeout. An exhausted retry does
+not fall through to a later action as a fallback.
 
 ## Success Actions
 
@@ -80,7 +98,7 @@ successCriteria:
 
 ## Example 1: Retry and Failure Routing
 
-Retry server errors up to 3 times; end cleanly on client errors; route unmatched failures to an error handler.
+Retry server errors up to 3 additional times; end cleanly on client errors; route other matching failures to an error handler.
 
 ```yaml
 operationId: charge_payment
@@ -108,7 +126,7 @@ onFailure:
     workflowId: payment_error_handler
 ```
 
-`retry_on_5xx` only activates when status ≥ 500. If the retry limit is exhausted, the operation returns the failure; later actions do not run as retry fallbacks. `skip_on_4xx` activates for 4xx. `escalate` catches failures not matched by the scoped actions.
+`retry_on_5xx` only activates when status ≥ 500. The initial attempt plus three retries makes at most four attempts. If the retry limit is exhausted, that action returns the failure; `skip_on_4xx` and `escalate` are not fallback actions for the same 5xx failure. `skip_on_4xx` activates for 4xx. `escalate` catches failures that do not match either earlier action.
 
 ## Example 2: `goto` to a Specific Step
 
@@ -132,7 +150,7 @@ onSuccess:
     stepId: queue_for_review
 ```
 
-`fast_track` sends high-scoring applicants straight to approval. Everyone else goes to the review queue.
+`fast_track` sends high-scoring applicants to approval; otherwise the unconditional `standard` action sends the applicant to the review queue. In UWS 1.11, `goto` is a terminal transfer: it unwinds the entire active top-level run, including any sub-workflow, loop, or `forEach` item, invokes the target and its dependencies in root orchestration scope, and ends the run after the target completes. It does not resume at the caller or continue with later siblings. A root target already completed, skipped, or in flight fails explicitly instead of replaying or waiting. A same-named record inside a prior workflow call does not count as a completed root target.
 
 ## Example 3: `goto` to a Workflow on Failure
 
@@ -157,7 +175,7 @@ onFailure:
     workflowId: ops_incident_workflow
 ```
 
-After 2 failed retries, `raise_incident` fires and routes to the incident management workflow.
+For a failure that matches `retry_briefly`, the retry action is selected first. If its two retries are exhausted, the operation failure propagates; `raise_incident` does not automatically run as a fallback. Use mutually exclusive action criteria or handle retry exhaustion in the runtime/profile when the incident workflow must run afterward.
 
 ## Example 4: `end` on Partial Success
 

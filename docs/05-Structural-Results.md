@@ -4,7 +4,7 @@
 
 ---
 
-A structural result gives a named, addressable identity to the output of a structural construct — a workflow or step whose `type` is `switch`, `merge`, or `loop`. Without this declaration, a construct's output is anonymous control flow. With it, the output becomes a named artifact that downstream code can reference.
+A structural result declares a named mapping to a workflow or step whose `type` is `switch`, `merge`, or `loop`. It does not create a result store or make an execution record portable. The optional `value` is an expression for a consumer to evaluate in the construct's execution context; its evaluation and exposure remain implementation-defined. UWS 1.11 does define the portable execution-record result shapes for `loop`, `forEach`, and `merge`, described below.
 
 ## Structural Result Object Fields
 
@@ -13,7 +13,7 @@ A structural result gives a named, addressable identity to the output of a struc
 | `name` | REQUIRED | Unique result name within `results[]`. MUST match `^[a-zA-Z0-9._-]+$` |
 | `kind` | REQUIRED | One of `switch`, `merge`, `loop`. MUST equal the `type` of the referenced construct |
 | `from` | REQUIRED | `<workflowId>` or `<workflowId>.<stepId>` of the emitting construct |
-| `value` | optional | Runtime expression selecting the value to expose; implementation-defined when omitted |
+| `value` | optional | Runtime expression for a consumer to evaluate against the construct's execution context; evaluation and exposure are implementation-defined |
 
 ## The `from` Field
 
@@ -22,21 +22,29 @@ A structural result gives a named, addressable identity to the output of a struc
 - **`<workflowId>`** — a top-level workflow whose `type` is `switch`, `merge`, or `loop`.
 - **`<workflowId>.<stepId>`** — a step within a named workflow whose `type` is `switch`, `merge`, or `loop`.
 
-The validator resolves `from` to a real workflow or step, then checks that the referenced `type` matches `kind`. A mismatch produces a structured error.
+The validator resolves `from` to a real workflow or step, then checks that the referenced `type` matches `kind`. A mismatch produces a structured error. The `name` is a declaration label; UWS core does not guarantee persistence, materialization, or a particular lookup API for it.
 
 ## Why Only Three Kinds?
 
-`switch`, `merge`, and `loop` each produce a meaningful aggregate result:
+Only `switch`, `merge`, and `loop` are permitted `kind` values in `results[]`, but they do not all synthesize the same sort of result:
 
-- **`switch`** — the output of whichever branch ran (or nothing if no branch matched).
-- **`merge`** — the combined outputs of multiple upstream constructs.
-- **`loop`** — the accumulated results of iterating over an array.
+- **`switch`** — selects one branch in declaration order. It does not synthesize a portable selected-branch result; declare outputs explicitly when consumers need values.
+- **`merge`** — its execution record contains an ordered array of records from the declared dependencies.
+- **`loop`** — its execution record contains an ordered array of iteration metadata (`index`, `batchIndex`, `item`), not the nested operations' output values.
 
-`sequence`, `parallel`, and `await` do not produce a single named aggregate output — their outputs flow through step-level `outputs` maps instead.
+`sequence`, `parallel`, and `await` are not eligible `results[].kind` values. Step and workflow `outputs` remain explicit expression mappings. A `forEach` operation or step is not a structural-result kind; its parent execution record has an ordered per-item result array and exposes each declared output as an ordered array of per-iteration values.
+
+## Portable Result Shapes in UWS 1.11
+
+- A successful `loop` record has an ordered `result` array of `{index, batchIndex, item}` objects. Batching is sequential and does not imply parallel execution.
+- A successful `forEach` parent record has an ordered `result` array of per-item objects: `{index, item, status, error, result, outputs}`. Each declared output is also present on the parent record as an ordered array of values.
+- A successful `merge` record has an ordered `result` array of `{id, kind, status, error, result, outputs}` records. Dependencies retain declaration order; parallel groups expand in member declaration order. For a `forEach` dependency, iteration records replace the parent aggregate when present. If it was skipped or produced zero items, the parent record is included once. A failed dependency aborts the merge.
+
+These are execution-record results, not values automatically extracted or stored by `results[]`. Execution-record keys, persistence, and result declaration lookup remain implementation-defined.
 
 ## Example 1: `merge` Result — Combining Parallel Checks
 
-Two validation steps run in parallel; a merge step collects their results; a named result exposes the combined output.
+Two validation steps run in parallel; a merge step collects their records; a named result declaration provides a consumer expression for the combined step outputs.
 
 ```yaml
 workflows:
@@ -72,11 +80,11 @@ results:
     value: $steps.combine_checks.outputs
 ```
 
-`order_validation` is now a named, addressable result. Any downstream logic that needs to know "did the validation pass?" references this result by name.
+`order_validation` is a declaration that associates a label with the merge construct and a consumer expression. It does not itself extract, save, or publish the value; a consuming implementation evaluates `value` in the appropriate execution context.
 
-## Example 2: `loop` Result — Accumulated Iteration Output
+## Example 2: `loop` Result — Ordered Iteration Metadata
 
-A loop processes each item in an array and collects the results into a named output.
+A loop processes each item in an array. Its execution-record result contains ordered iteration metadata; the declared step outputs are separately aggregated on their parent record.
 
 ```yaml
 workflows:
@@ -97,11 +105,11 @@ results:
     value: $steps.upsert_record.outputs
 ```
 
-`import_summary` names the loop output. The runtime defines what "accumulated loop results" means in practice (e.g. an array of per-iteration outputs), but the named result is the UWS-level handle.
+The `loop` record's portable `result` contains `{index, batchIndex, item}` metadata. The nested step's declared outputs are separately available as ordered per-iteration arrays on its parent record; the optional `value` expression selects those outputs for a consumer. It does not redefine the loop record's result shape.
 
-## Example 3: `switch` Result — Named Branch Decision
+## Example 3: A `switch` Does Not Synthesize a Branch Result
 
-A switch construct selects one processing path; the result names which branch ran and what it produced.
+A `switch` selects one processing path, but UWS core does not synthesize a portable value that identifies the selected case or combines branch outputs. A result declaration can name the construct, but a portable value must come from explicitly declared outputs and an expression the consumer can evaluate. Do not assume that an unexecuted branch's step output exists.
 
 ```yaml
 workflows:
@@ -130,8 +138,9 @@ results:
   - name: classification_result
     kind: switch
     from: classify_event
-    value: $steps.premium_process.outputs
 ```
+
+This declaration has no `value`; its exposure is implementation-defined. Add an explicit, valid output mapping and consumer expression when the workflow needs portable data from the switch.
 
 ## Example 4: `from` Pointing at a Top-Level Workflow
 
@@ -187,26 +196,25 @@ results:
 
 ## From The Big Fixture
 
-The large fixture declares switch, loop, and merge results from top-level
-workflows:
+The large HCL fixture declares structural-result metadata from top-level
+workflows. The excerpts below omit that fixture's `$workflows...` `value`
+expressions; those are fixture-specific and not part of the portable UWS 1.11
+expression grammar:
 
 ```hcl
 result "decision.branch" {
   kind  = "switch"
   from  = "wf_switch"
-  value = "$workflows.wf_switch.outputs.selectedPath"
 }
 
 result "containment.loop" {
   kind  = "loop"
   from  = "wf_loop"
-  value = "$workflows.wf_loop.outputs.containmentResults"
 }
 
 result "merge.summary" {
   kind  = "merge"
   from  = "wf_merge"
-  value = "$workflows.wf_merge.outputs.summary"
 }
 ```
 
