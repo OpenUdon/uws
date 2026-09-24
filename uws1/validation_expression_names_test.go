@@ -40,7 +40,18 @@ func TestExpressionAddressableNamesAreVersionGated(t *testing.T) {
 
 	encoded, marshalErr := json.Marshal(current)
 	require.NoError(t, marshalErr)
-	require.Error(t, compileUWSSchema(t).Validate(decodeJSONValue(t, encoded)), "1.10 schema must reject names the expression grammar cannot address")
+	require.Error(t, compileUWSSchema(t).Validate(decodeJSONValue(t, encoded)), "latest schema must reject names the expression grammar cannot address")
+}
+
+func TestUWS111ContentTrustOutputNamePatternMatchesOperationOutputs(t *testing.T) {
+	schema := loadSchemaDoc(t)
+	defs := schema["$defs"].(map[string]any)
+	operationTrust := defs["operation-content-trust-object"].(map[string]any)
+	properties := operationTrust["properties"].(map[string]any)
+	outputs := properties["outputs"].(map[string]any)
+	propertyNames := outputs["propertyNames"].(map[string]any)
+	require.Equal(t, "^[A-Za-z0-9_-]+$", propertyNames["pattern"],
+		"contentTrust.outputs keys must use the same expression-addressable identifiers as operation.outputs")
 }
 
 func TestWorkflowReferenceIsALiteralWorkflowID(t *testing.T) {

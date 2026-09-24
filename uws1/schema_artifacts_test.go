@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	latestUWSSchemaPath     = "../versions/1.10.0.json"
-	latestUWSSchemaResource = "versions/1.10.0.json"
-	latestUWSSpecPath       = "../versions/1.10.0.md"
+	latestUWSSchemaPath     = "../versions/1.11.0.json"
+	latestUWSSchemaResource = "versions/1.11.0.json"
+	latestUWSSpecPath       = "../versions/1.11.0.md"
 )
 
 func loadSchemaDoc(t *testing.T) map[string]any {
@@ -94,6 +94,16 @@ func TestUWS110LanguageNeutralConformanceVectors(t *testing.T) {
 	}
 }
 
+func TestUWS111GrammarFixturePassesSchemaAndSemanticValidation(t *testing.T) {
+	data, err := os.ReadFile("../testdata/grammar/1.11.0.json")
+	require.NoError(t, err)
+
+	var doc Document
+	require.NoError(t, json.Unmarshal(data, &doc))
+	require.NoError(t, doc.Validate())
+	require.NoError(t, compileUWSSchema(t).Validate(decodeJSONValue(t, data)))
+}
+
 func TestLatestUWSSchemaIsHighestPublishedCoreVersion(t *testing.T) {
 	paths, err := filepath.Glob("../versions/1.*.json")
 	require.NoError(t, err)
@@ -111,6 +121,12 @@ func TestLatestUWSSchemaIsHighestPublishedCoreVersion(t *testing.T) {
 	}
 	require.NotEmpty(t, latest)
 	require.Equal(t, latest, strings.TrimSuffix(filepath.Base(latestUWSSchemaPath), ".json"))
+}
+
+func TestLatestUWSSchemaIDMatchesPublishedPath(t *testing.T) {
+	schema := loadSchemaDoc(t)
+	require.Equal(t, "https://github.com/OpenUdon/uws/versions/1.11.0.json", schema["$id"])
+	require.Equal(t, "https://json-schema.org/draft/2020-12/schema", schema["$schema"])
 }
 
 func TestPublishedUWSVersionRegistryMatchesSchemaArtifacts(t *testing.T) {

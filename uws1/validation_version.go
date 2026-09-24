@@ -25,6 +25,7 @@ var publishedUWSVersions = map[string]struct{}{
 	"1.9.1":  {},
 	"1.9.2":  {},
 	"1.10.0": {},
+	"1.11.0": {},
 }
 
 func isPublishedUWSVersion(version string) bool {
