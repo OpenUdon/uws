@@ -43,7 +43,7 @@ nav:
   - Reference:
     - Specification: https://github.com/OpenUdon/uws/blob/main/versions/1.11.0.md
     - JSON Schema: https://github.com/OpenUdon/uws/blob/main/versions/1.11.0.json
-    - Browser Profile Supplement: https://github.com/OpenUdon/uws/blob/main/versions/browser.1.9.md
+    - Browser Profile Supplement: https://github.com/OpenUdon/uws/blob/main/versions/browser.1.10.md
     - Browser Authentication Profile: https://github.com/OpenUdon/uws/blob/main/versions/browser-authentication.1.1.md
     - Browser Authentication Call Supplement: https://github.com/OpenUdon/uws/blob/main/versions/browser-authentication-call.1.1.md
     - Browser Registration Profile: https://github.com/OpenUdon/uws/blob/main/versions/browser-registration.1.2.md

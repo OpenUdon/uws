@@ -76,7 +76,7 @@ func TestBrowserSourceProfileVersionSelectionKeepsOptInAndDefaultCompatibility(t
 	var defaultDoc map[string]any
 	require.NoError(t, json.Unmarshal(defaultSchema, &defaultDoc))
 	require.Equal(t, "uws.browser.1.8", defaultDoc["properties"].(map[string]any)["profile"].(map[string]any)["const"])
-	for _, version := range []string{"1.5", "1.6", "1.7", "1.8", "1.9"} {
+	for _, version := range []string{"1.5", "1.6", "1.7", "1.8", "1.9", "1.10"} {
 		data, err := BrowserSourceProfileSchema(version)
 		require.NoError(t, err)
 		require.NotEmpty(t, data)
@@ -86,7 +86,7 @@ func TestBrowserSourceProfileVersionSelectionKeepsOptInAndDefaultCompatibility(t
 		profile["profile"] = "uws.browser." + version
 		require.NoError(t, ValidateBrowserSourceProfile(mustBrowserJSON(t, profile)), "browser %s", version)
 	}
-	require.NoError(t, ValidateBrowserSourceProfile(mustBrowserJSON(t, readBrowser19TemplateFixture(t, "text-sinks-1.9.yaml"))))
+	require.NoError(t, ValidateBrowserSourceProfile(mustBrowserJSON(t, readBrowserProfileFixture(t, "text-sinks-1.9.yaml"))))
 }
 
 func TestBrowser19TemplatesAcceptEscapesAndSafeText(t *testing.T) {
@@ -112,11 +112,11 @@ func TestBrowser19TemplatesAcceptEscapesAndSafeText(t *testing.T) {
 }
 
 func TestBrowser19TextSinkFixtures(t *testing.T) {
-	valid := readBrowser19TemplateFixture(t, "text-sinks-1.9.yaml")
+	valid := readBrowserProfileFixture(t, "text-sinks-1.9.yaml")
 	require.NoError(t, validateBrowser19Templates(valid))
 	for _, name := range []string{"text-sinks-1.9-invalid-control.yaml", "text-sinks-1.9-invalid-template.yaml"} {
 		t.Run(name, func(t *testing.T) {
-			fixture := readBrowser19TemplateFixture(t, name)
+			fixture := readBrowserProfileFixture(t, name)
 			require.Error(t, validateBrowser19Templates(fixture))
 		})
 	}
@@ -216,7 +216,7 @@ func browser19TestProfile() map[string]any {
 	return profile
 }
 
-func readBrowser19TemplateFixture(t *testing.T, name string) map[string]any {
+func readBrowserProfileFixture(t *testing.T, name string) map[string]any {
 	t.Helper()
 	data, err := os.ReadFile(filepath.Join("..", "testdata", "browser-profile", name))
 	require.NoError(t, err)

@@ -45,6 +45,7 @@ var publishedVersionSHA256 = map[string]string{
 	"browser.1.7.json":                     "feed4f71655b232fe6a87db285ac686615f9e2076c64b751e5c945c9463f446b",
 	"browser.1.8.json":                     "5e91a2b05845fb37e484e6f818259b5b19ea85d1532afbe11742ac4fb2caa034",
 	"browser.1.9.json":                     "5e2792c8192b71e3d66482ff042aad33243d83def288f2c00750e2eef9237469",
+	"browser.1.10.json":                    "14f57231777162be33742e527940103e178166a510c61cd6cf1b5dfc789a061d",
 	"runtime.1.0.json":                     "c8ed61ae855c828767a30d94e667bd7f0b3bed75ee8e36407f815d789fe6cd31",
 }
 
@@ -85,6 +86,7 @@ var publishedMarkdownSHA256 = map[string]string{
 	"browser.1.7.md":                     "76ff87cab25bee91300f38414c542d31c3d9a23a63eda8443fcec702b4785d83",
 	"browser.1.8.md":                     "3b912b6c46b9058f5007fe997499463df65cf3cee33226f375783c3e4a6ac9cd",
 	"browser.1.9.md":                     "3a63ba9034bd58130c32dc2fd48c4f9dc31a737050f1cbfe260077f8ab3e9896",
+	"browser.1.10.md":                    "e2fd0875ff90bf2ca3b20b9ff21e67d5040da9d318fffa2d8163a2fa56787f29",
 	"runtime.1.0.md":                     "9f77d78f250d8a1e98a1e9c0ebc0536cd8091250f03701a53be2b0d7280a5576",
 }
 

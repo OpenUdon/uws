@@ -8,14 +8,16 @@ credentials, sessions, and browser execution remain downstream concerns.
 ## UWS-B01 — Browser Profile Interoperability Baseline
 
 State: Complete; this historical distribution milestone was superseded by
-`uws.browser.1.7`, `uws.browser.1.8`, and now opt-in `uws.browser.1.9`.
+`uws.browser.1.7`, `uws.browser.1.8`, `uws.browser.1.9`, and now opt-in
+`uws.browser.1.10`.
 
 This ledger records the browser 1.5 interoperability milestone. Browser 1.5
 remains immutable and accepted. At the time of the original 1.7 update,
 browser 1.7 added bounded contexts and portable scalar accessibility-text
 conversion. Browser 1.8 later added parameter templates; Browser 1.9 is now the
 current opt-in capability profile, while empty schema lookup retains Browser
-1.8 for compatibility.
+1.8 for compatibility. Browser 1.10 adds typed CSS selector match-count
+outputs while preserving Browser 1.9's template and text-safety behavior.
 
 ### Goal
 

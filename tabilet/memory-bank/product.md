@@ -85,9 +85,10 @@ UWS 1.11.0 is the current core contract. It preserves the UWS 1.x wire model
 and adds version-gated response-body dot-walks, loop-only `$batchIndex`, numeric
 `wait`/`batchSize` literals, terminal root-scoped `goto`, and corrected
 `forEach` merge records. UWS 1.10 execution semantics remain active for 1.10
-and later; earlier declarations retain their versioned behavior. Browser 1.9 is the current opt-in
-browser capability profile; empty profile lookup retains Browser 1.8 as its
-compatibility default. Browser authentication/call 1.1 is current for sign-in;
+and later; earlier declarations retain their versioned behavior. Browser 1.10
+is the current opt-in browser capability profile and adds typed CSS selector
+match counts; empty profile lookup retains Browser 1.8 as its compatibility
+default. Browser authentication/call 1.1 is current for sign-in;
 browser registration/call 1.2 is current for reviewed registration
 verification; and registration input 1.0 is the private envelope format.
 Runtime Supplement 1.0 remains the public metadata floor for common non-HTTP

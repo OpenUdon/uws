@@ -26,6 +26,15 @@ the meaning or scope of a published schema or sub-spec is recorded as an
 - This policy clarifies version selection and validator behavior; it does not
   amend the bytes or normative requirements of earlier published artifacts.
 
+## Browser Capability Profile 1.10 - 2026-09-25
+
+- Added an opt-in CSS match-count output that returns only an exact nonnegative
+  safe integer. Defined unique optional `within` roots, `all` and `rendered`
+  counting, zero and multiple-match results, validation bounds, and closed
+  failures for malformed selectors, missing or ambiguous roots, and invalid
+  count responses. Browser 1.9 and earlier profiles remain immutable; the
+  empty schema-lookup compatibility default remains Browser 1.8.
+
 ## UWS 1.11.0 Contract Correction - 2026-09-24
 
 Amended 2026-09-24: Corrected the published specification's expression-source

@@ -57,6 +57,9 @@ var (
 	browser19SchemaOnce          sync.Once
 	browser19Schema              *jsonschema.Schema
 	browser19SchemaErr           error
+	browser110SchemaOnce         sync.Once
+	browser110Schema             *jsonschema.Schema
+	browser110SchemaErr          error
 	auth10SchemaOnce             sync.Once
 	auth10Schema                 *jsonschema.Schema
 	auth10SchemaErr              error
@@ -107,14 +110,15 @@ func PathForRuntimeSupplement(anchorDir, profile string) string {
 
 // PathForBrowserSourceProfile returns the best local schema path for a browser
 // source profile. An empty profile retains the browser 1.8 compatibility
-// default; browser 1.9 is selected explicitly.
+// default; browser 1.10 and its predecessors are selected explicitly.
 func PathForBrowserSourceProfile(anchorDir, profile string) string {
 	return pathForSchemaName(anchorDir, familySchemaName(profile, "browser", "1.8"))
 }
 
 // BrowserSourceProfileSchema returns an independent copy of the embedded
 // browser-profile JSON Schema selected by profile. An empty profile retains
-// the uws.browser.1.8 compatibility default; browser 1.9 is opt-in.
+// the uws.browser.1.8 compatibility default; browser 1.10 and its
+// predecessors are opt-in.
 func BrowserSourceProfileSchema(profile string) ([]byte, error) {
 	name := familySchemaName(profile, "browser", "1.8")
 	data, err := embeddedSchemaDocument(name)
@@ -216,7 +220,7 @@ func ValidateBrowserSourceProfile(data []byte) error {
 	if err := schema.Validate(document); err != nil {
 		return fmt.Errorf("validate browser source profile: %w", err)
 	}
-	if profile == "uws.browser.1.6" || profile == "uws.browser.1.7" || profile == "uws.browser.1.8" || profile == "uws.browser.1.9" {
+	if profile == "uws.browser.1.6" || profile == "uws.browser.1.7" || profile == "uws.browser.1.8" || profile == "uws.browser.1.9" || profile == "uws.browser.1.10" {
 		root, _ := value.(map[string]any)
 		if err := validateBrowserContexts(root, browserProfileOrigins(root)); err != nil {
 			return err
@@ -228,7 +232,7 @@ func ValidateBrowserSourceProfile(data []byte) error {
 			return err
 		}
 	}
-	if profile == "uws.browser.1.9" {
+	if profile == "uws.browser.1.9" || profile == "uws.browser.1.10" {
 		root, _ := value.(map[string]any)
 		if err := validateBrowser19Templates(root); err != nil {
 			return err
@@ -1022,6 +1026,11 @@ func compiledBrowserSourceProfileSchema(profile string) (*jsonschema.Schema, err
 			browser19Schema, browser19SchemaErr = compileEmbeddedSchema("browser.1.9.json")
 		})
 		return browser19Schema, browser19SchemaErr
+	case "uws.browser.1.10":
+		browser110SchemaOnce.Do(func() {
+			browser110Schema, browser110SchemaErr = compileEmbeddedSchema("browser.1.10.json")
+		})
+		return browser110Schema, browser110SchemaErr
 	default:
 		return nil, fmt.Errorf("unsupported browser source profile discriminator %q", profile)
 	}
