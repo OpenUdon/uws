@@ -15,6 +15,6 @@ browser runtime integration or live target action is included.
 | Item | State | Notes |
 | --- | --- | --- |
 | M05.1 Document the Browser profile versioning procedure | [x] | Added the maintenance checklist in [future-source-profiles.md](../../docs/future-source-profiles.md#adding-a-browser-profile-version) and linked it from README. |
-| M05.2 Define Browser 1.10 count semantics | [ ] | Specify selector match-count output, integer bounds, zero and multiple-match behavior, and closed failure semantics. |
+| M05.2 Define Browser 1.10 count semantics | [x] | Defined `matchCount: true` for exact CSS match counts; optional `within` must resolve to exactly one root and scopes descendant matches; required `visibility` is `all` or `rendered` (rendered excludes hidden/zero-area elements but ignores viewport, clipping, occlusion, and opacity). Zero and multiple matches are valid counts. Results are nonnegative safe integers; malformed selectors, missing/ambiguous roots, invalid responses, and values outside bounds fail closed. `git diff --check` passed. |
 | M05.3 Update profile schema, guide, examples and conformance vectors | [ ] | Preserve existing profile bytes, add Browser 1.10 coverage, and keep the versioning checklist current. |
 | M05.4 Verify and review the published specification | [ ] | Run focused and full UWS checks and bounded review; publish exact reviewed source for downstream consumers. |

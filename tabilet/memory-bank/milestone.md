@@ -21,15 +21,26 @@ Udon, OpenUdon, and W8M. The GOAL protocol remains unchanged.
 ## M05 — Browser 1.10 selector match-count profile
 
 Specify and publish a separately versioned Browser 1.10 profile with an
-explicit CSS-selector match-count output. It returns only a typed nonnegative
-integer, with zero and multiple matches represented directly; page text and
-element attributes are not exposed. Preserve Browser 1.9 and older profiles
-unchanged. Keep UWS core at 1.11 unless a generic binding change is proven
-necessary. Add schema, examples and conformance vectors for valid zero/one/many
-counts and missing, invalid, ambiguous or over-bound consumer handling. Maintain
-the Browser profile versioning checklist alongside the profile docs. Complete
-focused and full published-source verification and bounded review; no runtime or
-real-target browser operation is included.
+explicit CSS-selector match-count output using `matchCount: true`. It returns
+only the exact nonnegative safe-integer count; zero and multiple matches are
+valid, and text or attributes are not exposed. An optional `within` CSS
+selector scopes descendant matches and MUST resolve to exactly one root;
+omission scopes to the selected browser context. `visibility` is required for
+count outputs and is either `all` or `rendered`. `all` counts every matching
+connected DOM element. `rendered` excludes candidates with no positive-area
+client rectangle or with `display: none`, `visibility: hidden|collapse`, or
+`content-visibility: hidden` on the candidate or an ancestor. Both modes count
+elements below the viewport; clipping, occlusion, and opacity do not change a
+count. Missing or ambiguous roots, malformed selectors, invalid responses,
+and counts outside the declared validation schema fail closed without exposing
+page content. Preserve Browser 1.9 and older profiles unchanged. Keep UWS core
+at 1.11 unless a generic binding change is proven necessary. Add schema,
+examples and conformance vectors for both visibility modes, scoped roots,
+valid zero/one/many counts, and missing, invalid, ambiguous or over-bound
+consumer handling. Maintain the Browser profile versioning checklist
+alongside the profile docs. Complete focused and full published-source
+verification and bounded review; no runtime or real-target browser operation
+is included.
 
 Status: [M05](status-M05.md).
 
