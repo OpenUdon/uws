@@ -341,8 +341,9 @@ Settled scope:
   as locator forms.
 - The macro action vocabulary is a closed enumeration (`navigate`, `click`,
   `type_text`, `check_radio`, `uncheck`, `select_option`, `wait_for`).
-  Extensions require a `browser.x.y` schema bump and a corresponding UWS minor
-  bump, not vendor `x-` opt-ins.
+  Changes require a new `browser.x.y` profile. A UWS core minor bump is needed
+  only when the generic core binding or core semantics change; browser-profile
+  details remain in the separately versioned profile.
 - Output extraction primary methods are `a11y` and `jsonld`/`microdata`; CSS is
   permitted as a last-resort, schema-validated fallback with a recorded
   `fallbackReason`.
@@ -359,6 +360,42 @@ Settled scope:
   reviewed UI profiles, or wrapper sidecars belong in `../browsertools`; this
   repository keeps only the schema/spec fixtures needed to validate the UWS
   wire contract and `browser.1.5` sub-spec.
+
+### Adding a Browser profile version
+
+Browser profile versions are independent of UWS core versions. Create a new
+`browser.x.y` only for a portable, reviewed behavior that existing profile
+versions cannot express. Keep browser execution protocols, browser binaries,
+session handling, credentials, and vendor-specific behavior in their runtime
+owners. Bump UWS core only when the generic source binding or a core semantic
+also changes.
+
+For a new profile version:
+
+1. Copy the latest published `versions/browser.x.y.json` and
+   `versions/browser.x.y.md` to new versioned files. Update the profile
+   discriminator, schema `$id`, specification examples, and the change record.
+   Update current-profile links in README.md and docs/index.md. Never edit an
+   older published profile to add behavior.
+2. State exactly what changed, what remains compatible, and how old profiles
+   behave. Keep the new profile opt-in. Preserve existing profile readers and
+   the empty-profile lookup default unless a separately reviewed migration
+   changes that policy. At this baseline, an empty Browser profile lookup still
+   selects Browser 1.8; adding Browser 1.10 must not silently change that default.
+3. Extend `schemas/schema.go` profile-name selection and compilation for the
+   new version. Add schema, validation, and compatibility fixtures. Add the
+   exact JSON and Markdown digests to the immutability coverage in
+   `schemas/version_immutability_test.go`.
+4. Regenerate the embedded version-document archive with
+   `go generate ./schemas` after changing the JSON documents. Keep the
+   standalone documents, embedded archive, lookup code, and tests in sync.
+5. Run UWS validation, schema-conformance, and immutability checks. Publish the
+   exact reviewed UWS revision; downstream authoring tools and runtimes update
+   their own version support and pins in their owning repositories.
+
+A new profile version does not itself adopt a runtime or change another
+repository's selected profile. See the [Browser 1.9 profile](../versions/browser.1.9.md)
+for the current profile contract.
 
 ### Browser 1.6 Contexts, Browser 1.7 Scalars, Browser 1.8 Templates, Browser 1.9 Text Safety, And Later Candidates
 

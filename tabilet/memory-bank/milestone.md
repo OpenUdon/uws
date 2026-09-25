@@ -11,9 +11,27 @@ to the published UWS 1.11 specification passed verification and its bounded
 review gate, then retired. Earlier milestones also remain in the
 [history index](../docs/history/index.md).
 
-**Active order.** None. **Reconciled downstream impacts.** C06 had no active
-consumer. Published schemas, prior specifications, Browser profile documents,
-and the GOAL protocol remain unchanged. No conditional milestone was triggered.
+**Active order.** M05. **Reconciled downstream impacts.** M05 introduces a
+separately versioned Browser 1.10 profile with selector match-count output.
+Browser 1.9 and older published profiles remain immutable; UWS core remains
+1.11 unless implementation establishes that a generic binding change is needed.
+Downstream consumer work is separately owned by Browsertools, Browserdriver,
+Udon, OpenUdon, and W8M. The GOAL protocol remains unchanged.
+
+## M05 — Browser 1.10 selector match-count profile
+
+Specify and publish a separately versioned Browser 1.10 profile with an
+explicit CSS-selector match-count output. It returns only a typed nonnegative
+integer, with zero and multiple matches represented directly; page text and
+element attributes are not exposed. Preserve Browser 1.9 and older profiles
+unchanged. Keep UWS core at 1.11 unless a generic binding change is proven
+necessary. Add schema, examples and conformance vectors for valid zero/one/many
+counts and missing, invalid, ambiguous or over-bound consumer handling. Maintain
+the Browser profile versioning checklist alongside the profile docs. Complete
+focused and full published-source verification and bounded review; no runtime or
+real-target browser operation is included.
+
+Status: [M05](status-M05.md).
 
 ## Candidate Directions
 
@@ -26,7 +44,7 @@ work automatically.
 | MCP public supplement consideration | The OpenUdon experiment is unimplemented and has no interoperability evidence. | Stage 1 produces real workflow evidence and a second independent consumer requests interoperable exchange. |
 | Concrete content-trust resolvers | No source/profile resolver has a named in-repository owner or representative acceptance corpus. | A runtime or profile owner supplies reviewed channel contracts and fixtures. |
 | UWS 2.0 expression, trigger, polling, and enforcement redesign | C2–C4 and E1/E2/E6/E8/E11 require new wire or governance choices: an expression marker/escape and interpolation, richer operators and names, literal `items`, decoupled profile/core versions, extensible source types, trigger kinds, possible content-trust enforcement, and portable `await` operation reexecution. C04 added numeric `batchSize` literals and corrected the existing `await` guide; portable operation reexecution remains deferred. | A concrete multi-runtime need and compatibility analysis support a separately approved 2.0 proposal. |
-| Profile documentation | D7's remaining runtime-supplement ambiguity, D10's registration 1.2 authoring detail, and third-review R6/R7's Browser 1.9 stale core-version and brace-escape wording concern separately versioned profiles; editing frozen published documents is not an automatic review fix. | The next relevant profile version or an explicitly approved meaning-preserving editorial amendment. |
+| Other profile documentation | D7's remaining runtime-supplement ambiguity and D10's registration 1.2 authoring detail remain separate from Browser 1.10. Browser profile versioning and its related Browser 1.9 wording are now owned by M05; frozen prior profiles remain unchanged. | A relevant later profile version or an explicitly approved meaning-preserving editorial amendment for the remaining topics. |
 | Authoring diagnostics and examples | Third-review R3/R10: numeric `wait`/`batchSize` tokens must stay quoted under the existing string wire shape; raw-number diagnostics and the runtime-specific `$error.*` guide excerpt could be clearer. | A named authoring consumer and approved diagnostics or guide amendment with fixtures. Unquoted numbers require a separately versioned wire decision. |
 | Optional expression portability tooling | Third-review R4: core validation intentionally allows implementation-specific expressions under §5.5; strict grammar checking is not ordinary semantic validation. | A consumer requests an opt-in portability check with a specified interface and compatibility tests. |
 | Conformance corpus supplement | Third-review R9: Go tests cover behaviors absent from the pinned 1.11 corpus. Changing that frozen corpus would alter published evidence. | Design and approve a separately pinned supplement or a later release corpus with interoperable vectors. |

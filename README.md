@@ -48,6 +48,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - Runtime supplement: [versions/runtime.1.0.md](versions/runtime.1.0.md)
 - Runtime supplement schema: [versions/runtime.1.0.json](versions/runtime.1.0.json)
 - Current Browser profile supplement: [versions/browser.1.9.md](versions/browser.1.9.md) / [versions/browser.1.9.json](versions/browser.1.9.json)
+- Browser profile versioning process: [docs/future-source-profiles.md](docs/future-source-profiles.md#adding-a-browser-profile-version)
 - Browser 1.8 compatibility profile: [versions/browser.1.8.md](versions/browser.1.8.md) / [versions/browser.1.8.json](versions/browser.1.8.json)
 - Browser authentication profile: [versions/browser-authentication.1.1.md](versions/browser-authentication.1.1.md) / [versions/browser-authentication.1.1.json](versions/browser-authentication.1.1.json)
 - Browser authentication call supplement: [versions/browser-authentication-call.1.1.md](versions/browser-authentication-call.1.1.md) / [versions/browser-authentication-call.1.1.json](versions/browser-authentication-call.1.1.json)
