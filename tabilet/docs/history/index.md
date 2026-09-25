@@ -17,3 +17,4 @@ Knowledge updates that replace current facts or lessons are recorded in
 | C04 | completed | 2026-09-24 | [status-C04.md](status-C04.md) | Published UWS 1.11's gated execution and expression contract with executable conformance vectors and synchronized guides. |
 | M04 | completed | 2026-09-24 | [status-M04.md](status-M04.md) | Tracked the preserved 14-file Tabilet evidence set with verified hashes and history-index resolution for historical status references. |
 | C06 | completed | 2026-09-24 | [status-C06.md](status-C06.md) | Amended UWS 1.11's loop, criterion, and language-neutral wording; pinned informative profile links. |
+| M05 | completed | 2026-09-25 | [status-M05.md](status-M05.md) | Published and reviewed Browser 1.10 count outputs with unique optional scope roots and explicit visibility semantics. |

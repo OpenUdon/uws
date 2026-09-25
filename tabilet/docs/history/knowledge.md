@@ -91,3 +91,34 @@ default, but it is no longer the latest published browser capability contract.
 `schemas/schema.go`; `schemas/version_immutability_test.go`.
 
 **Replacement.** [Current Contract Surface](../../memory-bank/product.md#current-contract-surface)
+
+## 2026-09-25 - Browser 1.10 Became Current
+
+**Source heading.** `tabilet/memory-bank/product.md#current-contract-surface`
+
+**Previous wording.**
+
+> UWS 1.11.0 is the current core contract. It preserves the UWS 1.x wire model
+> and adds version-gated response-body dot-walks, loop-only `$batchIndex`, numeric
+> `wait`/`batchSize` literals, terminal root-scoped `goto`, and corrected
+> `forEach` merge records. UWS 1.10 execution semantics remain active for 1.10
+> and later; earlier declarations retain their versioned behavior. Browser 1.9 is the current opt-in
+> browser capability profile; empty profile lookup retains Browser 1.8 as its
+> compatibility default. Browser authentication/call 1.1 is current for sign-in;
+> browser registration/call 1.2 is current for reviewed registration
+> verification; and registration input 1.0 is the private envelope format.
+> Runtime Supplement 1.0 remains the public metadata floor for common non-HTTP
+> extension operations. The UWS 1.11 specification, exact-version schema, Go
+> validator/executor, and executable conformance corpus are coordinated release
+> artifacts; earlier published contracts remain accepted according to their
+> version gates. Ansible support is historical UWS 1.6 material only.
+
+**Reason.** M05 published Browser 1.10 as the current opt-in profile while
+preserving Browser 1.8 as the empty-lookup compatibility default. The new
+profile adds count outputs without changing UWS core or earlier profile bytes.
+
+**Evidence.** `versions/browser.1.10.json`; `versions/browser.1.10.md`;
+`schemas/schema.go`; `schemas/version_immutability_test.go`;
+`80ee9bfb24a688b5e875dadf9ecacdc65398f1ff`.
+
+**Replacement.** [Current Contract Surface](../../memory-bank/product.md#current-contract-surface)
