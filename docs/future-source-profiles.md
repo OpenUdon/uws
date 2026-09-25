@@ -394,7 +394,7 @@ new version. Add schema, validation, and compatibility fixtures. Add the
    their own version support and pins in their owning repositories.
 
 A new profile version does not itself adopt a runtime or change another
-repository's selected profile. See the [Browser 1.10 profile](../versions/browser.1.10.md)
+repository's selected profile. See the [Browser 1.10 profile](https://github.com/OpenUdon/uws/blob/main/versions/browser.1.10.md)
 for the current profile contract.
 
 ### Browser 1.6 Contexts, Browser 1.7 Scalars, Browser 1.8 Templates, Browser 1.9 Text Safety, Browser 1.10 Match Counts, And Later Candidates
