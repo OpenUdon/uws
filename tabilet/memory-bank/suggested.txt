@@ -1,0 +1,29 @@
+Using tabilet/GOAL.md, execute this loop.
+
+PROJECT_CONTEXT:
+- AGENTS.md
+- tabilet/memory-bank/product.md
+- tabilet/memory-bank/architecture.md
+- tabilet/memory-bank/tech-stack.md
+- tabilet/memory-bank/milestone.md
+- tabilet/evolution/prompt-v6.md
+- tabilet/evolution/result-v6.md
+
+STATUS_ORDER:
+C07 -> M06
+
+STATUS_FILE_MAP:
+C07 = tabilet/memory-bank/status-C07.md
+M06 = tabilet/memory-bank/status-M06.md
+
+DOWNSTREAM_IMPACTS:
+C07 -> M06
+
+COMMIT_POLICY: task
+EXTERNAL_MUTATIONS: none
+
+Keep one execution owner and work one pending row at a time. Complete C07's
+acceptance and persisted review gate before starting M06. Reconcile downstream
+handoffs to OpenUdon, Udon, APItools, Browsertools, and Kinet in UWS records;
+their implementation belongs in their own ledgers and is not authorized here.
+Keep existing candidates deferred and preserve frozen history and artifacts.

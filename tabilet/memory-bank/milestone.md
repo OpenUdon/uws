@@ -11,13 +11,95 @@ to the published UWS 1.11 specification passed verification and its bounded
 review gate, then retired. Earlier milestones also remain in the
 [history index](../docs/history/index.md).
 
-**Active order.** None. M05 published and verified Browser 1.10 at commit
+M05 published and verified Browser 1.10 at commit
 `80ee9bfb24a688b5e875dadf9ecacdc65398f1ff`, passed bounded review iteration 1,
 and was retired to the [milestone history](../docs/history/status-M05.md).
 Browser 1.9 and older published profiles remain immutable; UWS core remains
 1.11. Browsertools, Browserdriver, Udon, OpenUdon, and W8M own their downstream
 compatibility work in their respective repositories and active ledgers. The
 GOAL protocol remains unchanged.
+
+**Active order.** C07 -> M06. The user approved this S1 planning update on
+2026-09-26. These are new feature milestones, with effect classification first;
+they are not engineering-review findings or reopened historical work. Planning
+does not publish UWS 1.12 or implement simulation.
+
+| Milestone | Outcome | Prerequisite | Status |
+|---|---|---|---|
+| C07 | UWS 1.12 operation effect and pending-step contracts | None | [C07](status-C07.md) |
+| M06 | Versioned fixtures and public mock/hybrid runtime | C07 accepted, including its review gate | [M06](status-M06.md) |
+
+### C07 — Effect Classification And Pending Steps
+
+Add optional operation `effect: read|write|unknown`, with omission interpreted
+as `unknown`. Meaning determines classification; HTTP methods do not. Then
+add a mutually exclusive `pending` step contract declaring purpose, inputs,
+outputs, and effect without an operation. That declaration is the canonical
+shape for those four fields: OpenUdon M87's step contracts reuse it for Kinet's
+step-based authoring, so agree it with OpenUdon M87.1 before freezing and keep
+a single definition. Pending input/output declarations
+remain distinct from executable values and output expressions. Structurally
+and semantically valid pending-only drafts require no dummy operation, but
+executable validation rejects pending steps anywhere, including unselected
+branches. Public execution entry points reject them before runtime invocation.
+
+Develop the two additions in order against draft artifacts outside the
+published-document set, then publish their combined UWS 1.12.0 contract once.
+Keep earlier contracts immutable, gate the new fields to 1.12, and preserve
+exact-version admission until publication. Synchronize schema, spec, Go model,
+validation, conversion, embedded archive, digests, examples, release surfaces,
+and evidenced current facts in their owning implementation rows. Status and
+acceptance: [C07](status-C07.md).
+
+### M06 — Public Simulation Runtime And Fixtures
+
+After C07 acceptance, publish fixture format 1.0 for responses keyed by local
+operation ID and request digest. Define canonical request encoding, digest
+calculation, response envelopes, repeated-call behavior, provenance, and
+invalid/unsupported-version handling. Add an importable `mockruntime` package
+implementing the existing `uws1.Runtime` interface, using the real orchestrator
+with fixture replay, deterministic schema/example responses, expression/item
+evaluation, and resolved would-be request records. Caller-supplied resolvers
+provide source data; provider parsers remain downstream.
+
+Pure mock execution makes no network calls. An explicitly enabled real-read
+adapter supplies response handoff into mock evaluation; only `read` operations
+may reach it. Writes and unknown effects remain mocked. Isolate state across
+loops, calls, retries, and parallel branches; diagnose unsupported synthesis
+and expressions rather than inventing success. Distinguish synthesized,
+replayed, and live-read evidence. Fixture export has explicit redaction
+controls and no automatic persistence of credentials or private responses.
+Status and acceptance: [M06](status-M06.md).
+
+### S1 Provenance And Downstream Boundaries
+
+The approved source is Kinet `docs/icot.md` §7 UWS, with sequencing in §8.
+It was inspected as working-tree evidence at Kinet HEAD
+`9719a364904743c0d2cb8b3f47cb4e50ed6322e8`; the document contains uncommitted
+edits and has SHA-256
+`7d2903d0ef70f046e9b711933749791271e77c53622e258b47a9fb4a6c610fe6`.
+UWS was clean at `1d5535ec75d5693a66bcced5bd98f5c4c824fb2a`.
+The [evolution v6 direction](../evolution/prompt-v6.md) and
+[planning result](../evolution/result-v6.md) record this material change.
+
+C07 supplies M06 and downstream effect/pending consumers, including the shared
+step-contract field shape that OpenUdon M87.1 adopts (a design synchronization
+point before C07.2 freezes, not a wait for implementation). OpenUdon owns
+simulation commands, assessment, and approval refusal; Udon owns real-read
+enforcement and credentials; APItools owns classification discovery;
+Browsertools owns snapshot simulation. Kinet owns the authoring loop and its
+later W04 adoption. S1 is not a prerequisite for Kinet W03. Downstream adoption
+is recorded and executed in each package's own ledger, with handoff evidence
+from these milestones; this horizon authorizes no sibling changes. Existing
+candidates remain deferred, including broader interoperability formats and
+optional expression portability tooling. Ordinary UWS validation continues
+accepting implementation-specific expressions.
+
+Both milestones require focused acceptance tests, the full repository checks,
+and the persisted bounded review gate below. One owner executes one pending
+row at a time, with one commit per completed row under the governing policy.
+The [disposable goal input](suggested.txt) covers C07 -> M06; it does not launch
+execution or replace the ledger.
 
 ## Candidate Directions
 
