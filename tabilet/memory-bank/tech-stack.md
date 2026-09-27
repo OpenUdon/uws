@@ -8,7 +8,8 @@
   database, worker deployment, or concrete provider runtime.
 
 The main Go packages are `uws1`, `contenttrust`, `convert`, `validation`,
-`schemas`, `runtimes`, `browserauthentication`, and `browserregistration`.
+`schemas`, `runtimes`, `mockruntime`, `browserauthentication`, and
+`browserregistration`.
 `internal/generateversionarchive` is a repository generator rather than a
 public package.
 
@@ -22,6 +23,8 @@ public package.
 - Horizon/dethcl and HashiCorp HCL dependencies support HCL conversion.
 - XPath and JSONPath dependencies implement non-simple criteria.
 - `x/sync/errgroup` supports concurrent orchestration.
+- `github.com/gowebpki/jcs` implements RFC 8785 request canonicalization for
+  Mock Fixture Format 1.0.
 
 Dependency versions are governed by `go.mod` and `go.sum`. Provider SDKs,
 browser drivers, credential stores, and concrete runtime clients do not belong

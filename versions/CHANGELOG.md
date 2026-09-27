@@ -26,6 +26,18 @@ the meaning or scope of a published schema or sub-spec is recorded as an
 - This policy clarifies version selection and validator behavior; it does not
   amend the bytes or normative requirements of earlier published artifacts.
 
+## Mock Fixture Format 1.0 - 2026-09-27
+
+- Added the independent `uws.mock-fixtures.1.0` JSON format and schema for
+  response fixtures keyed by UWS-local operation ID and RFC 8785 canonical
+  request digest. Duplicate keys, unknown fields and versions, and malformed
+  documents fail closed; repeated exact-key lookups reuse one response.
+- Added bounded schema/codec helpers, portable canonicalization vectors, and a
+  recorded-fixture constructor that requires explicit caller redaction. The
+  format and package perform no automatic response capture or persistence.
+- No UWS core version, wire field, runtime interface, or execution behavior
+  changed.
+
 ## UWS 1.12.0 - 2026-09-27
 
 - Published optional operation `effect` classification (`read`, `write`, or

@@ -20,6 +20,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/OpenUdon/uws/internal/strictjson"
 	"github.com/santhosh-tekuri/jsonschema/v6"
 	"golang.org/x/mod/module"
 	"gopkg.in/yaml.v3"
@@ -87,10 +88,14 @@ var (
 	registrationInputSchemaOnce  sync.Once
 	registrationInputSchema      *jsonschema.Schema
 	registrationInputSchemaErr   error
+	mockFixturesSchemaOnce       sync.Once
+	mockFixturesSchema           *jsonschema.Schema
+	mockFixturesSchemaErr        error
 )
 
 const maxBrowserAuthenticationProfileBytes = 1 << 20
 const maxBrowserRegistrationProfileBytes = 1 << 20
+const maxMockFixtureDocumentBytes = 16 << 20
 
 // PathForVersion returns the local schema path named by the exact UWS version.
 // Unpublished stable and pre-release versions do not silently fall back to a
@@ -106,6 +111,60 @@ func PathForVersion(anchorDir, version string) string {
 // PathForRuntimeSupplement returns the best local schema path for a runtime supplement profile.
 func PathForRuntimeSupplement(anchorDir, profile string) string {
 	return pathForSchemaName(anchorDir, runtimeSupplementSchemaName(profile))
+}
+
+// PathForMockFixtures returns the best local schema path for mock fixture
+// format 1.0.
+func PathForMockFixtures(anchorDir string) string {
+	return pathForSchemaName(anchorDir, "mock-fixtures.1.0.json")
+}
+
+// MockFixturesSchema returns an independent copy of the embedded mock fixture
+// format 1.0 JSON Schema.
+func MockFixturesSchema() ([]byte, error) {
+	data, err := embeddedSchemaDocument("mock-fixtures.1.0.json")
+	if err != nil {
+		return nil, fmt.Errorf("load mock fixtures schema: %w", err)
+	}
+	return append([]byte(nil), data...), nil
+}
+
+// ValidateMockFixtures validates one strict JSON fixture document against the
+// exact embedded mock fixture 1.0 schema. The document size is bounded because
+// fixture packs may contain caller-supplied response values.
+func ValidateMockFixtures(data []byte) error {
+	if len(data) > maxMockFixtureDocumentBytes {
+		return fmt.Errorf("mock fixture document exceeds %d bytes", maxMockFixtureDocumentBytes)
+	}
+	if err := strictjson.ValidateSingleValue(data); err != nil {
+		return fmt.Errorf("decode mock fixture JSON: %w", err)
+	}
+	trimmed := bytes.TrimSpace(data)
+	if len(trimmed) == 0 || trimmed[0] != '{' {
+		return fmt.Errorf("mock fixture document must be a JSON object")
+	}
+	var value map[string]any
+	if err := json.Unmarshal(trimmed, &value); err != nil {
+		return fmt.Errorf("decode mock fixture document: %w", err)
+	}
+	format, _ := value["format"].(string)
+	if format != "uws.mock-fixtures.1.0" {
+		return fmt.Errorf("unsupported mock fixture format %q", format)
+	}
+	document, err := jsonschema.UnmarshalJSON(bytes.NewReader(trimmed))
+	if err != nil {
+		return fmt.Errorf("decode mock fixture document for schema validation: %w", err)
+	}
+	mockFixturesSchemaOnce.Do(func() {
+		mockFixturesSchema, mockFixturesSchemaErr = compileEmbeddedSchema("mock-fixtures.1.0.json")
+	})
+	if mockFixturesSchemaErr != nil {
+		return mockFixturesSchemaErr
+	}
+	if err := mockFixturesSchema.Validate(document); err != nil {
+		return fmt.Errorf("validate mock fixture document: %w", err)
+	}
+	return nil
 }
 
 // PathForBrowserSourceProfile returns the best local schema path for a browser

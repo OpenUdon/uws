@@ -1,0 +1,78 @@
+{
+  "$id": "https://github.com/OpenUdon/uws/versions/mock-fixtures.1.0.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UWS Mock Fixtures 1.0",
+  "description": "Versioned, inert operation-response fixtures for mock runtimes.",
+  "type": "object",
+  "required": ["format", "fixtures"],
+  "properties": {
+    "format": { "const": "uws.mock-fixtures.1.0" },
+    "fixtures": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10000,
+      "items": { "$ref": "#/$defs/fixture" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "operationId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "requestDigest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["synthetic", "example", "recorded"] },
+        "redacted": { "type": "boolean" },
+        "redactedPointers": {
+          "type": "array",
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 512,
+            "pattern": "^(?:/(?:[^~/]|~[01])*)*$"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": { "kind": { "const": "recorded" } },
+            "required": ["kind"]
+          },
+          "then": {
+            "required": ["redacted", "redactedPointers"],
+            "properties": { "redacted": { "const": true } }
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                { "required": ["redacted"] },
+                { "required": ["redactedPointers"] }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "fixture": {
+      "type": "object",
+      "required": ["operationId", "requestDigest", "provenance", "response"],
+      "properties": {
+        "operationId": { "$ref": "#/$defs/operationId" },
+        "requestDigest": { "$ref": "#/$defs/requestDigest" },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "response": true
+      },
+      "additionalProperties": false
+    }
+  }
+}

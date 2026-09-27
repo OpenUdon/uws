@@ -40,6 +40,7 @@ contracts without expanding core into a transport or automation engine.
 | `browserauthentication/` | Inert authentication profile and operation-extension wire types. |
 | `browserregistration/` | Inert registration, private-input declaration, and verification-policy wire types. |
 | `runtimes/` | Runtime Supplement 1.0 constants, typed payload, and extension helpers. |
+| `mockruntime/` | Versioned fixture codec, RFC 8785 request digest, exact fixture lookup, and explicit recorded-response redaction helper; execution runtime remains in M06.2. |
 | `convert/` | JSON, YAML, and HCL interchange with extension and dynamic-key preservation. |
 | `validation/` | File loading plus coordinated schema and semantic validation. |
 | `schemas/` | Schema lookup, embedded version archive, profile validators, and browser cross-document checks. |
@@ -75,6 +76,12 @@ generator produces a deterministic ZIP embedded by `schemas`. Consumers can
 locate repository, configured, module-cache, embedded, or sibling schemas.
 `validation` loads a document through `convert`, applies the selected schema,
 then calls the semantic validator.
+
+`mock-fixtures.1.0` has its own exact JSON Schema, embedded lookup helper, and
+protected JSON/Markdown digests. The `mockruntime` codec validates against that
+schema and applies additional exact-key uniqueness checks. Request keys hash
+RFC 8785 canonical JSON for the resolved request object; fixture replay always
+reuses a matched response and performs no storage or network activity.
 
 Schema conformance and parity tests connect the latest core schema to Go rules,
 tags, known fields, and specification tables. SHA-256 fixtures enforce exact

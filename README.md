@@ -48,6 +48,8 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - Content trust guide: [docs/content-trust.md](docs/content-trust.md)
 - Runtime supplement: [versions/runtime.1.0.md](versions/runtime.1.0.md)
 - Runtime supplement schema: [versions/runtime.1.0.json](versions/runtime.1.0.json)
+- Mock fixture format: [versions/mock-fixtures.1.0.md](versions/mock-fixtures.1.0.md) / [versions/mock-fixtures.1.0.json](versions/mock-fixtures.1.0.json)
+- Mock fixture guide: [docs/mock-fixtures.md](docs/mock-fixtures.md)
 - Current Browser profile supplement: [versions/browser.1.10.md](versions/browser.1.10.md) / [versions/browser.1.10.json](versions/browser.1.10.json)
 - Browser profile versioning process: [docs/future-source-profiles.md](docs/future-source-profiles.md#adding-a-browser-profile-version)
 - Browser 1.8 compatibility profile: [versions/browser.1.8.md](versions/browser.1.8.md) / [versions/browser.1.8.json](versions/browser.1.8.json)
@@ -69,9 +71,11 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - `validation` loads JSON, YAML, or HCL artifacts and applies versioned JSON Schema plus semantic validation.
 - `contenttrust` performs explicit, deterministic advisory analysis using source- and extension-profile resolvers.
 - `runtimes` contains the public `uws.runtime.1.0` supplement constants, wire structs, and extension helpers.
+- `mockruntime` contains the versioned mock-fixture codec, request canonicalization and digest, and explicit recorded-response redaction helper. The orchestrator-backed mock `uws1.Runtime` implementation is the next M06 task.
 - `browserauthentication` contains the additive secret-free sign-in profile and named-session operation extension types.
 - `browserregistration` contains the separate additive secret-free account-registration profile and explicitly approved mutation extension types.
 - `versions/1.12.0.md` and `versions/1.12.0.json` are the latest core specification and schema. They add operation effects and pending steps; earlier numbered artifacts remain immutable and accepted.
+- `versions/mock-fixtures.1.0.*` defines exact operation/request-digest response keys, RFC 8785 request bytes, repeatable fixture replay, and recorded-response redaction metadata. This format is separate from UWS core and does not add runtime behavior by itself.
 - `versions/browser.1.10.*` adds typed CSS selector match counts on top of Browser 1.9; it is opt-in, while empty schema lookup remains Browser 1.8. Browser 1.5–1.9 documents remain accepted and immutable.
 - `versions/browser-authentication.1.1.*` and `versions/browser-authentication-call.1.1.*` publish context-capable sign-in recipes and explicit named-session establishment; immutable 1.0 documents remain accepted.
 - `versions/browser-registration.1.0.*` and `versions/browser-registration-call.1.0.*` publish account-creation recipes with symbolic credentials, an explicit submit approval, fail-on-duplicate behavior, no ambiguous retry, and a preselected cleanup disposition.

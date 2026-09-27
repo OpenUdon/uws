@@ -1,8 +1,7 @@
 # Status M06 — Public Simulation Runtime And Fixtures
 
-**State:** Active; M06.1 is in progress. C07 was accepted locally at commit
-`9d092664a6062563e0414527f997a2475aeab003`; no M06 implementation has been
-committed.
+**State:** Active; M06.1 is complete and M06.2 is next. C07 was accepted
+locally at commit `9d092664a6062563e0414527f997a2475aeab003`.
 
 **Specification:** [M06](milestone.md#m06--public-simulation-runtime-and-fixtures).
 
@@ -26,11 +25,15 @@ W04 adoption remain in their own ledgers.
   document is not executable. The mock runtime must enter through the normal
   executable validation path, which rejects pending steps before any runtime
   method is called, including in unselected branches.
-- Read-only downstream inspection on 2026-09-27 found OpenUdon at
-  `8178e7ead454b766cdef4ae09e48d7ca457a9ef8` with M87.2 implementation changes
-  uncommitted. M87.1's shared declaration fields match UWS 1.12; M87.2–M87.5
-  may proceed. OpenUdon's M87.6 wrapper-mapping fixture should wait until it can
-  pin a published UWS 1.12 revision. No OpenUdon files were changed here.
+- Read-only downstream recheck on 2026-09-27 found OpenUdon at
+  `8178e7ead454b766cdef4ae09e48d7ca457a9ef8`, with M87.1–M87.3 complete,
+  M87.5 active, and its M87 worktree changes uncommitted. The shared
+  `purpose`, recursive object-root `inputs`/`outputs`, and `effect` declarations
+  match UWS 1.12's `PendingStep` and `ParamSchema`; the existing fixture tests
+  the recursive Go JSON round trip. UWS C07.2 is accepted locally at
+  `9d092664a6062563e0414527f997a2475aeab003`, but OpenUdon still pins the
+  published UWS 1.11 module. Its M87.6 wrapper-mapping fixture should wait until
+  it can pin a published UWS 1.12 revision. No OpenUdon files were changed here.
 - Kinet remains the consumer of OpenUdon's released step-command contract for
   W03. Its W03 blocker was recorded before the current OpenUdon M87.2 working
   tree appeared; the implementation files are now untracked locally but are
@@ -56,7 +59,7 @@ implementation, tests, and evidenced current-truth corrections for its scope.
 
 | Item | State | Notes |
 |---|---|---|
-| M06.1 Fixture contract | `[~]` | Define and publish fixture format 1.0 with responses keyed by local operation ID and request digest. Specify canonical request encoding, digest algorithm, response envelope, repeated-call/replay behavior, provenance, and invalid/unsupported-version handling. Include portable vectors and schema/codec validation; coordinate published artifacts, lookup/distribution, and protected digests. Define explicit redaction controls for export and avoid automatic persistence of credentials or private responses. Resolve format details before freezing publication. |
+| M06.1 Fixture contract | `[+]` | Published `uws.mock-fixtures.1.0` with exact `(operationId, requestDigest)` keys, RFC 8785 canonical request bytes and `sha256:` digest, source-neutral JSON responses, stable repeated replay, provenance, strict no-downgrade parsing, bounded codec, exact schema lookup/embedding, portable vectors, and an explicit redactor-required recorded-fixture constructor. No automatic capture or disk writes. `go generate ./schemas`, focused fixture/schema tests, immutable-document and archive checks, `go test ./...`, `go test -race ./...`, `go vet ./...`, `mkdocs build --strict`, and `git diff --check` passed. Review added an encoding preflight so oversized caller fixtures are rejected before JSON encoding. |
 | M06.2 Public mock runtime | `[ ]` | Add importable `mockruntime` implementing the existing `uws1.Runtime` without breaking it. Use the real orchestrator for fixture replay, deterministic responses from caller-supplied schemas/examples, expression evaluation, item resolution, outputs, and success criteria. Record resolved would-be requests. Specify fixture/example/synthesis selection and missing-fixture behavior; diagnose unsupported synthesis/expressions explicitly. Pure mock execution performs no network calls. Preserve state isolation across loops, workflow calls, retries, and parallel branches. |
 | M06.3 Hybrid reads and qualification | `[ ]` | Add an explicitly enabled real-read adapter with response handoff into mock evaluation. Only `read` operations can reach it; writes and unknowns remain mocked. Qualify mixed workflows, live-read values feeding mocked writes, cancellation/error propagation, and per-invocation evidence distinguishing synthesis/replay/live reads. Publish integration examples and downstream handoff guidance; complete full acceptance, current documentation, and bounded review. |
 

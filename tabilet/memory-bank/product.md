@@ -13,8 +13,9 @@ copying transport, schema, server, or security metadata into the workflow.
 
 The repository publishes the normative UWS documents, Go data and execution
 model, semantic and schema validators, interchange helpers, advisory integrity
-analysis, and separately versioned profiles. It is a library and specification
-distribution, not a hosted workflow service or a complete provider runtime.
+analysis, separately versioned profiles, and mock-fixture data contracts. It is
+a library and specification distribution, not a hosted workflow service or a
+complete provider runtime.
 
 ## Users And Primary Workflows
 
@@ -76,6 +77,8 @@ changing execution.
   enforcement belongs to consumers.
 - Browser credentials, private registration values, cookies, session handles,
   captures, and verification responses never enter portable profile artifacts.
+  Recorded mock fixtures require an explicit redactor and never persist
+  responses automatically.
 - Ambiguous browser targeting, unsafe origins, uncertain mutations, and stale
   or unsupported profile bindings fail closed.
 
@@ -99,6 +102,12 @@ default. Browser authentication/call 1.1 is current for sign-in; browser
 registration/call 1.2 is current for reviewed registration verification; and
 registration input 1.0 is the private envelope format. Runtime Supplement 1.0
 remains the public metadata floor for common non-HTTP extension operations.
+Mock Fixture Format 1.0 is a separate, inert response-fixture format keyed by a
+UWS-local operation ID and SHA-256 over RFC 8785 canonical bytes for the
+resolved request-binding object. Repeated exact-key lookups reuse the same
+response. Its codec requires explicit redaction for recorded fixtures and has
+no automatic response persistence; the orchestrator-backed mock runtime and
+hybrid read adapter remain M06.2 and M06.3 work.
 The UWS 1.12 specification, exact-version schema, Go model and validator,
 executor, conversion helpers, embedded archive, and protected digests are
 coordinated release artifacts. The pinned 1.11 executable conformance corpus

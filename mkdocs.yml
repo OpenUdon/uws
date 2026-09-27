@@ -34,6 +34,7 @@ nav:
     - 9. Validation: 09-Validation.md
     - 10. Interchange Formats: 10-Interchange-Formats.md
   - Runtimes: runtimes.md
+  - Mock Fixtures: mock-fixtures.md
   - Browser Capability Profiles: browser-capability-goal.md
   - Registration Authoring: registration-authoring.md
   - Future Source Profiles: future-source-profiles.md
@@ -52,5 +53,7 @@ nav:
     - Historical UWS 1.6 Ansible Argspec: https://github.com/OpenUdon/uws/blob/main/versions/ansible.1.0.md
     - Runtime Supplement: https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md
     - Runtime Supplement Schema: https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json
+    - Mock Fixture Format: https://github.com/OpenUdon/uws/blob/main/versions/mock-fixtures.1.0.md
+    - Mock Fixture Schema: https://github.com/OpenUdon/uws/blob/main/versions/mock-fixtures.1.0.json
     - Big Fixture: big-fixture.md
     - Repository: https://github.com/OpenUdon/uws

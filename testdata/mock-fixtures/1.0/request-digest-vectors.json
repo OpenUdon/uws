@@ -1,0 +1,20 @@
+[
+  {
+    "name": "empty-object",
+    "requestJson": "{}",
+    "canonical": "{}",
+    "digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+  },
+  {
+    "name": "whitespace-order-and-unicode",
+    "requestJson": " { \"body\" : {\"b\":2, \"a\":1}, \"query\":{\"q\":\"café\"} } ",
+    "canonical": "{\"body\":{\"a\":1,\"b\":2},\"query\":{\"q\":\"café\"}}",
+    "digest": "sha256:4cc06229af6cbefbe40bf425a7cd2534da09a9f38e8f083779e7de3b82c6958b"
+  },
+  {
+    "name": "rfc-8785-number-and-string-example",
+    "requestJson": "{\"numbers\":[333333333.33333329,1E30,4.50,2e-3,0.000000000000000000000000001],\"string\":\"\\u20ac$\\u000F\\u000aA'\\u0042\\u0022\\u005c\\\\\\\"\\/\",\"literals\":[null,true,false]}",
+    "canonical": "{\"literals\":[null,true,false],\"numbers\":[333333333.3333333,1e+30,4.5,0.002,1e-27],\"string\":\"€$\\u000f\\nA'B\\\"\\\\\\\\\\\"/\"}",
+    "digest": "sha256:2d5e01a318d0f0879ab568c4be289c8b1f64ef8921a53c6277d5e069978baacb"
+  }
+]

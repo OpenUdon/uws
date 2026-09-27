@@ -37,6 +37,7 @@ var publishedVersionSHA256 = map[string]string{
 	"ansible.1.0.json":                     "c67738d98732a177863421f3edd062f98aadba325a672e9be344478dfb41c6d6",
 	"browser-authentication-call.1.0.json": "586af5315001334ba7ceb69048f31b278ef16b0984ab05da6b7b361a2e035672",
 	"browser-authentication-call.1.1.json": "361aa798cefb4a172ecfda8c794a970faeb05919557a73bacb143af57332d35a",
+	"mock-fixtures.1.0.json":               "cd180f2d50f94c896358a3a6bb8298cfcc8ba750917b8b7556f73f47354a6daf",
 	"browser-registration-call.1.0.json":   "b311aeefb1b6c2b8d675a0839c654140105223f53994eb14260b9387aa293a38",
 	"browser-registration.1.0.json":        "6613ba3eecf0d073554cc6e6a4a56ebf2e9e3264714cd49fd740e6e784044605",
 	"browser-authentication.1.0.json":      "8ccf16281a83783d0b342312edb0b737a53129fca0944d8f00f31acc91f461ad",
@@ -89,6 +90,7 @@ var publishedMarkdownSHA256 = map[string]string{
 	"browser.1.8.md":                     "3b912b6c46b9058f5007fe997499463df65cf3cee33226f375783c3e4a6ac9cd",
 	"browser.1.9.md":                     "3a63ba9034bd58130c32dc2fd48c4f9dc31a737050f1cbfe260077f8ab3e9896",
 	"browser.1.10.md":                    "e2fd0875ff90bf2ca3b20b9ff21e67d5040da9d318fffa2d8163a2fa56787f29",
+	"mock-fixtures.1.0.md":               "1c89bc0cb239d0f402f524af0d4ffda7a6d7a9ce0649e2200362430315e01b1c",
 	"runtime.1.0.md":                     "9f77d78f250d8a1e98a1e9c0ebc0536cd8091250f03701a53be2b0d7280a5576",
 }
 

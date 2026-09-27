@@ -31,6 +31,8 @@ UWS 1.9.1 and later also offer an explicit **content-trust analyzer**. It recove
 
 For non-source leaf work, UWS keeps the core document narrow. Extension-owned operations declare `x-uws-operation-profile`; the public `uws.runtime.1.0` supplement optionally adds a small `x-uws-runtime` payload with a required non-HTTP `type` selector such as `fnct`, `cmd`, `sql`, or `llm`. HTTP and event calls still use source binding fields, not `x-uws-runtime`.
 
+The separate [Mock Fixture Format 1.0](mock-fixtures.md) provides deterministic response fixtures keyed by operation ID and a canonical request digest. It defines fixture data only; mock execution and hybrid live reads remain runtime behavior.
+
 ## A Minimal Document
 
 ```json
@@ -97,6 +99,7 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 - **Private registration input envelope**: [`versions/browser-registration-input.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser-registration-input.1.0.md)
 - **Runtime supplement**: [`versions/runtime.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.md)
 - **Runtime supplement schema**: [`versions/runtime.1.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/runtime.1.0.json)
+- **Mock fixture format and schema**: [guide](mock-fixtures.md), [normative format](https://github.com/OpenUdon/uws/blob/main/versions/mock-fixtures.1.0.md), [JSON Schema](https://github.com/OpenUdon/uws/blob/main/versions/mock-fixtures.1.0.json)
 - **Historical UWS 1.6 Ansible argspec**: [`versions/ansible.1.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/ansible.1.0.md)
 - **UWS 1.6 Ansible design**: [historical design note](uws_1_6_ansible.md)
 - **Future source profiles**: [admission criteria, adopted source families, browser capability profiles, and the historical UWS 1.6 Ansible withdrawal](future-source-profiles.md)

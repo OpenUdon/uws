@@ -102,6 +102,50 @@ func TestPathForRuntimeSupplementFindsReadableSchema(t *testing.T) {
 	}
 }
 
+func TestPathForMockFixturesFindsReadableSchema(t *testing.T) {
+	path := PathForMockFixtures(t.TempDir())
+	if _, err := os.Stat(path); err != nil {
+		t.Fatalf("mock fixture schema path is not readable: %s: %v", path, err)
+	}
+}
+
+func TestMockFixturesSchemaAccessorReturnsIndependentBytes(t *testing.T) {
+	first, err := MockFixturesSchema()
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := MockFixturesSchema()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(first) == 0 || len(second) == 0 {
+		t.Fatal("mock fixture schema is empty")
+	}
+	first[0] ^= 0xff
+	if bytes.Equal(first, second) {
+		t.Fatal("MockFixturesSchema returned shared mutable bytes")
+	}
+}
+
+func TestValidateMockFixturesSchema(t *testing.T) {
+	valid := []byte(`{"format":"uws.mock-fixtures.1.0","fixtures":[{"operationId":"list","requestDigest":"sha256:0000000000000000000000000000000000000000000000000000000000000000","provenance":{"kind":"example"},"response":null}]}`)
+	if err := ValidateMockFixtures(valid); err != nil {
+		t.Fatalf("valid mock fixtures rejected: %v", err)
+	}
+	for name, data := range map[string][]byte{
+		"unsupported format": []byte(`{"format":"uws.mock-fixtures.2.0","fixtures":[]}`),
+		"duplicate member":   []byte(`{"format":"uws.mock-fixtures.1.0","format":"uws.mock-fixtures.1.0","fixtures":[]}`),
+		"unknown field":      []byte(`{"format":"uws.mock-fixtures.1.0","fixtures":[],"extra":true}`),
+		"trailing value":     []byte(`{"format":"uws.mock-fixtures.1.0","fixtures":[]} {}`),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if err := ValidateMockFixtures(data); err == nil {
+				t.Fatal("invalid mock fixture document was accepted")
+			}
+		})
+	}
+}
+
 func TestPathForBrowserSourceProfileFindsReadableSchema(t *testing.T) {
 	for _, profile := range []string{"", "1.5", "1.5.json", "browser.1.5", "browser.1.5.json", "uws.browser.1.5", "uws.browser.1.5.json", "1.6", "uws.browser.1.6", "1.7", "uws.browser.1.7", "1.8", "uws.browser.1.8", "1.9", "uws.browser.1.9", "1.10", "uws.browser.1.10"} {
 		path := PathForBrowserSourceProfile(t.TempDir(), profile)
@@ -122,7 +166,7 @@ func TestProfilePathsHonorSchemaDir(t *testing.T) {
 }
 
 func TestEmbeddedSchemaPathFindsReadableSchema(t *testing.T) {
-	for _, name := range []string{"1.0.0.json", "1.1.0.json", "1.1.1.json", "1.2.0.json", "1.3.0.json", "1.4.0.json", "1.5.0.json", "1.6.0.json", "1.7.0.json", "1.8.0.json", "1.9.0.json", "1.9.1.json", "1.9.2.json", "1.10.0.json", "1.11.0.json", "1.12.0.json", "runtime.1.0.json", "browser.1.5.json", "browser.1.6.json", "browser.1.7.json", "browser.1.8.json", "browser.1.9.json", "browser.1.10.json", "browser-authentication.1.0.json", "browser-authentication.1.1.json", "browser-authentication-call.1.0.json", "browser-authentication-call.1.1.json"} {
+	for _, name := range []string{"1.0.0.json", "1.1.0.json", "1.1.1.json", "1.2.0.json", "1.3.0.json", "1.4.0.json", "1.5.0.json", "1.6.0.json", "1.7.0.json", "1.8.0.json", "1.9.0.json", "1.9.1.json", "1.9.2.json", "1.10.0.json", "1.11.0.json", "1.12.0.json", "runtime.1.0.json", "mock-fixtures.1.0.json", "browser.1.5.json", "browser.1.6.json", "browser.1.7.json", "browser.1.8.json", "browser.1.9.json", "browser.1.10.json", "browser-authentication.1.0.json", "browser-authentication.1.1.json", "browser-authentication-call.1.0.json", "browser-authentication-call.1.1.json"} {
 		path, ok := embeddedSchemaPath(name)
 		if !ok {
 			t.Fatalf("embedded schema path %s not found", name)
