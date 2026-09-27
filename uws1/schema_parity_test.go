@@ -100,10 +100,9 @@ func schemaVersionFromID(t *testing.T, schema map[string]any) string {
 	return strings.TrimSuffix(base, ".json")
 }
 
-// versionedSchemaProperties records core model fields that intentionally
-// precede their published schema. C07 develops effect and pending against the
-// isolated UWS 1.12 candidate schema while 1.11 remains the latest published
-// contract. Once 1.12 is published, the normal parity assertion includes both.
+// versionedSchemaProperties records model fields introduced in specific core
+// releases. Earlier published schemas do not declare those fields; the latest
+// schema parity check includes them after their release is published.
 var versionedSchemaProperties = map[string]map[string]string{
 	"operation-object": {"effect": "1.12.0"},
 	"step-object":      {"pending": "1.12.0"},
@@ -144,6 +143,7 @@ func TestSchemaParity_DefCoverageIsExhaustive(t *testing.T) {
 	// Meta defs that describe JSON Schema plumbing, not UWS object shapes.
 	tracked["specification-extensions"] = true
 	tracked["structural-type-constraints"] = true
+	tracked["pending-field-set-schema"] = true
 	tracked["content-trust-level"] = true
 	// request-binding-object is a bag of free-form locations backed by
 	// map[string]any on Operation, not a dedicated Go type.
@@ -183,6 +183,7 @@ func TestSchemaParity_SpecFixedFieldsMatchSchema(t *testing.T) {
 		"structural-result-object":       "Structural Result Object",
 		"components-object":              "Components Object",
 		"param-schema-object":            "ParamSchema Object",
+		"pending-step-object":            "Pending Step Object",
 		"idempotency-object":             "Idempotency Object",
 	}
 

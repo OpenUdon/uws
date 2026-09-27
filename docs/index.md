@@ -10,7 +10,7 @@ UWS is a compact, execution-oriented workflow specification that sits directly o
 
 This is what distinguishes UWS from full client-side workflow tools such as Arazzo and IaC engines such as OpenTofu and Terraform. Arazzo describes full client-side action sequences and treats each step as a bespoke client action. OpenTofu and Terraform act as full client-side workflow engines for infrastructure: each resource and provider call is described in the client configuration and resolved against a provider plugin at apply time. Neither approach assumes the underlying operations are already defined by a server contract. UWS takes the opposite position: server actions are pre-defined by the source document, and UWS workflows reference those operations by ID rather than re-describing them. The result is a much smaller overlay: UWS does not duplicate request/response shapes, does not redeclare endpoints, and does not encode anything the source document already specifies.
 
-UWS 1.11.0 is the latest release. It preserves the UWS 1.x wire model, adds version-gated response-body dot-walks, loop-only `$batchIndex`, numeric `wait`/`batchSize` literals, terminal root-scoped `goto`, and corrected `forEach` merge records. UWS 1.10's portable execution rules and expression-addressable declaration names remain in force for 1.10 and later; earlier UWS versions retain their own semantics and schemas. Browser 1.10 is the current opt-in separate browser profile and adds typed CSS selector match counts; empty profile-schema lookup retains Browser 1.8 as its compatibility default. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources. The `ansible-module` source type added in 1.6 was removed in 1.7 without a replacement UWS-owned Ansible profile.
+UWS 1.12.0 is the latest release. It adds optional operation `effect` classification (`read`, `write`, or `unknown`) and non-executable `pending` step contracts with recursive object-root input/output schemas. Pending-only planning documents may have an empty `operations` array; structural and semantic validation accepts valid pending contracts, while executable validation rejects them before runtime calls. UWS 1.11 added version-gated response-body dot-walks, loop-only `$batchIndex`, numeric `wait`/`batchSize` literals, terminal root-scoped `goto`, and corrected `forEach` merge records. UWS 1.10's portable execution rules and expression-addressable declaration names remain in force for 1.10 and later; earlier UWS versions retain their own semantics and schemas. Browser 1.10 is the current opt-in separate browser profile and adds typed CSS selector match counts; empty profile-schema lookup retains Browser 1.8 as its compatibility default. Missing `sourceDescription.type` defaults to `openapi`; legacy OpenAPI selectors remain valid for OpenAPI sources. The `ansible-module` source type added in 1.6 was removed in 1.7 without a replacement UWS-owned Ansible profile.
 
 ## Why UWS?
 
@@ -35,7 +35,7 @@ For non-source leaf work, UWS keeps the core document narrow. Extension-owned op
 
 ```json
 {
-  "uws": "1.11.0",
+  "uws": "1.12.0",
   "info": { "title": "Weather Report", "version": "1.1.0" },
   "sourceDescriptions": [
     { "name": "weather_api", "url": "./weather.openapi.yaml", "type": "openapi" },
@@ -88,8 +88,8 @@ The orchestrator owns all structural concerns: dependency resolution, parallel s
 
 ## Reference
 
-- **Specification**: [`versions/1.11.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.11.0.md)
-- **JSON Schema**: [`versions/1.11.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.11.0.json)
+- **Specification**: [`versions/1.12.0.md`](https://github.com/OpenUdon/uws/blob/main/versions/1.12.0.md)
+- **JSON Schema**: [`versions/1.12.0.json`](https://github.com/OpenUdon/uws/blob/main/versions/1.12.0.json)
 - **Content trust**: [declarations, resolvers, propagation, and advisory findings](content-trust.md)
 - **Current Browser profile (opt-in CSS selector match counts)**: [`versions/browser.1.10.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser.1.10.md). Browser 1.8 remains the empty schema-lookup compatibility default.
 - **Browser registration profile**: [`versions/browser-registration.1.2.md`](https://github.com/OpenUdon/uws/blob/main/versions/browser-registration.1.2.md)

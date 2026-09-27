@@ -11,24 +11,27 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const candidate112SchemaID = "https://github.com/OpenUdon/uws/versions/1.12.0.json"
-
-func compileCandidate112Schema(t *testing.T) *jsonschema.Schema {
+func compileSchemaFile(t *testing.T, path string) *jsonschema.Schema {
 	t.Helper()
-	data, err := os.ReadFile("../testdata/candidate/1.12.0.json")
+	data, err := os.ReadFile(path)
 	require.NoError(t, err)
 	doc, err := jsonschema.UnmarshalJSON(bytes.NewReader(data))
 	require.NoError(t, err)
+	var metadata struct {
+		ID string `json:"$id"`
+	}
+	require.NoError(t, json.Unmarshal(data, &metadata))
+	require.NotEmpty(t, metadata.ID)
 	compiler := jsonschema.NewCompiler()
-	require.NoError(t, compiler.AddResource(candidate112SchemaID, doc))
-	schema, err := compiler.Compile(candidate112SchemaID)
+	require.NoError(t, compiler.AddResource(metadata.ID, doc))
+	schema, err := compiler.Compile(metadata.ID)
 	require.NoError(t, err)
 	return schema
 }
 
-func candidateEffectDocument(effect string, includeEffect bool) []byte {
+func effectDocument(effect string, includeEffect bool) []byte {
 	operation := map[string]any{
-		"operationId":             "candidate_operation",
+		"operationId":             "effect_operation",
 		"x-uws-operation-profile": "test.profile",
 	}
 	if includeEffect {
@@ -36,7 +39,7 @@ func candidateEffectDocument(effect string, includeEffect bool) []byte {
 	}
 	doc := map[string]any{
 		"uws":        "1.12.0",
-		"info":       map[string]any{"title": "Effect candidate", "version": "1.0.0"},
+		"info":       map[string]any{"title": "Effect contract", "version": "1.0.0"},
 		"operations": []any{operation},
 	}
 	data, err := json.Marshal(doc)
@@ -46,15 +49,15 @@ func candidateEffectDocument(effect string, includeEffect bool) []byte {
 	return data
 }
 
-func TestOperationEffect_CandidateSchemaAndVersionGate(t *testing.T) {
-	candidate := compileCandidate112Schema(t)
+func TestOperationEffect_PublishedSchemaAndVersionGate(t *testing.T) {
 	current := compileUWSSchema(t)
+	legacySchema := compileSchemaFile(t, "../versions/1.11.0.json")
 
 	for _, effect := range []OperationEffect{OperationEffectRead, OperationEffectWrite, OperationEffectUnknown} {
 		t.Run(string(effect), func(t *testing.T) {
-			data := candidateEffectDocument(string(effect), true)
-			require.NoError(t, candidate.Validate(decodeJSONValue(t, data)))
-			require.Error(t, current.Validate(decodeJSONValue(t, data)), "1.11 must not admit the 1.12 field")
+			data := effectDocument(string(effect), true)
+			require.NoError(t, current.Validate(decodeJSONValue(t, data)))
+			require.Error(t, legacySchema.Validate(decodeJSONValue(t, data)), "1.11 must not admit the 1.12 field")
 
 			var operation Operation
 			require.NoError(t, json.Unmarshal([]byte(`{"operationId":"op","effect":"`+string(effect)+`"}`), &operation))
@@ -75,8 +78,8 @@ func TestOperationEffect_CandidateSchemaAndVersionGate(t *testing.T) {
 		})
 	}
 
-	require.NoError(t, candidate.Validate(decodeJSONValue(t, candidateEffectDocument("", false))), "effect is optional")
-	require.Error(t, candidate.Validate(decodeJSONValue(t, candidateEffectDocument("maybe", true))), "unknown effect values are rejected")
+	require.NoError(t, current.Validate(decodeJSONValue(t, effectDocument("", false))), "effect is optional")
+	require.Error(t, current.Validate(decodeJSONValue(t, effectDocument("maybe", true))), "unknown effect values are rejected")
 
 	result := &ValidationResult{}
 	validateOperationEffect("maybe", "operations[0].effect", "1.12.0", result)
@@ -89,15 +92,11 @@ func TestOperationEffect_CandidateSchemaAndVersionGate(t *testing.T) {
 	declared := validDocument()
 	declared.UWS = "1.12.0"
 	declared.Operations[0].Effect = OperationEffectRead
-	assert.ErrorContains(t, declared.Validate(), `version "1.12.0" is not a published UWS version`)
-	assert.NotContains(t, declared.Validate().Error(), "operations[0].effect")
+	assert.NoError(t, declared.Validate())
 }
 
-func TestSchemaParity_Candidate112Fields(t *testing.T) {
-	data, err := os.ReadFile("../testdata/candidate/1.12.0.json")
-	require.NoError(t, err)
-	var schema map[string]any
-	require.NoError(t, json.Unmarshal(data, &schema))
+func TestSchemaParity_Published112Fields(t *testing.T) {
+	schema := loadSchemaDoc(t)
 	version := schemaVersionFromID(t, schema)
 	require.Equal(t, "1.12.0", version)
 

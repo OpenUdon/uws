@@ -122,3 +122,32 @@ profile adds count outputs without changing UWS core or earlier profile bytes.
 `80ee9bfb24a688b5e875dadf9ecacdc65398f1ff`.
 
 **Replacement.** [Current Contract Surface](../../memory-bank/product.md#current-contract-surface)
+
+
+## 2026-09-27 - UWS 1.12 Became Current
+
+**Source heading.** `tabilet/memory-bank/product.md#current-contract-surface`
+
+**Previous wording.**
+
+> UWS 1.11.0 is the current core contract. It preserves the UWS 1.x wire model
+> and adds version-gated response-body dot-walks, loop-only `$batchIndex`, numeric
+> `wait`/`batchSize` literals, terminal root-scoped `goto`, and corrected
+> `forEach` merge records. UWS 1.10 execution semantics remain active for 1.10
+> and later; earlier declarations retain their versioned behavior. Browser 1.10
+> is the current opt-in browser capability profile and adds typed CSS selector
+> match counts; empty profile lookup retains Browser 1.8 as its compatibility
+> default. Browser authentication/call 1.1 is current for sign-in;
+> browser registration/call 1.2 is current for reviewed registration
+> verification; and registration input 1.0 is the private envelope format.
+> Runtime Supplement 1.0 remains the public metadata floor for common non-HTTP
+> extension operations. The UWS 1.11 specification, exact-version schema, Go
+> validator/executor, and executable conformance corpus are coordinated release
+> artifacts; earlier published contracts remain accepted according to their
+> version gates. Ansible support is historical UWS 1.6 material only.
+
+**Reason.** C07.3 published UWS 1.12.0 with effect classification and pending-step contracts. The 1.11 schema, specification, and conformance corpus remain immutable; current product truth now identifies the published 1.12 contract and its execution boundary.
+
+**Evidence.** `versions/1.12.0.json`; `versions/1.12.0.md`; `versions/CHANGELOG.md`; `testdata/examples/pending-only.1.12.json`; `uws1/validation_version.go`; `schemas/version_immutability_test.go`.
+
+**Replacement.** [Current Contract Surface](../../memory-bank/product.md#current-contract-surface)

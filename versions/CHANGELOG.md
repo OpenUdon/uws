@@ -26,6 +26,19 @@ the meaning or scope of a published schema or sub-spec is recorded as an
 - This policy clarifies version selection and validator behavior; it does not
   amend the bytes or normative requirements of earlier published artifacts.
 
+## UWS 1.12.0 - 2026-09-27
+
+- Published optional operation `effect` classification (`read`, `write`, or
+  `unknown`) and `pending` step contracts with recursive input and output
+  schemas rooted at `type: object`.
+- Pending-only planning documents may use an empty `operations` array without
+  placeholder operations. Structural and semantic validation accepts a valid
+  pending declaration; executable validation rejects pending work before any
+  runtime call, including in an unselected branch.
+- Earlier published core artifacts and the pinned UWS 1.11 conformance corpus
+  remain unchanged. Effect classification is descriptive and does not grant
+  execution authorization.
+
 ## Browser Capability Profile 1.10 - 2026-09-25
 
 - Added an opt-in CSS match-count output that returns only an exact nonnegative

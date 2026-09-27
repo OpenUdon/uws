@@ -1,6 +1,6 @@
 # Status C07 — Effect Classification And Pending Steps
 
-**State:** In progress; C07.1 and C07.2 are complete; C07.3 is next.
+**State:** Complete. C07.1, C07.2, and C07.3 are complete; the whole-milestone review passed in iteration 1.
 
 **Specification:** [C07](milestone.md#c07--effect-classification-and-pending-steps).
 
@@ -25,7 +25,7 @@ isolated draft-schema and validator coverage without bypassing public admission.
 |---|---|---|
 | C07.1 Operation effect | `[+]` | Added typed `Operation.Effect` with `read`, `write`, and `unknown`; omission remains unknown and the core does not infer from HTTP methods. Semantic validation gates the field to UWS 1.12.0 and rejects other values. Added isolated `testdata/candidate/1.12.0.json`; candidate schema accepts the three values and omission, while published 1.11 rejects the field and remains byte-identical. Kept Go known-field/schema parity version-aware and tested candidate parity. JSON/YAML/HCL round trips pass. Verification: `go test ./...`, `go vet ./...`, `git diff --check`. No published contract or current release fact changed in this draft row. |
 | C07.2 Pending steps | `[+]` | Added public `PendingStep` on `Step.pending` with required purpose, one recursive `ParamSchema` each for inputs/outputs, and required effect. Both schema roots must be `type: object`; nested properties/items, required names, and `x-*` extensions are preserved. This matches OpenUdon M87.1's draft schema and fixture, rechecked against its active ledger on 2026-09-27. Pending declarations cannot combine with executable values, references, execution controls, output expressions, or structural children; ordinary `dependsOn` references retain normal integrity checks. UWS 1.12 pending-only documents accept an empty `operations` array without dummy operations. The candidate schema and internal candidate semantic check accept a valid draft while public admission still rejects unpublished 1.12 and published 1.11 rejects the new field. Executable validation and direct document, workflow, step, orchestrator, and trigger entry points reject pending work before runtime hooks, including nested, unselected, and other workflow branches. JSON/YAML/HCL round trips pass; HCL restores the required empty operations array when its repeated operation blocks are absent. Verification: focused pending/schema/conversion tests; `go test ./...`; `go vet ./...`; `go test ./uws1 -run TestSchemaConformance`; `go test ./schemas -run TestPublishedVersionDocumentsAreImmutable`; `go test ./convert -run 'RoundTrip|RoundTrips'`; `git diff --check`. Published artifacts and the pinned 1.11 corpus remain unchanged. |
-| C07.3 Publish UWS 1.12 | `[ ]` | Publish the combined `versions/1.12.0.json` and `.md` once with exact-version admission, schema/model parity, archive regeneration, protected digests, changelog, examples, and release surfaces. Preserve every earlier published artifact and the pinned 1.11 corpus. Update README, AGENTS, documentation/navigation, and current memory-bank facts as supported by the release; follow the existing knowledge-preservation policy for replaced facts. Verify both new features together, earlier-version compatibility, and downstream handoff. |
+| C07.3 Publish UWS 1.12 | `[+]` | Published combined `versions/1.12.0.json` and `.md` with exact-version admission, effect/pending schema-model parity, semantic and executable validation, recursive field-set conversion, regenerated embedded archive, protected digests, changelog, pending-only example, and current release surfaces. Empty `operations` is accepted only with a valid pending step under UWS 1.12+; executable validation rejects pending steps before runtime calls, including unselected branches. Effect remains descriptive and defaults to unknown; no HTTP-method inference or execution authorization was added. Preserved every earlier published digest and the pinned 1.11 corpus. Updated README, AGENTS, MkDocs, feature guides, product facts, and knowledge history. Verification passed: `go generate ./schemas`; focused schema/parity/effect/pending tests; focused conversion, immutable-document/archive, and exact-schema validation tests; `go test ./...`; `go test -race ./...`; `go vet ./...`; `mkdocs build --strict`; `git diff --check`. |
 
 ## Acceptance And Verification
 
@@ -63,11 +63,17 @@ isolated draft-schema and validator coverage without bypassing public admission.
 
 ## Whole-Milestone Review Gate
 
-Not started; zero iterations consumed. After all rows and acceptance commands
-pass, persist iteration 1 before reviewing the complete milestone. Follow the
-[review gate](milestone.md#milestone-review-gate): fix every P1/P2 or higher
-finding, rerun affected verification, and review the whole milestone again.
-The limit is 10 persisted iterations; resume interrupted passes at their saved
-number. No terminal row alone establishes milestone acceptance. Retire only
-after the gate, verification, current-truth consolidation, and downstream
-reconciliation pass under the existing retirement policy.
+**Review state:** Passed.
+**Review iterations started:** 1 of at most 10.
+**Review result:** No P1/P2-or-higher findings. One P3 documentation inconsistency
+in the new 1.12 specification still called Browser 1.9 the current opt-in
+profile despite identifying Browser 1.10 as current elsewhere. Corrected the
+new 1.12 wording to identify Browser 1.10 and clarify that the page/frame
+topology began in Browser 1.9; older published profile documents remain
+unchanged. Updated only the 1.12 Markdown digest. The immutability and embedded
+source checks and `git diff --check` passed after the correction. The separate
+Browser 1.9 profile-documentation candidate remains deferred.
+
+The whole-milestone review gate is complete. Retire only after full acceptance,
+current-truth consolidation, and downstream reconciliation pass under the
+existing retirement policy.

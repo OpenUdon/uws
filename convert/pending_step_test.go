@@ -11,7 +11,7 @@ import (
 )
 
 func TestPendingStepConversionRoundTrips(t *testing.T) {
-	data, err := os.ReadFile("../testdata/candidate/pending-only.1.12.json")
+	data, err := os.ReadFile("../testdata/examples/pending-only.1.12.json")
 	require.NoError(t, err)
 	var doc uws1.Document
 	require.NoError(t, json.Unmarshal(data, &doc))

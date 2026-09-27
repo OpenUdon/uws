@@ -68,6 +68,7 @@ func schemaDefCoverage() map[string]schemaDefRules {
 		},
 		"operation-object": {
 			required:                 []string{"operationId"},
+			enumProps:                []string{"effect"},
 			patternProps:             []string{"sourceOperationRef", "openapiOperationRef", "x-uws-operation-profile"},
 			propertyNamePatternProps: []string{"outputs"},
 		},
@@ -100,6 +101,14 @@ func schemaDefCoverage() map[string]schemaDefRules {
 			required: []string{"output", "to"},
 		},
 		"param-schema-object": {},
+		"pending-field-set-schema": {
+			required:  []string{"type"},
+			enumProps: []string{"type"},
+		},
+		"pending-step-object": {
+			required:  []string{"purpose", "inputs", "outputs", "effect"},
+			enumProps: []string{"effect"},
+		},
 		"structural-result-object": {
 			required:     []string{"name", "kind", "from"},
 			enumProps:    []string{"kind"},
@@ -195,6 +204,12 @@ func TestSchemaConformance_ValidatorMatchesSelectedRules(t *testing.T) {
 	doc = validDocument()
 	doc.Operations[0].OnFailure = []*FailureAction{{Name: "a", Type: "bogus"}}
 	require.ErrorContains(t, doc.Validate(), "bogus")
+
+	// operation-object: enum on `effect`
+	doc = validDocument()
+	doc.UWS = "1.12.0"
+	doc.Operations[0].Effect = OperationEffect("sideways")
+	require.ErrorContains(t, doc.Validate(), "sideways")
 
 	// success-action-object: enum on `type`
 	doc = validDocument()

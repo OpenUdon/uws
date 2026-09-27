@@ -4,7 +4,7 @@
 
 ---
 
-UWS uses runtime expression strings in control-flow fields (`when`, `forEach`, `wait`, `items`, `batchSize`), in criterion conditions, in the string values of `outputs` maps, in a step's `inputs` values, and in `request` binding values. The expression language is deliberately small and normative — a runtime that implements it verbatim is portable by construction. This page describes the current UWS 1.11 grammar; numbered specifications retain their own versioned rules.
+UWS uses runtime expression strings in control-flow fields (`when`, `forEach`, `wait`, `items`, `batchSize`), in criterion conditions, in the string values of `outputs` maps, in a step's `inputs` values, and in `request` binding values. The expression language is deliberately small and normative — a runtime that implements it verbatim is portable by construction. This page describes the current UWS 1.12 grammar; numbered specifications retain their own versioned rules.
 
 ## Expression Sources
 

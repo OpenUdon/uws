@@ -4,7 +4,7 @@
 
 ---
 
-UWS defines a first-class vocabulary for deciding whether an operation succeeded, and for specifying what to do when it did or did not. Criteria and actions are declared inline on the operation — there is no shared registry. This guide describes current UWS 1.11 semantics unless it identifies an earlier version.
+UWS defines a first-class vocabulary for deciding whether an operation succeeded, and for specifying what to do when it did or did not. Criteria and actions are declared inline on the operation — there is no shared registry. This guide describes current UWS 1.12 semantics unless it identifies an earlier version.
 
 ## Criterion Object
 
@@ -58,7 +58,7 @@ lookup. For `xpath`, `context` is XML text and `condition` is an XPath 1.0
 expression. When any non-simple `condition` begins with the exact `context`
 expression, UWS removes that prefix before interpreting the remaining pattern
 or query. A missing pointer does not match; a present `null` value is found but
-false. See the [UWS 1.11 execution contract](https://github.com/OpenUdon/uws/blob/main/versions/1.11.0.md#78-uws-110-and-111-portable-execution-semantics).
+false. See the [UWS 1.12 execution contract](https://github.com/OpenUdon/uws/blob/main/versions/1.12.0.md#78-uws-110-and-111-portable-execution-semantics).
 
 ## Failure Actions
 

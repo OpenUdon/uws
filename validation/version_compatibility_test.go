@@ -12,7 +12,17 @@ import (
 var publishedCoreVersions = []string{
 	"1.0.0", "1.1.0", "1.1.1", "1.2.0", "1.3.0", "1.4.0",
 	"1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0", "1.9.1", "1.9.2",
-	"1.10.0",
+	"1.10.0", "1.11.0", "1.12.0",
+}
+
+func TestPublishedPendingOnly112DocumentValidatesAgainstExactSchema(t *testing.T) {
+	validated, err := ValidateDocumentFile("../testdata/examples/pending-only.1.12.json")
+	if err != nil {
+		t.Fatalf("published pending-only example failed exact schema and semantic validation: %v", err)
+	}
+	if validated == nil || validated.UWS != "1.12.0" {
+		t.Fatalf("validated document = %#v, want UWS 1.12.0", validated)
+	}
 }
 
 func TestPublishedCoreSchemaAndSemanticCompatibilityCorpus(t *testing.T) {

@@ -6,7 +6,7 @@
 
 Operations are the leaves. Workflows and steps compose them using six structural control-flow constructs. Each workflow declares exactly one `type`; nested steps may also declare a structural `type` to form composite control flow.
 
-This guide describes current UWS 1.11 behavior unless it identifies an older
+This guide describes current UWS 1.12 behavior unless it identifies an older
 version explicitly. Version-gated behavior is selected by the document's
 declared UWS version.
 
@@ -202,7 +202,7 @@ wait: $inputs.signal_ready == true
 timeout: 300
 ```
 
-The example requires a bound runtime or profile to supply an input whose value can change between predicate evaluations; UWS core does not define how an external signal is refreshed. Polling a remote job status requires an implementation-specific runtime/profile or separately scheduled invocations. `timeout` has been available on operations, workflows, and steps since UWS 1.1. A serialized timeout bounds the await; an executor-owned timeout MAY apply when it is absent. Context cancellation also stops polling. For non-`await` constructs, UWS 1.10 defines `wait` as a cancellable delay expression resolving to a finite number of seconds from 0 to 86,400, evaluated once before the body. In UWS 1.11 and later, a complete JSON-number literal may be used for this delay. `cases`, `default`, and `items` MUST NOT be set on `await`. See the [UWS 1.11 execution contract](https://github.com/OpenUdon/uws/blob/main/versions/1.11.0.md#78-uws-110-and-111-portable-execution-semantics).
+The example requires a bound runtime or profile to supply an input whose value can change between predicate evaluations; UWS core does not define how an external signal is refreshed. Polling a remote job status requires an implementation-specific runtime/profile or separately scheduled invocations. `timeout` has been available on operations, workflows, and steps since UWS 1.1. A serialized timeout bounds the await; an executor-owned timeout MAY apply when it is absent. Context cancellation also stops polling. For non-`await` constructs, UWS 1.10 defines `wait` as a cancellable delay expression resolving to a finite number of seconds from 0 to 86,400, evaluated once before the body. In UWS 1.11 and later, a complete JSON-number literal may be used for this delay. `cases`, `default`, and `items` MUST NOT be set on `await`. See the [UWS 1.12 execution contract](https://github.com/OpenUdon/uws/blob/main/versions/1.12.0.md#78-uws-110-and-111-portable-execution-semantics).
 
 ## Field Constraints Summary
 

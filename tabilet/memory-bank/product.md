@@ -81,21 +81,29 @@ changing execution.
 
 ## Current Contract Surface
 
-UWS 1.11.0 is the current core contract. It preserves the UWS 1.x wire model
-and adds version-gated response-body dot-walks, loop-only `$batchIndex`, numeric
+UWS 1.12.0 is the current core contract. It adds optional operation `effect`
+classification (`read`, `write`, or `unknown`; omission is `unknown`) and
+non-executable pending-step contracts with recursive object-root input and
+output schemas. Pending-only documents may use an empty `operations` array
+without placeholder operations. Structural and semantic validation accepts a
+valid pending contract; executable validation rejects any pending step before
+runtime methods are invoked, including in an unselected branch. Effect labels
+are descriptive and do not grant execution authorization. UWS 1.11 introduced
+version-gated response-body dot-walks, loop-only `$batchIndex`, numeric
 `wait`/`batchSize` literals, terminal root-scoped `goto`, and corrected
 `forEach` merge records. UWS 1.10 execution semantics remain active for 1.10
 and later; earlier declarations retain their versioned behavior. Browser 1.10
 is the current opt-in browser capability profile and adds typed CSS selector
 match counts; empty profile lookup retains Browser 1.8 as its compatibility
-default. Browser authentication/call 1.1 is current for sign-in;
-browser registration/call 1.2 is current for reviewed registration
-verification; and registration input 1.0 is the private envelope format.
-Runtime Supplement 1.0 remains the public metadata floor for common non-HTTP
-extension operations. The UWS 1.11 specification, exact-version schema, Go
-validator/executor, and executable conformance corpus are coordinated release
-artifacts; earlier published contracts remain accepted according to their
-version gates. Ansible support is historical UWS 1.6 material only.
+default. Browser authentication/call 1.1 is current for sign-in; browser
+registration/call 1.2 is current for reviewed registration verification; and
+registration input 1.0 is the private envelope format. Runtime Supplement 1.0
+remains the public metadata floor for common non-HTTP extension operations.
+The UWS 1.12 specification, exact-version schema, Go model and validator,
+executor, conversion helpers, embedded archive, and protected digests are
+coordinated release artifacts. The pinned 1.11 executable conformance corpus
+remains unchanged; earlier published contracts remain accepted according to
+their version gates. Ansible support is historical UWS 1.6 material only.
 
 The MCP tool-call design is an OpenUdon experiment proposal, not an adopted UWS
 contract or implementation.

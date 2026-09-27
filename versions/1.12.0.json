@@ -1,7 +1,7 @@
 {
     "$id": "https://github.com/OpenUdon/uws/versions/1.12.0.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "description": "Draft schema for Udon Workflow Specification (UWS) v1.12.0 documents. Browser capability and authentication profiles remain separately versioned.",
+    "description": "Udon Workflow Specification (UWS) v1.12.0 documents with operation effect classification and pending-step contracts. Browser capability and authentication profiles remain separately versioned.",
     "type": "object",
     "properties": {
         "uws": {
@@ -1057,22 +1057,16 @@
         },
         "pending-field-set-schema": {
             "description": "A recursive parameter schema whose root is an object field set",
-            "allOf": [
-                {
-                    "$ref": "#/$defs/param-schema-object"
-                },
-                {
-                    "type": "object",
-                    "required": [
-                        "type"
-                    ],
-                    "properties": {
-                        "type": {
-                            "const": "object"
-                        }
-                    }
+            "$ref": "#/$defs/param-schema-object",
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "const": "object"
                 }
-            ]
+            }
         },
         "pending-step-object": {
             "description": "Declared purpose, object input and output schemas, and effect for a step that is not yet executable",
