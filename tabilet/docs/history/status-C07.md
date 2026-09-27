@@ -1,3 +1,46 @@
+# Retired milestone C07 — Effect Classification And Pending Steps
+
+Milestone: `C07`
+Outcome: `completed`
+Retired: `2026-09-27`
+Source status: `tabilet/memory-bank/status-C07.md`
+Source specification: `tabilet/memory-bank/milestone.md#c07--effect-classification-and-pending-steps`
+Evidence: `9d092664a6062563e0414527f997a2475aeab003`
+Worktree: `clean`
+Review: `passed`
+Review iterations: `1`
+Verification: `go generate ./schemas`; focused schema/parity/effect/pending and conversion tests; `go test ./...`; `go test -race ./...`; `go vet ./...`; `mkdocs build --strict`; `git diff --check`; post-review immutable-document and embedded-source checks.
+Consolidated into: [product contract](../../memory-bank/product.md#current-contract-surface), [README](../../../README.md), [agent instructions](../../../AGENTS.md), [UWS 1.12 specification](../../../versions/1.12.0.md), and [release changelog](../../../versions/CHANGELOG.md).
+
+## Final milestone specification
+
+````markdown
+### C07 — Effect Classification And Pending Steps
+
+Add optional operation `effect: read|write|unknown`, with omission interpreted
+as `unknown`. Meaning determines classification; HTTP methods do not. Then
+add a mutually exclusive `pending` step contract declaring purpose, inputs,
+outputs, and effect without an operation. That declaration is the canonical
+shape for those four fields: OpenUdon M87's step contracts reuse it for Kinet's
+step-based authoring, so agree it with OpenUdon M87.1 before freezing and keep
+a single definition. Pending input/output declarations
+remain distinct from executable values and output expressions. Structurally
+and semantically valid pending-only drafts require no dummy operation, but
+executable validation rejects pending steps anywhere, including unselected
+branches. Public execution entry points reject them before runtime invocation.
+
+Develop the two additions in order against draft artifacts outside the
+published-document set, then publish their combined UWS 1.12.0 contract once.
+Keep earlier contracts immutable, gate the new fields to 1.12, and preserve
+exact-version admission until publication. Synchronize schema, spec, Go model,
+validation, conversion, embedded archive, digests, examples, release surfaces,
+and evidenced current facts in their owning implementation rows. Status and
+acceptance: [C07](status-C07.md).
+````
+
+## Final status document
+
+````markdown
 # Status C07 — Effect Classification And Pending Steps
 
 **State:** Complete. C07.1, C07.2, and C07.3 are complete; the whole-milestone review passed in iteration 1.
@@ -74,6 +117,13 @@ unchanged. Updated only the 1.12 Markdown digest. The immutability and embedded
 source checks and `git diff --check` passed after the correction. The separate
 Browser 1.9 profile-documentation candidate remains deferred.
 
-The whole-milestone review gate is complete. Retire only after full acceptance,
-current-truth consolidation, and downstream reconciliation pass under the
-existing retirement policy.
+The whole-milestone review gate, full verification, current-truth consolidation,
+and downstream handoff reconciliation are complete. OpenUdon M87.1's shared
+field contract is compatible with UWS 1.12; M87.2–M87.5 may proceed without
+waiting for UWS publication, while M87.6 should pin a published UWS 1.12
+revision for its wrapper-mapping fixture. The full downstream handoff and
+read-only sibling observations are recorded in active
+[`status-M06.md`](status-M06.md). C07 is retired in
+[`tabilet/docs/history/status-C07.md`](../docs/history/status-C07.md) with
+implementation evidence at `9d092664a6062563e0414527f997a2475aeab003`.
+````
