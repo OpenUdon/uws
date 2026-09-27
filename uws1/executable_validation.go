@@ -198,6 +198,9 @@ func validateExecutableSteps(steps []*Step) error {
 		if step == nil {
 			continue
 		}
+		if step.Pending != nil {
+			return pendingStepExecutionError(step)
+		}
 		isWorkflowReference := step.Workflow != "" && step.OperationRef == "" && step.Type == ""
 		if isWorkflowReference && (len(step.Steps) > 0 || len(step.Cases) > 0 || len(step.Default) > 0) {
 			return fmt.Errorf("uws1: step %q workflow references cannot also declare structural content", step.StepID)

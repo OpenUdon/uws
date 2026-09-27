@@ -23,6 +23,7 @@ type schemaParityEntry struct {
 	defName     string
 	goType      reflect.Type
 	knownFields []string
+	introduced  string
 }
 
 func schemaParityEntries() []schemaParityEntry {
@@ -36,6 +37,7 @@ func schemaParityEntries() []schemaParityEntry {
 		{label: "Operation", defName: "operation-object", goType: reflect.TypeOf(Operation{}), knownFields: operationKnownFields},
 		{label: "Workflow", defName: "workflow-object", goType: reflect.TypeOf(Workflow{}), knownFields: workflowKnownFields},
 		{label: "Step", defName: "step-object", goType: reflect.TypeOf(Step{}), knownFields: stepKnownFields},
+		{label: "PendingStep", defName: "pending-step-object", goType: reflect.TypeOf(PendingStep{}), knownFields: pendingStepKnownFields, introduced: "1.12.0"},
 		{label: "Case", defName: "case-object", goType: reflect.TypeOf(Case{}), knownFields: caseKnownFields},
 		{label: "Idempotency", defName: "idempotency-object", goType: reflect.TypeOf(Idempotency{}), knownFields: idempotencyKnownFields},
 		{label: "Trigger", defName: "trigger-object", goType: reflect.TypeOf(Trigger{}), knownFields: triggerKnownFields},
@@ -77,6 +79,9 @@ func TestSchemaParity_KnownFieldsMatchSchema(t *testing.T) {
 
 	for _, entry := range schemaParityEntries() {
 		t.Run(entry.label, func(t *testing.T) {
+			if entry.introduced != "" && !semverAtLeast(schemaVersion, entry.introduced) {
+				return
+			}
 			schemaProps := schemaPropertyNames(t, schema, entry.defName)
 			nonExtensionSchemaProps := dropExtensionKeys(schemaProps)
 			knownFields := knownFieldsForSchemaVersion(entry, schemaVersion)
@@ -96,11 +101,12 @@ func schemaVersionFromID(t *testing.T, schema map[string]any) string {
 }
 
 // versionedSchemaProperties records core model fields that intentionally
-// precede their published schema. C07 develops effect against the isolated
-// UWS 1.12 candidate schema while 1.11 remains the latest published contract.
-// Once 1.12 is published, the normal parity assertion includes effect.
+// precede their published schema. C07 develops effect and pending against the
+// isolated UWS 1.12 candidate schema while 1.11 remains the latest published
+// contract. Once 1.12 is published, the normal parity assertion includes both.
 var versionedSchemaProperties = map[string]map[string]string{
 	"operation-object": {"effect": "1.12.0"},
+	"step-object":      {"pending": "1.12.0"},
 }
 
 func knownFieldsForSchemaVersion(entry schemaParityEntry, version string) []string {
@@ -125,12 +131,13 @@ func semverAtLeast(version, minimum string) bool {
 // without wiring it through the extension machinery.
 func TestSchemaParity_DefCoverageIsExhaustive(t *testing.T) {
 	schema := loadSchemaDoc(t)
+	schemaVersion := schemaVersionFromID(t, schema)
 	defs, ok := schema["$defs"].(map[string]any)
 	require.True(t, ok, "schema $defs is not an object")
 
 	tracked := map[string]bool{}
 	for _, entry := range schemaParityEntries() {
-		if entry.defName != "" {
+		if entry.defName != "" && (entry.introduced == "" || semverAtLeast(schemaVersion, entry.introduced)) {
 			tracked[entry.defName] = true
 		}
 	}

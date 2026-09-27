@@ -11,6 +11,9 @@ func (o *Orchestrator) ExecuteTrigger(ctx context.Context, triggerID string, out
 	if o == nil || o.Document == nil {
 		return fmt.Errorf("uws1: trigger dispatch requires a document")
 	}
+	if pending := firstPendingStepInDocument(o.Document); pending != nil {
+		return pendingStepExecutionError(pending)
+	}
 	trigger := o.lookupTrigger(triggerID)
 	if trigger == nil {
 		return fmt.Errorf("uws1: trigger %q not found", triggerID)

@@ -31,7 +31,6 @@
         "operations": {
             "description": "An ordered list of workflow operations",
             "type": "array",
-            "minItems": 1,
             "items": {
                 "$ref": "#/$defs/operation-object"
             }
@@ -696,6 +695,10 @@
                     "description": "Reference to an operation by operationId",
                     "type": "string"
                 },
+                "pending": {
+                    "description": "A non-executable step contract awaiting an operation binding",
+                    "$ref": "#/$defs/pending-step-object"
+                },
                 "body": {
                     "description": "Inline step body",
                     "type": "object",
@@ -846,6 +849,37 @@
                                 ]
                             }
                         ]
+                    }
+                },
+                {
+                    "description": "A pending contract may carry step identity, description, dependencies, and extensions; it cannot carry executable values, execution controls, references, or structural children.",
+                    "if": {
+                        "required": [
+                            "pending"
+                        ]
+                    },
+                    "then": {
+                        "not": {
+                            "anyOf": [
+                                { "required": ["type"] },
+                                { "required": ["operationRef"] },
+                                { "required": ["workflow"] },
+                                { "required": ["body"] },
+                                { "required": ["inputs"] },
+                                { "required": ["when"] },
+                                { "required": ["forEach"] },
+                                { "required": ["wait"] },
+                                { "required": ["timeout"] },
+                                { "required": ["parallelGroup"] },
+                                { "required": ["items"] },
+                                { "required": ["mode"] },
+                                { "required": ["batchSize"] },
+                                { "required": ["steps"] },
+                                { "required": ["cases"] },
+                                { "required": ["default"] },
+                                { "required": ["outputs"] }
+                            ]
+                        }
                     }
                 }
             ],
@@ -1018,6 +1052,57 @@
                     }
                 }
             },
+            "$ref": "#/$defs/specification-extensions",
+            "unevaluatedProperties": false
+        },
+        "pending-field-set-schema": {
+            "description": "A recursive parameter schema whose root is an object field set",
+            "allOf": [
+                {
+                    "$ref": "#/$defs/param-schema-object"
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "type"
+                    ],
+                    "properties": {
+                        "type": {
+                            "const": "object"
+                        }
+                    }
+                }
+            ]
+        },
+        "pending-step-object": {
+            "description": "Declared purpose, object input and output schemas, and effect for a step that is not yet executable",
+            "type": "object",
+            "properties": {
+                "purpose": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048
+                },
+                "inputs": {
+                    "$ref": "#/$defs/pending-field-set-schema"
+                },
+                "outputs": {
+                    "$ref": "#/$defs/pending-field-set-schema"
+                },
+                "effect": {
+                    "enum": [
+                        "read",
+                        "write",
+                        "unknown"
+                    ]
+                }
+            },
+            "required": [
+                "purpose",
+                "inputs",
+                "outputs",
+                "effect"
+            ],
             "$ref": "#/$defs/specification-extensions",
             "unevaluatedProperties": false
         },

@@ -1,0 +1,47 @@
+{
+  "uws": "1.12.0",
+  "info": {
+    "title": "Pending step candidate",
+    "version": "1.0.0"
+  },
+  "operations": [],
+  "workflows": [
+    {
+      "workflowId": "main",
+      "type": "sequence",
+      "steps": [
+        {
+          "stepId": "list_projects",
+          "pending": {
+            "purpose": "List projects visible to the configured account",
+            "inputs": {
+              "type": "object",
+              "properties": {
+                "page_size": { "type": "integer" },
+                "filter": {
+                  "type": "object",
+                  "properties": {
+                    "owner": { "type": "string" },
+                    "tags": { "type": "array", "items": { "type": "string" } }
+                  },
+                  "required": ["owner"],
+                  "x-openudon-description": "Optional owner and tag filters."
+                }
+              },
+              "required": ["filter"],
+              "x-openudon-contract": "v1"
+            },
+            "outputs": {
+              "type": "object",
+              "properties": {
+                "projects": { "type": "array" }
+              },
+              "required": ["projects"]
+            },
+            "effect": "read"
+          }
+        }
+      ]
+    }
+  ]
+}

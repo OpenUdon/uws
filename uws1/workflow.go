@@ -63,6 +63,7 @@ type Step struct {
 	Type         string         `json:"type,omitempty" yaml:"type,omitempty" hcl:"type,optional"`
 	Description  string         `json:"description,omitempty" yaml:"description,omitempty" hcl:"description,optional"`
 	OperationRef string         `json:"operationRef,omitempty" yaml:"operationRef,omitempty" hcl:"operationRef,optional"`
+	Pending      *PendingStep   `json:"pending,omitempty" yaml:"pending,omitempty" hcl:"pending,block"`
 	Body         map[string]any `json:"body,omitempty" yaml:"body,omitempty" hcl:"body,optional"`
 	Inputs       map[string]any `json:"inputs,omitempty" yaml:"inputs,omitempty" hcl:"inputs,optional"`
 	StepExecutionFields
@@ -88,7 +89,7 @@ func (s *Step) Execute(ctx context.Context, d *Document) error {
 type stepAlias Step
 
 var stepKnownFields = []string{
-	"stepId", "type", "description", "operationRef", "body", "inputs",
+	"stepId", "type", "description", "operationRef", "pending", "body", "inputs",
 	"dependsOn", "when", "forEach", "wait", "timeout", "workflow", "parallelGroup",
 	"items", "mode", "batchSize", "steps", "cases", "default",
 	"outputs",

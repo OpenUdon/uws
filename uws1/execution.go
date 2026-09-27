@@ -88,6 +88,9 @@ func (o *Orchestrator) Execute(ctx context.Context) error {
 	if o.Document == nil {
 		return nil
 	}
+	if pending := firstPendingStepInDocument(o.Document); pending != nil {
+		return pendingStepExecutionError(pending)
+	}
 	start := func(ctx context.Context) error {
 		wf, err := o.entryWorkflow()
 		if err != nil {
@@ -124,6 +127,9 @@ func (o *Orchestrator) executeWithSignals(ctx context.Context, start func(contex
 func (o *Orchestrator) ExecuteWorkflow(ctx context.Context, wf *Workflow) error {
 	if wf == nil {
 		return nil
+	}
+	if pending := firstPendingStepInWorkflow(wf); pending != nil {
+		return pendingStepExecutionError(pending)
 	}
 	return o.executeWorkflow(ctx, wf, workflowKey(wf.WorkflowID), workflowScopeFromContext(ctx) != "")
 }
@@ -167,6 +173,9 @@ func (o *Orchestrator) executeWorkflow(ctx context.Context, wf *Workflow, key st
 func (o *Orchestrator) ExecuteStep(ctx context.Context, step *Step) error {
 	if step == nil {
 		return nil
+	}
+	if pending := firstPendingStepInSteps([]*Step{step}); pending != nil {
+		return pendingStepExecutionError(pending)
 	}
 	responseID := step.StepID
 	if strings.TrimSpace(step.OperationRef) != "" {

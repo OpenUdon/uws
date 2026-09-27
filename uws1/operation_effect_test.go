@@ -93,7 +93,7 @@ func TestOperationEffect_CandidateSchemaAndVersionGate(t *testing.T) {
 	assert.NotContains(t, declared.Validate().Error(), "operations[0].effect")
 }
 
-func TestSchemaParity_Candidate112OperationFields(t *testing.T) {
+func TestSchemaParity_Candidate112Fields(t *testing.T) {
 	data, err := os.ReadFile("../testdata/candidate/1.12.0.json")
 	require.NoError(t, err)
 	var schema map[string]any
@@ -101,15 +101,22 @@ func TestSchemaParity_Candidate112OperationFields(t *testing.T) {
 	version := schemaVersionFromID(t, schema)
 	require.Equal(t, "1.12.0", version)
 
-	var operationEntry schemaParityEntry
+	var operationEntry, stepEntry, pendingStepEntry schemaParityEntry
 	for _, entry := range schemaParityEntries() {
-		if entry.defName == "operation-object" {
+		switch entry.defName {
+		case "operation-object":
 			operationEntry = entry
-			break
+		case "step-object":
+			stepEntry = entry
+		case "pending-step-object":
+			pendingStepEntry = entry
 		}
 	}
-	require.NotEmpty(t, operationEntry.label)
-	props := dropExtensionKeys(schemaPropertyNames(t, schema, operationEntry.defName))
-	assert.ElementsMatch(t, knownFieldsForSchemaVersion(operationEntry, version), props)
-	assert.Contains(t, props, "effect")
+	for _, entry := range []schemaParityEntry{operationEntry, stepEntry, pendingStepEntry} {
+		require.NotEmpty(t, entry.label)
+		props := dropExtensionKeys(schemaPropertyNames(t, schema, entry.defName))
+		assert.ElementsMatch(t, knownFieldsForSchemaVersion(entry, version), props)
+	}
+	assert.Contains(t, dropExtensionKeys(schemaPropertyNames(t, schema, operationEntry.defName)), "effect")
+	assert.Contains(t, dropExtensionKeys(schemaPropertyNames(t, schema, stepEntry.defName)), "pending")
 }

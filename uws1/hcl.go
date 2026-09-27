@@ -34,6 +34,7 @@ var (
 	_ dethcl.Unmarshaler = (*Operation)(nil)
 	_ dethcl.Unmarshaler = (*Workflow)(nil)
 	_ dethcl.Unmarshaler = (*Step)(nil)
+	_ dethcl.Unmarshaler = (*PendingStep)(nil)
 	_ dethcl.Unmarshaler = (*Case)(nil)
 	_ dethcl.Unmarshaler = (*Trigger)(nil)
 	_ dethcl.Unmarshaler = (*TriggerRoute)(nil)
@@ -61,6 +62,12 @@ func (d *Document) UnmarshalHCL(data []byte, labels ...string) error {
 		return err
 	}
 	*d = Document(alias)
+	// HCL block syntax cannot express an empty repeated operation block. A
+	// pending-only draft has an explicitly empty JSON operations array; restore
+	// that array when its HCL source omits operation blocks.
+	if d.Operations == nil && documentHasPendingSteps(d) {
+		d.Operations = []*Operation{}
+	}
 	transformDynamicMapFromHCL(&d.Variables)
 	transformExtensionsFromHCL(d.Extensions)
 	return nil
@@ -194,6 +201,17 @@ func (s *Step) UnmarshalHCL(data []byte, labels ...string) error {
 	transformDynamicMapFromHCL(&s.Body)
 	transformDynamicMapFromHCL(&s.Inputs)
 	transformExtensionsFromHCL(s.Extensions)
+	return nil
+}
+
+func (p *PendingStep) UnmarshalHCL(data []byte, labels ...string) error {
+	alias := pendingStepAlias(*p)
+	if err := dethcl.Unmarshal(data, &alias, labels...); err != nil {
+		return err
+	}
+	*p = PendingStep(alias)
+	transformDescriptionFromHCL(&p.Purpose)
+	transformExtensionsFromHCL(p.Extensions)
 	return nil
 }
 

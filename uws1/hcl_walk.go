@@ -157,6 +157,19 @@ func walkHCLStepFields(path string, step *Step, h documentHCLWalkHandlers) error
 		return err
 	}
 	walkHCLDescription(&step.Description, h)
+	if step.Pending != nil {
+		pendingPath := path + ".pending"
+		walkHCLDescription(&step.Pending.Purpose, h)
+		if err := walkHCLExtensions(pendingPath, step.Pending.Extensions, h); err != nil {
+			return err
+		}
+		if err := walkHCLParamSchema(pendingPath+".inputs", step.Pending.Inputs, h); err != nil {
+			return err
+		}
+		if err := walkHCLParamSchema(pendingPath+".outputs", step.Pending.Outputs, h); err != nil {
+			return err
+		}
+	}
 	if err := walkHCLDynamicMap(path+".body", &step.Body, h); err != nil {
 		return err
 	}

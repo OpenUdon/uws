@@ -77,6 +77,17 @@ func (d *Document) Validate() error {
 // finds, each tagged with a structured Path. See Validate for the layering
 // contract between this method and the versions/1.x JSON Schema pre-pass.
 func (d *Document) ValidateResult() *ValidationResult {
+	return d.validateResult(false)
+}
+
+// validateCandidate112Result runs the complete semantic validator against the
+// isolated 1.12 draft model. Public validation continues to reject 1.12 until
+// its exact-version schema is published.
+func (d *Document) validateCandidate112Result() *ValidationResult {
+	return d.validateResult(true)
+}
+
+func (d *Document) validateResult(allowCandidate112 bool) *ValidationResult {
 	result := &ValidationResult{}
 	if d == nil {
 		result.addError("document", "is required")
@@ -89,7 +100,7 @@ func (d *Document) ValidateResult() *ValidationResult {
 		result.addError("uws", fmt.Sprintf("version %q does not match pattern 1.x.x", d.UWS))
 	} else if !validUWSVersion(d.UWS) {
 		result.addError("uws", fmt.Sprintf("version %q is not valid SemVer", d.UWS))
-	} else if !isPublishedUWSVersion(d.UWS) {
+	} else if !isPublishedUWSVersion(d.UWS) && !(allowCandidate112 && d.UWS == "1.12.0") {
 		result.addError("uws", fmt.Sprintf("version %q is not a published UWS version", d.UWS))
 	}
 	if d.Info == nil {
@@ -97,7 +108,7 @@ func (d *Document) ValidateResult() *ValidationResult {
 	} else {
 		d.Info.validate("info", result)
 	}
-	if len(d.Operations) == 0 {
+	if len(d.Operations) == 0 && !(supportsUWSVersionAtLeast(d.UWS, 1, 12, 0) && documentHasPendingSteps(d)) {
 		result.addError("operations", "at least one operation is required")
 	}
 	d.validateTopLevelSourceDescriptions(result)

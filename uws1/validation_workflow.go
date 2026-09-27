@@ -74,6 +74,7 @@ func (s *Step) validate(path string, idx *documentIndex, result *ValidationResul
 	hasOperationRef := s.OperationRef != ""
 	hasWorkflow := s.Workflow != ""
 	hasType := s.Type != ""
+	hasPending := s.Pending != nil
 	// Non-nil slices preserve the presence of explicit JSON/YAML arrays even
 	// when they are empty. The schema rejects these properties on reference
 	// steps, so semantic validation must not reduce presence to len > 0.
@@ -88,6 +89,15 @@ func (s *Step) validate(path string, idx *documentIndex, result *ValidationResul
 		result.addError(path, "operationRef cannot be combined with structural type")
 	case hasWorkflow && hasType:
 		result.addError(path, "workflow cannot be combined with structural type")
+	}
+	if hasPending {
+		s.Pending.validate(path+".pending", idx.uws, result)
+		if hasOperationRef || hasWorkflow || hasType || s.Body != nil || s.Inputs != nil ||
+			s.When != "" || s.ForEach != "" || s.Wait != "" || s.Timeout != nil ||
+			s.ParallelGroup != "" || s.Items != "" || s.Mode != "" || s.BatchSize != "" ||
+			s.Steps != nil || s.Cases != nil || s.Default != nil || s.Outputs != nil {
+			result.addError(path, "pending contract cannot be combined with executable or structural fields")
+		}
 	}
 	if hasOperationRef && hasNestedBlocks && supportsUWSVersionAtLeast(idx.uws, 1, 9, 2) {
 		result.addError(path, "operation-reference steps cannot also declare nested child blocks")
