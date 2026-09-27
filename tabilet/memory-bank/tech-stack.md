@@ -25,8 +25,9 @@ public package.
 - `x/sync/errgroup` supports concurrent orchestration.
 - `github.com/gowebpki/jcs` implements RFC 8785 request canonicalization for
   Mock Fixture Format 1.0.
-- `mockruntime` builds the public pure mock runtime on the existing orchestrator
-  and does not add provider, network-client, or persistence dependencies.
+- `mockruntime` builds the public pure mock and explicit hybrid adapter on the
+  existing orchestrator; it adds no provider, network-client, or persistence
+  dependencies. The hybrid path calls only a caller-supplied read delegate.
 
 Dependency versions are governed by `go.mod` and `go.sum`. Provider SDKs,
 browser drivers, credential stores, and concrete runtime clients do not belong

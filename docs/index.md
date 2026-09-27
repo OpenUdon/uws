@@ -31,7 +31,7 @@ UWS 1.9.1 and later also offer an explicit **content-trust analyzer**. It recove
 
 For non-source leaf work, UWS keeps the core document narrow. Extension-owned operations declare `x-uws-operation-profile`; the public `uws.runtime.1.0` supplement optionally adds a small `x-uws-runtime` payload with a required non-HTTP `type` selector such as `fnct`, `cmd`, `sql`, or `llm`. HTTP and event calls still use source binding fields, not `x-uws-runtime`.
 
-The separate [Mock Fixture Format 1.0](mock-fixtures.md) provides deterministic response fixtures keyed by operation ID and a canonical request digest. The public [`mockruntime` package](mock-runtime.md) replays those fixtures through the UWS orchestrator, uses caller-supplied examples or bounded deterministic schema synthesis, and records resolved would-be requests without network calls or automatic persistence. Hybrid live reads are outside this runtime and remain M06.3 work.
+The separate [Mock Fixture Format 1.0](mock-fixtures.md) provides deterministic response fixtures keyed by operation ID and a canonical request digest. The public [`mockruntime` package](mock-runtime.md) includes a pure runtime that replays those fixtures through the UWS orchestrator, uses caller-supplied examples or bounded deterministic schema synthesis, and records resolved would-be requests without network calls or automatic persistence. Its separately enabled hybrid adapter delegates only declared UWS 1.12+ reads to a caller-supplied hook; writes and unknown effects remain mocked.
 
 ## A Minimal Document
 

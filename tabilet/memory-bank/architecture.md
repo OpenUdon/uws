@@ -91,8 +91,11 @@ The public `mockruntime.Runtime` implements `uws1.Runtime` and the optional
 records bounded canonical would-be requests in memory, and selects exact
 fixtures or caller-supplied examples/schemas. Supported schema synthesis is
 deterministic and bounded; unsupported schema features and expressions return
-errors. The package makes no transport calls or file writes. A caller-provided
-resolver remains caller-owned and should use local data for pure simulation.
+errors. The pure runtime makes no transport calls or file writes. A
+caller-provided resolver remains caller-owned and should use local data for
+pure simulation. The separate `HybridRuntime` requires explicit enablement and
+passes only declared UWS 1.12+ `read` operations to a caller-owned delegate;
+writes and unknown effects stay on the mock runtime.
 
 Schema conformance and parity tests connect the latest core schema to Go rules,
 tags, known fields, and specification tables. SHA-256 fixtures enforce exact

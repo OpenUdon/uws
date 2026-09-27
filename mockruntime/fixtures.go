@@ -1,8 +1,9 @@
-// Package mockruntime provides exact response fixtures and an orchestrator-
-// backed pure mock runtime. It resolves would-be requests, replays an exact
-// fixture or uses caller-supplied response examples/schemas, and retains
-// bounded request records in memory. It does not make network calls or persist
-// requests or responses.
+// Package mockruntime provides exact response fixtures, an orchestrator-backed
+// pure mock runtime, and a separately enabled hybrid runtime. The pure Runtime
+// resolves would-be requests, replays exact fixtures or uses caller-supplied
+// response examples/schemas, and retains bounded request records in memory
+// without network calls or file writes. HybridRuntime delegates only declared
+// UWS 1.12+ read operations to a caller-supplied ReadDelegate.
 package mockruntime
 
 import (

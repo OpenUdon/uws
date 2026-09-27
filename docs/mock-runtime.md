@@ -2,10 +2,11 @@
 
 The public `github.com/OpenUdon/uws/mockruntime` package runs a UWS document
 through the normal core orchestrator while returning simulated responses for
-leaf operations. It makes no transport calls and performs no file writes. A
-caller-supplied `ResponseResolver` is invoked as a local data hook; keep that
-hook free of network and persistence behavior when using the runtime for pure
-simulation.
+leaf operations. Its `Runtime` makes no transport calls and performs no file
+writes. A caller-supplied `ResponseResolver` is invoked as a local data hook;
+keep that hook free of network and persistence behavior when using the runtime
+for pure simulation. Its separate `HybridRuntime` can hand eligible reads to
+a caller-supplied real-read delegate after explicit opt-in.
 
 ## Bind And Run
 
@@ -98,8 +99,8 @@ reject implementation-specific expressions.
 
 `Runtime.RequestRecords()` returns a defensive snapshot of bounded in-memory
 records. Each record includes the operation ID, canonical resolved request,
-request digest, and response kind (`fixture`, `example`, `synthesized`, or
-`unavailable`). The history is retained only by that runtime instance and is
+request digest, and response kind (`fixture`, `example`, `synthesized`,
+`live-read`, or `unavailable`). The history is retained only by that runtime instance and is
 never written automatically. Request nesting is limited to 64 levels;
 expression text is limited to 64 KiB, and expression/input nesting is limited
 to 32 levels. Request canonicalization accepts at most 1 MiB; retained history
@@ -113,12 +114,64 @@ not a privacy control. The fixture format's [recorded-response
 constructor](mock-fixtures.md) separately requires a caller-supplied redactor;
 the runtime does not export or capture response fixtures automatically.
 
+## Hybrid Live Reads
+
+`NewHybridRuntime` wraps a pure `Runtime` with a caller-owned read adapter. It
+requires a UWS 1.12.0-or-later document, `AllowLiveReads: true`, and a non-nil
+`ReadDelegate`. Construct it only after the document's operations and effect
+labels are final:
+
+```go
+hybrid, err := mockruntime.NewHybridRuntime(mock, mockruntime.HybridOptions{
+    AllowLiveReads: true,
+    ReadDelegate: mockruntime.ReadDelegateFunc(
+        func(ctx context.Context, operation *uws1.Operation, request map[string]any) (json.RawMessage, error) {
+            return localAdapter.ExecuteRead(ctx, operation, request)
+        },
+    ),
+})
+if err != nil {
+    return err
+}
+doc.SetRuntime(hybrid)
+return doc.Execute(ctx)
+```
+
+When enabled, an operation declared on the bound document with exactly
+`effect: read` is sent to the delegate. That route is selected before fixture
+lookup or response generation, so even an exact read fixture is bypassed.
+Operations marked `write`, marked `unknown`, or with no effect stay on the pure
+mock path and use its normal fixture/example/synthesis policy. The delegate
+receives the request after UWS expression resolution and must return one valid
+JSON value of at most 16 MiB. The wrapper passes the execution context through,
+propagates delegate errors and cancellation, and returns the response to the
+orchestrator for criteria and output evaluation.
+
+Each resolved and canonicalized leaf request adds a request record before
+response selection or delegation. `responseKind: live-read`
+identifies the selected delegate path, including when that attempt later fails
+or observes cancellation. Other calls identify fixture replay, example use,
+schema synthesis, or an unavailable response. The ordered records describe
+each leaf operation invocation individually, so mock and delegated results
+stay distinguishable without treating mock success as evidence that a real
+call succeeded. They do not assign one ID to an entire workflow run; callers
+that reuse a runtime can compare record snapshots before and after each
+execution.
+
+An effect label describes expected behavior and does not authorize access.
+`AllowLiveReads` is a separate explicit opt-in; the caller still owns account
+selection, credentials, policy, and the delegate's real transport. The UWS
+package supplies no live client. Delegates should honor cancellation, avoid
+mutating the operation/request, keep private credentials outside request
+bindings and digests, and avoid putting sensitive values in returned errors.
+
 ## Scope
 
 This package simulates leaf responses using fixtures and caller-provided
 examples or schemas. It does not supply source parsers, credentials, provider
-clients, persistence, or live reads. The explicitly enabled hybrid read adapter
-is tracked as a separate M06.3 task.
+clients, or concrete provider transports. The separate
+[`HybridRuntime`](#hybrid-live-reads) supplies a narrow handoff to a caller-
+owned read adapter.
 
 See [Mock Fixtures](mock-fixtures.md), [Execution Model](07-Execution-Model.md),
 and [Mock Fixture Format 1.0](https://github.com/OpenUdon/uws/blob/main/versions/mock-fixtures.1.0.md).

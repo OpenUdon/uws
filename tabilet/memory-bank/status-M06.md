@@ -1,6 +1,6 @@
 # Status M06 — Public Simulation Runtime And Fixtures
 
-**State:** Active; M06.1 and M06.2 are complete and M06.3 is in progress. C07 was accepted
+**State:** Active; M06.1–M06.3 are complete and the whole-milestone review is in progress. C07 was accepted
 locally at commit `9d092664a6062563e0414527f997a2475aeab003`.
 
 **Specification:** [M06](milestone.md#m06--public-simulation-runtime-and-fixtures).
@@ -61,7 +61,7 @@ implementation, tests, and evidenced current-truth corrections for its scope.
 |---|---|---|
 | M06.1 Fixture contract | `[+]` | Published `uws.mock-fixtures.1.0` with exact `(operationId, requestDigest)` keys, RFC 8785 canonical request bytes and `sha256:` digest, source-neutral JSON responses, stable repeated replay, provenance, strict no-downgrade parsing, bounded codec, exact schema lookup/embedding, portable vectors, and an explicit redactor-required recorded-fixture constructor. No automatic capture or disk writes. `go generate ./schemas`, focused fixture/schema tests, immutable-document and archive checks, `go test ./...`, `go test -race ./...`, `go vet ./...`, `mkdocs build --strict`, and `git diff --check` passed. Review added an encoding preflight so oversized caller fixtures are rejected before JSON encoding. |
 | M06.2 Public mock runtime | `[+]` | Added public `mockruntime.Runtime` over the core orchestrator with exact fixture replay, caller-supplied example responses, and bounded deterministic schema synthesis. Fixture misses fail unless generated fallback is explicitly enabled; unsupported response schemas and expressions return errors. Added source, response, input, output, item, comparison, and request resolution with UWS version gates and explicit nesting/size limits. Added additive `uws1.RuntimeWithResult`; the existing `Runtime` interface is unchanged, and response results reach success criteria and operation/step outputs. Resolved would-be requests are retained only in bounded memory. The package itself makes no network calls or file writes; a caller resolver must use local data for pure simulation. Parallel, `forEach`, nested workflow-call, retry, criteria, output, no-result-runtime-regression, and defensive response-copy tests pass. Full acceptance passed: `go test ./...`, `go test -race ./...`, `go vet ./...`, `mkdocs build --strict`, and `git diff --check`. |
-| M06.3 Hybrid reads and qualification | `[~]` | Add an explicitly enabled real-read adapter with response handoff into mock evaluation. Only `read` operations can reach it; writes and unknowns remain mocked. Qualify mixed workflows, live-read values feeding mocked writes, cancellation/error propagation, and per-invocation evidence distinguishing synthesis/replay/live reads. Publish integration examples and downstream handoff guidance; complete full acceptance, current documentation, and bounded review. |
+| M06.3 Hybrid reads and qualification | `[+]` | Added `HybridRuntime`, requiring UWS 1.12+, explicit `AllowLiveReads`, and a caller delegate. It delegates only declared operation objects with exact `effect: read`; read fixtures are bypassed after opt-in, while `write`, `unknown`, and omitted effects stay on the pure mock selection path. Delegates receive resolved requests and return bounded strict JSON responses through `RuntimeWithResult`; context cancellation and delegate errors propagate. Each leaf request records `live-read` before delegation, including failed/canceled attempts, alongside fixture/example/synthesis evidence. Tests cover live-read output feeding a fixture-backed mocked write, ineligible effects, disabled/missing/typed-nil delegates, old UWS versions, unbound operation copies, invalid responses, cancellation, and delegate errors. The guide documents explicit scope, request/data handling, and downstream ownership. Full acceptance passed: `go test ./...`, `go test -race ./...`, `go vet ./...`, `mkdocs build --strict`, and `git diff --check`. No real provider or browser was used. |
 
 ## Contract Boundaries
 
@@ -112,8 +112,8 @@ implementation, tests, and evidenced current-truth corrections for its scope.
 
 ## Whole-Milestone Review Gate
 
-Not started; zero iterations consumed. After all rows and acceptance commands
-pass, persist iteration 1 before reviewing the complete milestone. Follow the
+Iteration 1 of 10 is persisted and in progress after all rows and acceptance
+commands passed. Review the complete milestone and follow the
 [review gate](milestone.md#milestone-review-gate): fix every P1/P2 or higher
 finding, rerun affected verification, and review the whole milestone again.
 The limit is 10 persisted iterations; resume interrupted passes at their saved

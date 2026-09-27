@@ -44,9 +44,10 @@ or product-owned extension profiles.
 
 The separate [mock fixture format](mock-fixtures.md) stores source-neutral response values keyed by
 the resolved UWS request. The public [mock runtime](mock-runtime.md) executes through the core
-orchestrator and never performs network calls. It supplies fixture/example/synthesis responses and
-retains bounded would-be request records in memory. Hybrid real reads require the separate
-explicitly enabled adapter documented when that capability is available.
+orchestrator. Its pure runtime supplies fixture/example/synthesis responses and retains bounded
+would-be request records in memory without network calls. A separate hybrid wrapper requires
+explicit enablement and delegates only declared UWS 1.12+ reads to a caller-supplied adapter;
+writes and unknown effects stay on the pure mock path.
 
 For UWS 1.9 advisory content-trust analysis, a runtime implementation may
 provide a resolver that classifies its own inputs and outputs. In particular,

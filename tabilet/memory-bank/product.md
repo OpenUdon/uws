@@ -109,8 +109,10 @@ response. Its codec requires explicit redaction for recorded fixtures and has
 no automatic response persistence. The public `mockruntime` package uses the
 core orchestrator, exact fixture replay, caller-supplied examples or bounded
 schema synthesis, expression evaluation, and bounded in-memory would-be
-request records; it makes no transport calls or automatic file writes. An
-explicit hybrid read adapter remains M06.3 work.
+request records; this pure runtime makes no transport calls or automatic file
+writes. Its separately enabled `HybridRuntime` delegates only explicitly
+declared UWS 1.12+ `read` operations to a caller-provided adapter; writes and
+unknown effects remain mocked.
 The UWS 1.12 specification, exact-version schema, Go model and validator,
 executor, conversion helpers, embedded archive, and protected digests are
 coordinated release artifacts. The pinned 1.11 executable conformance corpus

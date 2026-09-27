@@ -58,13 +58,16 @@ type Options struct {
 	AllowGeneratedFallback bool
 }
 
-// ResponseKind identifies how one leaf response was selected.
+// ResponseKind identifies the response source selected for a leaf call. For a
+// failed live read, ResponseLiveRead still records that delegation was
+// attempted.
 type ResponseKind string
 
 const (
 	ResponseFixture     ResponseKind = "fixture"
 	ResponseExample     ResponseKind = "example"
 	ResponseSynthesized ResponseKind = "synthesized"
+	ResponseLiveRead    ResponseKind = "live-read"
 	ResponseUnavailable ResponseKind = "unavailable"
 )
 
@@ -127,36 +130,7 @@ func (r *Runtime) ExecuteLeaf(ctx context.Context, operation *uws1.Operation) er
 // ExecuteLeafWithResult resolves request expressions, records the would-be
 // request, and selects an exact fixture or caller-supplied generated response.
 func (r *Runtime) ExecuteLeafWithResult(ctx context.Context, operation *uws1.Operation) (any, error) {
-	if r == nil || r.document == nil {
-		return nil, fmt.Errorf("mock runtime is not initialized")
-	}
-	if ctx == nil {
-		return nil, fmt.Errorf("mock runtime requires a context")
-	}
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-	if operation == nil {
-		return nil, fmt.Errorf("mock runtime requires an operation")
-	}
-	request, err := r.resolveRequest(ctx, operation.Request)
-	if err != nil {
-		return nil, fmt.Errorf("resolve request for operation %q: %w", operation.OperationID, err)
-	}
-	canonical, err := CanonicalizeRequest(request)
-	if err != nil {
-		return nil, fmt.Errorf("canonicalize request for operation %q: %w", operation.OperationID, err)
-	}
-	digest, err := RequestDigest(request)
-	if err != nil {
-		return nil, fmt.Errorf("digest request for operation %q: %w", operation.OperationID, err)
-	}
-	requestIndex, err := r.recordRequest(RequestRecord{
-		OperationID:   operation.OperationID,
-		RequestDigest: digest,
-		Request:       bytes.Clone(canonical),
-		ResponseKind:  ResponseUnavailable,
-	})
+	_, digest, requestIndex, err := r.prepareRequest(ctx, operation)
 	if err != nil {
 		return nil, err
 	}
@@ -169,6 +143,43 @@ func (r *Runtime) ExecuteLeafWithResult(ctx context.Context, operation *uws1.Ope
 		return nil, err
 	}
 	return json.RawMessage(bytes.Clone(response)), nil
+}
+
+func (r *Runtime) prepareRequest(ctx context.Context, operation *uws1.Operation) (map[string]any, string, int, error) {
+	if r == nil || r.document == nil {
+		return nil, "", 0, fmt.Errorf("mock runtime is not initialized")
+	}
+	if ctx == nil {
+		return nil, "", 0, fmt.Errorf("mock runtime requires a context")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, "", 0, err
+	}
+	if operation == nil {
+		return nil, "", 0, fmt.Errorf("mock runtime requires an operation")
+	}
+	request, err := r.resolveRequest(ctx, operation.Request)
+	if err != nil {
+		return nil, "", 0, fmt.Errorf("resolve request for operation %q: %w", operation.OperationID, err)
+	}
+	canonical, err := CanonicalizeRequest(request)
+	if err != nil {
+		return nil, "", 0, fmt.Errorf("canonicalize request for operation %q: %w", operation.OperationID, err)
+	}
+	digest, err := RequestDigest(request)
+	if err != nil {
+		return nil, "", 0, fmt.Errorf("digest request for operation %q: %w", operation.OperationID, err)
+	}
+	requestIndex, err := r.recordRequest(RequestRecord{
+		OperationID:   operation.OperationID,
+		RequestDigest: digest,
+		Request:       bytes.Clone(canonical),
+		ResponseKind:  ResponseUnavailable,
+	})
+	if err != nil {
+		return nil, "", 0, err
+	}
+	return request, digest, requestIndex, nil
 }
 
 // RequestRecords returns a defensive snapshot of this runtime's in-memory
