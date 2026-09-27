@@ -22,6 +22,17 @@ type Runtime interface {
 	ResolveItems(ctx context.Context, itemsExpr string) ([]any, error)
 }
 
+// RuntimeWithResult is an optional additive runtime capability. The
+// orchestrator uses it when present so the returned leaf response is available
+// to response expressions and execution records. Existing Runtime
+// implementations remain valid and continue to use Runtime.ExecuteLeaf.
+// Implementations should return JSON-compatible values; a non-nil JSON null
+// representation such as json.RawMessage("null") distinguishes a JSON null
+// response from an unavailable response.
+type RuntimeWithResult interface {
+	ExecuteLeafWithResult(ctx context.Context, op *Operation) (any, error)
+}
+
 // Orchestrator provides the abstract orchestration logic for walking the
 // workflow graph and managing structural state transitions.
 type Orchestrator struct {
@@ -193,7 +204,12 @@ func (o *Orchestrator) ExecuteStep(ctx context.Context, step *Step) error {
 				ctx = withInputsContext(ctx, step.Inputs)
 			}
 			if step.OperationRef != "" {
-				return o.executeOperationByIDForStep(ctx, step.OperationRef, step.StepID)
+				err := o.executeOperationByIDForStep(ctx, step.OperationRef, step.StepID)
+				o.copyExecutionResult(
+					o.keyForContext(ctx, stepOperationKey(step.StepID, step.OperationRef)),
+					o.keyForContext(ctx, stepKey(step.StepID)),
+				)
+				return err
 			}
 			if step.Workflow != "" {
 				callerKey := o.keyForContext(ctx, stepKey(step.StepID))

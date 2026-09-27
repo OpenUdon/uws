@@ -77,7 +77,7 @@ This repo uses a bound-runtime execution model. Structural orchestration lives i
 
 ### Runtime lives on the base document
 
-The base `Document` carries a `Runtime` interface reference. The runtime provides only leaf execution plus expression/item evaluation.
+The base `Document` carries a `Runtime` interface reference. The runtime provides leaf execution plus expression/item evaluation. It may implement the additive `RuntimeWithResult` interface to return a JSON-compatible leaf response for execution records, success criteria, and outputs; the existing `Runtime` interface stays unchanged.
 
 ```go
 type Document struct {

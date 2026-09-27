@@ -121,6 +121,32 @@ func (o *Orchestrator) setRecord(key string, record ExecutionRecord) {
 	o.writeRecordLocked(key, cloneExecutionRecord(record))
 }
 
+func (o *Orchestrator) setExecutionResult(key string, result any) {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	record, ok := o.records[key]
+	if !ok {
+		return
+	}
+	record.Result = cloneExecutionResult(result)
+	o.writeRecordLocked(key, record)
+}
+
+func (o *Orchestrator) copyExecutionResult(sourceKey, targetKey string) {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	source, ok := o.records[sourceKey]
+	if !ok {
+		return
+	}
+	target, ok := o.records[targetKey]
+	if !ok {
+		return
+	}
+	target.Result = cloneExecutionResult(source.Result)
+	o.writeRecordLocked(targetKey, target)
+}
+
 // writeRecordLocked writes a record and maintains the recordKeysByBase index.
 // Caller must hold o.mu. The record is stored as-is; callers that need a
 // defensive copy should clone before invoking.

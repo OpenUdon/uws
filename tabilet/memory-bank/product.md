@@ -106,8 +106,11 @@ Mock Fixture Format 1.0 is a separate, inert response-fixture format keyed by a
 UWS-local operation ID and SHA-256 over RFC 8785 canonical bytes for the
 resolved request-binding object. Repeated exact-key lookups reuse the same
 response. Its codec requires explicit redaction for recorded fixtures and has
-no automatic response persistence; the orchestrator-backed mock runtime and
-hybrid read adapter remain M06.2 and M06.3 work.
+no automatic response persistence. The public `mockruntime` package uses the
+core orchestrator, exact fixture replay, caller-supplied examples or bounded
+schema synthesis, expression evaluation, and bounded in-memory would-be
+request records; it makes no transport calls or automatic file writes. An
+explicit hybrid read adapter remains M06.3 work.
 The UWS 1.12 specification, exact-version schema, Go model and validator,
 executor, conversion helpers, embedded archive, and protected digests are
 coordinated release artifacts. The pinned 1.11 executable conformance corpus

@@ -1,5 +1,8 @@
-// Package mockruntime defines the portable response-fixture format and its
-// request-key helpers. It does not execute operations or persist responses.
+// Package mockruntime provides exact response fixtures and an orchestrator-
+// backed pure mock runtime. It resolves would-be requests, replays an exact
+// fixture or uses caller-supplied response examples/schemas, and retains
+// bounded request records in memory. It does not make network calls or persist
+// requests or responses.
 package mockruntime
 
 import (

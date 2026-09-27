@@ -40,7 +40,7 @@ contracts without expanding core into a transport or automation engine.
 | `browserauthentication/` | Inert authentication profile and operation-extension wire types. |
 | `browserregistration/` | Inert registration, private-input declaration, and verification-policy wire types. |
 | `runtimes/` | Runtime Supplement 1.0 constants, typed payload, and extension helpers. |
-| `mockruntime/` | Versioned fixture codec, RFC 8785 request digest, exact fixture lookup, and explicit recorded-response redaction helper; execution runtime remains in M06.2. |
+| `mockruntime/` | Versioned fixture codec, RFC 8785 request digest, exact fixture lookup, recorded-response redaction helper, and public orchestrator-backed mock runtime with bounded in-memory request records. |
 | `convert/` | JSON, YAML, and HCL interchange with extension and dynamic-key preservation. |
 | `validation/` | File loading plus coordinated schema and semantic validation. |
 | `schemas/` | Schema lookup, embedded version archive, profile validators, and browser cross-document checks. |
@@ -56,7 +56,10 @@ ordinary semantic validation, executable validation, and entrypoint checks
 before constructing an `Orchestrator`. The orchestrator indexes operations,
 workflows, steps, and parallel groups; resolves dependencies; executes the six
 structural constructs; applies actions; and accumulates records. It delegates
-only leaf execution, expression evaluation, and item resolution.
+leaf execution, expression evaluation, and item resolution. A runtime may
+additionally implement `RuntimeWithResult` to hand a JSON-compatible leaf
+response back before success criteria and outputs are evaluated; the base
+`Runtime` interface is unchanged.
 
 `contenttrust.Analyze` is an explicit parallel path. It validates the document,
 combines core expression recovery with consumer-supplied operation resolvers,
@@ -83,6 +86,14 @@ schema and applies additional exact-key uniqueness checks. Request keys hash
 RFC 8785 canonical JSON for the resolved request object; fixture replay always
 reuses a matched response and performs no storage or network activity.
 
+The public `mockruntime.Runtime` implements `uws1.Runtime` and the optional
+`uws1.RuntimeWithResult` response handoff. It resolves request expressions,
+records bounded canonical would-be requests in memory, and selects exact
+fixtures or caller-supplied examples/schemas. Supported schema synthesis is
+deterministic and bounded; unsupported schema features and expressions return
+errors. The package makes no transport calls or file writes. A caller-provided
+resolver remains caller-owned and should use local data for pure simulation.
+
 Schema conformance and parity tests connect the latest core schema to Go rules,
 tags, known fields, and specification tables. SHA-256 fixtures enforce exact
 membership and bytes for every published JSON document and every non-changelog
@@ -93,7 +104,8 @@ builds.
 ## Public Contracts And Dependencies
 
 - Core public APIs are the `uws1.Document` model, validation methods, execution
-  entry points, `Runtime`, `Orchestrator`, and execution records.
+  entry points, `Runtime`, additive `RuntimeWithResult`, `Orchestrator`, and
+  execution records.
 - `convert`, `validation`, and `schemas` are the public interchange and schema
   integration surfaces.
 - `contenttrust.Analyze` and `contenttrust.Resolver` are the advisory analysis

@@ -11,14 +11,17 @@ the same key always replays the same response, including on repeated,
 concurrent, or retried calls. A missing exact key is an error. There are no
 wildcard or method-derived matches.
 
-The Go package `github.com/OpenUdon/uws/mockruntime` currently provides:
+The Go package `github.com/OpenUdon/uws/mockruntime` provides:
 
 - `DecodeFixtures` and `EncodeFixtures` for bounded, strict schema-validated
   fixture JSON;
 - `CanonicalizeRequest` and `RequestDigest` for the portable request key;
 - `FixtureSet.LookupResponse` for exact response lookup; and
 - `NewRecordedFixture`, which requires a caller-supplied redactor and does not
-  write files or retain the original response.
+  write files or retain the original response; and
+- `NewRuntime`, an orchestrator-backed pure mock runtime. See the
+  [mock runtime guide](mock-runtime.md) for response selection, expression
+  support, request records, and limitations.
 
 The fixture response is one JSON value whose internal shape stays with the
 source or profile adapter. Recorded fixtures require `redacted: true` and a
@@ -28,8 +31,9 @@ handles must never be exported. The request digest is not a privacy control;
 request-bound secrets are excluded from portable fixtures, and runtime-private
 credentials are added after request-key computation.
 
-This task publishes the fixture contract and codec. The public
-orchestrator-backed mock runtime and the explicitly enabled hybrid read
-adapter are tracked separately in M06.2 and M06.3.
+The fixture codec is independent of execution. `NewRuntime` uses exact fixture
+matches first, then caller-supplied examples or schemas when no fixture set is
+supplied (or generated fallback is explicitly enabled). It never writes
+fixture files or automatically captures responses.
 
 Portable request digest vectors: [`testdata/mock-fixtures/1.0/request-digest-vectors.json`](https://github.com/OpenUdon/uws/blob/main/testdata/mock-fixtures/1.0/request-digest-vectors.json).

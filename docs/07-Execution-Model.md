@@ -39,6 +39,26 @@ type Runtime interface {
 }
 ```
 
+A runtime may also implement the additive `uws1.RuntimeWithResult` interface:
+
+```go
+type RuntimeWithResult interface {
+    ExecuteLeafWithResult(ctx context.Context, op *Operation) (any, error)
+}
+```
+
+When present, the orchestrator stores the returned JSON-compatible leaf result
+on the operation execution record before evaluating success criteria and
+outputs. This makes `$response` available to those expressions. For a step
+that directly invokes an operation, the same result is copied to the step
+record so step outputs can read it. Existing runtimes that implement only
+`Runtime` remain valid and continue using `ExecuteLeaf`; the core receives no
+return value from that method.
+
+The [`mockruntime` package](mock-runtime.md) implements both interfaces. Its
+response record shape follows the operation profile and is not a UWS wire
+contract.
+
 Everything above this line — dependency resolution, parallel scheduling, retry counting, switch evaluation, loop batching — is owned by UWS core.
 
 ## Example 1: Minimal Runtime Implementation

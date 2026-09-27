@@ -13,7 +13,14 @@ func (o *Orchestrator) executeOperation(ctx context.Context, op *Operation, key 
 			return err
 		}
 		err := executeWithTimeout(ctx, op.Timeout, func(attemptCtx context.Context) error {
-			return o.Runtime.ExecuteLeaf(attemptCtx, op)
+			currentKey := o.keyForContext(attemptCtx, key)
+			leafCtx := o.withCurrentExecutionContext(attemptCtx, currentKey, op.OperationID, "operation", op.OperationID, nil)
+			if runtimeWithResult, ok := o.Runtime.(RuntimeWithResult); ok {
+				result, err := runtimeWithResult.ExecuteLeafWithResult(leafCtx, op)
+				o.setExecutionResult(currentKey, result)
+				return err
+			}
+			return o.Runtime.ExecuteLeaf(leafCtx, op)
 		})
 		opCtx := o.withCurrentExecutionContext(o.withRecordContext(ctx), o.keyForContext(ctx, key), op.OperationID, "operation", op.OperationID, nil)
 		if err == nil {

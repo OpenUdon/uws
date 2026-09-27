@@ -71,7 +71,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - `validation` loads JSON, YAML, or HCL artifacts and applies versioned JSON Schema plus semantic validation.
 - `contenttrust` performs explicit, deterministic advisory analysis using source- and extension-profile resolvers.
 - `runtimes` contains the public `uws.runtime.1.0` supplement constants, wire structs, and extension helpers.
-- `mockruntime` contains the versioned mock-fixture codec, request canonicalization and digest, and explicit recorded-response redaction helper. The orchestrator-backed mock `uws1.Runtime` implementation is the next M06 task.
+- `mockruntime` provides the versioned fixture codec, canonical request digests, explicit recorded-response redaction helper, and an orchestrator-backed pure mock `uws1.Runtime` implementation. It replays exact fixtures or uses caller-supplied response examples/schemas, records resolved would-be requests in memory, and makes no network calls or automatic file writes. The explicitly enabled hybrid read adapter is the remaining M06 task.
 - `browserauthentication` contains the additive secret-free sign-in profile and named-session operation extension types.
 - `browserregistration` contains the separate additive secret-free account-registration profile and explicitly approved mutation extension types.
 - `versions/1.12.0.md` and `versions/1.12.0.json` are the latest core specification and schema. They add operation effects and pending steps; earlier numbered artifacts remain immutable and accepted.
