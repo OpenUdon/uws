@@ -18,6 +18,7 @@ func (op *Operation) validate(path string, idx *documentIndex, result *Validatio
 	if op.OperationID == "" {
 		result.addError(path+".operationId", "is required")
 	}
+	validateOperationEffect(op.Effect, path+".effect", idx.uws, result)
 
 	hasSource := op.SourceDescription != ""
 	hasSourceOperationID := op.SourceOperationID != ""
@@ -73,6 +74,22 @@ func (op *Operation) validate(path string, idx *documentIndex, result *Validatio
 	validateFailureActions(op.OnFailure, path+".onFailure", idx, result)
 	validateSuccessActions(op.OnSuccess, path+".onSuccess", idx, result)
 	validateOutputs(op.Outputs, path+".outputs", idx.uws, result)
+}
+
+func validateOperationEffect(effect OperationEffect, path, version string, result *ValidationResult) {
+	if effect == "" {
+		return
+	}
+	if !supportsUWSVersionAtLeast(version, 1, 12, 0) {
+		result.addError(path, "requires UWS 1.12.0 or later")
+		return
+	}
+	switch effect {
+	case OperationEffectRead, OperationEffectWrite, OperationEffectUnknown:
+		return
+	default:
+		result.addError(path, fmt.Sprintf("%q is not valid (must be read, write, or unknown)", effect))
+	}
 }
 
 // validateRequest enforces request-binding shape rules. Body is intentionally

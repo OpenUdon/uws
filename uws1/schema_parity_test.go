@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/mod/semver"
 )
 
 // schemaParityEntry binds a Go type that carries x-* extensions to the $def
@@ -72,16 +73,51 @@ func TestSchemaParity_StructTagsMatchKnownFields(t *testing.T) {
 // schema property.
 func TestSchemaParity_KnownFieldsMatchSchema(t *testing.T) {
 	schema := loadSchemaDoc(t)
+	schemaVersion := schemaVersionFromID(t, schema)
 
 	for _, entry := range schemaParityEntries() {
 		t.Run(entry.label, func(t *testing.T) {
 			schemaProps := schemaPropertyNames(t, schema, entry.defName)
 			nonExtensionSchemaProps := dropExtensionKeys(schemaProps)
+			knownFields := knownFieldsForSchemaVersion(entry, schemaVersion)
 
-			assert.ElementsMatch(t, entry.knownFields, nonExtensionSchemaProps,
+			assert.ElementsMatch(t, knownFields, nonExtensionSchemaProps,
 				"%s knownFields diverge from schema %q properties", entry.label, entry.defName)
 		})
 	}
+}
+
+func schemaVersionFromID(t *testing.T, schema map[string]any) string {
+	t.Helper()
+	id, ok := schema["$id"].(string)
+	require.True(t, ok, "schema $id must be a string")
+	base := id[strings.LastIndex(id, "/")+1:]
+	return strings.TrimSuffix(base, ".json")
+}
+
+// versionedSchemaProperties records core model fields that intentionally
+// precede their published schema. C07 develops effect against the isolated
+// UWS 1.12 candidate schema while 1.11 remains the latest published contract.
+// Once 1.12 is published, the normal parity assertion includes effect.
+var versionedSchemaProperties = map[string]map[string]string{
+	"operation-object": {"effect": "1.12.0"},
+}
+
+func knownFieldsForSchemaVersion(entry schemaParityEntry, version string) []string {
+	introduced := versionedSchemaProperties[entry.defName]
+	fields := make([]string, 0, len(entry.knownFields))
+	for _, field := range entry.knownFields {
+		minimum, versioned := introduced[field]
+		if versioned && !semverAtLeast(version, minimum) {
+			continue
+		}
+		fields = append(fields, field)
+	}
+	return fields
+}
+
+func semverAtLeast(version, minimum string) bool {
+	return semver.Compare("v"+version, "v"+minimum) >= 0
 }
 
 // TestSchemaParity_DefCoverageIsExhaustive fails when the latest schema grows a $def

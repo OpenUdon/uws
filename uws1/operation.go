@@ -10,16 +10,28 @@ import (
 // a source binding must carry this extension to be executable.
 const ExtensionOperationProfile = "x-uws-operation-profile"
 
+// OperationEffect is the author's classification of an operation's expected
+// side effects. An omitted Effect is unknown; consumers must not infer an
+// effect from a source operation's HTTP method.
+type OperationEffect string
+
+const (
+	OperationEffectRead    OperationEffect = "read"
+	OperationEffectWrite   OperationEffect = "write"
+	OperationEffectUnknown OperationEffect = "unknown"
+)
+
 // Operation describes a UWS-local operation bound to a source operation.
 type Operation struct {
-	OperationID         string         `json:"operationId" yaml:"operationId" hcl:"operationId,label"`
-	SourceDescription   string         `json:"sourceDescription,omitempty" yaml:"sourceDescription,omitempty" hcl:"sourceDescription,optional"`
-	SourceOperationID   string         `json:"sourceOperationId,omitempty" yaml:"sourceOperationId,omitempty" hcl:"sourceOperationId,optional"`
-	SourceOperationRef  string         `json:"sourceOperationRef,omitempty" yaml:"sourceOperationRef,omitempty" hcl:"sourceOperationRef,optional"`
-	OpenAPIOperationID  string         `json:"openapiOperationId,omitempty" yaml:"openapiOperationId,omitempty" hcl:"openapiOperationId,optional"`
-	OpenAPIOperationRef string         `json:"openapiOperationRef,omitempty" yaml:"openapiOperationRef,omitempty" hcl:"openapiOperationRef,optional"`
-	Description         string         `json:"description,omitempty" yaml:"description,omitempty" hcl:"description,optional"`
-	Request             map[string]any `json:"request,omitempty" yaml:"request,omitempty" hcl:"request,optional"`
+	OperationID         string          `json:"operationId" yaml:"operationId" hcl:"operationId,label"`
+	SourceDescription   string          `json:"sourceDescription,omitempty" yaml:"sourceDescription,omitempty" hcl:"sourceDescription,optional"`
+	SourceOperationID   string          `json:"sourceOperationId,omitempty" yaml:"sourceOperationId,omitempty" hcl:"sourceOperationId,optional"`
+	SourceOperationRef  string          `json:"sourceOperationRef,omitempty" yaml:"sourceOperationRef,omitempty" hcl:"sourceOperationRef,optional"`
+	OpenAPIOperationID  string          `json:"openapiOperationId,omitempty" yaml:"openapiOperationId,omitempty" hcl:"openapiOperationId,optional"`
+	OpenAPIOperationRef string          `json:"openapiOperationRef,omitempty" yaml:"openapiOperationRef,omitempty" hcl:"openapiOperationRef,optional"`
+	Description         string          `json:"description,omitempty" yaml:"description,omitempty" hcl:"description,optional"`
+	Request             map[string]any  `json:"request,omitempty" yaml:"request,omitempty" hcl:"request,optional"`
+	Effect              OperationEffect `json:"effect,omitempty" yaml:"effect,omitempty" hcl:"effect,optional"`
 
 	OperationExecutionFields
 
@@ -118,7 +130,7 @@ type operationAlias Operation
 
 var operationKnownFields = []string{
 	"operationId", "sourceDescription", "sourceOperationId", "sourceOperationRef", "openapiOperationId", "openapiOperationRef",
-	"description", "request",
+	"description", "request", "effect",
 	"dependsOn", "when", "forEach", "wait", "timeout", "parallelGroup",
 	"successCriteria", "onFailure", "onSuccess",
 	"outputs",
