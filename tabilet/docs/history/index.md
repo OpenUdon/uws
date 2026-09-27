@@ -19,3 +19,4 @@ Knowledge updates that replace current facts or lessons are recorded in
 | C06 | completed | 2026-09-24 | [status-C06.md](status-C06.md) | Amended UWS 1.11's loop, criterion, and language-neutral wording; pinned informative profile links. |
 | M05 | completed | 2026-09-25 | [status-M05.md](status-M05.md) | Published and reviewed Browser 1.10 count outputs with unique optional scope roots and explicit visibility semantics. |
 | C07 | completed | 2026-09-27 | [status-C07.md](status-C07.md) | Committed UWS 1.12.0 operation effect classification and non-executable pending-step contracts; review passed in iteration 1. |
+| M06 | completed | 2026-09-27 | [status-M06.md](status-M06.md) | Published versioned mock fixtures and an orchestrator-backed pure/hybrid runtime with explicitly enabled reads; review passed in iteration 1. |

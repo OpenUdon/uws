@@ -1,6 +1,6 @@
 # Milestones
 
-M01, M02, M03, C01, C02, B01, B02, C03, C05, C04, M04, C06, and C07
+M01, M02, M03, C01, C02, B01, B02, C03, C05, C04, M04, C06, C07, and M06
 completed acceptance and bounded review; their IDs remain reserved in the
 history index. C03 published UWS 1.10.0, C04 published UWS 1.11.0, and C07
 committed UWS 1.12.0 at `9d092664a6062563e0414527f997a2475aeab003`.
@@ -22,35 +22,13 @@ Browserdriver, Udon, OpenUdon, and W8M own their downstream compatibility work
 in their respective repositories and active ledgers. The GOAL protocol remains
 unchanged.
 
-**Active order.** M06. C07 completed at the local commit above, passed its
-whole-milestone review in iteration 1, and is archived at
+There are no active milestones. M06 completed versioned fixtures and the public
+mock/hybrid runtime, passed its whole-milestone review in iteration 1, and was
+retired to the [milestone history](../docs/history/status-M06.md). C07 passed
+its whole-milestone review in iteration 1 and is archived at
 [`status-C07.md`](../docs/history/status-C07.md). The user approved the C07 ->
-M06 horizon on 2026-09-26. M06 now owns the versioned fixtures and public
-mock/hybrid runtime; no sibling implementation is included.
-
-| Milestone | Outcome | Prerequisite | Status |
-|---|---|---|---|
-| M06 | Versioned fixtures and public mock/hybrid runtime | C07 accepted at `9d092664a6062563e0414527f997a2475aeab003` | [M06](status-M06.md) |
-
-### M06 — Public Simulation Runtime And Fixtures
-
-Following C07 acceptance, publish fixture format 1.0 for responses keyed by
-local operation ID and request digest. Define canonical request encoding, digest
-calculation, response envelopes, repeated-call behavior, provenance, and
-invalid/unsupported-version handling. Add an importable `mockruntime` package
-implementing the existing `uws1.Runtime` interface, using the real orchestrator
-with fixture replay, deterministic schema/example responses, expression/item
-evaluation, and resolved would-be request records. Caller-supplied resolvers
-provide source data; provider parsers remain downstream.
-
-Pure mock execution makes no network calls. An explicitly enabled real-read
-adapter supplies response handoff into mock evaluation; only `read` operations
-may reach it. Writes and unknown effects remain mocked. Isolate state across
-loops, calls, retries, and parallel branches; diagnose unsupported synthesis
-and expressions rather than inventing success. Distinguish synthesized,
-replayed, and live-read evidence. Fixture export has explicit redaction
-controls and no automatic persistence of credentials or private responses.
-Status and acceptance: [M06](status-M06.md).
+M06 horizon on 2026-09-26. No sibling implementation is included in the UWS
+milestone; sibling adoption remains in each package's own ledger.
 
 ### S1 Provenance And Downstream Boundaries
 
@@ -63,24 +41,17 @@ UWS was clean at `1d5535ec75d5693a66bcced5bd98f5c4c824fb2a`.
 The [evolution v6 direction](../evolution/prompt-v6.md) and
 [planning result](../evolution/result-v6.md) record this material change.
 
-C07 now supplies M06 and downstream effect/pending consumers, including the
-shared step-contract field shape adopted by OpenUdon M87.1. OpenUdon owns
-simulation commands, assessment, and approval refusal; Udon owns real-read
-enforcement and credentials; APItools owns classification discovery;
-Browsertools owns snapshot simulation. Kinet owns the authoring loop and its
-later W04 adoption. M06 does not block Kinet W03; W03 still requires released
-OpenUdon step-command schemas, fixtures, and commands. Downstream adoption is
-recorded and executed in each package's own ledger, with handoff evidence from
-these milestones; this horizon authorizes no sibling changes. Existing
-candidates remain deferred, including broader interoperability formats and
-optional expression portability tooling. Ordinary UWS validation continues
-accepting implementation-specific expressions.
-
-M06 requires focused acceptance tests, the full repository checks, and the
-persisted bounded review gate below. One owner executes one pending row at a
-time, with one commit per completed row under the governing policy. The
-[disposable goal input](suggested.txt) records the C07 -> M06 horizon; it does
-not launch execution or replace the ledger.
+C07 supplies the effect/pending contract, including the shared step-contract
+field shape adopted by OpenUdon M87.1. M06 delivered versioned mock fixtures
+and the public pure/hybrid runtime. OpenUdon owns simulation commands,
+assessment, and approval refusal; Udon owns real-read enforcement and
+credentials; APItools owns classification discovery; Browsertools owns snapshot
+simulation. Kinet owns the authoring loop and later W04 adoption. M06 does not
+block Kinet W03; W03 still requires released OpenUdon step-command schemas,
+fixtures, and commands. Downstream adoption is recorded and executed in each
+package's own ledger. Existing candidates remain deferred, including broader
+interoperability formats and optional expression portability tooling. Ordinary
+UWS validation continues accepting implementation-specific expressions.
 
 ## Candidate Directions
 

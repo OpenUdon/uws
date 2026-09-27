@@ -1,7 +1,49 @@
+# Retired milestone M06 — Public Simulation Runtime And Fixtures
+
+Milestone: `M06`
+Outcome: `completed`
+Retired: `2026-09-27`
+Source status: `tabilet/memory-bank/status-M06.md`
+Source specification: `tabilet/memory-bank/milestone.md#m06--public-simulation-runtime-and-fixtures`
+Evidence: `5a1ccbf6af2add432ba6142112439b6eb8d9cc83`
+Worktree: `includes uncommitted changes`
+Review: `passed`
+Review iterations: `1`
+Verification: `go test ./...`; `go test -race ./...`; `go vet ./...`; `mkdocs build --strict`; `git diff --check` (all passed on 2026-09-27)
+Consolidated into: [product contract](../../memory-bank/product.md#current-contract-surface), [architecture](../../memory-bank/architecture.md), [technical stack](../../memory-bank/tech-stack.md), [mock runtime guide](../../../docs/mock-runtime.md), and [fixture guide](../../../docs/mock-fixtures.md).
+
+## Final milestone specification
+
+````markdown
+### M06 — Public Simulation Runtime And Fixtures
+
+Following C07 acceptance, publish fixture format 1.0 for responses keyed by
+local operation ID and request digest. Define canonical request encoding, digest
+calculation, response envelopes, repeated-call behavior, provenance, and
+invalid/unsupported-version handling. Add an importable `mockruntime` package
+implementing the existing `uws1.Runtime` interface, using the real orchestrator
+with fixture replay, deterministic schema/example responses, expression/item
+evaluation, and resolved would-be request records. Caller-supplied resolvers
+provide source data; provider parsers remain downstream.
+
+Pure mock execution makes no network calls. An explicitly enabled real-read
+adapter supplies response handoff into mock evaluation; only `read` operations
+may reach it. Writes and unknown effects remain mocked. Isolate state across
+loops, calls, retries, and parallel branches; diagnose unsupported synthesis
+and expressions rather than inventing success. Distinguish synthesized,
+replayed, and live-read evidence. Fixture export has explicit redaction
+controls and no automatic persistence of credentials or private responses.
+Status and acceptance: [M06](status-M06.md).
+````
+
+## Final status document
+
+````markdown
 # Status M06 — Public Simulation Runtime And Fixtures
 
-**State:** Active; M06.1–M06.3 are complete and the whole-milestone review is in progress. C07 was accepted
-locally at commit `9d092664a6062563e0414527f997a2475aeab003`.
+**State:** Complete. M06.1–M06.3 and the whole-milestone review passed in
+iteration 1. C07 was accepted locally at commit
+`9d092664a6062563e0414527f997a2475aeab003`.
 
 **Specification:** [M06](milestone.md#m06--public-simulation-runtime-and-fixtures).
 
@@ -25,32 +67,33 @@ W04 adoption remain in their own ledgers.
   document is not executable. The mock runtime must enter through the normal
   executable validation path, which rejects pending steps before any runtime
   method is called, including in unselected branches.
-- Read-only downstream recheck on 2026-09-27 found OpenUdon at
-  `8178e7ead454b766cdef4ae09e48d7ca457a9ef8`, with M87.1–M87.3 complete,
-  M87.5 active, and its M87 worktree changes uncommitted. The shared
+- Read-only downstream recheck on 2026-09-27 found OpenUdon at HEAD
+  `8178e7ead454b766cdef4ae09e48d7ca457a9ef8` with uncommitted M87 work.
+  M87.1–M87.3 and M87.5 are marked complete; M87.4 awaits a compatible
+  published APItools M77 API, and M87.6 depends on M87.4. The M87.1 shared
   `purpose`, recursive object-root `inputs`/`outputs`, and `effect` declarations
-  match UWS 1.12's `PendingStep` and `ParamSchema`; the existing fixture tests
-  the recursive Go JSON round trip. UWS C07.2 is accepted locally at
-  `9d092664a6062563e0414527f997a2475aeab003`, but OpenUdon still pins the
-  published UWS 1.11 module. Its M87.6 wrapper-mapping fixture should wait until
-  it can pin a published UWS 1.12 revision. No OpenUdon files were changed here.
-- Kinet remains the consumer of OpenUdon's released step-command contract for
-  W03. Its W03 blocker was recorded before the current OpenUdon M87.2 working
-  tree appeared; the implementation files are now untracked locally but are
-  not a released dependency. W03 adoption remains in Kinet's ledger. Kinet W04
-  is a later consumer of the UWS mock runtime and OpenUdon simulation.
-- APItools remains the owner of source-backed effect discovery and ranking;
-  its observed HEAD `e3b4b6ec343a18c48fa93a971a69930b993203db` has uncommitted
-  M77 work, so M06.1 does not assume a released APItools dependency. Udon owns
-  credentialed real-read enforcement; its clean HEAD
+  agree with UWS 1.12's pending-step field shape. Its current fixture verifies
+  recursive Go JSON round-tripping; the wrapper-level lossless mapping fixture
+  remains correctly assigned to M87.6. OpenUdon still pins the published UWS
+  1.11 module. UWS C07.2 is accepted locally at
+  `9d092664a6062563e0414527f997a2475aeab003`; M87.6 can pin UWS 1.12 only after
+  that revision is published. M87.1 is unblocked and no UWS change is needed for
+  the downstream contract. No OpenUdon files were changed here.
+- APItools remains the owner of source-backed effect discovery and ranking.
+  Its HEAD `e3b4b6ec343a18c48fa93a971a69930b993203db` has uncommitted M77 work;
+  M77.1–M77.5 are marked complete locally, while M77.6 is blocked awaiting the
+  active OpenUdon session's handoff. No compatible published M77 dependency is
+  available to OpenUdon M87.4, so M06.1 does not assume a released APItools
+  dependency. Udon owns credentialed real-read enforcement; its clean HEAD
   `4266ac99610a6fe39e363c75068e8256bdd821f5` retains an M43 compatibility note
   for UWS 1.11, so any 1.12 adoption belongs in its ledger. Browsertools owns
   snapshot simulation/acquisition and was clean at HEAD
   `2cdd788e2f9ed38536fd48d743200e89eff7cf32`; this is a separate S2b track.
-  Kinet was clean at HEAD `1f986b88978acda9c7c196af86fabb818ce96959`; W03
-  remains blocked on released OpenUdon artifacts/commands, while W04 is the
-  later mock-runtime consumer. No sibling worktree is modified by this UWS
-  milestone.
+- Kinet was clean at HEAD `1f986b88978acda9c7c196af86fabb818ce96959`. Its W03
+  consumer row remains blocked on published OpenUdon command contracts,
+  fixtures, and commands; uncommitted OpenUdon work is not a released
+  dependency. M06 does not block W03. W04 is the later mock-runtime consumer.
+  No sibling worktree is modified by this UWS milestone.
 
 ## Tasks
 
@@ -112,10 +155,21 @@ implementation, tests, and evidenced current-truth corrections for its scope.
 
 ## Whole-Milestone Review Gate
 
-Iteration 1 of 10 is persisted and in progress after all rows and acceptance
-commands passed. Review the complete milestone and follow the
-[review gate](milestone.md#milestone-review-gate): fix every P1/P2 or higher
-finding, rerun affected verification, and review the whole milestone again.
-The limit is 10 persisted iterations; resume interrupted passes at their saved
-number. Acceptance also requires current-truth consolidation and downstream
-reconciliation before retirement under the existing policy.
+**Review state:** Passed.
+**Review iterations started:** 1 of at most 10.
+**Review result:** The full milestone review found no P1, P2, or higher-severity
+findings. Review covered fixture decoding/encoding, strict JSON and canonical
+request digests, response resolution and synthesis bounds, expression and item
+evaluation, request-history limits and privacy handling, hybrid read eligibility
+and explicit enablement, response-result propagation through the orchestrator,
+parallel/loop/call/retry isolation, compatibility with existing runtimes, and
+the public docs and tests. No review fix was required.
+**Verification after review:** On implementation HEAD
+`5a1ccbf6af2add432ba6142112439b6eb8d9cc83`, `go test ./...`,
+`go test -race ./...`, `go vet ./...`, `mkdocs build --strict`, and
+`git diff --check` all passed on 2026-09-27.
+
+The review gate, full verification, current-truth consolidation, and downstream
+reconciliation are complete. The final specification and status are retained
+together in the M06 retirement record.
+````
