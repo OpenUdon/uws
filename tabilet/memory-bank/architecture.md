@@ -96,6 +96,10 @@ caller-provided resolver remains caller-owned and should use local data for
 pure simulation. The separate `HybridRuntime` requires explicit enablement and
 passes only declared UWS 1.12+ `read` operations to a caller-owned delegate;
 writes and unknown effects stay on the mock runtime.
+For `$steps` expressions, the mock runtime reads successful step records from
+the current iteration, then enclosing iterations in the same workflow call.
+Sibling iterations and other workflow invocations are excluded; duplicate
+matches at the nearest visible level remain ambiguous.
 
 Schema conformance and parity tests connect the latest core schema to Go rules,
 tags, known fields, and specification tables. SHA-256 fixtures enforce exact

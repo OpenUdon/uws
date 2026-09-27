@@ -1,6 +1,6 @@
 # Milestones
 
-M01, M02, M03, C01, C02, B01, B02, C03, C05, C04, M04, C06, C07, and M06
+M01, M02, M03, C01, C02, B01, B02, C03, C05, C04, M04, C06, C07, M06, and M07
 completed acceptance and bounded review; their IDs remain reserved in the
 history index. C03 published UWS 1.10.0, C04 published UWS 1.11.0, and C07
 committed UWS 1.12.0 at `9d092664a6062563e0414527f997a2475aeab003`.
@@ -16,15 +16,14 @@ M05 published and verified Browser 1.10 at commit
 `80ee9bfb24a688b5e875dadf9ecacdc65398f1ff`, passed bounded review iteration 1,
 and was retired to the [milestone history](../docs/history/status-M05.md).
 Browser 1.9 and older published profiles remain immutable; Browser 1.10 is the
-current opt-in profile. UWS 1.12.0 is the current core contract in this local
-checkout; its commit has not been pushed to the remote. Browsertools,
+current opt-in profile. UWS 1.12.0 is the current core contract. Browsertools,
 Browserdriver, Udon, OpenUdon, and W8M own their downstream compatibility work
 in their respective repositories and active ledgers. The GOAL protocol remains
 unchanged.
 
-There are no active milestones. M06 completed versioned fixtures and the public
-mock/hybrid runtime, passed its whole-milestone review in iteration 1, and was
-retired to the [milestone history](../docs/history/status-M06.md). C07 passed
+M07 corrected mock-runtime enclosing-step lookup, passed its whole-milestone
+review in iteration 1, and was retired to the [milestone history](../docs/history/status-M07.md). M06 completed versioned fixtures and the public
+mock/hybrid runtime and remains in the [milestone history](../docs/history/status-M06.md). C07 passed
 its whole-milestone review in iteration 1 and is archived at
 [`status-C07.md`](../docs/history/status-C07.md). The user approved the C07 ->
 M06 horizon on 2026-09-26. No sibling implementation is included in the UWS

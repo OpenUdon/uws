@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/OpenUdon/uws/uws1"
@@ -71,6 +72,88 @@ func TestMockRuntimeIsolatesForEachIterationResponses(t *testing.T) {
 	if got := len(runtime.RequestRecords()); got != 2 {
 		t.Fatalf("forEach request count = %d, want 2", got)
 	}
+}
+
+func TestMockRuntimeForEachReadsCompletedOuterStep(t *testing.T) {
+	document := mockRuntimeDocument()
+	config := document.Operations[0]
+	config.SuccessCriteria = nil
+	config.Outputs = nil
+	document.Operations = append(document.Operations, &uws1.Operation{
+		OperationID: "consume", Extensions: config.Extensions,
+		Request: map[string]any{"body": map[string]any{"token": "$steps.config.outputs.token"}},
+	})
+	document.Variables = map[string]any{"items": []any{"one", "two"}}
+	document.Workflows[0].Steps = []*uws1.Step{
+		{StepID: "config", OperationRef: config.OperationID, Outputs: map[string]string{"token": "$response.body.token"}},
+		{StepID: "consume_step", OperationRef: "consume", StepExecutionFields: uws1.StepExecutionFields{ForEach: "$variables.items"}},
+	}
+	runtime, err := NewRuntime(document, Options{ResponseResolver: ResponseResolverFunc(func(context.Context, *uws1.Operation) (ResponseDefinition, error) {
+		return ResponseDefinition{Example: json.RawMessage(`{"statusCode":200,"body":{"token":"ready"}}`)}, nil
+	})})
+	if err != nil {
+		t.Fatal(err)
+	}
+	document.SetRuntime(runtime)
+	if err := document.Execute(context.Background()); err != nil {
+		t.Fatalf("forEach could not read completed outer step: %v", err)
+	}
+	requests := runtime.RequestRecords()
+	if len(requests) != 3 {
+		t.Fatalf("request count = %d, want config plus two consumers", len(requests))
+	}
+	for _, request := range requests[1:] {
+		if string(request.Request) != `{"body":{"token":"ready"}}` {
+			t.Fatalf("consumer request = %s", request.Request)
+		}
+	}
+}
+
+func TestMockRuntimeStepLookupPrefersNearestVisibleIteration(t *testing.T) {
+	runtime, err := NewRuntime(mockRuntimeDocument(), Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	record := func(value string) uws1.ExecutionRecord {
+		return uws1.ExecutionRecord{ID: "config", Kind: "step:operation", Status: "success", Outputs: map[string]any{"token": value}}
+	}
+	state := &uws1.ExecutionContext{
+		Current: &uws1.CurrentExecutionContext{Key: "stepop:consume:consume#iter:1.2"},
+		Records: map[string]uws1.ExecutionRecord{
+			"step:config":                      record("root"),
+			"step:config#iter:1":               record("parent"),
+			"step:config#iter:1.2":             record("current"),
+			"step:config#iter:1.3":             record("sibling"),
+			"call:other::step:config#iter:1.2": record("other invocation"),
+		},
+	}
+	lookup := func(want string) {
+		t.Helper()
+		value, err := runtime.EvaluateExpression(uws1.WithExecutionContext(context.Background(), state), "$steps.config.outputs.token")
+		if err != nil || value != want {
+			t.Fatalf("lookup = %#v, %v; want %q", value, err, want)
+		}
+	}
+	lookup("current")
+	delete(state.Records, "step:config#iter:1.2")
+	lookup("parent")
+	delete(state.Records, "step:config#iter:1")
+	lookup("root")
+	delete(state.Records, "step:config")
+	if _, err := runtime.EvaluateExpression(uws1.WithExecutionContext(context.Background(), state), "$steps.config.outputs.token"); err == nil || !strings.Contains(err.Error(), "no execution record") {
+		t.Fatalf("sibling or other invocation was visible: %v", err)
+	}
+	state.Records["step:config#iter:1.2"] = record("one")
+	state.Records["step:alias#iter:1.2"] = record("two")
+	if _, err := runtime.EvaluateExpression(uws1.WithExecutionContext(context.Background(), state), "$steps.config.outputs.token"); err == nil || !strings.Contains(err.Error(), "ambiguous") {
+		t.Fatalf("ambiguous lookup did not fail: %v", err)
+	}
+	state.WorkflowScope = "call:fetch:step:call#iter:1"
+	state.Current.Key = state.WorkflowScope + "::stepop:consume:consume#iter:1.2"
+	state.Records = map[string]uws1.ExecutionRecord{
+		"step:config#iter:1.2": record("local invocation"),
+	}
+	lookup("local invocation")
 }
 
 func TestMockRuntimeIsolatesWorkflowCallInputsAndResponses(t *testing.T) {

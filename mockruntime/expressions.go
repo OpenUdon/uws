@@ -255,16 +255,26 @@ func (r *Runtime) evaluateSource(ctx context.Context, source string, depth int) 
 		parts := strings.Split(strings.TrimPrefix(source, "$steps."), ".")
 		stepID, outputName := parts[0], parts[2]
 		var matched *uws1.ExecutionRecord
-		currentIteration := iterationSuffix(state.Current)
-		for key, record := range state.Records {
-			if record.ID != stepID || !strings.HasPrefix(record.Kind, "step:") || iterationSuffixFromKey(key) != currentIteration {
-				continue
+		// A child iteration can read a completed step in its own iteration or
+		// an enclosing iteration. Search nearest first, but never enter a
+		// sibling iteration or another workflow invocation.
+		for iteration := iterationSuffix(state.Current); ; iteration = parentIterationSuffix(iteration) {
+			for key, record := range state.Records {
+				if record.ID != stepID || !strings.HasPrefix(record.Kind, "step:") || record.Status != "success" || iterationSuffixFromKey(key) != iteration {
+					continue
+				}
+				if state.WorkflowScope == "" && strings.Contains(key, "::") {
+					continue
+				}
+				if matched != nil {
+					return nil, fmt.Errorf("$steps.%s is ambiguous in the current execution scope", stepID)
+				}
+				recordCopy := record
+				matched = &recordCopy
 			}
-			if matched != nil {
-				return nil, fmt.Errorf("$steps.%s is ambiguous in the current execution scope", stepID)
+			if matched != nil || iteration == "" {
+				break
 			}
-			recordCopy := record
-			matched = &recordCopy
 		}
 		if matched == nil {
 			return nil, fmt.Errorf("$steps.%s has no execution record in the current scope", stepID)
@@ -752,8 +762,15 @@ func iterationSuffix(current *uws1.CurrentExecutionContext) string {
 }
 
 func iterationSuffixFromKey(key string) string {
-	if index := strings.Index(key, "#iter:"); index >= 0 {
+	if index := strings.LastIndex(key, "#iter:"); index >= 0 {
 		return key[index:]
+	}
+	return ""
+}
+
+func parentIterationSuffix(iteration string) string {
+	if index := strings.LastIndex(iteration, "."); index >= 0 {
+		return iteration[:index]
 	}
 	return ""
 }
