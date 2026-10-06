@@ -51,9 +51,9 @@ func TestPortabilityUsesLoopInvocationScopeAndFieldKinds(t *testing.T) {
 	}
 }
 func TestNonSimpleConditionsAndNestedLegacyInputs(t *testing.T) {
-	doc := &uws1.Document{UWS: "1.12.0", SourceDescriptions: []*uws1.SourceDescription{{Name: "api", Type: "openapi"}}, Operations: []*uws1.Operation{{OperationID: "read", SourceDescription: "api", SourceOperationID: "read", Request: map[string]any{"params": []any{"expr($private)", "ordinary literal"}}, SuccessCriteria: []*uws1.Criterion{{Type: uws1.CriterionRegex, Context: "$response.body", Condition: "^$profile-template"}, {Type: uws1.CriterionJSONPath, Context: "$response.body", Condition: "$.items[?(@.secret)]"}}}}}
+	doc := &uws1.Document{UWS: "1.12.0", SourceDescriptions: []*uws1.SourceDescription{{Name: "api", Type: "openapi"}}, Operations: []*uws1.Operation{{OperationID: "read", SourceDescription: "api", SourceOperationID: "read", Request: map[string]any{"query": map[string]any{"params": []any{"expr($private)", "ordinary literal"}}}, SuccessCriteria: []*uws1.Criterion{{Type: uws1.CriterionRegex, Context: "$response.body", Condition: "^$profile-template"}, {Type: uws1.CriterionJSONPath, Context: "$response.body", Condition: "$.items[?(@.secret)]"}}}}}
 	got := CheckPortability(doc)
-	if !reflect.DeepEqual(got, []Diagnostic{{Code: "expression.legacy-wrapper", Path: "/operations/0/request/params/0"}}) {
+	if !reflect.DeepEqual(got, []Diagnostic{{Code: "expression.legacy-wrapper", Path: "/operations/0/request/query/params/0"}}) {
 		t.Fatalf("noncore query scan: %+v", got)
 	}
 }
@@ -80,6 +80,23 @@ func TestTypedNestedCoreValuesDoNotBypassPortability(t *testing.T) {
 	d := &uws1.Document{UWS: "1.12.0", SourceDescriptions: []*uws1.SourceDescription{{Name: "api", Type: "openapi"}}, Operations: []*uws1.Operation{{SourceDescription: "api", SourceOperationID: "read", Request: map[string]any{"query": map[string]string{"n": "expr($private)"}}}}}
 	got := CheckPortability(d)
 	if len(got) != 1 || got[0].Code != "expression.legacy-wrapper" {
+		t.Fatal(got)
+	}
+}
+
+func TestRequestExtensionsRemainOwnedWhilePayloadBindingsAreChecked(t *testing.T) {
+	d := &uws1.Document{UWS: "1.12.0", SourceDescriptions: []*uws1.SourceDescription{{Name: "api", Type: "openapi"}}, Operations: []*uws1.Operation{{SourceDescription: "api", SourceOperationID: "read", Request: map[string]any{"x-profile-template": "expr($private)", "body": map[string]any{"x-user-field": "expr($private)"}}}}}
+	got := CheckPortability(d)
+	want := []Diagnostic{{Code: "expression.legacy-wrapper", Path: "/operations/0/request/body/x-user-field"}}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("extension ownership/payload coverage: %+v", got)
+	}
+}
+
+func TestStructuralResultExpressionsAreCheckedWithoutInspectingExtensions(t *testing.T) {
+	d := &uws1.Document{UWS: "1.12.0", Results: []*uws1.StructuralResult{{Name: "result", Kind: "merge", From: "main", Value: "expr($private)", Extensions: map[string]any{"x-profile": "expr($profile)"}}}}
+	got := CheckPortability(d)
+	if !reflect.DeepEqual(got, []Diagnostic{{Code: "expression.legacy-wrapper", Path: "/results/0/value"}}) {
 		t.Fatal(got)
 	}
 }

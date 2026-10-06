@@ -6,13 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/OpenUdon/uws/internal/strictjson"
-	"github.com/OpenUdon/uws/uws1"
 	"math/big"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/OpenUdon/uws/internal/strictjson"
+	"github.com/OpenUdon/uws/uws1"
 )
 
 const maxExpressionDepth = 32

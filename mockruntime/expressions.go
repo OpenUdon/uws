@@ -3,9 +3,10 @@ package mockruntime
 import (
 	"context"
 	"fmt"
-	"github.com/OpenUdon/uws/expressions"
 	"strconv"
 	"strings"
+
+	"github.com/OpenUdon/uws/expressions"
 )
 
 const maxExpressionBytes = expressions.MaxBytes

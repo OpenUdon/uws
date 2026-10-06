@@ -32,3 +32,10 @@ fast-forward source/closure pushes to the exact UWS origin/main, with fetched
 ancestry and independently observed commit reachability. Downstream adoption
 waits for whole-milestone acceptance and its final published closure. No tag,
 force push, unrelated source, installation or live provider action is included.
+
+Closing review iteration 1 corrected root request-extension ownership and the
+missing StructuralResult.value inventory. New regressions prove x-* request
+extensions are excluded while nested payload fields remain checked, and named
+structural result expressions receive diagnostics. Full tests/races/vet passed
+again after the fixes; strict docs passed after reference/navigation corrections.
+Final accepted source/closure publication is recorded in the retired C08 record.

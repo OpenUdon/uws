@@ -46,7 +46,11 @@ func CheckPortability(document *uws1.Document) []Diagnostic {
 			}
 		}
 		if op.HasSourceBinding() && !browser {
-			c.values(op.Request, base+"/request", loop, 0)
+			for _, binding := range []string{"path", "query", "header", "cookie", "body"} {
+				if value, ok := op.Request[binding]; ok {
+					c.values(value, base+"/request/"+binding, loop, 0)
+				}
+			}
 		}
 		c.outputs(op.Outputs, base+"/outputs", loop)
 		c.criteria(op.SuccessCriteria, base+"/successCriteria", loop)
@@ -78,6 +82,11 @@ func CheckPortability(document *uws1.Document) []Diagnostic {
 		c.steps(w.Steps, base+"/steps", bodyLoop, 0)
 		c.steps(w.Default, base+"/default", bodyLoop, 0)
 		c.cases(w.Cases, base+"/cases", bodyLoop, 0)
+	}
+	for i, result := range document.Results {
+		if result != nil {
+			c.check(result.Value, "/results/"+strconv.Itoa(i)+"/value", Value, result.Kind == uws1.WorkflowTypeLoop)
+		}
 	}
 	return c.diagnostics
 }

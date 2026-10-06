@@ -1,7 +1,7 @@
 # C08 — Portable expressions
 
 **Stage:** Kinet STG-11, Phase A. **Owner:** UWS.
-**State:** Confirmed Stage 11 goal execution; C08.1–C08.3 complete, C08.4 in progress; review 0/10 not started.
+**State:** Confirmed Stage 11 goal execution; All four tasks complete; whole review 1/10 started, acceptance pending; review 0/10 not started.
 **Source baseline:** `a7688f54c68f5a75c7cc95aa2b31cea98b31af41` (clean at planning).
 **Coordinator:** [Stage 11 contract](../../../kinet/docs/stage11.md); the package-local milestone/status owns acceptance.
 
@@ -19,7 +19,7 @@ The serial predecessor is a scheduling gate; direct contract and regression impa
 | C08.1 — Parse the existing expression grammar | `[+]` | Implement the existing sources, JSON Pointer/dot traversal, comparison operators, expression contexts and document-version gates. Add no language extension and do not reinterpret function templates or browser-profile strings. Evidence: expressions/parse.go and parser vectors cover all core sources, operator longest-match/whitespace, scalar lexemes, pointer escapes and version/field/loop refusals. Parser race/vet and published-version immutability checks passed; no old schema/spec/archive, ordinary validator or mock behavior changed. docs/expression-reference.md records the public boundary. |
 | C08.2 — Evaluate expressions with shared vectors | `[+]` | Add a reference evaluator and parse/evaluation vectors for null propagation, comparisons, exact values and workflow/iteration visibility. Preserve current normative source/context distinctions. Evidence: expressions/evaluate.go, copied current source vectors and the new 18-case machine corpus qualify exact numbers, nulls, scoped responses, nearest completed iterations, component precedence, cancellation, input cycles and invalid JSON refusals. Shared/mock races and vet pass. Callers must preserve json.Number before snapshot construction; legacy custom model decoding is unchanged. |
 | C08.3 — Adopt without narrowing ordinary validation | `[+]` | Use the reference evaluator in mockruntime with compatibility tests. Keep strict portability checking opt-in and preserve ordinary validation of implementation-specific expressions; diagnose legacy expr wrappers explicitly. Kinet:W18 explicitly enables strict portability for all newly authored packages; this does not narrow ordinary legacy validation. Evidence: mockruntime/expressions.go now delegates to the shared evaluator, retaining historical generic numeric and encoded-root pointer behavior without rewriting literals. Opt-in CheckPortability covers only core fields with deterministic bounded code/path diagnostics, legacy wrappers, actual loop invocation scopes and typed/nested values. Profile/query/trigger/extension strings remain untouched. Expression/mock/core race suites and vet pass; ordinary validation still accepts implementation-profile syntax. |
-| C08.4 — Qualify and prepare the parser release | `[~]` | Run schema/version, evaluator, mock-runtime and race checks; prepare exact accepted source and a separately pinned conformance supplement. Publish only under named authority before a consumer requires publication. Qualified source: docs/c08-qualification.md and the separately pinned 18-case manifest; full offline tests/races/vet/strict docs/immutability passed. UWS origin/main was fetched and is an ancestor of the qualified local head. Publication now proceeds under the already confirmed envelope; final accepted closure must be observed before consumer adoption. |
+| C08.4 — Qualify and prepare the parser release | `[+]` | Run schema/version, evaluator, mock-runtime and race checks; prepare exact accepted source and a separately pinned conformance supplement. Publish only under named authority before a consumer requires publication. Qualified source: docs/c08-qualification.md and the separately pinned 18-case manifest; full offline tests/races/vet/strict docs/immutability passed. UWS origin/main was fetched and is an ancestor of the qualified local head. Publication now proceeds under the already confirmed envelope; final accepted closure must be observed before consumer adoption. |
 
 ## Acceptance and verification
 
@@ -42,10 +42,10 @@ Kinet:M45 is accepted/retired at `76c5a7cc577cd1dc86d21e9c3a3bd372e3c807b7` afte
 
 ## Persisted review
 
-- Review iteration: **0/10**; not started.
-- Closing-review findings: none; the whole-milestone review has not started. Approved intake requirements above remain pending.
+- Review iteration: **1/10**; started on 2026-10-06 after qualified source publication.
+- Closing-review findings, iteration 1: **R1-F01 (P2)** — source-bound operation request traversal also scans root x-* request extension values, falsely diagnosing profile-owned templates as legacy core expressions. A standalone Go projection reproduced the false positive. Restrict root request traversal to standard binding keys while still checking x-* names inside ordinary payload data; add a regression and rerun affected qualification. **R1-F02 (P2)** — the core-field inventory omits StructuralResult.value, which the published contract identifies as an optional runtime expression. Add its nonmutating portability check and regression. No other P1/P2 found in the full parser/evaluator/mock/portability diff. Both findings are fixed: standard root bindings only, nested payload coverage and StructuralResult.value checking, with dedicated regressions. Full tests/races/vet passed after fixes. Import grouping/documentation are routine clarity fixes.
 - Accepted revision: not available.
-- Published revision / artifact evidence: not available.
-- Verification: pending implementation; no test result is claimed by this planning record.
+- Published revision / artifact evidence: qualified source `45eb283855995a78c1e94cf5ed87f03753e462ec` pushed fast-forward to the authorized UWS origin/main; git ls-remote independently observed that exact ref. Final accepted closure still required before consumer adoption.
+- Verification: full offline tests/races/vet, strict docs and existing schema/archive/conformance/immutability checks passed; separately pinned 18-case supplement and source-ancestry proof are in docs/c08-qualification.md.
 
 After all tasks finish, perform the whole-milestone review with persisted iteration/finding state and fix every P1/P2 before acceptance. Resume an interrupted pass at the same counter. Consolidate current facts, reconcile downstream work and retire under this package’s normal procedure.

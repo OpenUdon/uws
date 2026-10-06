@@ -74,11 +74,13 @@ edit any published schema or earlier executable contract.
 
 `CheckPortability(document)` returns deterministic code/path diagnostics for
 core expression fields only. Ordinary Document.Validate is unchanged. Core
-controls, outputs, simple criteria, source-bound request values and step input
+controls, outputs/structural-result values, simple criteria, standard source-bound request values and step input
 bindings use the parser; regex/JSONPath/XPath queries, extensions, opaque bodies,
 trigger options and function/browser-profile request templates remain owned by
 their profiles. Legacy expr wrappers receive an explicit diagnostic. Traversal
 is depth bounded; diagnostics are capped at 128 and carry no expression values.
+Root x-* request extensions remain profile-owned; identically named keys inside
+ordinary body/query payloads are still checked as data bindings.
 Known loop invocation contexts are tracked so a reusable operation's batch
 reference is checked in its actual call scope, not merely its declaration.
 
