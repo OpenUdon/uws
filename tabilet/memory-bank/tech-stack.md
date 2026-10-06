@@ -1,5 +1,15 @@
 # Technical Stack
 
+## M08.2 codec implementation progress
+
+Module `github.com/OpenUdon/uws/hcl` lives in `hcl/`, using existing pinned
+HashiCorp HCL `v2.24.0`, cty `v1.17.0`, YAML `v3.0.1` and accepted root UWS C09
+`v0.0.0-20261006181058-6a267306032e`. No operator go.work/root dependency edits.
+Run nested tests/races/vet with GOWORK=off, GOPROXY=off. Bounds are 8 MiB source/
+view, 100,000 nodes/depth 100; hard process resource isolation stays external.
+The module graph still retains Horizon/HCL compatibility. Publication and exact
+final consumer closure remain M08.4 acceptance work.
+
 ## M08.1 presentation contract progress
 
 Exact 1.13 schema/specification membership is added while all older published

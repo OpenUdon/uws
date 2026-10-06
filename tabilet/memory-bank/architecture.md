@@ -1,5 +1,15 @@
 # Architecture
 
+## M08.2 codec implementation progress
+
+The separate `hcl/` Go module now supplies byte-based Render/Verify/deprecated
+Import. Public model tags drive typed block/label/extension mappings without
+legacy custom decoding. Inert HCL AST parsing reconstructs JSON numeric token
+ranges exactly and refuses evaluation, unknown/ambiguous mappings or failed
+source/codec/view provenance. The root module and legacy HCL APIs are unchanged;
+standalone nested checks and initial privacy/refusal fixtures pass. Full corpus
+and release qualification remain M08.3/.4.
+
 ## M08.1 presentation contract progress
 
 UWS 1.13 is distributed as a new exact-version schema/specification, with no

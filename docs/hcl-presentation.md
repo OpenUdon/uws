@@ -3,8 +3,16 @@
 UWS 1.13 adds the [presentation/deprecation contract](https://github.com/OpenUdon/uws/blob/main/versions/1.13.0.md#12-verified-hcl-presentation-and-deprecation).
 Its wire fields and execution rules remain the UWS 1.12 rules. The separate
 `github.com/OpenUdon/uws/hcl` module owns deterministic Render, independent
-lossless Verify and deprecated Import. M08.1 publishes this contract; module
-implementation and qualification belong to M08.2–M08.4 and remain pending.
+lossless Verify and deprecated Import. M08.2 implements the byte-based codec
+and initial fixtures; broader conformance and whole qualification/publication
+remain M08.3/M08.4 work.
+
+The Go APIs accept `Source{Format: JSON|YAML, Bytes: sourceBytes}` and
+`Options{Revision: exactCodecCommit}`. `Render` returns `View{HCL, Provenance}`
+only after `Verify` independently reconstructs the complete source projection.
+`Import(ctx, hclBytes)` returns proposed JSON and remains deprecated. Codec
+revision is caller-supplied metadata; the consuming worker must bind it to the
+actual executable/module closure rather than trusting a producer claim.
 
 Supply explicit JSON or YAML bytes and the exact codec revision. A successful
 view must carry source format/raw SHA-256, codec contract/revision and HCL SHA-256.

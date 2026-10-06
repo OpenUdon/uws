@@ -1,7 +1,7 @@
 # M08 — Verified HCL presentation
 
 **Stage:** Kinet STG-11, Phase A. **Owner:** UWS.
-**State:** Confirmed Stage 11 execution; M08.1 complete, M08.2–M08.4 pending; whole review 0/10 not started.
+**State:** Confirmed Stage 11 execution; M08.1/M08.2 complete, M08.3–M08.4 pending; whole review 0/10 not started.
 **Source baseline:** `a7688f54c68f5a75c7cc95aa2b31cea98b31af41` (clean at planning).
 **Coordinator:** [Stage 11 contract](../../../kinet/docs/stage11.md); the package-local milestone/status owns acceptance.
 
@@ -17,7 +17,7 @@ The serial predecessor is a scheduling gate; direct contract and regression impa
 | Item | State | Notes |
 |---|---|---|
 | M08.1 — Specify the additive 1.13 transition | `[+]` | Add exact 1.13 schema/specification and the verified HCL presentation/deprecation contract; retain 1.12 wire/execution rules and all prior artifact hashes. Synchronize declared-version admission, latest schema/conformance references, archive, discovery/navigation and current facts. Full standalone tests/races/vet, strict docs, protected versions and consumer regressions passed. Separate codec implementation and whole acceptance/publication remain M08.2–M08.4. |
-| M08.2 — Add render verify and import APIs | `[ ]` | Add the separate uws/hcl module with deterministic Render, lossless Verify and a deprecated public Import. Bind provenance to exact source bytes and codec revision; preserve existing typed key/extension mappings. |
+| M08.2 — Add render verify and import APIs | `[+]` | Separate github.com/OpenUdon/uws/hcl implements deterministic byte-based Render, independent lossless Verify and deprecated inert Import. Public model tags preserve typed blocks/labels/extensions; numeric AST token ranges preserve exact lexemes without custom model decoding/float64/JCS. Exact source/codec/view provenance, tampering/evaluation refusal, literal labels/templates and empty/null/key collisions pass standalone nested tests/races/vet. Root legacy APIs/dependencies and operator go.work remain unchanged; M08.3/.4 own full corpus/release qualification. |
 | M08.3 — Prove lossless presentation | `[ ]` | Test large integers, precise decimals, exponent notation, required lexeme preservation, strings, keys, extensions and malformed HCL. Never use float64 or JCS equality as the losslessness oracle; refuse a misleading view. |
 | M08.4 — Qualify and publish both modules | `[ ]` | Verify old APIs and immutable version hashes, schema/code/docs/archive parity, nested-module builds and codec round trips. Publish exact root/codec sources with named authority and record consumer handoffs. |
 
@@ -100,3 +100,32 @@ action or legacy HCL removal was performed. Evolution decision: no bump;
 this implements the approved Stage 11 additive transition. M08.2 must now
 implement the separate byte-based Render/Verify/deprecated Import module;
 M08.3/.4 still own qualification, whole review and exact publication.
+
+## Execution evidence — M08.2, 2026-10-06
+
+The separate public codec module consumes exact accepted root UWS C09
+`v0.0.0-20261006181058-6a267306032e` for public model tags and strict JSON
+helpers. Existing HCL/cty/YAML versions are pinned; standalone graph inspection
+retains Horizon/HCL compatibility and supplies no private runtime/source parser/
+credential/provider dependency. The operator-owned go.work and root go.mod/sum
+are unchanged. Returned provenance names exact source bytes, codec contract/full
+revision and HCL bytes; workers must independently bind revision to actual code.
+
+Rendering walks byte-decoded values and model field tags, not custom model JSON
+decoders. Independent inert AST reconstruction preserves native typed blocks/
+labels, extensions/dollar-key escaping, empty/null containers and exact JSON/YAML
+numeric lexemes. Functions, traversals, interpolation, arithmetic, comprehensions,
+ambiguous keys/fields, unsupported mappings and malformed inputs refuse. Errors
+have stable value-free messages. Bounds are 8 MiB source/view, 100,000 work nodes,
+depth 100, checked writer growth and cooperative cancellation; no hard CPU/RSS/
+deadline claim is made. No view returns unless Verify proves the projection.
+
+Passed: standalone nested full tests/vet/races with GOWORK=off/GOPROXY=off;
+initial exact typed/number/key/extension/empty/null/literal-label fixtures,
+tampered lexeme/source/codec and unsafe HCL/cancellation negatives; root full
+offline regression tests; strict MkDocs; gofmt and git diff --check. Exact declared
+module metadata acquisition was under the confirmed dependency-read scope;
+checks remain offline afterward. No source publication, legacy API removal,
+dependency upgrade, workflow/package mutation or live authority was exercised.
+M08.3 must broaden the lossless/malformed/resource conformance corpus before
+M08.4's whole review/publication; no milestone acceptance is claimed here.

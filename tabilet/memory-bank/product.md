@@ -1,5 +1,14 @@
 # Product
 
+## M08.2 codec implementation progress
+
+The separate uws/hcl module implements deterministic typed views directly from
+JSON/YAML bytes, independent exact-value/lexeme Verify and deprecated explicit
+Import. Returned provenance binds raw source and codec/view identities; failed
+proofs return no view. No file/network loading, variable/function evaluation,
+credentials, workflow validation, approval or execution is supplied. Existing
+root HCL APIs remain unchanged. M08.3/.4 still own full corpus/release acceptance.
+
 ## M08.1 presentation contract progress
 
 UWS 1.13's new specification/schema retain the 1.12 wire/execution rules and

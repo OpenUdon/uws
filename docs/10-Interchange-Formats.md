@@ -7,7 +7,7 @@
 JSON and YAML are portable UWS serializations. Existing typed HCL conversion and
 input APIs remain available for compatibility. UWS 1.13 adds a separate
 [verified HCL presentation contract](hcl-presentation.md) over exact source bytes;
-its module implementation/qualification is pending in M08.2–M08.4. A derived
+its module APIs are implemented, with corpus/release qualification pending in M08.3/M08.4. A derived
 verified view is separate from source and historical packaged HCL.
 
 The examples below describe the retained `convert`/`uws1` mapping. That typed
