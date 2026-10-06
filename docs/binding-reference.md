@@ -50,7 +50,11 @@ Required input presence and literal schemas are checked with the existing
 JSON-Schema implementation and an external-resource loader that always refuses.
 No file/network ref is fetched. Exact schema equality, finite enum/const values
 or simple proven type containment can establish expression compatibility;
-unproved constraint containment stays indeterminate. Response field pointers
+unproved constraint containment stays indeterminate. Nested body/array templates
+are projected as closed schemas using reviewed expression types and literal
+const leaves; structural containment is proved only for the supported constraint
+subset. Partial number/integer overlap is indeterminate, not disjoint.
+Response field pointers
 use canonical indexes; unavailable schemas and partial missing fields don't
 become compatible by omission. Security alternatives preserve OR/AND structure
 and require reviewed symbolic slots plus required scopes, without loading keys.

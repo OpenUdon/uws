@@ -33,3 +33,11 @@ Publication uses the already confirmed STG11_SOURCE_PUBLICATION UWS origin/main
 scope with normal fast-forward pushes and independent observed reachability.
 Consumers wait for the whole-milestone review and accepted published closure;
 local builds and producer completeness flags are not authority.
+
+Closing review iteration 1 reproduced two supported binding scenarios: nested
+expression templates were wrongly treated as literals, and number-to-integer
+was wrongly classified disjoint. Recursive template projections now prove the
+supported closed-object/finite-array case while retaining indeterminate results
+for unsupported constraints/open-object uncertainty. New regressions cover both
+fixes, array uniqueness uncertainty and open source object constraints. Full
+tests/races/vet passed after correction.

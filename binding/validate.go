@@ -167,7 +167,7 @@ func ValidateBinding(ctx context.Context, resolver Resolver, request Request) (R
 				report.add(code, path, state)
 			}
 		} else {
-			state := validateLiteral(in.Schema, value.Value)
+			state := validateBoundValue(in.Schema, value.Value, request.ExpressionTypes, request.ExpressionContext)
 			if state != Compatible {
 				code := "binding.literal_schema_indeterminate"
 				if state == Incompatible {
@@ -369,6 +369,9 @@ func schemaCompatibility(source, target Schema) Outcome {
 				found = true
 				overlap = true
 			}
+			if a == "number" && b == "integer" {
+				overlap = true
+			}
 		}
 		if !found {
 			subset = false
@@ -389,6 +392,12 @@ func schemaCompatibility(source, target Schema) Outcome {
 	}
 	if subset && typeOnly {
 		return Compatible
+	}
+	if subset && len(from) == 1 && len(to) == 1 && from[0] == "object" && to[0] == "object" {
+		return objectContainment(sm, tm)
+	}
+	if subset && len(from) == 1 && len(to) == 1 && from[0] == "array" && to[0] == "array" {
+		return arrayContainment(sm, tm)
 	}
 	return Indeterminate
 }
