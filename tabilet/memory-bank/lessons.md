@@ -93,3 +93,13 @@ JSONPath/XPath queries or function/browser templates. Standard payload fields
 remain bindings even when a nested data key happens to start x-*. C08 review
 R1-F01/F02 qualified this distinction and the complete structural-result
 expression inventory without tightening ordinary validation.
+
+## Preserve indeterminate schema evidence when proving bindings
+
+A reviewed source type does not prove an arbitrary target constraint. Literal
+values may be validated, but expression templates require schema containment;
+unsupported constraints and partial number/integer overlap stay indeterminate.
+Normalize typed JSON-compatible containers with UseNumber before discovering
+expressions. C09 review R1/R2 fixtures reproduced nested and typed-body false
+rejections and an incorrect disjoint numeric classification; the fixed checks
+pass without key/provider loading or value-bearing diagnostics.

@@ -2,7 +2,11 @@
 
 ## C08 accepted reference foundation
 
-C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4844`, independently observed on origin/main. The [qualification](../../docs/c08-qualification.md) pins the source and supplement; C09/M08 remain pending.
+C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4844`, independently observed on origin/main. The [qualification](../../docs/c08-qualification.md) pins the source and supplement; M08 remains pending.
+
+## C09 accepted binding foundation
+
+C09 is accepted/retired after review 3 at `6a267306032edc687a298cefc8bba7019d3ad059`, independently observed on authorized origin/main. [Qualification](../../docs/c09-qualification.md) records the pinned source-neutral contracts and limitations; M08 remains pending.
 
 ## Approved Stage 11 architecture target — not implemented
 
@@ -15,7 +19,7 @@ C09.1 binding types and strict bounded serialization/resolver snapshots are sepa
 C08 provides the expressions parser plus a reference evaluator over UWS-owned in-memory document/execution snapshots. Parsing uses only the standard library; evaluation reuses uws1 state and the existing internal strict-JSON helper. It performs no source/provider I/O or document admission. Callers must preserve json.Number in value projections before constructing snapshots; ordinary UWS custom decoding remains compatible and may round any-field numbers. The mock now delegates to the shared evaluator, with small historical generic-number/encoded-root adapters. CheckPortability is opt-in, value-free and limited to known core fields; source-function/browser templates and non-simple queries remain profile-owned. Known invocation scopes prevent declaration-site false positives for batch expressions. Ordinary validators and published-version bytes are unchanged.
 
 [Stage 11](../../../kinet/docs/stage11.md) and [local milestones](milestone.md#stage-11-cross-package-refactoring) define the approved target. UWS will own opt-in expression portability, source-neutral binding diagnostics and a verified HCL presentation module. Source parsing and product authority remain outside UWS. Existing published versions and ordinary validation compatibility stay intact; HCL input removal is outside Stage 11.
-Both phases belong to one stage. C08 acceptance/publication is recorded above; C09/M08 remain pending and claim no installed Kinet behavior. The installed Kinet M44 service remains unchanged, and Stage 12 owns the browser-dependent removal gates.
+Both phases belong to one stage. C08 acceptance/publication is recorded above; M08 remains pending and claim no installed Kinet behavior. The installed Kinet M44 service remains unchanged, and Stage 12 owns the browser-dependent removal gates.
 
 This file records current observed system structure. Archive documents are
 frozen repository snapshots; this summary should evolve when the implementation

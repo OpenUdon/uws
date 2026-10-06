@@ -2,12 +2,16 @@
 
 ## C08 accepted reference foundation
 
-C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4844`, independently observed on origin/main. The [qualification](../../docs/c08-qualification.md) pins the source and supplement; C09/M08 remain pending.
+C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4844`, independently observed on origin/main. The [qualification](../../docs/c08-qualification.md) pins the source and supplement; M08 remains pending.
+
+## C09 accepted binding foundation
+
+C09 is accepted/retired after review 3 at `6a267306032edc687a298cefc8bba7019d3ad059`, independently observed on authorized origin/main. [Qualification](../../docs/c09-qualification.md) records the pinned source-neutral contracts and limitations; M08 remains pending.
 
 ## Approved Stage 11 tooling target — not implemented
 
 [Stage 11](../../../kinet/docs/stage11.md) and [local milestones](milestone.md#stage-11-cross-package-refactoring) define the approved target. Exact published module revisions, frozen build closures and standalone verification are acceptance gates. go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
-Both phases belong to one stage. C08 acceptance/publication is recorded above; C09/M08 remain pending and claim no installed Kinet behavior. The installed Kinet M44 service remains unchanged, and Stage 12 owns the browser-dependent removal gates.
+Both phases belong to one stage. C08 acceptance/publication is recorded above; M08 remains pending and claim no installed Kinet behavior. The installed Kinet M44 service remains unchanged, and Stage 12 owns the browser-dependent removal gates.
 
 ## Language And Module
 

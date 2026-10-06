@@ -1,7 +1,39 @@
+# Retired milestone C09 - Binding contracts
+
+**Milestone.** C09
+**Outcome.** completed
+**Retired.** 2026-10-06
+**Source status.** tabilet/memory-bank/status-C09.md
+**Source specification.** tabilet/memory-bank/milestone.md#c09--binding-contracts
+**Evidence.** 6a267306032edc687a298cefc8bba7019d3ad059
+**Worktree.** includes uncommitted changes
+**Review.** passed
+**Review iterations.** 3
+**Verification.** Full offline go test ./..., go test -race ./..., go vet ./..., strict mkdocs build and diff checks pass. Published-version/schema/archive/conformance bytes unchanged; no APItools/private-runtime dependency. Pinned accepted OpenUdon fixture source/selector, required/type/response/authentication findings and negative cases pass. Shape identity/ambiguity/privacy and source/schema incompleteness, nested/typed template containment and numeric partial-overlap regressions pass; deterministic nonmutating flow diagnostics pass. Accepted implementation independently observed on authorized UWS origin/main before retirement; closure publication precedes consumer execution.
+**Consolidated into.** Current product/architecture/tech-stack, applicable lessons, docs/binding-reference.md and c09-qualification.md; pinned fixture manifest and complete source/status evidence. APItools:M82/Udon:M47/Kinet:M46/OpenUdon:P09 reconciled to exact accepted source. No new evolution version, ordinary validation change, provider I/O or execution authority.
+
+## Milestone specification
+
+``````markdown
+## C09 — Binding contracts
+
+**Stage/owner.** STG-11 Phase A; UWS. **Priority.** Serial position 3/18, not a review severity.
+**Dependencies.** [UWS:C08](../docs/history/status-C08.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
+**Scope.** Define operation shapes and resolvers; Validate bindings and security declarations; Analyze flow deterministically; Qualify and publish the shape contract.
+**Acceptance.** Portable binding and flow diagnostics have stable codes and deterministic fixtures. Shape production stays outside UWS; no diagnostic grants execution or silently tightens legacy validation.
+**Verification.** go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
+Use only disposable roots and fixtures. Preserve published schemas/wires, historic evidence, current runtime capability restrictions and the installed M44 service. Changed v3/package/worker identities require fresh approval; they do not preserve old grants.
+**Downstream.** [APItools:M82](../../../apitools/tabilet/memory-bank/status-M82.md), [Udon:M47](../../../udon/tabilet/memory-bank/status-M47.md), [Kinet:M46](../../../kinet/tabilet/memory-bank/status-M46.md), [OpenUdon:P09](../../../openudon/tabilet/memory-bank/status-P09.md). Reconcile exact accepted/publication revisions before advancing.
+**Tasks/review.** [status-C09.md](status-C09.md), 4 completed task commit units; whole review passed 3/10. Accepted and independently observed published implementation `6a267306032edc687a298cefc8bba7019d3ad059`; qualification and resolved findings are in the status.
+``````
+
+## Status record
+
+``````markdown
 # C09 — Binding contracts
 
 **Stage:** Kinet STG-11, Phase A. **Owner:** UWS.
-**State:** Confirmed Stage 11 execution; All four tasks complete; whole review 2/10 started, acceptance pending; review 0/10 not started.
+**State:** Confirmed Stage 11 execution; All four tasks complete; whole review passed 3/10; accepted-source publication pending; review 0/10 not started.
 **Source baseline:** `a7688f54c68f5a75c7cc95aa2b31cea98b31af41` (clean at planning).
 **Coordinator:** [Stage 11 contract](../../../kinet/docs/stage11.md); the package-local milestone/status owns acceptance.
 
@@ -42,11 +74,12 @@ UWS:C08 is accepted and independently observed on origin/main at `0411eea6fc84fb
 
 ## Persisted review
 
-- Review iteration: **2/10**; started on 2026-10-06 after R1-F01/F02 corrections; full rereview underway.
+- Review iteration: **3/10**; passed on 2026-10-06 after whole contract/schema/template/flow/privacy/compatibility review; no remaining P1/P2. All required verification passed after corrections.
 - Closing-review findings, iteration 1: **R1-F01 (P2)** — a body object with nested core expressions is validated as a literal string-bearing object, falsely rejecting a reviewed integer expression. **R1-F02 (P2)** — schemaCompatibility treats number-to-integer as disjoint although it has partial overlap. Regressions reproduce both supported scenarios. Add recursively projected template schemas and proven structural containment, keep unsupported constraints indeterminate, and correct numeric overlap before rereview. Both findings are fixed and their nested-object/array, type-overlap, unsupported-constraint and open-source-schema regressions pass. Full tests/races/vet passed after fixes.
 - Closing-review findings, iteration 2: **R2-F01 (P2)** — template discovery handles only map[string]any/[]any, while literal validation already accepts equivalent typed JSON-compatible containers. A map[string]string containing a reviewed integer expression is falsely rejected. Normalize consumer values losslessly before template discovery and add the typed-container equivalence regression; preserve error/value redaction. R2-F01 is fixed: typed values are normalized losslessly before template discovery. The regression and full tests/races/vet pass. No other P1/P2 found on whole rereview.
-- Accepted revision: not available.
-- Published revision / artifact evidence: qualified source `df54c6644439114fa749ab962405b71c1bfcfff8` pushed fast-forward to authorized UWS origin/main, independently observed by git ls-remote. Accepted review/closure is required before adoption.
+- Accepted revision: `6a267306032edc687a298cefc8bba7019d3ad059`; whole review passed 3/10, all four tasks and required checks complete.
+- Published revision / artifact evidence: accepted implementation `6a267306032edc687a298cefc8bba7019d3ad059` pushed fast-forward to authorized UWS origin/main after review corrections; git ls-remote independently observed that exact ref. Retirement closure publication precedes downstream execution.
 - Verification: full offline tests/races/vet/strict docs, immutable-artifact and no-APItools/private-runtime checks passed; pinned OpenUdon semantic fixture comparison and negative/tampered/ambiguous/incomplete tests pass.
 
 After all tasks finish, perform the whole-milestone review with persisted iteration/finding state and fix every P1/P2 before acceptance. Resume an interrupted pass at the same counter. Consolidate current facts, reconcile downstream work and retire under this package’s normal procedure.
+``````
