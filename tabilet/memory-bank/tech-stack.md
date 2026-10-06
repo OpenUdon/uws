@@ -11,6 +11,8 @@ Both phases belong to one stage. C08 acceptance/publication is recorded above; C
 
 ## Language And Module
 
+C09.3 flow checks use existing UWS types/core expression parsing; no dependency change. Binding/flow race/vet regressions cover determinism, privacy, cancellation, cycles, merge-child exclusion, pending/write order and static loop arrays.
+
 C09.2 reuses the existing jsonschema/v6 dependency with a refusing URL loader and format assertions; no new dependency/version. Binding race/vet checks pass, including privacy, forged resolver, schema-ref and constraint-indeterminacy cases.
 
 C09.1 adds binding using the standard library plus existing internal strict-JSON support. No module/lockfile changes; shape-table race/vet tests pass.

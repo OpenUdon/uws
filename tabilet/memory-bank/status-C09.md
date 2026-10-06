@@ -1,7 +1,7 @@
 # C09 — Binding contracts
 
 **Stage:** Kinet STG-11, Phase A. **Owner:** UWS.
-**State:** Confirmed Stage 11 execution; C09.1–C09.2 complete, C09.3–C09.4 pending; review 0/10 not started.
+**State:** Confirmed Stage 11 execution; C09.1–C09.3 complete, C09.4 pending; review 0/10 not started.
 **Source baseline:** `a7688f54c68f5a75c7cc95aa2b31cea98b31af41` (clean at planning).
 **Coordinator:** [Stage 11 contract](../../../kinet/docs/stage11.md); the package-local milestone/status owns acceptance.
 
@@ -18,7 +18,7 @@ The serial predecessor is a scheduling gate; direct contract and regression impa
 |---|---|---|
 | C09.1 — Define operation shapes and resolvers | `[+]` | Define source-neutral OperationShape, Resolver and versioned ShapeTable contracts with source identity, native selector, protocol, supported schemas and security alternatives. Reserve extensible browser and runtime-function kinds without claiming their implementations. Evidence: binding/types.go/table.go and contract tests qualify exact identity/aliases, unknown completeness, security OR/AND alternatives, snapshot immutability, malformed/duplicate/unknown fields, forged-source mismatch and non-HTTP refusal. Race/vet pass; no source parser, provider I/O or dependency change. docs/binding-reference.md records the public contract. |
 | C09.2 — Validate bindings and security declarations | `[+]` | Check operation resolution, required inputs, literal/schema compatibility, known expression types, response-field references and symbolic security requirements. Missing or unsupported evidence remains indeterminate, never silently compatible. Evidence: binding/validate.go and regressions prove required input/literal schema, known expression type containment, response references and symbolic security OR/AND checks. Unsupported refs use a refusing loader and remain indeterminate; custom resolver source/selector mismatches are rejected without value/error text exposure. Race/vet pass; no key/provider loading or ordinary validation change. |
-| C09.3 — Analyze flow deterministically | `[ ]` | Add stable, value-free diagnostics for structural reachability, unused outputs, effect/pending ordering and unbounded loops. Shared analysis is observation; authorization and enforcement remain consumer policy. |
+| C09.3 — Analyze flow deterministically | `[+]` | Add stable, value-free diagnostics for structural reachability, unused outputs, effect/pending ordering and unbounded loops. Shared analysis is observation; authorization and enforcement remain consumer policy. Evidence: binding/flow.go reports sorted bounded code/path findings for possible reachability, core output references, unknown effects, sequence/branch pending-before-write order, cycles and static work bounds. Privacy/nonmutation/cancellation/merge exclusion regressions and binding races/vet pass. Conditions and opaque profiles are not executed or inferred; findings never supply permission. |
 | C09.4 — Qualify and publish the shape contract | `[ ]` | Compare semantic findings against accepted OpenUdon fixtures, add tampered/ambiguous/incomplete conformance cases, verify no APItools dependency, and publish the exact accepted contract only with named authority. |
 
 ## Acceptance and verification

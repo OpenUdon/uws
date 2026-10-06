@@ -54,3 +54,21 @@ unproved constraint containment stays indeterminate. Response field pointers
 use canonical indexes; unavailable schemas and partial missing fields don't
 become compatible by omission. Security alternatives preserve OR/AND structure
 and require reviewed symbolic slots plus required scopes, without loading keys.
+
+## Deterministic advisory flow
+
+AnalyzeFlow reports possible structural reachability from the main/sole entry
+workflow and declared trigger routes, including dependencies, workflow calls
+and explicit goto targets. Conditions are not evaluated. Merge children are
+not treated as executed. Missing/ambiguous references and cycles remain visible.
+Known core references mark step/operation outputs used; output_unreferenced
+means no recognized core reference, not proof that an opaque profile cannot
+consume the value. Findings are sorted by path/code, capped at 128 with an
+explicit Truncated flag, and contain no document values or content excerpts.
+
+Sequence/branch observations show pending steps before subsequent declared
+writes and unknown effects without inferring effects from HTTP methods. Await
+without a timeout, unbounded retries and loops/forEach without a statically
+known item array are work-bound warnings, not claims of an infinite runtime
+loop. The analysis does not dispatch effects, alter validation, grant authority
+or decide consumer policy. Caller context cancellation is propagated.

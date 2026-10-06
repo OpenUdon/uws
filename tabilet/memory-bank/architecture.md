@@ -6,6 +6,8 @@ C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4
 
 ## Approved Stage 11 architecture target — not implemented
 
+C09.3 analyzes the UWS structural graph, core output references and declared effects into sorted value-free code/path findings with an explicit truncation flag. Conditions/profile semantics remain opaque; document mutation and effect dispatch are excluded.
+
 C09.2 validates neutral binding projections and reviewed expression schemas, refuses external schema loads, checks exact resolver/source/selector identity and preserves security OR/AND alternatives. Unknown/unproved compatibility remains indeterminate; ordinary UWS validation is untouched.
 
 C09.1 binding types and strict bounded serialization/resolver snapshots are separate from source parsers. Known/unknown schemas/security and protocol-specific fields remain honest; no APItools/provider import or network access is added.

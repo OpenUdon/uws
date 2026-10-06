@@ -6,6 +6,8 @@ C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4
 
 ## Approved Stage 11 product direction — not implemented
 
+C09.3 adds deterministic advisory flow diagnostics for reachability, unreferenced outputs, unknown effects/pending ordering and work bounds. It executes no condition/effect and never grants authority.
+
 C09.2 adds advisory binding validation with compatible/incompatible/indeterminate outcomes. It checks required/literal/expression/output/security metadata without credentials or effects.
 
 C09.1 adds the public source-neutral binding shape/resolver contract. Metadata completeness, exact identity and security OR/AND semantics are explicit; metadata never grants execution.
