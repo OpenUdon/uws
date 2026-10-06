@@ -1,12 +1,14 @@
 package binding
 
 import (
+	"bytes"
 	"encoding/json"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/OpenUdon/uws/expressions"
+	"github.com/OpenUdon/uws/internal/strictjson"
 )
 
 func expressionValue(value any) (string, bool) {
@@ -37,6 +39,15 @@ func containsExpression(value any, depth int) bool {
 	return false
 }
 func validateBoundValue(target Schema, value any, types map[string]Schema, scope expressions.Context) Outcome {
+	data, err := json.Marshal(value)
+	if err != nil || len(data) > MaxTableBytes || strictjson.ValidateSingleValue(data) != nil {
+		return Incompatible
+	}
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.UseNumber()
+	if decoder.Decode(&value) != nil {
+		return Incompatible
+	}
 	if !containsExpression(value, 0) {
 		return validateLiteral(target, value)
 	}
@@ -44,7 +55,7 @@ func validateBoundValue(target Schema, value any, types map[string]Schema, scope
 	if !ok {
 		return Indeterminate
 	}
-	data, err := json.Marshal(source)
+	data, err = json.Marshal(source)
 	if err != nil || len(data) > MaxSchemaBytes {
 		return Indeterminate
 	}

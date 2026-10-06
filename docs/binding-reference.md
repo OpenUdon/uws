@@ -54,6 +54,9 @@ unproved constraint containment stays indeterminate. Nested body/array templates
 are projected as closed schemas using reviewed expression types and literal
 const leaves; structural containment is proved only for the supported constraint
 subset. Partial number/integer overlap is indeterminate, not disjoint.
+Typed JSON-compatible containers are normalized with UseNumber before
+template discovery, so they have the same binding meaning as ordinary JSON
+objects/arrays; invalid/duplicate-key values are refused without excerpts.
 Response field pointers
 use canonical indexes; unavailable schemas and partial missing fields don't
 become compatible by omission. Security alternatives preserve OR/AND structure

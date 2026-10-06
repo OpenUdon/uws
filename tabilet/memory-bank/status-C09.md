@@ -1,7 +1,7 @@
 # C09 — Binding contracts
 
 **Stage:** Kinet STG-11, Phase A. **Owner:** UWS.
-**State:** Confirmed Stage 11 execution; All four tasks complete; whole review 1/10 started, acceptance pending; review 0/10 not started.
+**State:** Confirmed Stage 11 execution; All four tasks complete; whole review 2/10 started, acceptance pending; review 0/10 not started.
 **Source baseline:** `a7688f54c68f5a75c7cc95aa2b31cea98b31af41` (clean at planning).
 **Coordinator:** [Stage 11 contract](../../../kinet/docs/stage11.md); the package-local milestone/status owns acceptance.
 
@@ -42,8 +42,9 @@ UWS:C08 is accepted and independently observed on origin/main at `0411eea6fc84fb
 
 ## Persisted review
 
-- Review iteration: **1/10**; started on 2026-10-06 after qualified source publication.
+- Review iteration: **2/10**; started on 2026-10-06 after R1-F01/F02 corrections; full rereview underway.
 - Closing-review findings, iteration 1: **R1-F01 (P2)** — a body object with nested core expressions is validated as a literal string-bearing object, falsely rejecting a reviewed integer expression. **R1-F02 (P2)** — schemaCompatibility treats number-to-integer as disjoint although it has partial overlap. Regressions reproduce both supported scenarios. Add recursively projected template schemas and proven structural containment, keep unsupported constraints indeterminate, and correct numeric overlap before rereview. Both findings are fixed and their nested-object/array, type-overlap, unsupported-constraint and open-source-schema regressions pass. Full tests/races/vet passed after fixes.
+- Closing-review findings, iteration 2: **R2-F01 (P2)** — template discovery handles only map[string]any/[]any, while literal validation already accepts equivalent typed JSON-compatible containers. A map[string]string containing a reviewed integer expression is falsely rejected. Normalize consumer values losslessly before template discovery and add the typed-container equivalence regression; preserve error/value redaction. R2-F01 is fixed: typed values are normalized losslessly before template discovery. The regression and full tests/races/vet pass. No other P1/P2 found on whole rereview.
 - Accepted revision: not available.
 - Published revision / artifact evidence: qualified source `df54c6644439114fa749ab962405b71c1bfcfff8` pushed fast-forward to authorized UWS origin/main, independently observed by git ls-remote. Accepted review/closure is required before adoption.
 - Verification: full offline tests/races/vet/strict docs, immutable-artifact and no-APItools/private-runtime checks passed; pinned OpenUdon semantic fixture comparison and negative/tampered/ambiguous/incomplete tests pass.

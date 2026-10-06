@@ -60,3 +60,16 @@ func TestReviewOpenObjectSourceDoesNotProveOptionalTargetPropertyType(t *testing
 		t.Fatal("open object constraints assumed", r)
 	}
 }
+
+func TestReviewTypedNestedTemplateHasSameMeaningAsJSONProjection(t *testing.T) {
+	table := tableFixture()
+	table.Operations[0].Inputs = []Input{{Location: "body", Name: "request", Schema: Schema{Known: true, JSON: json.RawMessage(`{"type":"object","properties":{"count":{"type":"integer"}},"required":["count"]}`)}}}
+	resolver, _ := NewResolver(table)
+	req := requestFixture()
+	req.Inputs = []BoundInput{{Location: "body", Name: "request", Value: map[string]string{"count": "$inputs.count"}}}
+	req.ExpressionTypes = map[string]Schema{"$inputs.count": {Known: true, JSON: json.RawMessage(`{"type":"integer"}`)}}
+	r, _ := ValidateBinding(t.Context(), resolver, req)
+	if r.Outcome != Compatible {
+		t.Fatalf("typed JSON-compatible template rejected: %+v", r)
+	}
+}

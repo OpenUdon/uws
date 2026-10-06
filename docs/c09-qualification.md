@@ -41,3 +41,9 @@ supported closed-object/finite-array case while retaining indeterminate results
 for unsupported constraints/open-object uncertainty. New regressions cover both
 fixes, array uniqueness uncertainty and open source object constraints. Full
 tests/races/vet passed after correction.
+
+Iteration 2 also qualified equivalent typed Go JSON containers containing
+expressions. The value projection is normalized with UseNumber before template
+discovery, preserving numeric precision and rejecting invalid/duplicate-key
+values. Full tests/races/vet passed again, including the typed-map equivalence
+regression. This changes only metadata checks and no source/provider behavior.
