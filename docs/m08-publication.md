@@ -26,7 +26,7 @@ compatibility remains explicit; no ambient sibling path or HCL-free claim.
 Retirement closure `0870b0169f2dba5570b9b2646d0abaf6f86b3564` was independently observed
 on the unchanged authorized origin/main after a normal fast-forward push.
 Accepted source c0b19385a3b034cd45de16726668b9150f0633f2 is an ancestor of
-that observed closure. The [full status/specification](../tabilet/docs/history/status-M08.md)
+that observed closure. The [full status/specification](https://github.com/OpenUdon/uws/blob/0870b0169f2dba5570b9b2646d0abaf6f86b3564/tabilet/docs/history/status-M08.md)
 is frozen under the normal UWS retirement procedure. Reconciled Udon:M47/M48
 and Kinet:M46/W17 statuses record the exact accepted source, observed closure
 and limits; the prerequisite publication gate is satisfied.
