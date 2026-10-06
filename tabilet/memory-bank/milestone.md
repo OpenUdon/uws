@@ -198,7 +198,7 @@ One execution owner, serial execution and task commits under the later confirmed
 ## M08 — Verified HCL presentation
 
 **Stage/owner.** STG-11 Phase A; UWS. **Priority.** Serial position 5/18, not a review severity.
-**Dependencies.** [APItools:M82](../../../apitools/tabilet/memory-bank/status-M82.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
+**Dependencies.** [APItools:M82](../../../apitools/tabilet/docs/history/status-M82.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
 **Scope.** Specify the additive 1.13 transition; Add render verify and import APIs; Prove lossless presentation; Qualify and publish both modules.
 **Acceptance.** A deterministic HCL view can be proved against the approved document. Existing HCL readers remain available; removal and core dependency extraction are deferred, not falsely claimed complete.
 **Verification.** go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
