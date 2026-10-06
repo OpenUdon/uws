@@ -23,10 +23,13 @@ The codec's standalone root C09 require supplies unchanged public tags/helpers;
 ordinary MVS selects the final root in this consumer. All legacy/Horizon/HCL
 compatibility remains explicit; no ambient sibling path or HCL-free claim.
 
-Retirement closure publication follows the reviewed source and must be
-independently observed/reachable before the reconciled consumers execute.
-The full status/specification is retained under the normal UWS retirement
-procedure; downstream statuses record the exact accepted source and limits.
+Retirement closure `0870b0169f2dba5570b9b2646d0abaf6f86b3564` was independently observed
+on the unchanged authorized origin/main after a normal fast-forward push.
+Accepted source c0b19385a3b034cd45de16726668b9150f0633f2 is an ancestor of
+that observed closure. The [full status/specification](../tabilet/docs/history/status-M08.md)
+is frozen under the normal UWS retirement procedure. Reconciled Udon:M47/M48
+and Kinet:M46/W17 statuses record the exact accepted source, observed closure
+and limits; the prerequisite publication gate is satisfied.
 
 Push heads use `[skip ci]` under
 [GitHub's documented mechanism](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/skip-workflow-runs)
