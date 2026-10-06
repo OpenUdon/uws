@@ -2,6 +2,8 @@
 
 ## Approved Stage 11 product direction — not implemented
 
+C08.1 now provides the public expressions parser for the existing core grammar, including version/field/loop gates and value-free errors. It adds no language feature and does not yet replace the mock evaluator or tighten ordinary validation.
+
 [Stage 11](../../../kinet/docs/stage11.md) and [local milestones](milestone.md#stage-11-cross-package-refactoring) define the approved target. UWS will own opt-in expression portability, source-neutral binding diagnostics and a verified HCL presentation module. Source parsing and product authority remain outside UWS. Existing published versions and ordinary validation compatibility stay intact; HCL input removal is outside Stage 11.
 Both phases belong to one stage. Current facts below remain the observed implementation; no new acceptance, publication or installed behavior is claimed. The installed Kinet M44 service remains unchanged, and Stage 12 owns the browser-dependent removal gates.
 

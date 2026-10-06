@@ -7,6 +7,8 @@ Both phases belong to one stage. Current facts below remain the observed impleme
 
 ## Language And Module
 
+C08.1 adds expressions with Go standard HTTP-free JSON/URL/string parsing only; no go.mod/go.sum or published-version bytes change. Parser race/vet and published-version immutability checks pass.
+
 - Go 1.25.4
 - Module: `github.com/OpenUdon/uws`
 - Library and specification distribution; there is no repository-owned service,

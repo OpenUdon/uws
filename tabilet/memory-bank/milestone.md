@@ -191,7 +191,7 @@ One execution owner, serial execution and task commits under the later confirmed
 | ID | Status file | State |
 |---|---|---|
 
-| C08 | [status-C08.md](status-C08.md) | pending; review 0/10 |
+| C08 | [status-C08.md](status-C08.md) | in progress; review 0/10 |
 
 | C09 | [status-C09.md](status-C09.md) | pending; review 0/10 |
 
