@@ -1,0 +1,323 @@
+{
+  "schema": "uws.expression-reference.v1",
+  "cases": [
+    {
+      "name": "scalar-variable",
+      "expression": "$variables.name",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {
+          "name": "Ada"
+        }
+      },
+      "state": {},
+      "expect_error": false,
+      "expected": "Ada"
+    },
+    {
+      "name": "null-propagation",
+      "expression": "$variables.object.missing",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {
+          "object": {}
+        }
+      },
+      "state": {},
+      "expect_error": false,
+      "expected": null
+    },
+    {
+      "name": "source-comparison",
+      "expression": "$variables.a == $variables.b",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {
+          "a": 9,
+          "b": 9
+        }
+      },
+      "state": {},
+      "expect_error": false,
+      "expected": true
+    },
+    {
+      "name": "response-header",
+      "expression": "$response.headers.content-type",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {}
+      },
+      "state": {
+        "current": {
+          "key": "op:read"
+        },
+        "records": {
+          "op:read": {
+            "result": {
+              "headers": {
+                "Content-Type": "application/json"
+              }
+            }
+          }
+        }
+      },
+      "expect_error": false,
+      "expected": "application/json"
+    },
+    {
+      "name": "pointer-escape",
+      "expression": "$response.body#/a~1b",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {}
+      },
+      "state": {
+        "current": {
+          "key": "op:read"
+        },
+        "records": {
+          "op:read": {
+            "result": {
+              "body": {
+                "a/b": "value"
+              }
+            }
+          }
+        }
+      },
+      "expect_error": false,
+      "expected": "value"
+    },
+    {
+      "name": "pointer-index-canonical",
+      "expression": "$response.body#/items/00",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {}
+      },
+      "state": {
+        "current": {
+          "key": "op:read"
+        },
+        "records": {
+          "op:read": {
+            "result": {
+              "body": {
+                "items": [
+                  "first"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expect_error": false,
+      "expected": null
+    },
+    {
+      "name": "dot-index-compatible",
+      "expression": "$response.body.items.00",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {}
+      },
+      "state": {
+        "current": {
+          "key": "op:read"
+        },
+        "records": {
+          "op:read": {
+            "result": {
+              "body": {
+                "items": [
+                  "first"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expect_error": false,
+      "expected": "first"
+    },
+    {
+      "name": "response-dot-version",
+      "expression": "$response.body.name",
+      "field": "value",
+      "document": {
+        "uws": "1.10.0",
+        "variables": {}
+      },
+      "state": {},
+      "expect_error": true
+    },
+    {
+      "name": "batch-loop",
+      "expression": "$batchIndex",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {}
+      },
+      "state": {
+        "iteration": {
+          "batchIndex": 0
+        }
+      },
+      "expect_error": false,
+      "expected": 0
+    },
+    {
+      "name": "batch-outside-loop",
+      "expression": "$batchIndex",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {}
+      },
+      "state": {},
+      "expect_error": true
+    },
+    {
+      "name": "predicate-number",
+      "expression": "1.25",
+      "field": "predicate",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {}
+      },
+      "state": {},
+      "expect_error": true
+    },
+    {
+      "name": "old-numeric-wait",
+      "expression": "1.25",
+      "field": "wait",
+      "document": {
+        "uws": "1.10.0",
+        "variables": {}
+      },
+      "state": {},
+      "expect_error": true
+    },
+    {
+      "name": "numeric-wait",
+      "expression": "1.2300",
+      "field": "wait",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {}
+      },
+      "state": {},
+      "expect_error": false,
+      "expected": 1.2300
+    },
+    {
+      "name": "number-exact-large",
+      "expression": "$variables.number == 900719925474099312345",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {
+          "number": 900719925474099312345
+        }
+      },
+      "state": {},
+      "expect_error": false,
+      "expected": true
+    },
+    {
+      "name": "input-indirection",
+      "expression": "$inputs.name",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {
+          "name": "Ada"
+        }
+      },
+      "state": {
+        "inputs": {
+          "name": "$variables.name"
+        }
+      },
+      "expect_error": false,
+      "expected": "Ada"
+    },
+    {
+      "name": "nearest-parent-step",
+      "expression": "$steps.fetch.outputs.result",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {}
+      },
+      "state": {
+        "current": {
+          "key": "step:consume#iter:1.2"
+        },
+        "records": {
+          "step:fetch#iter:1": {
+            "id": "fetch",
+            "kind": "step:operation",
+            "status": "success",
+            "outputs": {
+              "result": "parent"
+            }
+          },
+          "step:fetch#iter:2": {
+            "id": "fetch",
+            "kind": "step:operation",
+            "status": "success",
+            "outputs": {
+              "result": "sibling"
+            }
+          }
+        }
+      },
+      "expect_error": false,
+      "expected": "parent"
+    },
+    {
+      "name": "foreign-step-refusal",
+      "expression": "$steps.fetch.outputs.result",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {}
+      },
+      "state": {
+        "records": {
+          "foreign::step:fetch": {
+            "id": "fetch",
+            "kind": "step:operation",
+            "status": "success",
+            "outputs": {
+              "result": "foreign"
+            }
+          }
+        }
+      },
+      "expect_error": true
+    },
+    {
+      "name": "profile-extension-refusal",
+      "expression": "expr($variables.name)",
+      "field": "value",
+      "document": {
+        "uws": "1.12.0",
+        "variables": {}
+      },
+      "state": {},
+      "expect_error": true
+    }
+  ]
+}

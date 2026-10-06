@@ -2,7 +2,7 @@
 
 ## Approved Stage 11 architecture target — not implemented
 
-C08.1 adds the standard-library-only expressions package and immutable parse results. Source resolution, provider I/O and document admission remain outside parsing; numbers retain JSON lexemes. The old mock path remains unchanged until C08.3.
+C08 provides the expressions parser plus a reference evaluator over UWS-owned in-memory document/execution snapshots. Parsing uses only the standard library; evaluation reuses uws1 state and the existing internal strict-JSON helper. It performs no source/provider I/O or document admission. Callers must preserve json.Number in value projections before constructing snapshots; ordinary UWS custom decoding remains compatible and may round any-field numbers. The old mock path remains unchanged until C08.3.
 
 [Stage 11](../../../kinet/docs/stage11.md) and [local milestones](milestone.md#stage-11-cross-package-refactoring) define the approved target. UWS will own opt-in expression portability, source-neutral binding diagnostics and a verified HCL presentation module. Source parsing and product authority remain outside UWS. Existing published versions and ordinary validation compatibility stay intact; HCL input removal is outside Stage 11.
 Both phases belong to one stage. Current facts below remain the observed implementation; no new acceptance, publication or installed behavior is claimed. The installed Kinet M44 service remains unchanged, and Stage 12 owns the browser-dependent removal gates.

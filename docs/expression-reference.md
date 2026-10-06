@@ -37,3 +37,35 @@ Parsing does not resolve source values, grant execution or establish source
 shape correctness. Evaluation and optional document portability checking are
 separate C08 rows; ordinary validation and the existing mock remain unchanged
 at the parser milestone boundary.
+
+## Scoped reference evaluation
+
+`NewEvaluator(document)` uses an admitted immutable caller snapshot of the
+UWS model and `Evaluator.Evaluate(ctx, text, field)` resolves only in-memory
+orchestrator state. It never dispatches a leaf, fetches a source or discovers
+credentials. Current workflow records are frame-local; completed steps resolve
+from the nearest matching iteration then its enclosing iterations. Qualified
+child/foreign invocation records are excluded. Current responses must belong
+to the current invocation. Component variables remain visible when unshadowed;
+top-level declarations win on overlapping names.
+
+Input indirections retain the existing nesting ceiling of 32. Numeric
+comparisons use exact rationals with the existing 256-byte / ±10000 exponent
+resource limits. Nonfinite, unsupported or invalid JSON operands refuse;
+missing path children propagate null. JSON Pointer array indexes are canonical,
+while ordinary dot-walk indexes preserve their existing behavior. ResolveItems
+returns a source-ordered independent slice. Context cancellation is checked
+before evaluation and recursive expression resolution.
+
+Callers must preserve numbers before constructing the snapshot. The legacy
+UWS model's custom JSON unmarshalling historically converts some `any` fields
+to float64; setting UseNumber on an outer decoder does not override a custom
+UnmarshalJSON method. UseNumber on the source-value projection, then populate
+Variables/Components/input/result values with json.Number, preserves exact
+integers and numeric lexemes. The shared fixture loader demonstrates this
+boundary without changing the ordinary model decoder's compatibility.
+
+The separately versioned corpus `docs/examples/expressions/v1/cases.json`
+contains 18 source/version/context/visibility/number vectors and is consumed by
+the reference tests. C08.4 pins it as a conformance supplement; it does not
+edit any published schema or earlier executable contract.

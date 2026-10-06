@@ -1,7 +1,7 @@
 # C08 — Portable expressions
 
 **Stage:** Kinet STG-11, Phase A. **Owner:** UWS.
-**State:** Confirmed Stage 11 goal execution; C08.1 complete, C08.2–C08.4 pending; review 0/10 not started.
+**State:** Confirmed Stage 11 goal execution; C08.1–C08.2 complete, C08.3–C08.4 pending; review 0/10 not started.
 **Source baseline:** `a7688f54c68f5a75c7cc95aa2b31cea98b31af41` (clean at planning).
 **Coordinator:** [Stage 11 contract](../../../kinet/docs/stage11.md); the package-local milestone/status owns acceptance.
 
@@ -17,7 +17,7 @@ The serial predecessor is a scheduling gate; direct contract and regression impa
 | Item | State | Notes |
 |---|---|---|
 | C08.1 — Parse the existing expression grammar | `[+]` | Implement the existing sources, JSON Pointer/dot traversal, comparison operators, expression contexts and document-version gates. Add no language extension and do not reinterpret function templates or browser-profile strings. Evidence: expressions/parse.go and parser vectors cover all core sources, operator longest-match/whitespace, scalar lexemes, pointer escapes and version/field/loop refusals. Parser race/vet and published-version immutability checks passed; no old schema/spec/archive, ordinary validator or mock behavior changed. docs/expression-reference.md records the public boundary. |
-| C08.2 — Evaluate expressions with shared vectors | `[ ]` | Add a reference evaluator and parse/evaluation vectors for null propagation, comparisons, exact values and workflow/iteration visibility. Preserve current normative source/context distinctions. |
+| C08.2 — Evaluate expressions with shared vectors | `[+]` | Add a reference evaluator and parse/evaluation vectors for null propagation, comparisons, exact values and workflow/iteration visibility. Preserve current normative source/context distinctions. Evidence: expressions/evaluate.go, copied current source vectors and the new 18-case machine corpus qualify exact numbers, nulls, scoped responses, nearest completed iterations, component precedence, cancellation, input cycles and invalid JSON refusals. Shared/mock races and vet pass. Callers must preserve json.Number before snapshot construction; legacy custom model decoding is unchanged. |
 | C08.3 — Adopt without narrowing ordinary validation | `[ ]` | Use the reference evaluator in mockruntime with compatibility tests. Keep strict portability checking opt-in and preserve ordinary validation of implementation-specific expressions; diagnose legacy expr wrappers explicitly. Kinet:W18 explicitly enables strict portability for all newly authored packages; this does not narrow ordinary legacy validation. |
 | C08.4 — Qualify and prepare the parser release | `[ ]` | Run schema/version, evaluator, mock-runtime and race checks; prepare exact accepted source and a separately pinned conformance supplement. Publish only under named authority before a consumer requires publication. |
 

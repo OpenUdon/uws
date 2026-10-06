@@ -7,7 +7,7 @@ Both phases belong to one stage. Current facts below remain the observed impleme
 
 ## Language And Module
 
-C08.1 adds expressions with Go standard HTTP-free JSON/URL/string parsing only; no go.mod/go.sum or published-version bytes change. Parser race/vet and published-version immutability checks pass.
+C08 adds expressions with standard-library parsing and a reference evaluator using existing uws1 context/strict-JSON support. No go.mod/go.sum or published-version bytes change. Parser/evaluator/mock race/vet and published-version immutability checks pass; the new 18-case reference corpus uses lossless value projections.
 
 - Go 1.25.4
 - Module: `github.com/OpenUdon/uws`

@@ -189,3 +189,13 @@ Literal prior candidate from milestone.md at a7688f54c68f5a75c7cc95aa2b31cea98b3
 ````
 
 C08/C09 now own the expression/binding subset; the active candidate retains the other corpus gaps. The frozen 1.11 corpus is unchanged. See [the current plan](../../memory-bank/milestone.md#stage-11-cross-package-refactoring).
+
+## C08 reference evaluator boundary — 2026-10-06
+
+Source: architecture.md approved Stage 11 target at `d78189c75f3f67d68a0d1ebabfd176c4d5c81c30`. The parser-only boundary now gains the already approved reference evaluator; no new module dependency or ordinary-validator change. Literal prior wording:
+
+```markdown
+C08.1 adds the standard-library-only expressions package and immutable parse results. Source resolution, provider I/O and document admission remain outside parsing; numbers retain JSON lexemes. The old mock path remains unchanged until C08.3.
+```
+
+Replacement: architecture.md current C08 parser/evaluator boundary and docs/expression-reference.md. The evaluator consumes UWS-owned in-memory context, performs no provider I/O and requires losslessly prepared caller values.
