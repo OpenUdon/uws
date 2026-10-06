@@ -1,0 +1,50 @@
+{
+  "version": "uws.hcl-conformance.v1",
+  "codec_contract": "uws.hcl-view.v1",
+  "root_contract": "1.13.0",
+  "oracle": "UseNumber JSON value tree and exact numeric tokens; no float64/JCS equality",
+  "sources": [
+    {
+      "path": "sample.uws.json",
+      "format": "json",
+      "bytes": 3112,
+      "sha256": "3b12ce4fa755550ea975da3887078c11823bea432091eb53a1dfe69461dc5386",
+      "fixture": "sources/sample.uws.json"
+    },
+    {
+      "path": "big/big.json",
+      "format": "json",
+      "bytes": 198170,
+      "sha256": "f0c911df36a48228b9a84bde2b950bcb4d0e4f0eb35f4a662a9212d0df5fa853",
+      "fixture": "sources/big/big.json"
+    },
+    {
+      "path": "examples/pending-only.1.12.json",
+      "format": "json",
+      "bytes": 1278,
+      "sha256": "a386f834c3d01f0b667bd3ea045128c3aab4c020cac61e33f143239deb1939d9",
+      "fixture": "sources/examples/pending-only.1.12.json"
+    },
+    {
+      "path": "browser-registration/private-form-call.json",
+      "format": "json",
+      "bytes": 523,
+      "sha256": "96f9f85d992ea05a2977b17555d07319cae164e1b3de9f022108c8ed1b220ffa",
+      "fixture": "sources/browser-registration/private-form-call.json"
+    },
+    {
+      "path": "browser-authentication/member-call.uws.yaml",
+      "format": "yaml",
+      "bytes": 925,
+      "sha256": "ac3dd45e492fe314fa4cff934b65768242b2df27d4d6240735b5b6aa3c33d73d",
+      "fixture": "sources/browser-authentication/member-call.uws.yaml"
+    },
+    {
+      "path": "browser-profile/read-only.uws.yaml",
+      "format": "yaml",
+      "bytes": 485,
+      "sha256": "eb16a1669eb59eba0e89bfcb576ec37e44fe7acce36abb3e6f086eb175fa0919",
+      "fixture": "sources/browser-profile/read-only.uws.yaml"
+    }
+  ]
+}

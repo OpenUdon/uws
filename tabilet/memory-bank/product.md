@@ -7,7 +7,7 @@ JSON/YAML bytes, independent exact-value/lexeme Verify and deprecated explicit
 Import. Returned provenance binds raw source and codec/view identities; failed
 proofs return no view. No file/network loading, variable/function evaluation,
 credentials, workflow validation, approval or execution is supplied. Existing
-root HCL APIs remain unchanged. M08.3/.4 still own full corpus/release acceptance.
+root HCL APIs remain unchanged. M08.3 qualifies the lossless/refusal corpus; M08.4 still owns release acceptance.
 
 ## M08.1 presentation contract progress
 
@@ -125,8 +125,8 @@ changing execution.
 
 UWS 1.13.0 is the current core specification. It retains 1.12 wire/execution
 semantics and adds the separate verified HCL presentation/deprecation contract.
-M08.1 supplies the versioned documents; codec implementation/whole qualification
-remain pending in M08.2–M08.4. Earlier published versions and ordinary HCL APIs
+M08.1 supplies the versioned documents; M08.2/M08.3 supply the codec and
+byte-pinned conformance. Whole release qualification remains pending in M08.4. Earlier published versions and ordinary HCL APIs
 remain available. UWS 1.12 added optional operation `effect`
 classification (`read`, `write`, or `unknown`; omission is `unknown`) and
 non-executable pending-step contracts with recursive object-root input and

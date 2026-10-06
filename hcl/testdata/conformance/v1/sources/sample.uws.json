@@ -1,0 +1,134 @@
+{
+  "uws": "1.0.0",
+  "info": {
+    "title": "Sample UWS Workflow",
+    "summary": "Demonstrates OpenAPI-backed workflow operations with structural constructs",
+    "version": "1.0.0"
+  },
+  "sourceDescriptions": [
+    {
+      "name": "petstore_api",
+      "url": "./petstore.yaml",
+      "type": "openapi"
+    }
+  ],
+  "variables": {
+    "env": "production",
+    "timeout": 30,
+    "tags": ["api", "demo"]
+  },
+  "operations": [
+    {
+      "operationId": "list_pets",
+      "sourceDescription": "petstore_api",
+      "openapiOperationId": "listPets",
+      "request": {
+        "query": {
+          "limit": 10,
+          "status": "available"
+        }
+      },
+      "successCriteria": [
+        { "condition": "$response.statusCode == 200" }
+      ],
+      "onFailure": [
+        {
+          "name": "retry_list",
+          "type": "retry",
+          "retryAfter": 2,
+          "retryLimit": 3
+        }
+      ],
+      "outputs": {
+        "petList": "$response.body.items"
+      }
+    },
+    {
+      "operationId": "create_pet",
+      "sourceDescription": "petstore_api",
+      "openapiOperationRef": "#/paths/~1pets/post",
+      "dependsOn": ["list_pets"],
+      "when": "length(list_pets.received_body.items) < 100",
+      "request": {
+        "body": {
+          "name": "Buddy",
+          "tag": "dog"
+        }
+      },
+      "successCriteria": [
+        { "condition": "$response.statusCode == 201" }
+      ],
+      "onSuccess": [
+        {
+          "name": "goto_validate",
+          "type": "goto",
+          "workflowId": "parallel_checks"
+        }
+      ],
+      "onFailure": [
+        {
+          "name": "end_on_error",
+          "type": "end"
+        }
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "workflowId": "parallel_checks",
+      "type": "parallel",
+      "description": "Run validation after pet creation",
+      "inputs": {
+        "type": "object",
+        "properties": {
+          "petId": { "type": "integer" }
+        },
+        "required": ["petId"]
+      },
+      "dependsOn": ["create_pet"],
+      "steps": [
+        {
+          "stepId": "validate_pet",
+          "description": "Validate the newly created pet record",
+          "operationRef": "create_pet",
+          "outputs": {
+            "isValid": "$response.body.valid"
+          }
+        },
+        {
+          "stepId": "merge_validation",
+          "type": "merge",
+          "description": "Combine validation outputs",
+          "dependsOn": ["validate_pet"]
+        }
+      ],
+      "outputs": {
+        "validationResult": "$steps.validate_pet.outputs.isValid"
+      }
+    }
+  ],
+  "triggers": [
+    {
+      "triggerId": "pet_webhook",
+      "path": "/webhooks/pets",
+      "methods": ["POST"],
+      "authentication": "bearer",
+      "outputs": ["received"],
+      "routes": [
+        {
+          "output": "received",
+          "to": ["parallel_checks"]
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "name": "validation_merge",
+      "kind": "merge",
+      "from": "parallel_checks.merge_validation",
+      "value": "$steps.merge_validation.outputs"
+    }
+  ],
+  "x-generator": "udon-cli"
+}

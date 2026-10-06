@@ -16,7 +16,7 @@ Exact 1.13 schema/specification membership is added while all older published
 hashes remain unchanged. The core declared-version map and latest conformance
 references select 1.13; prior version gates/wire fields stay intact. The embedded
 archive is regenerated with go generate ./schemas. Existing dependency versions
-and legacy HCL APIs are unchanged; the nested codec module is still pending.
+and legacy HCL APIs are unchanged; the nested codec module is implemented and tested separately.
 
 
 ## C08 accepted reference foundation

@@ -44,5 +44,9 @@ model tags and strict JSON helpers. That closure still contains Horizon/HashiCor
 HCL; no core-dependency removal is claimed. Final root/codec publication and
 consumer pins remain M08.4 work. The operator-owned go.work is unchanged.
 
+The self-contained conformance supplement pins six byte-identical existing
+fixtures, plus exact-number/string/key and malformed/resource refusal cases.
+An external-package test compiles the public consumer API.
+
 Run `GOWORK=off GOPROXY=off go test ./...`, its `-race` variant and `go vet ./...`
 from this module. Root-module tests do not discover a nested module automatically.

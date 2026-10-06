@@ -103,3 +103,12 @@ Normalize typed JSON-compatible containers with UseNumber before discovering
 expressions. C09 review R1/R2 fixtures reproduced nested and typed-body false
 rejections and an incorrect disjoint numeric classification; the fixed checks
 pass without key/provider loading or value-bearing diagnostics.
+
+## Ship nested-module conformance fixtures with the module
+
+Go module downloads exclude parent-module fixture directories. Keep byte-pinned
+fixture copies inside a nested module and preserve the original paths as lineage.
+Prove the tests in a disposable module-only copy before release. For presentation
+code, use an independent UseNumber value-tree oracle and exact numeric token
+strings; rendered text or floating-point equality cannot prove losslessness.
+M08.3's six-source manifest and exact-number/key corpus provide the evidence.

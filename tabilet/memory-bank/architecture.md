@@ -8,7 +8,7 @@ legacy custom decoding. Inert HCL AST parsing reconstructs JSON numeric token
 ranges exactly and refuses evaluation, unknown/ambiguous mappings or failed
 source/codec/view provenance. The root module and legacy HCL APIs are unchanged;
 standalone nested checks and initial privacy/refusal fixtures pass. Full corpus
-and release qualification remain M08.3/.4.
+is qualified by M08.3; whole release qualification remains M08.4.
 
 ## M08.1 presentation contract progress
 

@@ -4,8 +4,9 @@ UWS 1.13 adds the [presentation/deprecation contract](https://github.com/OpenUdo
 Its wire fields and execution rules remain the UWS 1.12 rules. The separate
 `github.com/OpenUdon/uws/hcl` module owns deterministic Render, independent
 lossless Verify and deprecated Import. M08.2 implements the byte-based codec
-and initial fixtures; broader conformance and whole qualification/publication
-remain M08.3/M08.4 work.
+and the byte-pinned conformance supplement covers the complete existing typed
+corpus, exact numeric lexemes, strings/keys and refusal cases. Whole release
+qualification/publication remain M08.4 work.
 
 The Go APIs accept `Source{Format: JSON|YAML, Bytes: sourceBytes}` and
 `Options{Revision: exactCodecCommit}`. `Render` returns `View{HCL, Provenance}`

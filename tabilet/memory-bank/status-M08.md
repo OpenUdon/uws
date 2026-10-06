@@ -1,7 +1,7 @@
 # M08 — Verified HCL presentation
 
 **Stage:** Kinet STG-11, Phase A. **Owner:** UWS.
-**State:** Confirmed Stage 11 execution; M08.1/M08.2 complete, M08.3–M08.4 pending; whole review 0/10 not started.
+**State:** Confirmed Stage 11 execution; M08.1–M08.3 complete, M08.4 pending; whole review 0/10 not started.
 **Source baseline:** `a7688f54c68f5a75c7cc95aa2b31cea98b31af41` (clean at planning).
 **Coordinator:** [Stage 11 contract](../../../kinet/docs/stage11.md); the package-local milestone/status owns acceptance.
 
@@ -18,7 +18,7 @@ The serial predecessor is a scheduling gate; direct contract and regression impa
 |---|---|---|
 | M08.1 — Specify the additive 1.13 transition | `[+]` | Add exact 1.13 schema/specification and the verified HCL presentation/deprecation contract; retain 1.12 wire/execution rules and all prior artifact hashes. Synchronize declared-version admission, latest schema/conformance references, archive, discovery/navigation and current facts. Full standalone tests/races/vet, strict docs, protected versions and consumer regressions passed. Separate codec implementation and whole acceptance/publication remain M08.2–M08.4. |
 | M08.2 — Add render verify and import APIs | `[+]` | Separate github.com/OpenUdon/uws/hcl implements deterministic byte-based Render, independent lossless Verify and deprecated inert Import. Public model tags preserve typed blocks/labels/extensions; numeric AST token ranges preserve exact lexemes without custom model decoding/float64/JCS. Exact source/codec/view provenance, tampering/evaluation refusal, literal labels/templates and empty/null/key collisions pass standalone nested tests/races/vet. Root legacy APIs/dependencies and operator go.work remain unchanged; M08.3/.4 own full corpus/release qualification. |
-| M08.3 — Prove lossless presentation | `[ ]` | Test large integers, precise decimals, exponent notation, required lexeme preservation, strings, keys, extensions and malformed HCL. Never use float64 or JCS equality as the losslessness oracle; refuse a misleading view. |
+| M08.3 — Prove lossless presentation | `[+]` | Self-contained six-source byte-pinned typed corpus, exact number/string/key/container cases and malformed/ambiguous/evaluation/resource/cancellation refusals pass. Independent UseNumber JSON projection and exact numeric tokens are the losslessness oracle; external-package consumer compiles. Nested standalone/copy-only tests, races/vet, strict docs and diff checks pass. |
 | M08.4 — Qualify and publish both modules | `[ ]` | Verify old APIs and immutable version hashes, schema/code/docs/archive parity, nested-module builds and codec round trips. Publish exact root/codec sources with named authority and record consumer handoffs. |
 
 ## Acceptance and verification
@@ -129,3 +129,26 @@ checks remain offline afterward. No source publication, legacy API removal,
 dependency upgrade, workflow/package mutation or live authority was exercised.
 M08.3 must broaden the lossless/malformed/resource conformance corpus before
 M08.4's whole review/publication; no milestone acceptance is claimed here.
+
+## Execution evidence — M08.3, 2026-10-06
+
+The nested conformance supplement pins six byte-identical existing root fixtures
+without changing their originals: sample, the complete big typed corpus,
+pending-only and three retained browser declarations. Copies inside the module
+allow registry/downloaded-module tests without a parent checkout. Manifest SHA-256
+is `97408edfe8d7d8147bd0950ac88c00e1757c8564c84992a93e0ec70b19fd5fd2`.
+The separate JSON oracle uses standard-library UseNumber and exact token strings;
+large integers, precise/trailing-zero decimals, exponent case/sign/padding and
+signed zero remain distinct. Unicode/control/template-marker strings, dollar/
+escape-prefix/key collisions, null/empty/absence and ordered arrays round-trip.
+YAML fixtures and explicit lexical cases also pass; no float64/JCS oracle is used.
+
+Malformed/escaped duplicate sources, unsupported YAML forms, ambiguous typed
+blocks/attributes/labels/decoded keys, executable HCL, tampered provenance,
+oversized/deep inputs and cancellation refuse without partial values or private
+input excerpts. The external-package public API compiles and verifies. Passed:
+standalone nested full tests/races/vet, full tests from a disposable copy containing
+only the nested module, strict MkDocs, gofmt and git diff --check. Production
+codec bytes, root code/schema/archive, immutable versions and fixture originals
+were unchanged in this task. M08.4 still owns whole review, both-module release
+qualification and exact authorized source publication; no acceptance is claimed.
