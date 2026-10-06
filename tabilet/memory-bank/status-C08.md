@@ -7,7 +7,7 @@
 
 ## Dependencies and handoff
 
-[Kinet:M45](../../../kinet/tabilet/memory-bank/status-M45.md).
+[Kinet:M45](../../../kinet/tabilet/docs/history/status-M45.md).
 The serial predecessor is a scheduling gate; direct contract and regression impacts are also listed. Every prerequisite must pass its whole review, and required publication must be independently verified before adoption. Record exact accepted/published sources and fixture/build hashes; no Stage 11 acceptance or future pin is claimed yet.
 
 **Downstream:** [UWS:C09](status-C09.md), [Udon:M48](../../../udon/tabilet/memory-bank/status-M48.md), [OpenUdon:M98](../../../openudon/tabilet/memory-bank/status-M98.md). Reconcile every affected consumer against the accepted prerequisite revision before advancing.
@@ -35,6 +35,10 @@ One execution owner, serial execution and task commits under the later confirmed
 ## Reconciled consumer contract — 2026-10-06
 
 Kinet:W18 requires strict portability for new packages; the opt-in UWS API preserves ordinary legacy validation. OpenUdon:M98 consumes affected mockruntime regression vectors.
+
+## Accepted transition prerequisite — 2026-10-06
+
+Kinet:M45 is accepted/retired at `76c5a7cc577cd1dc86d21e9c3a3bd372e3c807b7` after whole review 3/10. Consume the [behavior/corpus baseline](../../../kinet/docs/m45-transition-baseline.md), [bounded worker consumer requirements](../../../kinet/docs/stage11-worker-contract.md) and [qualified development baseline](../../../kinet/docs/m45-qualification.md). The final three-sample profile is docs/m45-profile-final.json (retained worker median 8.939s); matching semantics and recorded investigation thresholds govern W17/Phase B comparisons. M45 proves neither live-package completeness nor new library/worker acceptance. Kinet publication is not a prerequisite; the eight sibling publication gates remain explicitly authorized by the confirmed request.
 
 ## Persisted review
 

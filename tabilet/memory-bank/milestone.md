@@ -199,8 +199,10 @@ One execution owner, serial execution and task commits under the later confirmed
 
 ## C08 — Portable expressions
 
+Exact transition prerequisite: accepted Kinet:M45 `76c5a7cc577cd1dc86d21e9c3a3bd372e3c807b7`, review 3/10, with bounded worker requirements and final offline baseline profile. This does not alter ordinary validation or published versions.
+
 **Stage/owner.** STG-11 Phase A; UWS. **Priority.** Serial position 2/18, not a review severity.
-**Dependencies.** [Kinet:M45](../../../kinet/tabilet/memory-bank/status-M45.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
+**Dependencies.** [Kinet:M45](../../../kinet/tabilet/docs/history/status-M45.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
 **Scope.** Parse the existing expression grammar; Evaluate expressions with shared vectors; Adopt without narrowing ordinary validation; Qualify and prepare the parser release.
 **Acceptance.** The existing normative grammar has one tested reference implementation. Existing document acceptance and frozen conformance artifacts remain compatible; strict portability checks are explicit.
 **Verification.** go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
