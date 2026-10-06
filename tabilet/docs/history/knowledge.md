@@ -199,3 +199,13 @@ C08.1 adds the standard-library-only expressions package and immutable parse res
 ```
 
 Replacement: architecture.md current C08 parser/evaluator boundary and docs/expression-reference.md. The evaluator consumes UWS-owned in-memory context, performs no provider I/O and requires losslessly prepared caller values.
+
+## C08 mock reference adoption — 2026-10-06
+
+Source: architecture.md at `b40d2226024809cd65859330405ec76c60f97db5`. Literal prior transition wording:
+
+```markdown
+The old mock path remains unchanged until C08.3.
+```
+
+C08.3 now delegates mock evaluation to the shared reference implementation while preserving historical generic-number/encoded-root compatibility. CheckPortability is opt-in, source-field-only and does not alter ordinary validation. Replacement: current architecture.md and docs/expression-reference.md.

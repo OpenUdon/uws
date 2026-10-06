@@ -7,7 +7,7 @@ Both phases belong to one stage. Current facts below remain the observed impleme
 
 ## Language And Module
 
-C08 adds expressions with standard-library parsing and a reference evaluator using existing uws1 context/strict-JSON support. No go.mod/go.sum or published-version bytes change. Parser/evaluator/mock race/vet and published-version immutability checks pass; the new 18-case reference corpus uses lossless value projections.
+C08 adds expressions with standard-library parsing and a reference evaluator using existing uws1 context/strict-JSON support. No go.mod/go.sum or published-version bytes change. Parser/evaluator/mock race/vet and published-version immutability checks pass; the new 18-case reference corpus uses lossless value projections. C08.3 replaces the duplicate mock expression implementation with delegation and adds opt-in portability tests; no dependency version changed.
 
 - Go 1.25.4
 - Module: `github.com/OpenUdon/uws`

@@ -69,3 +69,24 @@ The separately versioned corpus `docs/examples/expressions/v1/cases.json`
 contains 18 source/version/context/visibility/number vectors and is consumed by
 the reference tests. C08.4 pins it as a conformance supplement; it does not
 edit any published schema or earlier executable contract.
+
+## Optional strict portability and mock adoption
+
+`CheckPortability(document)` returns deterministic code/path diagnostics for
+core expression fields only. Ordinary Document.Validate is unchanged. Core
+controls, outputs, simple criteria, source-bound request values and step input
+bindings use the parser; regex/JSONPath/XPath queries, extensions, opaque bodies,
+trigger options and function/browser-profile request templates remain owned by
+their profiles. Legacy expr wrappers receive an explicit diagnostic. Traversal
+is depth bounded; diagnostics are capped at 128 and carry no expression values.
+Known loop invocation contexts are tracked so a reusable operation's batch
+reference is checked in its actual call scope, not merely its declaration.
+
+The mock now delegates source lookup, comparison and item resolution to the
+shared evaluator. Its historical generic numeric-evaluation and encoded-root
+pointer extensions remain in a small explicit compatibility adapter. Quoted
+comparison literals are never rewritten. The strict checker diagnoses those
+forms in their real core field context. Unshadowed component variables now
+follow the existing published precedence rule rather than being discarded
+when unrelated top-level variables exist. No provider behavior, schema,
+ordinary-validator rule or published-version byte changes in this adoption.
