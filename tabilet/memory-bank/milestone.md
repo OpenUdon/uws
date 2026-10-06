@@ -191,11 +191,11 @@ One execution owner, serial execution and task commits under the later confirmed
 | ID | Status file | State |
 |---|---|---|
 
-| C08 | [status-C08.md](status-C08.md) | Kinet:M45 |
+| C08 | [status-C08.md](status-C08.md) | pending; review 0/10 |
 
-| C09 | [status-C09.md](status-C09.md) | UWS:C08 |
+| C09 | [status-C09.md](status-C09.md) | pending; review 0/10 |
 
-| M08 | [status-M08.md](status-M08.md) | APItools:M82 |
+| M08 | [status-M08.md](status-M08.md) | pending; review 0/10 |
 
 ## C08 — Portable expressions
 
