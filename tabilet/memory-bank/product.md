@@ -6,6 +6,8 @@ C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4
 
 ## Approved Stage 11 product direction — not implemented
 
+C09.2 adds advisory binding validation with compatible/incompatible/indeterminate outcomes. It checks required/literal/expression/output/security metadata without credentials or effects.
+
 C09.1 adds the public source-neutral binding shape/resolver contract. Metadata completeness, exact identity and security OR/AND semantics are explicit; metadata never grants execution.
 
 C08.1 now provides the public expressions parser for the existing core grammar, including version/field/loop gates and value-free errors. C08.2 adds exact scalar comparison, null propagation and workflow/nearest-iteration lookup with shared vectors. C08.3 now makes the mock consume the shared evaluator and exposes opt-in CheckPortability diagnostics. Historical mock extensions remain explicit compatibility adapters; ordinary validation is unchanged.

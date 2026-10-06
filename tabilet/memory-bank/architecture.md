@@ -6,6 +6,8 @@ C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4
 
 ## Approved Stage 11 architecture target — not implemented
 
+C09.2 validates neutral binding projections and reviewed expression schemas, refuses external schema loads, checks exact resolver/source/selector identity and preserves security OR/AND alternatives. Unknown/unproved compatibility remains indeterminate; ordinary UWS validation is untouched.
+
 C09.1 binding types and strict bounded serialization/resolver snapshots are separate from source parsers. Known/unknown schemas/security and protocol-specific fields remain honest; no APItools/provider import or network access is added.
 
 C08 provides the expressions parser plus a reference evaluator over UWS-owned in-memory document/execution snapshots. Parsing uses only the standard library; evaluation reuses uws1 state and the existing internal strict-JSON helper. It performs no source/provider I/O or document admission. Callers must preserve json.Number in value projections before constructing snapshots; ordinary UWS custom decoding remains compatible and may round any-field numbers. The mock now delegates to the shared evaluator, with small historical generic-number/encoded-root adapters. CheckPortability is opt-in, value-free and limited to known core fields; source-function/browser templates and non-simple queries remain profile-owned. Known invocation scopes prevent declaration-site false positives for batch expressions. Ordinary validators and published-version bytes are unchanged.

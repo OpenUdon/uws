@@ -35,3 +35,22 @@ therefore does not establish trust or enable an operation.
 
 Binding validation and deterministic flow findings are delivered by C09.2/.3.
 Ordinary document validation and frozen published contracts remain unchanged.
+
+## Advisory binding validation
+
+ValidateBinding accepts a resolver plus a consumer-prepared projection of bound
+inputs, symbolic credential slots/scopes, response references and independently
+reviewed expression types. Compatible means the metadata constraints checked
+are proved; it is never credential readiness or execution permission.
+Incompatible identifies a concrete mismatch; missing/partial/unsupported type,
+source or schema evidence remains indeterminate. Reports contain stable code,
+path and outcome metadata, never input values or resolver/schema error text.
+
+Required input presence and literal schemas are checked with the existing
+JSON-Schema implementation and an external-resource loader that always refuses.
+No file/network ref is fetched. Exact schema equality, finite enum/const values
+or simple proven type containment can establish expression compatibility;
+unproved constraint containment stays indeterminate. Response field pointers
+use canonical indexes; unavailable schemas and partial missing fields don't
+become compatible by omission. Security alternatives preserve OR/AND structure
+and require reviewed symbolic slots plus required scopes, without loading keys.
