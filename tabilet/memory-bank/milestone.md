@@ -193,7 +193,7 @@ One execution owner, serial execution and task commits under the later confirmed
 
 
 
-| M08 | [status-M08.md](status-M08.md) | pending; review 0/10 |
+| M08 | [status-M08.md](status-M08.md) | in progress; review 0/10 |
 
 ## M08 — Verified HCL presentation
 
@@ -204,7 +204,7 @@ One execution owner, serial execution and task commits under the later confirmed
 **Verification.** go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
 Use only disposable roots and fixtures. Preserve published schemas/wires, historic evidence, current runtime capability restrictions and the installed M44 service. Changed v3/package/worker identities require fresh approval; they do not preserve old grants.
 **Downstream.** [Udon:M47](../../../udon/tabilet/memory-bank/status-M47.md), [Udon:M48](../../../udon/tabilet/memory-bank/status-M48.md), [Kinet:M46](../../../kinet/tabilet/memory-bank/status-M46.md), [Kinet:W17](../../../kinet/tabilet/memory-bank/status-W17.md). Reconcile exact accepted/publication revisions before advancing.
-**Tasks/review.** [status-M08.md](status-M08.md), 4 pending task commit units; review 0/10, not started. Approved intake provenance and consumer requirements are in that status. No implementation, acceptance or publication yet.
+**Tasks/review.** [status-M08.md](status-M08.md), M08.1 complete and 3 pending task commit units; review 0/10, not started. The additive 1.13 contract/archive/validation/discovery transition is implemented; the separate codec, qualification, acceptance and publication remain pending.
 
 ## Stage 11 candidate dispositions
 

@@ -1,5 +1,15 @@
 # Architecture
 
+## M08.1 presentation contract progress
+
+UWS 1.13 is distributed as a new exact-version schema/specification, with no
+new wire field or execution rule. The separate planned uws/hcl module owns
+source-byte Render/Verify/deprecated Import; this row publishes its contract,
+not its implementation. Independent exact-value/lexeme verification precedes
+view exposure. Existing root HCL APIs, core dependencies and browser input
+remain retained. New-version schema/model/archive/navigation are synchronized.
+
+
 ## C08 accepted reference foundation
 
 C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4844`, independently observed on origin/main. The [qualification](../../docs/c08-qualification.md) pins the source and supplement; M08 remains pending.

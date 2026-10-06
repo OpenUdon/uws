@@ -1,5 +1,14 @@
 # Technical Stack
 
+## M08.1 presentation contract progress
+
+Exact 1.13 schema/specification membership is added while all older published
+hashes remain unchanged. The core declared-version map and latest conformance
+references select 1.13; prior version gates/wire fields stay intact. The embedded
+archive is regenerated with go generate ./schemas. Existing dependency versions
+and legacy HCL APIs are unchanged; the nested codec module is still pending.
+
+
 ## C08 accepted reference foundation
 
 C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4844`, independently observed on origin/main. The [qualification](../../docs/c08-qualification.md) pins the source and supplement; M08 remains pending.

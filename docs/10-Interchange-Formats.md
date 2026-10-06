@@ -4,7 +4,15 @@
 
 ---
 
-UWS documents are valid JSON, YAML, or canonical HCL. The `convert` package in `github.com/OpenUdon/uws` moves documents between all three formats with round-trip guarantees.
+JSON and YAML are portable UWS serializations. Existing typed HCL conversion and
+input APIs remain available for compatibility. UWS 1.13 adds a separate
+[verified HCL presentation contract](hcl-presentation.md) over exact source bytes;
+its module implementation/qualification is pending in M08.2–M08.4. A derived
+verified view is separate from source and historical packaged HCL.
+
+The examples below describe the retained `convert`/`uws1` mapping. That typed
+legacy path does not prove preservation of arbitrary numeric values/lexemes;
+new views require the independent lossless verification contract.
 
 ## Three Formats, One Document
 
@@ -12,7 +20,7 @@ UWS documents are valid JSON, YAML, or canonical HCL. The `convert` package in `
 |--------|----------|---------------------|
 | JSON | Machine interchange, API responses, LLM output | ✓ |
 | YAML | Human authoring, configuration files | ✓ |
-| HCL | Canonical authoring for runtime tooling | ✓ via `extensions { ... }` blocks |
+| HCL | Retained typed input/conversion; new views require lossless verification | via `extensions { ... }` blocks |
 
 ## Example 1: The Same Operation in All Three Formats
 
@@ -290,7 +298,7 @@ other key types instead of coercing them into potentially colliding strings.
 
 ## Round-Trip Guarantee
 
-For any core-only (extension-free) UWS document:
+Within the retained typed conversion's supported mapping:
 
 ```
 JSON → HCL → JSON  produces a structurally identical document

@@ -96,7 +96,10 @@ func TestOperationEffect_PublishedSchemaAndVersionGate(t *testing.T) {
 }
 
 func TestSchemaParity_Published112Fields(t *testing.T) {
-	schema := loadSchemaDoc(t)
+	data, err := os.ReadFile("../versions/1.12.0.json")
+	require.NoError(t, err)
+	var schema map[string]any
+	require.NoError(t, json.Unmarshal(data, &schema))
 	version := schemaVersionFromID(t, schema)
 	require.Equal(t, "1.12.0", version)
 

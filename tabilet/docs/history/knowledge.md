@@ -219,3 +219,45 @@ Both phases belong to one stage. Current facts below remain the observed impleme
 ```
 
 Replacement: those current documents now record accepted/published C08 while C09/M08 remain pending. The planned full-stage target and installed Kinet M44 boundary are unchanged.
+
+## M08.1 current core contract advances to 1.13 — 2026-10-06
+
+Source: product.md, Current Contract Surface, at observed c91e9f0afd4e42b7741671e5e9eca53f9d472471 (planning/progress context; full baseline is recorded in M08 status). UWS 1.13 retains these wire/execution rules and adds presentation/deprecation. Replacement: [product current contract](../../memory-bank/product.md#current-contract-surface) and [UWS 1.13](../../../versions/1.13.0.md).
+
+````markdown
+UWS 1.12.0 is the current core contract. It adds optional operation `effect`
+classification (`read`, `write`, or `unknown`; omission is `unknown`) and
+non-executable pending-step contracts with recursive object-root input and
+output schemas. Pending-only documents may use an empty `operations` array
+without placeholder operations. Structural and semantic validation accepts a
+valid pending contract; executable validation rejects any pending step before
+runtime methods are invoked, including in an unselected branch. Effect labels
+are descriptive and do not grant execution authorization. UWS 1.11 introduced
+version-gated response-body dot-walks, loop-only `$batchIndex`, numeric
+`wait`/`batchSize` literals, terminal root-scoped `goto`, and corrected
+`forEach` merge records. UWS 1.10 execution semantics remain active for 1.10
+and later; earlier declarations retain their versioned behavior. Browser 1.10
+is the current opt-in browser capability profile and adds typed CSS selector
+match counts; empty profile lookup retains Browser 1.8 as its compatibility
+default. Browser authentication/call 1.1 is current for sign-in; browser
+registration/call 1.2 is current for reviewed registration verification; and
+registration input 1.0 is the private envelope format. Runtime Supplement 1.0
+remains the public metadata floor for common non-HTTP extension operations.
+Mock Fixture Format 1.0 is a separate, inert response-fixture format keyed by a
+UWS-local operation ID and SHA-256 over RFC 8785 canonical bytes for the
+resolved request-binding object. Repeated exact-key lookups reuse the same
+response. Its codec requires explicit redaction for recorded fixtures and has
+no automatic response persistence. The public `mockruntime` package uses the
+core orchestrator, exact fixture replay, caller-supplied examples or bounded
+schema synthesis, expression evaluation, and bounded in-memory would-be
+request records; this pure runtime makes no transport calls or automatic file
+writes. Its separately enabled `HybridRuntime` delegates only explicitly
+declared UWS 1.12+ `read` operations to a caller-provided adapter; writes and
+unknown effects remain mocked.
+The UWS 1.12 specification, exact-version schema, Go model and validator,
+executor, conversion helpers, embedded archive, and protected digests are
+coordinated release artifacts. The pinned 1.11 executable conformance corpus
+remains unchanged; earlier published contracts remain accepted according to
+their version gates. Ansible support is historical UWS 1.6 material only.
+
+````

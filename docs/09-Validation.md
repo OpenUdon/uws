@@ -12,7 +12,7 @@
 
 The JSON Schema selected by the document's exact `uws` value validates
 document shape. The latest published core schema is
-`versions/1.12.0.json`; it is not substituted for older or unpublished versions.
+`versions/1.13.0.json`; it is not substituted for older or unpublished versions.
 
 - Required fields (`uws`, `info`, `operations`)
 - Type and format constraints
@@ -263,9 +263,9 @@ Errors like `operations[0].onFailure[0]: retry requires retryLimit > 0` give the
 The three artifacts that define UWS are kept in sync by a reflection-driven test suite:
 
 - **`TestSchemaParity_StructTagsMatchKnownFields`** — for every Go struct with an `Extensions` field, verifies that struct JSON tags exactly match its `knownFields` list. A mismatch means the unmarshaller would reject valid documents or silently accept invalid ones.
-- **`TestSchemaParity_KnownFieldsMatchSchema`** — compares each type's `knownFields` against the corresponding `$def` in `versions/1.12.0.json`. Drift in either direction fails the build.
-- **`TestSchemaParity_DefCoverageIsExhaustive`** — fails when `versions/1.12.0.json` grows a `$def` that no parity entry tracks. Tripwire for adding a new type without wiring it through the extension machinery.
-- **`TestSchemaConformance_*`** — reads `versions/1.12.0.json` and asserts that every `required`, `enum`, `pattern`, and `propertyNames` rule the schema declares is also covered by the Go validator.
+- **`TestSchemaParity_KnownFieldsMatchSchema`** — compares each type's `knownFields` against the corresponding `$def` in `versions/1.13.0.json`. Drift in either direction fails the build.
+- **`TestSchemaParity_DefCoverageIsExhaustive`** — fails when `versions/1.13.0.json` grows a `$def` that no parity entry tracks. Tripwire for adding a new type without wiring it through the extension machinery.
+- **`TestSchemaConformance_*`** — reads `versions/1.13.0.json` and asserts that every `required`, `enum`, `pattern`, and `propertyNames` rule the schema declares is also covered by the Go validator.
 
 Adding a property to one artifact without updating the others fails the build immediately.
 

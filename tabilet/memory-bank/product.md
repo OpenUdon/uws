@@ -1,5 +1,14 @@
 # Product
 
+## M08.1 presentation contract progress
+
+UWS 1.13's new specification/schema retain the 1.12 wire/execution rules and
+add source/codec-bound, independently verified HCL views. Derived views are
+neither package input nor authority; explicit deprecated import preserves the
+legacy compatibility boundary. Codec implementation/qualification remains
+M08.2–M08.4 work. No existing published artifact or installed behavior changed.
+
+
 ## C08 accepted reference foundation
 
 C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4844`, independently observed on origin/main. The [qualification](../../docs/c08-qualification.md) pins the source and supplement; M08 remains pending.
@@ -105,7 +114,11 @@ changing execution.
 
 ## Current Contract Surface
 
-UWS 1.12.0 is the current core contract. It adds optional operation `effect`
+UWS 1.13.0 is the current core specification. It retains 1.12 wire/execution
+semantics and adds the separate verified HCL presentation/deprecation contract.
+M08.1 supplies the versioned documents; codec implementation/whole qualification
+remain pending in M08.2–M08.4. Earlier published versions and ordinary HCL APIs
+remain available. UWS 1.12 added optional operation `effect`
 classification (`read`, `write`, or `unknown`; omission is `unknown`) and
 non-executable pending-step contracts with recursive object-root input and
 output schemas. Pending-only documents may use an empty `operations` array

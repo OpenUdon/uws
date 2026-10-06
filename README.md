@@ -10,7 +10,7 @@ UWS is a workflow **overlay** over source documents — OpenAPI, AsyncAPI, Graph
 
 This is what distinguishes UWS from full client-side workflow tools such as Arazzo and IaC engines such as OpenTofu and Terraform. Arazzo describes full client-side action sequences and treats each step as a bespoke client action. OpenTofu and Terraform act as full client-side workflow engines for infrastructure: each resource and provider call is described in the client configuration and resolved against a provider plugin at apply time. Neither approach assumes that the underlying operations are already defined by a server contract. UWS takes the opposite position: server actions are pre-defined by the source document, and UWS workflows reference those operations by ID rather than re-describing them. The result is a much smaller overlay: UWS does not duplicate request/response shapes, does not redeclare endpoints, and does not encode anything the source document already specifies.
 
-UWS 1.12.0 is the latest release. It adds optional operation `effect` classification (`read`, `write`, or `unknown`; omission means `unknown`) and non-executable `pending` step contracts with recursive object-root input and output schemas. Pending-only planning documents may have an empty `operations` array; ordinary validation accepts valid pending contracts, while executable validation rejects pending work before runtime calls. UWS 1.11 added version-gated response-body dot-walks, loop-only `$batchIndex`, numeric `wait`/`batchSize` literals, terminal root-scoped `goto`, and corrected `forEach` merge records. UWS 1.10's portable execution semantics and expression-addressable-name rules remain in force for 1.10 and later, while earlier declarations retain their versioned behavior. Content-trust analysis remains an explicit advisory feature from 1.9.1. Browser 1.10 is the current separately versioned, opt-in capability profile and adds typed CSS selector match counts; the empty profile-schema lookup remains pinned to Browser 1.8 for compatibility. The `ansible-module` source type added in 1.6 was removed in 1.7, and UWS 1.9+ defines no replacement Ansible operation profile. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
+UWS 1.13.0 is the latest specification release. It adds the verified HCL presentation/deprecation contract without changing the 1.12 wire or execution rules. The separate codec implementation and whole qualification remain pending in M08.2–M08.4; legacy HCL input stays available. UWS 1.12 added optional operation `effect` classification (`read`, `write`, or `unknown`; omission means `unknown`) and non-executable `pending` step contracts with recursive object-root input and output schemas. Pending-only planning documents may have an empty `operations` array; ordinary validation accepts valid pending contracts, while executable validation rejects pending work before runtime calls. UWS 1.11 added version-gated response-body dot-walks, loop-only `$batchIndex`, numeric `wait`/`batchSize` literals, terminal root-scoped `goto`, and corrected `forEach` merge records. UWS 1.10's portable execution semantics and expression-addressable-name rules remain in force for 1.10 and later, while earlier declarations retain their versioned behavior. Content-trust analysis remains an explicit advisory feature from 1.9.1. Browser 1.10 is the current separately versioned, opt-in capability profile and adds typed CSS selector match counts; the empty profile-schema lookup remains pinned to Browser 1.8 for compatibility. The `ansible-module` source type added in 1.6 was removed in 1.7, and UWS 1.9+ defines no replacement Ansible operation profile. Missing `sourceDescription.type` still defaults to `openapi`; legacy `openapiOperationId` and `openapiOperationRef` remain valid for OpenAPI sources.
 
 ### Version highlights
 
@@ -30,6 +30,7 @@ UWS 1.12.0 is the latest release. It adds optional operation `effect` classifica
 | **1.9.2** | Rejected child blocks on reference steps, required canonical criteria array indexes, and aligned advisory analysis with runtime output order, provenance, structural execution, and trigger reachability. |
 | **1.10.0** | Published versioned expression, wait, structural-result, action, trigger, and security semantics; required expression-addressable identifiers. |
 | **1.11.0** | Added version-gated response-body dot-walks, loop-only `$batchIndex`, numeric delay/batch-size literals, terminal root-scoped `goto`, corrected `forEach` merge results, and executable pinned conformance vectors. |
+| **1.13.0** | Added verified HCL presentation/deprecation with exact source/codec provenance and lossless numeric/key/extension proof; legacy input remains supported. |
 | **1.12.0** | Added operation effect classification and non-executable pending-step contracts with recursive input/output schemas; pending-only documents need no placeholder operations and fail executable validation. |
 
 See [`versions/CHANGELOG.md`](versions/CHANGELOG.md) for the full changelog.
@@ -44,7 +45,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 
 - **Docs site**: [openudon.github.io/uws](https://openudon.github.io/uws/)
 - Previous UWS specification: [versions/1.11.0.md](versions/1.11.0.md)
-- Latest UWS specification: [versions/1.12.0.md](versions/1.12.0.md)
+- Latest UWS specification: [versions/1.13.0.md](versions/1.13.0.md)
 - Content trust guide: [docs/content-trust.md](docs/content-trust.md)
 - Runtime supplement: [versions/runtime.1.0.md](versions/runtime.1.0.md)
 - Runtime supplement schema: [versions/runtime.1.0.json](versions/runtime.1.0.json)
@@ -61,7 +62,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - Browser capability distribution milestone: [docs/browser-capability-goal.md](docs/browser-capability-goal.md)
 - UWS 1.6 Ansible argspec (historical): [versions/ansible.1.0.md](versions/ansible.1.0.md) / [versions/ansible.1.0.json](versions/ansible.1.0.json)
 - UWS 1.6 Ansible design note (historical): [docs/uws_1_6_ansible.md](docs/uws_1_6_ansible.md)
-- Latest JSON Schema: [versions/1.12.0.json](versions/1.12.0.json)
+- Latest JSON Schema: [versions/1.13.0.json](versions/1.13.0.json)
 
 ## Packages
 
@@ -74,7 +75,7 @@ Non-source runtimes such as command execution, function calls, file I/O, SSH, SQ
 - `mockruntime` provides the versioned fixture codec, canonical request digests, explicit recorded-response redaction helper, an orchestrator-backed pure mock `uws1.Runtime`, and an explicitly enabled hybrid adapter. The pure runtime replays exact fixtures or uses caller-supplied response examples/schemas and records resolved would-be requests in memory without network calls or automatic file writes. The hybrid adapter delegates only declared UWS 1.12+ `read` operations to a caller-supplied hook; writes and unknown effects stay mocked.
 - `browserauthentication` contains the additive secret-free sign-in profile and named-session operation extension types.
 - `browserregistration` contains the separate additive secret-free account-registration profile and explicitly approved mutation extension types.
-- `versions/1.12.0.md` and `versions/1.12.0.json` are the latest core specification and schema. They add operation effects and pending steps; earlier numbered artifacts remain immutable and accepted.
+- `versions/1.13.0.md` and `versions/1.13.0.json` are the latest core specification and schema. They preserve the existing wire/execution rules and add verified HCL presentation/deprecation; earlier artifacts remain immutable and accepted.
 - `versions/mock-fixtures.1.0.*` defines exact operation/request-digest response keys, RFC 8785 request bytes, repeatable fixture replay, and recorded-response redaction metadata. This format is separate from UWS core and does not add runtime behavior by itself.
 - `versions/browser.1.10.*` adds typed CSS selector match counts on top of Browser 1.9; it is opt-in, while empty schema lookup remains Browser 1.8. Browser 1.5–1.9 documents remain accepted and immutable.
 - `versions/browser-authentication.1.1.*` and `versions/browser-authentication-call.1.1.*` publish context-capable sign-in recipes and explicit named-session establishment; immutable 1.0 documents remain accepted.
@@ -144,7 +145,7 @@ if !result.Valid() {
 
 Validation checks required root fields, source operation bindings, extension-owned operation profiles, duplicate identifiers, standard request-binding keys, known structural types, selected reference integrity, action/criterion rules, and trigger routes.
 
-`versions/1.12.0.json` provides structural JSON Schema validation. Use the Go validator for semantic checks such as duplicate identifiers, reference integrity, and malformed `contentTrust` declarations. Go callers resolve the exact declared version with `schemas.PathForVersion`.
+`versions/1.13.0.json` provides structural JSON Schema validation. Use the Go validator for semantic checks such as duplicate identifiers, reference integrity, and malformed `contentTrust` declarations. Go callers resolve the exact declared version with `schemas.PathForVersion`.
 
 The separate `versions/runtime.1.0.json` schema validates the public runtime supplement payload. It requires `x-uws-runtime.type`, accepts only the non-HTTP runtime identifiers defined by the supplement, and rejects HTTP/API/event source metadata because HTTP and event calls are represented by core source operation binding fields.
 

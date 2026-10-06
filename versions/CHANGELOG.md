@@ -26,6 +26,18 @@ the meaning or scope of a published schema or sub-spec is recorded as an
 - This policy clarifies version selection and validator behavior; it does not
   amend the bytes or normative requirements of earlier published artifacts.
 
+## UWS 1.13.0 - 2026-10-06
+
+- Added the separate verified HCL presentation and deprecated Import contract.
+  Views bind exact JSON/YAML source bytes and codec revision and must preserve
+  values/required numeric lexemes; failed proofs suppress the view.
+- Retained the UWS 1.12 wire, expression grammar, validation and execution rules.
+  Added the exact 1.13 schema/distribution selection without editing old artifacts.
+- Legacy core HCL APIs/input remain available. HCL/core dependency extraction,
+  browser migration and removal require separately qualified consumer work.
+- M08.1 publishes the contract; codec implementation and whole release
+  qualification remain M08.2–M08.4 work. No execution authority is added.
+
 ## Mock Fixture Format 1.0 - 2026-09-27
 
 - Added the independent `uws.mock-fixtures.1.0` JSON format and schema for

@@ -13,6 +13,7 @@ import (
 // document requires adding its digest; changing or removing an existing
 // document fails this test.
 var publishedVersionSHA256 = map[string]string{
+	"1.13.0.json":                          "ce118674a63cbaceb46bfbe898d85568aa9281175c1361097c044d7eb6270490",
 	"browser-registration.1.2.json":        "b3d31dc0ca833169ca34f3cc1c1517b3c86efc5c47ba2a0c9bdcb87731e65c2d",
 	"browser-registration-call.1.2.json":   "175ad75d7d51d8adf8d601111dcbf220417470d08908dfdeadb7c5f1d08daf2b",
 	"browser-registration.1.1.json":        "ee14fbb9ddde9bdd63ce31016cbc6f210a435694936e2d01403ba514fcd137ee",
@@ -54,6 +55,7 @@ var publishedVersionSHA256 = map[string]string{
 // publishedMarkdownSHA256 freezes every published Markdown document except
 // CHANGELOG.md, which remains the mutable release ledger.
 var publishedMarkdownSHA256 = map[string]string{
+	"1.13.0.md":                          "ca731dbf91fc6fe28563554f88fc48433d65174d66623bb3ad5e41091534e089",
 	"1.0.0.md":                           "b4697ee580838bc7e6e0722d01219534086b8e9368b406c1ccae1c2440dad671",
 	"1.1.0.md":                           "f38d92ce04684f3aad9ee9012fb6ef1b7a1d1972e6af668ec98bb459070993f7",
 	"1.1.1.md":                           "57577c86fbaab8fdfa362be6dd6b8c01ceaa271084ed6e836e123081032e095e",

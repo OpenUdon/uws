@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	latestUWSSchemaPath     = "../versions/1.12.0.json"
-	latestUWSSchemaResource = "versions/1.12.0.json"
-	latestUWSSpecPath       = "../versions/1.12.0.md"
+	latestUWSSchemaPath     = "../versions/1.13.0.json"
+	latestUWSSchemaResource = "versions/1.13.0.json"
+	latestUWSSpecPath       = "../versions/1.13.0.md"
 )
 
 func loadSchemaDoc(t *testing.T) map[string]any {
@@ -125,7 +125,7 @@ func TestLatestUWSSchemaIsHighestPublishedCoreVersion(t *testing.T) {
 
 func TestLatestUWSSchemaIDMatchesPublishedPath(t *testing.T) {
 	schema := loadSchemaDoc(t)
-	require.Equal(t, "https://github.com/OpenUdon/uws/versions/1.12.0.json", schema["$id"])
+	require.Equal(t, "https://github.com/OpenUdon/uws/versions/1.13.0.json", schema["$id"])
 	require.Equal(t, "https://json-schema.org/draft/2020-12/schema", schema["$schema"])
 }
 
