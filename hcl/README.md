@@ -30,7 +30,7 @@ input. Unsupported extension attribute names refuse rather than losing keys.
 Exact JSON numeric tokens are emitted directly and independently reconstructed
 from inert numeric AST source ranges, including large integers, decimals,
 exponents and signed zero. JSON/YAML source decoding and HCL verification never
-use float64 or JCS equality. YAML aliases/merges/tags, non-string keys and numeric
+use float64 or JCS equality. YAML aliases/merges/explicit tags (including tagged keys), non-string keys and numeric
 spellings outside JSON numeric syntax refuse. JSON duplicate members/trailing
 values/invalid Unicode refuse. Strings remain literal, including template markers.
 

@@ -1,36 +1,31 @@
 # Technical Stack
 
-## M08.2 codec implementation progress
+## Stage 11 public foundations
 
-Module `github.com/OpenUdon/uws/hcl` lives in `hcl/`, using existing pinned
-HashiCorp HCL `v2.24.0`, cty `v1.17.0`, YAML `v3.0.1` and accepted root UWS C09
-`v0.0.0-20261006181058-6a267306032e`. No operator go.work/root dependency edits.
-Run nested tests/races/vet with GOWORK=off, GOPROXY=off. Bounds are 8 MiB source/
-view, 100,000 nodes/depth 100; hard process resource isolation stays external.
-The module graph still retains Horizon/HCL compatibility. Publication and exact
-final consumer closure remain M08.4 acceptance work.
+Accepted C08/C09 add no dependency upgrade, source/provider parser or private
+runtime import. Exact sources, vector/table hashes and review evidence remain
+in [C08 qualification](../../docs/c08-qualification.md) and
+[C09 qualification](../../docs/c09-qualification.md).
 
-## M08.1 presentation contract progress
+UWS 1.13 adds exact schema/spec membership and regenerated embedded archive;
+all 74 pre-existing immutable version documents and legacy/root APIs remain
+unchanged. Root go.mod/sum and operator-owned go.work are unchanged.
+The separate `github.com/OpenUdon/uws/hcl` module lives in `hcl/`, using accepted
+root C09 `v0.0.0-20261006181058-6a267306032e`, existing HCL `v2.24.0`,
+cty `v1.17.0` and YAML `v3.0.1`. The graph retains Horizon/HCL compatibility.
 
-Exact 1.13 schema/specification membership is added while all older published
-hashes remain unchanged. The core declared-version map and latest conformance
-references select 1.13; prior version gates/wire fields stay intact. The embedded
-archive is regenerated with go generate ./schemas. Existing dependency versions
-and legacy HCL APIs are unchanged; the nested codec module is implemented and tested separately.
+Run root and nested full tests/races/vet independently with GOWORK=off,
+GOPROXY=off. Nested tests include a self-contained byte-pinned six-source corpus
+and external-package public API test; a module-only copy qualifies packaging.
+CI has a distinct nested-module job because root ./... cannot discover it.
+Bounds are 8 MiB source/view, 100,000 work nodes and depth 100. CPU/RSS/deadline/
+mount/network controls remain with consuming workers; no hard resource claim.
+M08 release review/publication are in progress;
+[qualification](../../docs/m08-qualification.md) records exact artifact hashes.
 
-
-## C08 accepted reference foundation
-
-C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4844`, independently observed on origin/main. The [qualification](../../docs/c08-qualification.md) pins the source and supplement; M08 remains pending.
-
-## C09 accepted binding foundation
-
-C09 is accepted/retired after review 3 at `6a267306032edc687a298cefc8bba7019d3ad059`, independently observed on authorized origin/main. [Qualification](../../docs/c09-qualification.md) records the pinned source-neutral contracts and limitations; M08 remains pending.
-
-## Approved Stage 11 tooling target — not implemented
-
-[Stage 11](../../../kinet/docs/stage11.md) and [local milestones](milestone.md#stage-11-cross-package-refactoring) define the approved target. Exact published module revisions, frozen build closures and standalone verification are acceptance gates. go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
-Both phases belong to one stage. C08 acceptance/publication is recorded above; M08 remains pending and claim no installed Kinet behavior. The installed Kinet M44 service remains unchanged, and Stage 12 owns the browser-dependent removal gates.
+The [Stage 11 coordinator](../../../kinet/docs/stage11.md) requires published
+root/codec source and independently observed closure before adoption. The
+installed M44 service and current consumer/browser pins remain unchanged.
 
 ## Language And Module
 
@@ -49,7 +44,8 @@ C08 adds expressions with standard-library parsing and a reference evaluator usi
 
 The main Go packages are `uws1`, `contenttrust`, `convert`, `validation`,
 `schemas`, `runtimes`, `mockruntime`, `browserauthentication`, and
-`browserregistration`.
+`browserregistration`, `expressions` and `binding`.
+`hcl/` is a separate Go module with its own go.mod/sum and verification job.
 `internal/generateversionarchive` is a repository generator rather than a
 public package.
 
@@ -122,7 +118,7 @@ go test ./convert -run TestRoundtrip
 go test ./schemas -run TestPublishedVersionDocumentsAreImmutable
 ```
 
-The main CI workflow runs the full tests, race tests, vet, and diff check. Pull
+The main CI workflow runs root and nested full tests, race tests, vet, and the root diff check. Pull
 requests also run the strict documentation build.
 
 ## Change Discipline

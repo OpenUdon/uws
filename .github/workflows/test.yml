@@ -21,6 +21,22 @@ jobs:
       - run: GOWORK=off go vet ./...
       - run: git diff --check
 
+  hcl:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hcl
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: hcl/go.mod
+          cache: true
+          cache-dependency-path: hcl/go.sum
+      - run: GOWORK=off go test ./...
+      - run: GOWORK=off go test -race ./...
+      - run: GOWORK=off go vet ./...
+
   docs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest

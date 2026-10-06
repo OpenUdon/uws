@@ -1,43 +1,29 @@
 # Product
 
-## M08.2 codec implementation progress
+## Stage 11 public foundations
 
-The separate uws/hcl module implements deterministic typed views directly from
-JSON/YAML bytes, independent exact-value/lexeme Verify and deprecated explicit
-Import. Returned provenance binds raw source and codec/view identities; failed
-proofs return no view. No file/network loading, variable/function evaluation,
-credentials, workflow validation, approval or execution is supplied. Existing
-root HCL APIs remain unchanged. M08.3 qualifies the lossless/refusal corpus; M08.4 still owns release acceptance.
+C08 and C09 are accepted/published: shared expression parsing/reference
+evaluation and opt-in portability; source-neutral binding shapes, advisory
+binding validation and deterministic flow observations. Their exact sources
+remain `0411eea6fc84fbd6aa97cef94f53f301260f4844` (review 2) and
+`6a267306032edc687a298cefc8bba7019d3ad059` (review 3). See the
+[C08 qualification](../../docs/c08-qualification.md) and
+[C09 qualification](../../docs/c09-qualification.md).
 
-## M08.1 presentation contract progress
+UWS 1.13 adds verified HCL presentation/deprecation while retaining all 1.12
+wire/execution rules. The separate `github.com/OpenUdon/uws/hcl` module renders
+from exact JSON/YAML bytes, independently verifies complete values and numeric
+lexemes, and exposes deprecated inert Import. Failed proof suppresses the view.
+A view is derived metadata; it is never source/package input or authority.
+Provider source parsing, workflow policy, credential handling and runtime authorization
+remain consumer-owned. Existing root HCL APIs and browser inputs remain retained.
+M08 release review/publication are in progress;
+[qualification](../../docs/m08-qualification.md) records exact artifacts and limits.
 
-UWS 1.13's new specification/schema retain the 1.12 wire/execution rules and
-add source/codec-bound, independently verified HCL views. Derived views are
-neither package input nor authority; explicit deprecated import preserves the
-legacy compatibility boundary. Codec implementation/qualification remains
-M08.2–M08.4 work. No existing published artifact or installed behavior changed.
-
-
-## C08 accepted reference foundation
-
-C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4844`, independently observed on origin/main. The [qualification](../../docs/c08-qualification.md) pins the source and supplement; M08 remains pending.
-
-## C09 accepted binding foundation
-
-C09 is accepted/retired after review 3 at `6a267306032edc687a298cefc8bba7019d3ad059`, independently observed on authorized origin/main. [Qualification](../../docs/c09-qualification.md) records the pinned source-neutral contracts and limitations; M08 remains pending.
-
-## Approved Stage 11 product direction — not implemented
-
-C09.3 adds deterministic advisory flow diagnostics for reachability, unreferenced outputs, unknown effects/pending ordering and work bounds. It executes no condition/effect and never grants authority.
-
-C09.2 adds advisory binding validation with compatible/incompatible/indeterminate outcomes. It checks required/literal/expression/output/security metadata without credentials or effects.
-
-C09.1 adds the public source-neutral binding shape/resolver contract. Metadata completeness, exact identity and security OR/AND semantics are explicit; metadata never grants execution.
-
-C08.1 now provides the public expressions parser for the existing core grammar, including version/field/loop gates and value-free errors. C08.2 adds exact scalar comparison, null propagation and workflow/nearest-iteration lookup with shared vectors. C08.3 now makes the mock consume the shared evaluator and exposes opt-in CheckPortability diagnostics. Historical mock extensions remain explicit compatibility adapters; ordinary validation is unchanged.
-
-[Stage 11](../../../kinet/docs/stage11.md) and [local milestones](milestone.md#stage-11-cross-package-refactoring) define the approved target. UWS will own opt-in expression portability, source-neutral binding diagnostics and a verified HCL presentation module. Source parsing and product authority remain outside UWS. Existing published versions and ordinary validation compatibility stay intact; HCL input removal is outside Stage 11.
-Both phases belong to one stage. C08 acceptance/publication is recorded above; M08 remains pending and claim no installed Kinet behavior. The installed Kinet M44 service remains unchanged, and Stage 12 owns the browser-dependent removal gates.
+The [coordinated Stage 11 contract](../../../kinet/docs/stage11.md) covers both
+phases. Local acceptance supplies no installed Kinet behavior or live authority;
+the M44 service and frozen consumer/browser pins remain unchanged. Stage 12 owns
+the separately qualified browser/input-removal boundary.
 
 This file summarizes current observed product truth. The linked archives are
 frozen evidence for commit `8382d0f26b3b10870125760643078d1a1a3e31b6`, not a
@@ -125,9 +111,9 @@ changing execution.
 
 UWS 1.13.0 is the current core specification. It retains 1.12 wire/execution
 semantics and adds the separate verified HCL presentation/deprecation contract.
-M08.1 supplies the versioned documents; M08.2/M08.3 supply the codec and
-byte-pinned conformance. Whole release qualification remains pending in M08.4. Earlier published versions and ordinary HCL APIs
-remain available. UWS 1.12 added optional operation `effect`
+The separate codec and byte-pinned conformance supplement are implemented;
+M08 owns final release review/publication. Earlier published versions and
+ordinary HCL APIs remain available. UWS 1.12 added optional operation `effect`
 classification (`read`, `write`, or `unknown`; omission is `unknown`) and
 non-executable pending-step contracts with recursive object-root input and
 output schemas. Pending-only documents may use an empty `operations` array
@@ -156,7 +142,7 @@ request records; this pure runtime makes no transport calls or automatic file
 writes. Its separately enabled `HybridRuntime` delegates only explicitly
 declared UWS 1.12+ `read` operations to a caller-provided adapter; writes and
 unknown effects remain mocked.
-The UWS 1.12 specification, exact-version schema, Go model and validator,
+The UWS 1.13 specification, exact-version schema, Go model and validator,
 executor, conversion helpers, embedded archive, and protected digests are
 coordinated release artifacts. The pinned 1.11 executable conformance corpus
 remains unchanged; earlier published contracts remain accepted according to

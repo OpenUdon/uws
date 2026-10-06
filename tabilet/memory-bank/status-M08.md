@@ -1,7 +1,7 @@
 # M08 — Verified HCL presentation
 
 **Stage:** Kinet STG-11, Phase A. **Owner:** UWS.
-**State:** Confirmed Stage 11 execution; M08.1–M08.3 complete, M08.4 pending; whole review 0/10 not started.
+**State:** Confirmed Stage 11 execution; M08.1–M08.3 complete, M08.4 in progress; whole review 3/10 passed; source publication pending.
 **Source baseline:** `a7688f54c68f5a75c7cc95aa2b31cea98b31af41` (clean at planning).
 **Coordinator:** [Stage 11 contract](../../../kinet/docs/stage11.md); the package-local milestone/status owns acceptance.
 
@@ -19,7 +19,7 @@ The serial predecessor is a scheduling gate; direct contract and regression impa
 | M08.1 — Specify the additive 1.13 transition | `[+]` | Add exact 1.13 schema/specification and the verified HCL presentation/deprecation contract; retain 1.12 wire/execution rules and all prior artifact hashes. Synchronize declared-version admission, latest schema/conformance references, archive, discovery/navigation and current facts. Full standalone tests/races/vet, strict docs, protected versions and consumer regressions passed. Separate codec implementation and whole acceptance/publication remain M08.2–M08.4. |
 | M08.2 — Add render verify and import APIs | `[+]` | Separate github.com/OpenUdon/uws/hcl implements deterministic byte-based Render, independent lossless Verify and deprecated inert Import. Public model tags preserve typed blocks/labels/extensions; numeric AST token ranges preserve exact lexemes without custom model decoding/float64/JCS. Exact source/codec/view provenance, tampering/evaluation refusal, literal labels/templates and empty/null/key collisions pass standalone nested tests/races/vet. Root legacy APIs/dependencies and operator go.work remain unchanged; M08.3/.4 own full corpus/release qualification. |
 | M08.3 — Prove lossless presentation | `[+]` | Self-contained six-source byte-pinned typed corpus, exact number/string/key/container cases and malformed/ambiguous/evaluation/resource/cancellation refusals pass. Independent UseNumber JSON projection and exact numeric tokens are the losslessness oracle; external-package consumer compiles. Nested standalone/copy-only tests, races/vet, strict docs and diff checks pass. |
-| M08.4 — Qualify and publish both modules | `[ ]` | Verify old APIs and immutable version hashes, schema/code/docs/archive parity, nested-module builds and codec round trips. Publish exact root/codec sources with named authority and record consumer handoffs. |
+| M08.4 — Qualify and publish both modules | `[~]` | Verify old APIs and immutable version hashes, schema/code/docs/archive parity, nested-module builds and codec round trips. Publish exact root/codec sources with named authority and record consumer handoffs. |
 
 ## Acceptance and verification
 
@@ -64,11 +64,11 @@ observed on authorized APItools origin/main, satisfying the publication gate.
 
 ## Persisted review
 
-- Review iteration: **0/10**; not started.
-- Closing-review findings: none; the whole-milestone review has not started. Approved intake requirements above remain pending.
+- Review iteration: **3/10**; passed after a full milestone review with no remaining P1/P2 or higher finding.
+- Closing-review findings, iteration 1 (both fixed): **P2 M08-R1-F01** — malformed source block containers (for example info as a nonempty array) reach reflection Elem on a non-container and panic, violating value-free refusal. **P2 M08-R1-F02** — explicit YAML tags on mapping/sequence/scalar nodes are discarded by the JSON projection and can expose a misleading verified view, contrary to the documented unsupported-tag refusal. Both reproduced in hcl/review_test.go; persist before correction. No legacy/root contract finding. Required fixes and next full review remain pending.
 - Accepted revision: not available.
 - Published revision / artifact evidence: not available.
-- Verification: pending implementation; no test result is claimed by this planning record.
+- Verification: root/nested offline full tests/races/vet, schema/model/archive/version immutability, nested module-only copy, nested compatible staticcheck, strict docs, gofmt and diff checks passed; exact public module/source verification remains M08.4.
 
 After all tasks finish, perform the whole-milestone review with persisted iteration/finding state and fix every P1/P2 before acceptance. Resume an interrupted pass at the same counter. Consolidate current facts, reconcile downstream work and retire under this package’s normal procedure.
 
@@ -152,3 +152,46 @@ only the nested module, strict MkDocs, gofmt and git diff --check. Production
 codec bytes, root code/schema/archive, immutable versions and fixture originals
 were unchanged in this task. M08.4 still owns whole review, both-module release
 qualification and exact authorized source publication; no acceptance is claimed.
+
+## Closing review — iteration 1, 2026-10-06
+
+P2 M08-R1-F01 reproduced a reflection panic from an unsupported single-block
+array source. Render now checks typed block container kinds before using Elem;
+wrong arrays/maps/scalars refuse with no partial view. P2 M08-R1-F02 reproduced
+tag loss on YAML maps, sequences and scalars; all explicit tags, including
+explicit tagged keys, now refuse and implicit container tags are checked.
+Targeted regressions reproduced both failures before correction; full nested
+tests/races/vet and compatible staticcheck passed after the principal fixes.
+The expanded tagged-key regression also passes. Source limits are checked
+before Verify hashes bytes. Full iteration 2 is now in progress, not accepted.
+
+## Closing review — iteration 2, 2026-10-06
+
+No additional production-code defect found; both iteration-1 refusal fixes and
+full nested tests/races/vet passed, including tagged keys and module-only copy.
+**P2 M08-R2-F01**: current release discovery/current-truth surfaces still link
+UWS 1.12 as the specification/schema and retain obsolete codec-pending wording,
+contradicting 1.13 admission and the implemented M08.2/M08.3 module. Consolidate
+current facts and repair latest discovery links before final qualification;
+preserve superseded sections literally in the knowledge journal. Historical
+1.12 examples/contracts and frozen records remain unchanged. This finding is
+persisted before correction; whole review iteration 3 remains required.
+
+## Closing review — iteration 3, 2026-10-06
+
+The complete additive contract, root admission/parity/archive changes, codec
+implementation/corpus/refusal fixes, module/build boundaries and consolidated
+current release/docs/CI surfaces were reviewed again. No remaining P1/P2 or
+higher finding; the review gate passes at 3/10. No lower-priority finding is
+carried without an owner. All required local checks pass. Udon/OpenUdon consumer
+root regressions passed as recorded in M08.1; no later root behavior change
+requires repeating those suites. Evolution decision: no new version; this
+implements the approved Stage 11 boundary.
+
+M08.4 remains in progress until qualified root/codec source is committed,
+published under the exact named main-only grant, independently resolved/checked,
+and consumers are reconciled. Publication commits suppress push workflows with
+[skip ci] because the existing docs workflow force-deploys another ref outside
+the source-only grant. Local checks are evidence; hosted CI/deployed docs are
+not claimed. Exact acceptance/source/closure hashes are recorded after observing
+them; local qualification alone is not publication or overall goal completion.

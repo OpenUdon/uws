@@ -86,7 +86,7 @@ func Verify(ctx context.Context, source Source, view View, options Options) erro
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if !revisionValid(options.Revision) || len(view.HCL) > MaxViewBytes || view.Provenance != (Provenance{Version: ContractVersion, Format: source.Format, SourceSHA256: digest(source.Bytes), CodecRevision: options.Revision, ViewSHA256: digest(view.HCL)}) {
+	if !revisionValid(options.Revision) || len(source.Bytes) == 0 || len(source.Bytes) > MaxSourceBytes || len(view.HCL) > MaxViewBytes || view.Provenance != (Provenance{Version: ContractVersion, Format: source.Format, SourceSHA256: digest(source.Bytes), CodecRevision: options.Revision, ViewSHA256: digest(view.HCL)}) {
 		return ErrCodec
 	}
 	want, err := sourceValue(ctx, source)
@@ -262,16 +262,24 @@ func yamlValue(n *yaml.Node, b *workBudget, depth int) (any, error) {
 	if err := b.take(depth); err != nil {
 		return nil, err
 	}
+	// Explicit tags carry source meaning outside this JSON-compatible subset,
+	// including custom tags on containers. Never drop them during projection.
+	if n.Style&yaml.TaggedStyle != 0 {
+		return nil, ErrCodec
+	}
 	switch n.Kind {
 	case yaml.DocumentNode:
 		if len(n.Content) == 1 {
 			return yamlValue(n.Content[0], b, depth+1)
 		}
 	case yaml.MappingNode:
+		if n.Tag != "!!map" {
+			return nil, ErrCodec
+		}
 		out := map[string]any{}
 		for i := 0; i < len(n.Content); i += 2 {
 			key := n.Content[i]
-			if key.Kind != yaml.ScalarNode || key.Tag != "!!str" {
+			if key.Kind != yaml.ScalarNode || key.Tag != "!!str" || key.Style&yaml.TaggedStyle != 0 {
 				return nil, ErrCodec
 			}
 			if _, exists := out[key.Value]; exists {
@@ -285,6 +293,9 @@ func yamlValue(n *yaml.Node, b *workBudget, depth int) (any, error) {
 		}
 		return out, nil
 	case yaml.SequenceNode:
+		if n.Tag != "!!seq" {
+			return nil, ErrCodec
+		}
 		out := []any{}
 		for _, child := range n.Content {
 			v, err := yamlValue(child, b, depth+1)

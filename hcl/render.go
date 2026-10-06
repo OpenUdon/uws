@@ -42,23 +42,35 @@ func (w *viewWriter) body(object map[string]any, kind reflect.Type, label string
 			continue
 		}
 		if f.mode == "block" && value != nil {
-			if list, ok := value.([]any); ok && len(list) > 0 {
+			blockKind := indirect(f.kind)
+			if blockKind.Kind() == reflect.Slice {
+				list, ok := value.([]any)
+				if !ok {
+					return ErrCodec
+				}
 				for _, item := range list {
 					child, ok := item.(map[string]any)
 					if !ok {
 						return ErrCodec
 					}
-					if err := w.block(f.hclName, child, indirect(f.kind).Elem(), depth+1); err != nil {
+					if err := w.block(f.hclName, child, blockKind.Elem(), depth+1); err != nil {
 						return err
 					}
 				}
-				continue
-			}
-			if child, ok := value.(map[string]any); ok {
-				if err := w.block(f.hclName, child, indirect(f.kind), depth+1); err != nil {
+				if len(list) > 0 {
+					continue
+				}
+			} else if blockKind.Kind() == reflect.Struct {
+				child, ok := value.(map[string]any)
+				if !ok {
+					return ErrCodec
+				}
+				if err := w.block(f.hclName, child, blockKind, depth+1); err != nil {
 					return err
 				}
 				continue
+			} else {
+				return ErrCodec
 			}
 		}
 		if !identifierPattern.MatchString(f.hclName) {

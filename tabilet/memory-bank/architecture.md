@@ -1,45 +1,40 @@
 # Architecture
 
-## M08.2 codec implementation progress
+## Stage 11 public foundations
 
-The separate `hcl/` Go module now supplies byte-based Render/Verify/deprecated
-Import. Public model tags drive typed block/label/extension mappings without
-legacy custom decoding. Inert HCL AST parsing reconstructs JSON numeric token
-ranges exactly and refuses evaluation, unknown/ambiguous mappings or failed
-source/codec/view provenance. The root module and legacy HCL APIs are unchanged;
-standalone nested checks and initial privacy/refusal fixtures pass. Full corpus
-is qualified by M08.3; whole release qualification remains M08.4.
+Accepted C08 expressions use standard-library parsing and UWS-owned in-memory
+execution snapshots. UseNumber projections preserve exact values before custom
+legacy model decoding; mock delegates to the reference evaluator and retains
+small explicit compatibility adapters. CheckPortability is opt-in and scans
+only core-owned fields; profile/function/browser templates remain opaque.
+Ordinary validation is unchanged.
 
-## M08.1 presentation contract progress
+Accepted C09 binding types, strict bounded shape-table serialization and
+resolver snapshots are source-neutral. Advisory validation checks exact
+source/selector identities and honest known/unknown schemas/security with
+OR-of-AND semantics. Unsupported containment remains indeterminate; external
+refs refuse. Flow produces deterministic value-free graph/effect observations
+without conditions, mutation or effect dispatch. Source parsers/providers stay
+outside UWS. Exact accepted/public sources and fixtures are in
+[C08 qualification](../../docs/c08-qualification.md) and
+[C09 qualification](../../docs/c09-qualification.md).
 
-UWS 1.13 is distributed as a new exact-version schema/specification, with no
-new wire field or execution rule. The separate planned uws/hcl module owns
-source-byte Render/Verify/deprecated Import; this row publishes its contract,
-not its implementation. Independent exact-value/lexeme verification precedes
-view exposure. Existing root HCL APIs, core dependencies and browser input
-remain retained. New-version schema/model/archive/navigation are synchronized.
+UWS 1.13 schema/spec/model/archive retain 1.12 wire/execution rules. The separate
+`hcl/` module reads public model tags to render typed blocks/labels/extensions
+directly from lossless byte-decoded values, avoiding legacy custom decoding.
+An independent inert AST walk reconstructs exact numeric token ranges and
+complete values; source/codec/view provenance is checked before exposure.
+Functions, traversals, interpolation, ambiguous fields/keys, unsupported YAML
+forms/tags and malformed mappings refuse. The module supplies no admission,
+approval or execution; consumers bind its caller-supplied revision to actual
+worker/module closure and own process limits/privacy. Existing root HCL APIs
+and compatibility dependencies remain; no HCL-free core claim is made.
+M08 release review/publication are in progress; see
+[qualification](../../docs/m08-qualification.md).
 
-
-## C08 accepted reference foundation
-
-C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4844`, independently observed on origin/main. The [qualification](../../docs/c08-qualification.md) pins the source and supplement; M08 remains pending.
-
-## C09 accepted binding foundation
-
-C09 is accepted/retired after review 3 at `6a267306032edc687a298cefc8bba7019d3ad059`, independently observed on authorized origin/main. [Qualification](../../docs/c09-qualification.md) records the pinned source-neutral contracts and limitations; M08 remains pending.
-
-## Approved Stage 11 architecture target — not implemented
-
-C09.3 analyzes the UWS structural graph, core output references and declared effects into sorted value-free code/path findings with an explicit truncation flag. Conditions/profile semantics remain opaque; document mutation and effect dispatch are excluded.
-
-C09.2 validates neutral binding projections and reviewed expression schemas, refuses external schema loads, checks exact resolver/source/selector identity and preserves security OR/AND alternatives. Unknown/unproved compatibility remains indeterminate; ordinary UWS validation is untouched.
-
-C09.1 binding types and strict bounded serialization/resolver snapshots are separate from source parsers. Known/unknown schemas/security and protocol-specific fields remain honest; no APItools/provider import or network access is added.
-
-C08 provides the expressions parser plus a reference evaluator over UWS-owned in-memory document/execution snapshots. Parsing uses only the standard library; evaluation reuses uws1 state and the existing internal strict-JSON helper. It performs no source/provider I/O or document admission. Callers must preserve json.Number in value projections before constructing snapshots; ordinary UWS custom decoding remains compatible and may round any-field numbers. The mock now delegates to the shared evaluator, with small historical generic-number/encoded-root adapters. CheckPortability is opt-in, value-free and limited to known core fields; source-function/browser templates and non-simple queries remain profile-owned. Known invocation scopes prevent declaration-site false positives for batch expressions. Ordinary validators and published-version bytes are unchanged.
-
-[Stage 11](../../../kinet/docs/stage11.md) and [local milestones](milestone.md#stage-11-cross-package-refactoring) define the approved target. UWS will own opt-in expression portability, source-neutral binding diagnostics and a verified HCL presentation module. Source parsing and product authority remain outside UWS. Existing published versions and ordinary validation compatibility stay intact; HCL input removal is outside Stage 11.
-Both phases belong to one stage. C08 acceptance/publication is recorded above; M08 remains pending and claim no installed Kinet behavior. The installed Kinet M44 service remains unchanged, and Stage 12 owns the browser-dependent removal gates.
+Both [Stage 11 phases](../../../kinet/docs/stage11.md) share exact upstream
+reconciliation and one serial owner. Installed M44 and frozen consumer/browser
+paths are unchanged; Stage 12 owns later browser/input-removal qualification.
 
 This file records current observed system structure. Archive documents are
 frozen repository snapshots; this summary should evolve when the implementation
@@ -83,6 +78,9 @@ contracts without expanding core into a transport or automation engine.
 | `runtimes/` | Runtime Supplement 1.0 constants, typed payload, and extension helpers. |
 | `mockruntime/` | Versioned fixture codec, RFC 8785 request digest, exact fixture lookup, recorded-response redaction helper, and public orchestrator-backed mock runtime with bounded in-memory request records. |
 | `convert/` | JSON, YAML, and HCL interchange with extension and dynamic-key preservation. |
+| `expressions/` | Core expression parser, exact-value reference evaluator and opt-in portability checks. |
+| `binding/` | Source-neutral shape/resolver contracts and advisory binding/flow diagnostics. |
+| `hcl/` (separate module) | Byte-based verified HCL presentation and deprecated inert import. |
 | `validation/` | File loading plus coordinated schema and semantic validation. |
 | `schemas/` | Schema lookup, embedded version archive, profile validators, and browser cross-document checks. |
 | `internal/generateversionarchive/` | Deterministic generation of the embedded JSON-document ZIP. |
