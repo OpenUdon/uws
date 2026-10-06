@@ -1,0 +1,47 @@
+{
+  "version": "openudon.step-authoring.v1",
+  "kind": "request",
+  "command": "step.bind",
+  "step_id": "list_projects",
+  "contract": {
+    "id": "project_read_contract",
+    "purpose": "List projects visible to the configured account",
+    "inputs": {
+      "type": "object",
+      "properties": { "page_size": { "type": "integer" } },
+      "required": ["page_size"]
+    },
+    "outputs": {
+      "type": "object",
+      "properties": { "projects": { "type": "array" } },
+      "required": ["projects"]
+    },
+    "effect": "read"
+  },
+  "operation_ref": {
+    "source_kind": "openapi",
+    "source_id": "src-1d4eb0f1835e8dcc2a650198",
+    "source_sha256": "sha256:a46290a985f29d7e68638b1154b180f564ecfe910a8a47b9a17ff079ef82f257",
+    "native_selector": "#/paths/~1projects/get",
+    "operation_key": "listProjects",
+    "operation_id": "listProjects"
+  },
+  "request_mappings": { "page_size": "inputs.page_size" },
+  "output_mappings": { "projects": "received_body.projects" },
+  "authentication_alternative": 0,
+  "credential_bindings": { "api_key_auth": "project_api_key" },
+  "depends_on": [],
+  "intent_revision": { "state": "missing" },
+  "scaffold": {
+    "workflow": {
+      "name": "project_inventory",
+      "description": "Read a project inventory from an approved source"
+    },
+    "inputs": [
+      { "name": "page_size", "type": "integer", "required": true }
+    ],
+    "outputs": [
+      { "name": "projects", "from": "list_projects.received_body.projects" }
+    ]
+  }
+}

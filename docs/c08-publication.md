@@ -14,5 +14,5 @@ Consumers pin the accepted implementation and record the observed closure;
 local sibling heads or successful builds are not publication evidence. Later
 metadata commits may descend from this closure without changing the accepted
 implementation. The full retired specification/status remains frozen in
-[the C08 record](../tabilet/docs/history/status-C08.md). No provider, model,
+[the C08 record](https://github.com/OpenUdon/uws/blob/main/tabilet/docs/history/status-C08.md). No provider, model,
 credential, hosted permission, installation or live-ledger operation occurred.

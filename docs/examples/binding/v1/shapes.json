@@ -1,0 +1,96 @@
+{
+  "version": "uws.shape-table.v1",
+  "sources": [
+    {
+      "id": "src-1d4eb0f1835e8dcc2a650198",
+      "kind": "openapi",
+      "sha256": "a46290a985f29d7e68638b1154b180f564ecfe910a8a47b9a17ff079ef82f257",
+      "url": "openapi/project-api.yaml"
+    }
+  ],
+  "operations": [
+    {
+      "source": {
+        "id": "src-1d4eb0f1835e8dcc2a650198",
+        "kind": "openapi",
+        "sha256": "a46290a985f29d7e68638b1154b180f564ecfe910a8a47b9a17ff079ef82f257",
+        "url": "openapi/project-api.yaml"
+      },
+      "selector": {
+        "kind": "ref",
+        "value": "#/paths/~1projects/get",
+        "key": "listProjects"
+      },
+      "aliases": [
+        {
+          "kind": "id",
+          "value": "listProjects",
+          "key": "listProjects"
+        }
+      ],
+      "protocol": "http",
+      "method": "GET",
+      "path": "/projects",
+      "servers": [
+        "https://api.example.test"
+      ],
+      "complete": true,
+      "inputs": [
+        {
+          "location": "query",
+          "name": "page_size",
+          "required": true,
+          "schema": {
+            "known": true,
+            "json": {
+              "type": "integer"
+            }
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "location": "body",
+          "name": "response",
+          "schema": {
+            "known": true,
+            "json": {
+              "type": "object",
+              "required": [
+                "projects"
+              ],
+              "properties": {
+                "projects": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "security": {
+        "known": true,
+        "alternatives": [
+          {
+            "requirements": [
+              {
+                "scheme": "apiKeyAuth",
+                "type": "apiKey",
+                "location": "header",
+                "name": "X-API-Key"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
