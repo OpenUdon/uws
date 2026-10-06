@@ -7,7 +7,7 @@
 
 ## Dependencies and handoff
 
-[UWS:C08](status-C08.md).
+[UWS:C08](../docs/history/status-C08.md).
 The serial predecessor is a scheduling gate; direct contract and regression impacts are also listed. Every prerequisite must pass its whole review, and required publication must be independently verified before adoption. Record exact accepted/published sources and fixture/build hashes; no Stage 11 acceptance or future pin is claimed yet.
 
 **Downstream:** [APItools:M82](../../../apitools/tabilet/memory-bank/status-M82.md), [Udon:M47](../../../udon/tabilet/memory-bank/status-M47.md), [Kinet:M46](../../../kinet/tabilet/memory-bank/status-M46.md), [OpenUdon:P09](../../../openudon/tabilet/memory-bank/status-P09.md). Reconcile every affected consumer against the accepted prerequisite revision before advancing.
@@ -35,6 +35,10 @@ One execution owner, serial execution and task commits under the later confirmed
 ## Reconciled consumer contract — 2026-10-06
 
 Udon:M47 consumes this contract for the runtime-function catalog. OpenUdon:P09 owns source/shape-to-authority verification; M98 no longer exposes synthesis-coupled construction.
+
+## Accepted expression prerequisite — 2026-10-06
+
+UWS:C08 is accepted and independently observed on origin/main at `0411eea6fc84fbd6aa97cef94f53f301260f4844`, whole review 2/10. [Qualification](../../docs/c08-qualification.md) and the [supplement manifest](../../docs/examples/expressions/v1/manifest.json) identify exact source/vector bytes. Ordinary validation and frozen published artifacts are unchanged; strict portability is opt-in, required for new Kinet:W18 packages. Legacy mock numeric/encoded-root adapters remain explicit. Values must use lossless json.Number projections before constructing snapshots because outer UseNumber does not override legacy custom model decoders. C08 supplies no source parsing, credential/provider I/O or execution authority. Wait for observed retirement-closure publication before starting a consumer.
 
 ## Persisted review
 

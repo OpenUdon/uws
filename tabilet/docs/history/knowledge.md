@@ -209,3 +209,13 @@ The old mock path remains unchanged until C08.3.
 ```
 
 C08.3 now delegates mock evaluation to the shared reference implementation while preserving historical generic-number/encoded-root compatibility. CheckPortability is opt-in, source-field-only and does not alter ordinary validation. Replacement: current architecture.md and docs/expression-reference.md.
+
+## C08 planning-to-current foundation consolidation — 2026-10-06
+
+Source: product/architecture/tech-stack Stage 11 target clauses at `0411eea6fc84fbd6aa97cef94f53f301260f4844`. Literal prior planning-only wording:
+
+```markdown
+Both phases belong to one stage. Current facts below remain the observed implementation; no new acceptance, publication or installed behavior is claimed.
+```
+
+Replacement: those current documents now record accepted/published C08 while C09/M08 remain pending. The planned full-stage target and installed Kinet M44 boundary are unchanged.

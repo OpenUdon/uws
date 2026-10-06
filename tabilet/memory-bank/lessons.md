@@ -76,3 +76,20 @@ compatibility fixes must be version-gated instead of silently editing history.
 
 **Evidence.** `versions/CHANGELOG.md`; `docs/09-Validation.md`;
 `validation/version_compatibility_test.go`; `tabilet/docs/history/status-C02.md`.
+
+## Preserve exact values across custom JSON model decoders
+
+An outer UseNumber decoder does not override nested custom UnmarshalJSON
+methods. Prepare a lossless source-value projection before constructing a
+model snapshot when exact numeric comparison is required. Ordinary legacy
+model decoding can remain compatible while new worker paths use json.Number.
+C08's large-integer corpus exposed the rounding boundary; explicit projection
+made the 18-case shared corpus pass. See docs/expression-reference.md.
+
+## Keep portability field ownership explicit
+
+An opt-in core checker must not scan profile-owned x-* request fields, regex/
+JSONPath/XPath queries or function/browser templates. Standard payload fields
+remain bindings even when a nested data key happens to start x-*. C08 review
+R1-F01/F02 qualified this distinction and the complete structural-result
+expression inventory without tightening ordinary validation.

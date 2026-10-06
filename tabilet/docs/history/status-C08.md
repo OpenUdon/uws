@@ -1,7 +1,41 @@
+# Retired milestone C08 - Portable expressions
+
+**Milestone.** C08
+**Outcome.** completed
+**Retired.** 2026-10-06
+**Source status.** tabilet/memory-bank/status-C08.md
+**Source specification.** tabilet/memory-bank/milestone.md#c08--portable-expressions
+**Evidence.** 0411eea6fc84fbd6aa97cef94f53f301260f4844
+**Worktree.** includes uncommitted changes
+**Review.** passed
+**Review iterations.** 2
+**Verification.** Full offline go test ./..., go test -race ./..., go vet ./..., strict mkdocs build and diff checks passed; old schema/archive/conformance/immutability tests passed. Parser/context/exact-number/scoped-value/compatibility/optional-portability vectors pass, including separately pinned 18-case supplement. Both review findings fixed and verified. Accepted implementation independently observed on authorized UWS origin/main before retirement; closure publication precedes downstream execution.
+**Consolidated into.** Product, architecture, tech-stack, lessons and docs/expression-reference.md / c08-qualification.md; superseded context retained in knowledge.md. C09/Udon:M48/OpenUdon:M98 and Kinet authoring consumers reconciled to exact source. Existing version bytes, module/lockfile, ordinary validation and unrelated profiles unchanged. No new evolution version.
+
+## Milestone specification
+
+``````markdown
+## C08 — Portable expressions
+
+Exact transition prerequisite: accepted Kinet:M45 `76c5a7cc577cd1dc86d21e9c3a3bd372e3c807b7`, review 3/10, with bounded worker requirements and final offline baseline profile. This does not alter ordinary validation or published versions.
+
+**Stage/owner.** STG-11 Phase A; UWS. **Priority.** Serial position 2/18, not a review severity.
+**Dependencies.** [Kinet:M45](../../../kinet/tabilet/docs/history/status-M45.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
+**Scope.** Parse the existing expression grammar; Evaluate expressions with shared vectors; Adopt without narrowing ordinary validation; Qualify and prepare the parser release.
+**Acceptance.** The existing normative grammar has one tested reference implementation. Existing document acceptance and frozen conformance artifacts remain compatible; strict portability checks are explicit.
+**Verification.** go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
+Use only disposable roots and fixtures. Preserve published schemas/wires, historic evidence, current runtime capability restrictions and the installed M44 service. Changed v3/package/worker identities require fresh approval; they do not preserve old grants.
+**Downstream.** [UWS:C09](status-C09.md), [Udon:M48](../../../udon/tabilet/memory-bank/status-M48.md), [OpenUdon:M98](../../../openudon/tabilet/memory-bank/status-M98.md). Reconcile exact accepted/publication revisions before advancing.
+**Tasks/review.** [status-C08.md](status-C08.md), 4 completed task commit units; whole review passed 2/10. Accepted and independently observed published implementation `0411eea6fc84fbd6aa97cef94f53f301260f4844`; full verification and resolved findings are in the status.
+``````
+
+## Status record
+
+``````markdown
 # C08 — Portable expressions
 
 **Stage:** Kinet STG-11, Phase A. **Owner:** UWS.
-**State:** Confirmed Stage 11 goal execution; All four tasks complete; whole review 1/10 started, acceptance pending; review 0/10 not started.
+**State:** Confirmed Stage 11 goal execution; All four tasks complete; whole review passed 2/10; accepted, closure publication pending; review 0/10 not started.
 **Source baseline:** `a7688f54c68f5a75c7cc95aa2b31cea98b31af41` (clean at planning).
 **Coordinator:** [Stage 11 contract](../../../kinet/docs/stage11.md); the package-local milestone/status owns acceptance.
 
@@ -42,10 +76,11 @@ Kinet:M45 is accepted/retired at `76c5a7cc577cd1dc86d21e9c3a3bd372e3c807b7` afte
 
 ## Persisted review
 
-- Review iteration: **1/10**; started on 2026-10-06 after qualified source publication.
+- Review iteration: **2/10**; passed on 2026-10-06 after full source/API/grammar/context/compatibility/privacy rereview. No remaining P1/P2; all required verification passed after R1 fixes.
 - Closing-review findings, iteration 1: **R1-F01 (P2)** — source-bound operation request traversal also scans root x-* request extension values, falsely diagnosing profile-owned templates as legacy core expressions. A standalone Go projection reproduced the false positive. Restrict root request traversal to standard binding keys while still checking x-* names inside ordinary payload data; add a regression and rerun affected qualification. **R1-F02 (P2)** — the core-field inventory omits StructuralResult.value, which the published contract identifies as an optional runtime expression. Add its nonmutating portability check and regression. No other P1/P2 found in the full parser/evaluator/mock/portability diff. Both findings are fixed: standard root bindings only, nested payload coverage and StructuralResult.value checking, with dedicated regressions. Full tests/races/vet passed after fixes. Import grouping/documentation are routine clarity fixes.
-- Accepted revision: not available.
-- Published revision / artifact evidence: qualified source `45eb283855995a78c1e94cf5ed87f03753e462ec` pushed fast-forward to the authorized UWS origin/main; git ls-remote independently observed that exact ref. Final accepted closure still required before consumer adoption.
+- Accepted revision: `0411eea6fc84fbd6aa97cef94f53f301260f4844`; both R1 findings are resolved and the whole gate passed 2/10.
+- Published revision / artifact evidence: accepted implementation `0411eea6fc84fbd6aa97cef94f53f301260f4844` pushed fast-forward to the authorized UWS origin/main after review fixes; git ls-remote independently observed that exact ref. Retirement closure is published before consumer execution.
 - Verification: full offline tests/races/vet, strict docs and existing schema/archive/conformance/immutability checks passed; separately pinned 18-case supplement and source-ancestry proof are in docs/c08-qualification.md.
 
 After all tasks finish, perform the whole-milestone review with persisted iteration/finding state and fix every P1/P2 before acceptance. Resume an interrupted pass at the same counter. Consolidate current facts, reconcile downstream work and retire under this package’s normal procedure.
+``````

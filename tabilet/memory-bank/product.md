@@ -1,11 +1,15 @@
 # Product
 
+## C08 accepted reference foundation
+
+C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4844`, independently observed on origin/main. The [qualification](../../docs/c08-qualification.md) pins the source and supplement; C09/M08 remain pending.
+
 ## Approved Stage 11 product direction — not implemented
 
 C08.1 now provides the public expressions parser for the existing core grammar, including version/field/loop gates and value-free errors. C08.2 adds exact scalar comparison, null propagation and workflow/nearest-iteration lookup with shared vectors. C08.3 now makes the mock consume the shared evaluator and exposes opt-in CheckPortability diagnostics. Historical mock extensions remain explicit compatibility adapters; ordinary validation is unchanged.
 
 [Stage 11](../../../kinet/docs/stage11.md) and [local milestones](milestone.md#stage-11-cross-package-refactoring) define the approved target. UWS will own opt-in expression portability, source-neutral binding diagnostics and a verified HCL presentation module. Source parsing and product authority remain outside UWS. Existing published versions and ordinary validation compatibility stay intact; HCL input removal is outside Stage 11.
-Both phases belong to one stage. Current facts below remain the observed implementation; no new acceptance, publication or installed behavior is claimed. The installed Kinet M44 service remains unchanged, and Stage 12 owns the browser-dependent removal gates.
+Both phases belong to one stage. C08 acceptance/publication is recorded above; C09/M08 remain pending and claim no installed Kinet behavior. The installed Kinet M44 service remains unchanged, and Stage 12 owns the browser-dependent removal gates.
 
 This file summarizes current observed product truth. The linked archives are
 frozen evidence for commit `8382d0f26b3b10870125760643078d1a1a3e31b6`, not a

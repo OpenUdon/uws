@@ -2,7 +2,7 @@
 
 ## Stage 11 active horizon
 
-Approved 2026-10-06: both phases of [Kinet STG-11](../../../kinet/docs/stage11.md), with one serial execution owner across Kinet, UWS, APItools, Udon and OpenUdon. This package owns C08, C09, M08; all rows are pending and each review is 0/10. [Specifications](#stage-11-cross-package-refactoring) below are the current horizon. Earlier completed horizons and records remain historical; planning grants no implementation or external authority.
+Approved 2026-10-06: both phases of [Kinet STG-11](../../../kinet/docs/stage11.md), with one serial execution owner across Kinet, UWS, APItools, Udon and OpenUdon. This package now owns pending C09 and M08, both review 0/10; C08 is accepted/retired at 0411eea6fc84fbd6aa97cef94f53f301260f4844 after review 2. [Specifications](#stage-11-cross-package-refactoring) below are the current horizon. Earlier completed horizons and records remain historical; planning grants no implementation or external authority.
 
 M01, M02, M03, C01, C02, B01, B02, C03, C05, C04, M04, C06, C07, M06, and M07
 completed acceptance and bounded review; their IDs remain reserved in the
@@ -191,29 +191,15 @@ One execution owner, serial execution and task commits under the later confirmed
 | ID | Status file | State |
 |---|---|---|
 
-| C08 | [status-C08.md](status-C08.md) | in progress; review 0/10 |
 
 | C09 | [status-C09.md](status-C09.md) | pending; review 0/10 |
 
 | M08 | [status-M08.md](status-M08.md) | pending; review 0/10 |
 
-## C08 — Portable expressions
-
-Exact transition prerequisite: accepted Kinet:M45 `76c5a7cc577cd1dc86d21e9c3a3bd372e3c807b7`, review 3/10, with bounded worker requirements and final offline baseline profile. This does not alter ordinary validation or published versions.
-
-**Stage/owner.** STG-11 Phase A; UWS. **Priority.** Serial position 2/18, not a review severity.
-**Dependencies.** [Kinet:M45](../../../kinet/tabilet/docs/history/status-M45.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
-**Scope.** Parse the existing expression grammar; Evaluate expressions with shared vectors; Adopt without narrowing ordinary validation; Qualify and prepare the parser release.
-**Acceptance.** The existing normative grammar has one tested reference implementation. Existing document acceptance and frozen conformance artifacts remain compatible; strict portability checks are explicit.
-**Verification.** go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
-Use only disposable roots and fixtures. Preserve published schemas/wires, historic evidence, current runtime capability restrictions and the installed M44 service. Changed v3/package/worker identities require fresh approval; they do not preserve old grants.
-**Downstream.** [UWS:C09](status-C09.md), [Udon:M48](../../../udon/tabilet/memory-bank/status-M48.md), [OpenUdon:M98](../../../openudon/tabilet/memory-bank/status-M98.md). Reconcile exact accepted/publication revisions before advancing.
-**Tasks/review.** [status-C08.md](status-C08.md), 4 pending task commit units; review 0/10, not started. Approved intake provenance and consumer requirements are in that status. No implementation, acceptance or publication yet.
-
 ## C09 — Binding contracts
 
 **Stage/owner.** STG-11 Phase A; UWS. **Priority.** Serial position 3/18, not a review severity.
-**Dependencies.** [UWS:C08](status-C08.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
+**Dependencies.** [UWS:C08](../docs/history/status-C08.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
 **Scope.** Define operation shapes and resolvers; Validate bindings and security declarations; Analyze flow deterministically; Qualify and publish the shape contract.
 **Acceptance.** Portable binding and flow diagnostics have stable codes and deterministic fixtures. Shape production stays outside UWS; no diagnostic grants execution or silently tightens legacy validation.
 **Verification.** go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
