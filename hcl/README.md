@@ -41,8 +41,8 @@ and private-value filtering. Errors are stable and contain no input excerpts.
 
 The standalone module currently consumes exact accepted root UWS C09 for public
 model tags and strict JSON helpers. That closure still contains Horizon/HashiCorp
-HCL; no core-dependency removal is claimed. Final root/codec publication and
-consumer pins remain M08.4 work. The operator-owned go.work is unchanged.
+HCL; no core-dependency removal is claimed. Root and codec sources are qualified/published by M08; exact revisions, module
+sums and consumer closure are recorded in ../docs/m08-publication.md. The operator-owned go.work is unchanged.
 
 The self-contained conformance supplement pins six byte-identical existing
 fixtures, plus exact-number/string/key and malformed/resource refusal cases.

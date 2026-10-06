@@ -2,7 +2,7 @@
 
 ## Stage 11 active horizon
 
-Approved 2026-10-06: both phases of [Kinet STG-11](../../../kinet/docs/stage11.md), with one serial execution owner across Kinet, UWS, APItools, Udon and OpenUdon. This package now owns pending M08, review 0/10; C09 is accepted/retired at 6a267306032edc687a298cefc8bba7019d3ad059 after review 3. C08 is accepted/retired at 0411eea6fc84fbd6aa97cef94f53f301260f4844 after review 2. [Specifications](#stage-11-cross-package-refactoring) below are the current horizon. Earlier completed horizons and records remain historical; planning grants no implementation or external authority.
+Approved 2026-10-06: both phases of [Kinet STG-11](../../../kinet/docs/stage11.md), with one serial execution owner across Kinet, UWS, APItools, Udon and OpenUdon. All UWS Stage 11 rows are accepted/retired; M08 accepted/published `c0b19385a3b034cd45de16726668b9150f0633f2` after review 3; C09 is accepted/retired at 6a267306032edc687a298cefc8bba7019d3ad059 after review 3. C08 is accepted/retired at 0411eea6fc84fbd6aa97cef94f53f301260f4844 after review 2. The [history index](../docs/history/index.md) retains the complete accepted status/specification; downstream adoption remains package-local. Earlier completed horizons and records remain historical; planning grants no implementation or external authority.
 
 M01, M02, M03, C01, C02, B01, B02, C03, C05, C04, M04, C06, C07, M06, and M07
 completed acceptance and bounded review; their IDs remain reserved in the
@@ -20,7 +20,8 @@ M05 published and verified Browser 1.10 at commit
 `80ee9bfb24a688b5e875dadf9ecacdc65398f1ff`, passed bounded review iteration 1,
 and was retired to the [milestone history](../docs/history/status-M05.md).
 Browser 1.9 and older published profiles remain immutable; Browser 1.10 is the
-current opt-in profile. UWS 1.12.0 is the current core contract. Browsertools,
+current opt-in profile. UWS 1.13.0 is the current core contract, qualified/published by M08. Earlier
+UWS 1.12 and browser contracts remain immutable. Browsertools,
 Browserdriver, Udon, OpenUdon, and W8M own their downstream compatibility work
 in their respective repositories and active ledgers. The GOAL protocol remains
 unchanged.
@@ -188,23 +189,7 @@ One execution owner, serial execution and task commits under the later confirmed
 
 ### Stage 11 status index
 
-| ID | Status file | State |
-|---|---|---|
-
-
-
-| M08 | [status-M08.md](status-M08.md) | in progress; review 0/10 |
-
-## M08 — Verified HCL presentation
-
-**Stage/owner.** STG-11 Phase A; UWS. **Priority.** Serial position 5/18, not a review severity.
-**Dependencies.** [APItools:M82](../../../apitools/tabilet/docs/history/status-M82.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
-**Scope.** Specify the additive 1.13 transition; Add render verify and import APIs; Prove lossless presentation; Qualify and publish both modules.
-**Acceptance.** A deterministic HCL view can be proved against the approved document. Existing HCL readers remain available; removal and core dependency extraction are deferred, not falsely claimed complete.
-**Verification.** go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
-Use only disposable roots and fixtures. Preserve published schemas/wires, historic evidence, current runtime capability restrictions and the installed M44 service. Changed v3/package/worker identities require fresh approval; they do not preserve old grants.
-**Downstream.** [Udon:M47](../../../udon/tabilet/memory-bank/status-M47.md), [Udon:M48](../../../udon/tabilet/memory-bank/status-M48.md), [Kinet:M46](../../../kinet/tabilet/memory-bank/status-M46.md), [Kinet:W17](../../../kinet/tabilet/memory-bank/status-W17.md). Reconcile exact accepted/publication revisions before advancing.
-**Tasks/review.** [status-M08.md](status-M08.md), M08.1–M08.3 complete and 1 pending task commit unit; review 0/10, not started. The additive 1.13 transition and separate codec APIs are implemented; The byte-pinned lossless/refusal corpus is qualified; release qualification, acceptance and publication remain pending.
+No active UWS milestone remains; IDs and full accepted records stay reserved in history.
 
 ## Stage 11 candidate dispositions
 

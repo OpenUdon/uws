@@ -447,3 +447,22 @@ C09 is accepted/retired after review 3 at `6a267306032edc687a298cefc8bba7019d3ad
 Both phases belong to one stage. C08 acceptance/publication is recorded above; M08 remains pending and claim no installed Kinet behavior. The installed Kinet M44 service remains unchanged, and Stage 12 owns the browser-dependent removal gates.
 
 ````
+
+## 2026-10-06 — M08 current-horizon core-version reconciliation
+
+Source: milestone.md, Active Horizon. Reason: retain prior browser/core
+acceptance while identifying newly qualified UWS 1.13 as current. Evidence:
+`c0b19385a3b034cd45de16726668b9150f0633f2`; includes uncommitted M08 retirement/consumer evidence.
+Replacement: [current milestones](../../memory-bank/milestone.md).
+
+````markdown
+M05 published and verified Browser 1.10 at commit
+`80ee9bfb24a688b5e875dadf9ecacdc65398f1ff`, passed bounded review iteration 1,
+and was retired to the [milestone history](../docs/history/status-M05.md).
+Browser 1.9 and older published profiles remain immutable; Browser 1.10 is the
+current opt-in profile. UWS 1.12.0 is the current core contract. Browsertools,
+Browserdriver, Udon, OpenUdon, and W8M own their downstream compatibility work
+in their respective repositories and active ledgers. The GOAL protocol remains
+unchanged.
+
+````

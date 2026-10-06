@@ -5,8 +5,8 @@ Its wire fields and execution rules remain the UWS 1.12 rules. The separate
 `github.com/OpenUdon/uws/hcl` module owns deterministic Render, independent
 lossless Verify and deprecated Import. M08.2 implements the byte-based codec
 and the byte-pinned conformance supplement covers the complete existing typed
-corpus, exact numeric lexemes, strings/keys and refusal cases. Whole release
-qualification/publication remain M08.4 work.
+corpus, exact numeric lexemes, strings/keys and refusal cases. The root/codec release passes M08 whole review 3; exact source, artifacts and
+standalone evidence are recorded in [qualification](m08-qualification.md).
 
 The Go APIs accept `Source{Format: JSON|YAML, Bytes: sourceBytes}` and
 `Options{Revision: exactCodecCommit}`. `Render` returns `View{HCL, Provenance}`

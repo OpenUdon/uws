@@ -1,7 +1,40 @@
+# Retired milestone M08 — Verified HCL presentation
+
+**Milestone.** M08
+**Outcome.** completed
+**Retired.** 2026-10-06
+**Source status.** tabilet/memory-bank/status-M08.md
+**Source specification.** tabilet/memory-bank/milestone.md#m08--verified-hcl-presentation
+**Evidence.** c0b19385a3b034cd45de16726668b9150f0633f2
+**Worktree.** includes uncommitted changes
+**Review.** passed
+**Review iterations.** 3
+**Verification.** Root/nested offline full tests/races/vet, model/schema/archive/old-API parity and all 74 prior immutable version documents, self-contained conformance and refusal/privacy/cancellation corpus, compatible nested staticcheck, strict MkDocs, gofmt and diff checks passed. Downloaded root/codec archive suites and independent no-workspace/no-replacement 51-module consumer passed. Accepted source is independently published/resolved; normal retirement closure publication precedes consumer execution.
+**Consolidated into.** [product](../../memory-bank/product.md), [architecture](../../memory-bank/architecture.md), [technical stack](../../memory-bank/tech-stack.md), [lessons](../../memory-bank/lessons.md), [knowledge journal](knowledge.md), [contract](../../../docs/hcl-presentation.md), [qualification](../../../docs/m08-qualification.md), [publication](../../../docs/m08-publication.md) and [module closure](../../../docs/m08-module-closure.json); Udon:M47/M48 and Kinet:M46/W17 reconciled to exact source/limits. No new evolution version or live authority.
+
+## Milestone specification
+
+``````markdown
+## M08 — Verified HCL presentation
+
+**Stage/owner.** STG-11 Phase A; UWS. **Priority.** Serial position 5/18, not a review severity.
+**Dependencies.** [APItools:M82](../../../apitools/tabilet/docs/history/status-M82.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
+**Scope.** Specify the additive 1.13 transition; Add render verify and import APIs; Prove lossless presentation; Qualify and publish both modules.
+**Acceptance.** A deterministic HCL view can be proved against the approved document. Existing HCL readers remain available; removal and core dependency extraction are deferred, not falsely claimed complete.
+**Verification.** go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
+Use only disposable roots and fixtures. Preserve published schemas/wires, historic evidence, current runtime capability restrictions and the installed M44 service. Changed v3/package/worker identities require fresh approval; they do not preserve old grants.
+**Downstream.** [Udon:M47](../../../udon/tabilet/memory-bank/status-M47.md), [Udon:M48](../../../udon/tabilet/memory-bank/status-M48.md), [Kinet:M46](../../../kinet/tabilet/memory-bank/status-M46.md), [Kinet:W17](../../../kinet/tabilet/memory-bank/status-W17.md). Reconcile exact accepted/publication revisions before advancing.
+**Tasks/review.** [status-M08.md](status-M08.md), all four task commit units complete; whole review passed 3/10. Accepted/published source `c0b19385a3b034cd45de16726668b9150f0633f2` supplies both root/codec modules at `v0.0.0-20261006224744-c0b19385a3b0`; all required verification and independent registry/downloaded-consumer checks passed.
+
+``````
+
+## Status record
+
+``````markdown
 # M08 — Verified HCL presentation
 
 **Stage:** Kinet STG-11, Phase A. **Owner:** UWS.
-**State:** Confirmed Stage 11 execution; M08.1–M08.3 complete, M08.4 in progress; whole review 3/10 passed; source publication pending.
+**State:** All four tasks complete; whole review passed 3/10; accepted root/codec source independently published/resolved; downstream reconciliation and retirement follow.
 **Source baseline:** `a7688f54c68f5a75c7cc95aa2b31cea98b31af41` (clean at planning).
 **Coordinator:** [Stage 11 contract](../../../kinet/docs/stage11.md); the package-local milestone/status owns acceptance.
 
@@ -19,7 +52,7 @@ The serial predecessor is a scheduling gate; direct contract and regression impa
 | M08.1 — Specify the additive 1.13 transition | `[+]` | Add exact 1.13 schema/specification and the verified HCL presentation/deprecation contract; retain 1.12 wire/execution rules and all prior artifact hashes. Synchronize declared-version admission, latest schema/conformance references, archive, discovery/navigation and current facts. Full standalone tests/races/vet, strict docs, protected versions and consumer regressions passed. Separate codec implementation and whole acceptance/publication remain M08.2–M08.4. |
 | M08.2 — Add render verify and import APIs | `[+]` | Separate github.com/OpenUdon/uws/hcl implements deterministic byte-based Render, independent lossless Verify and deprecated inert Import. Public model tags preserve typed blocks/labels/extensions; numeric AST token ranges preserve exact lexemes without custom model decoding/float64/JCS. Exact source/codec/view provenance, tampering/evaluation refusal, literal labels/templates and empty/null/key collisions pass standalone nested tests/races/vet. Root legacy APIs/dependencies and operator go.work remain unchanged; M08.3/.4 own full corpus/release qualification. |
 | M08.3 — Prove lossless presentation | `[+]` | Self-contained six-source byte-pinned typed corpus, exact number/string/key/container cases and malformed/ambiguous/evaluation/resource/cancellation refusals pass. Independent UseNumber JSON projection and exact numeric tokens are the losslessness oracle; external-package consumer compiles. Nested standalone/copy-only tests, races/vet, strict docs and diff checks pass. |
-| M08.4 — Qualify and publish both modules | `[~]` | Verify old APIs and immutable version hashes, schema/code/docs/archive parity, nested-module builds and codec round trips. Publish exact root/codec sources with named authority and record consumer handoffs. |
+| M08.4 — Qualify and publish both modules | `[+]` | Root/nested suites, old API/version/archive parity, downloaded-module and independent public consumer checks pass. Whole review 3 passed after two refusal fixes and current-fact/discovery repair; exact root/codec source c0b19385a3b034cd45de16726668b9150f0633f2 is independently published/resolved. Both modules use v0.0.0-20261006224744-c0b19385a3b0; closure publication and reconciled handoffs precede next execution. |
 
 ## Acceptance and verification
 
@@ -66,9 +99,9 @@ observed on authorized APItools origin/main, satisfying the publication gate.
 
 - Review iteration: **3/10**; passed after a full milestone review with no remaining P1/P2 or higher finding.
 - Closing-review findings, iteration 1 (both fixed): **P2 M08-R1-F01** — malformed source block containers (for example info as a nonempty array) reach reflection Elem on a non-container and panic, violating value-free refusal. **P2 M08-R1-F02** — explicit YAML tags on mapping/sequence/scalar nodes are discarded by the JSON projection and can expose a misleading verified view, contrary to the documented unsupported-tag refusal. Both reproduced in hcl/review_test.go; persist before correction. No legacy/root contract finding. Required fixes and next full review remain pending.
-- Accepted revision: not available.
-- Published revision / artifact evidence: not available.
-- Verification: root/nested offline full tests/races/vet, schema/model/archive/version immutability, nested module-only copy, nested compatible staticcheck, strict docs, gofmt and diff checks passed; exact public module/source verification remains M08.4.
+- Accepted revision: `c0b19385a3b034cd45de16726668b9150f0633f2`; all four tasks/local checks and whole review 3 pass.
+- Published revision / artifact evidence: exact accepted source `c0b19385a3b034cd45de16726668b9150f0633f2` independently observed on authorized UWS origin/main; both root/codec modules independently resolve `v0.0.0-20261006224744-c0b19385a3b0` to that full source. Retirement closure publication follows this record and must be observed before downstream execution.
+- Verification: root/nested offline full tests/races/vet, schema/model/archive/version immutability, nested module-only copy, nested compatible staticcheck, strict docs, gofmt and diff checks passed; downloaded root/codec archive tests and a standalone 51-module consumer closure also pass.
 
 After all tasks finish, perform the whole-milestone review with persisted iteration/finding state and fix every P1/P2 before acceptance. Resume an interrupted pass at the same counter. Consolidate current facts, reconcile downstream work and retire under this package’s normal procedure.
 
@@ -195,3 +228,39 @@ and consumers are reconciled. Publication commits suppress push workflows with
 the source-only grant. Local checks are evidence; hosted CI/deployed docs are
 not claimed. Exact acceptance/source/closure hashes are recorded after observing
 them; local qualification alone is not publication or overall goal completion.
+
+## Execution evidence — M08.4, 2026-10-06
+
+Accepted root and codec source is `c0b19385a3b034cd45de16726668b9150f0633f2`,
+review 3/10. A normal fast-forward push to the unchanged exact UWS origin/main
+was independently verified by ls-remote; both configured registry queries resolve
+`v0.0.0-20261006224744-c0b19385a3b0` to that full origin source (codec subdir hcl).
+Downloaded archives retain exact source and pass complete standalone offline
+suites in disposable copies without parent fixtures. An independent public
+consumer selecting both root/codec at that version passed 1.13 schema lookup
+and Render/Verify/Import, with GOWORK disabled and no replacements. The recorded
+51-module closure SHA-256 is
+`36a8a7a1152f9f49af5064294eca756bf9b00f4632dfa1d215112157991d1e96`.
+
+Root module sum: `h1:CXaT3naUUi4hKM4UfE41l5VxwDQ96Y8uVv5EOpheaU8=`;
+GoMod sum: `h1:DlqFOnO9lbmYWLLIh5WicNX6NTWIuytU6mIHmxj9BVw=`.
+Codec module sum: `h1:v42UQhy/CCLAe2+BKUDQzuofjziBXcDqMJgPIXCvIRM=`;
+GoMod sum: `h1:0cR/xLzEP8vJ9FAUhsLbaKVkU7UarXPc51nJjEaMP5Q=`.
+The codec standalone require retains root C09 for stable public tags/helpers;
+selecting final root 1.13 in the consumer raises it through ordinary MVS. No
+operator go.work edit, root dependency upgrade or HCL removal is claimed.
+
+Qualified: all 74 pre-existing immutable documents, new 1.13 schema/spec/archive
+parity, old root HCL/JSON/YAML APIs, root/nested full tests/races/vet, nested
+staticcheck, strict docs, formatting and diff checks. Udon/OpenUdon root regressions
+are retained in M08.1; installed M44 and sibling pins remain unchanged. All
+review-1/2 findings are resolved; full review 3 found no P1/P2 or higher issue.
+Current facts and lessons are consolidated, old wording is journaled, and
+Udon:M47/M48 and Kinet:M46/W17 consume this exact contract/limits/closure evidence.
+Retirement/source closure is published before those consumers execute.
+
+The source publication heads use [skip ci] to suppress the repository's automatic
+force docs deployment outside the main-only grant. No hosted CI/deployed docs
+result, live ledger/provider/API/model/mail/registration or deployment is claimed.
+No new evolution version: this is the approved Stage 11 additive presentation.
+``````

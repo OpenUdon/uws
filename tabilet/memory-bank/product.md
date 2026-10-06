@@ -17,7 +17,8 @@ lexemes, and exposes deprecated inert Import. Failed proof suppresses the view.
 A view is derived metadata; it is never source/package input or authority.
 Provider source parsing, workflow policy, credential handling and runtime authorization
 remain consumer-owned. Existing root HCL APIs and browser inputs remain retained.
-M08 release review/publication are in progress;
+M08 is accepted at `c0b19385a3b034cd45de16726668b9150f0633f2` after review 3;
+root/codec source is independently published/resolved.
 [qualification](../../docs/m08-qualification.md) records exact artifacts and limits.
 
 The [coordinated Stage 11 contract](../../../kinet/docs/stage11.md) covers both
@@ -112,7 +113,7 @@ changing execution.
 UWS 1.13.0 is the current core specification. It retains 1.12 wire/execution
 semantics and adds the separate verified HCL presentation/deprecation contract.
 The separate codec and byte-pinned conformance supplement are implemented;
-M08 owns final release review/publication. Earlier published versions and
+M08 qualifies and publishes the final root/codec release. Earlier published versions and
 ordinary HCL APIs remain available. UWS 1.12 added optional operation `effect`
 classification (`read`, `write`, or `unknown`; omission is `unknown`) and
 non-executable pending-step contracts with recursive object-root input and

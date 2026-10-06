@@ -19,8 +19,9 @@ Exact release artifacts:
 
 The codec's standalone module graph consumes accepted root C09
 `v0.0.0-20261006181058-6a267306032e` for public model tags/strict JSON helpers.
-The 1.13 root and codec publication sources are recorded separately after final
-review. Workers bind caller-supplied codec revision to their actual executable
+The 1.13 root and codec accepted source is
+`c0b19385a3b034cd45de16726668b9150f0633f2` after whole review 3. Both resolve
+`v0.0.0-20261006224744-c0b19385a3b0` to that exact source. Workers bind caller-supplied codec revision to their actual executable
 and complete module/build closure. Horizon/HCL remain in the graph; there is
 no HCL-free core or private runtime claim. Root go.mod/sum and operator-owned
 go.work are unchanged; no dependency upgrade is included.
@@ -48,8 +49,11 @@ Go 1.26.6. Root parity/conformance/declared-version/archive checks passed; all
 74 pre-existing immutable version documents retain their exact bytes. Strict
 MkDocs, gofmt and git diff --check passed. The compatible staticcheck reports
 no nested-module diagnostics. Root and nested modules have separate CI jobs.
-Consumer regression details and exact publication are recorded in the full
-milestone record before acceptance.
+Udon/OpenUdon root regressions passed as recorded in M08.1. Downloaded root/codec
+archive full suites and an independent public consumer passed without go.work
+or replacements. The [51-module closure](m08-module-closure.json) hashes to
+`36a8a7a1152f9f49af5064294eca756bf9b00f4632dfa1d215112157991d1e96`;
+[publication](m08-publication.md) identifies exact module sums/closure evidence.
 
 Closing review 1 reproduced and fixed a reflection panic on wrong typed block
 containers and silent YAML tag loss, including tags on keys. Regressions fail
@@ -57,7 +61,8 @@ before correction and pass afterward. Review 2 found stale release discovery
 and current-fact references; latest links and consolidated current documents
 are repaired, with literal old memory-bank wording preserved in the knowledge
 journal. Whole review 3 found no remaining P1/P2 or higher issue. Exact source
-publication and consumer reconciliation remain pending at this local baseline.
+publication and module resolution are independently verified; downstream
+contracts are reconciled before retirement closure publication/next execution.
 
 The confirmed STG11_SOURCE_PUBLICATION grant permits normal fast-forward UWS
 origin/main source/closure publication. This repository's push workflow also

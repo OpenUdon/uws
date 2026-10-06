@@ -29,7 +29,8 @@ forms/tags and malformed mappings refuse. The module supplies no admission,
 approval or execution; consumers bind its caller-supplied revision to actual
 worker/module closure and own process limits/privacy. Existing root HCL APIs
 and compatibility dependencies remain; no HCL-free core claim is made.
-M08 release review/publication are in progress; see
+M08 is accepted at `c0b19385a3b034cd45de16726668b9150f0633f2` after review 3;
+root/codec source is independently published/resolved. see
 [qualification](../../docs/m08-qualification.md).
 
 Both [Stage 11 phases](../../../kinet/docs/stage11.md) share exact upstream

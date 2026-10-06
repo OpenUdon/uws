@@ -20,7 +20,8 @@ and external-package public API test; a module-only copy qualifies packaging.
 CI has a distinct nested-module job because root ./... cannot discover it.
 Bounds are 8 MiB source/view, 100,000 work nodes and depth 100. CPU/RSS/deadline/
 mount/network controls remain with consuming workers; no hard resource claim.
-M08 release review/publication are in progress;
+M08 is accepted at `c0b19385a3b034cd45de16726668b9150f0633f2` after review 3;
+root/codec source is independently published/resolved.
 [qualification](../../docs/m08-qualification.md) records exact artifact hashes.
 
 The [Stage 11 coordinator](../../../kinet/docs/stage11.md) requires published
