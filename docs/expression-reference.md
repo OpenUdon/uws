@@ -1,7 +1,7 @@
 # UWS core expression reference
 
 `github.com/OpenUdon/uws/expressions` exposes the existing core grammar from
-[UWS 1.12 sections 5.6–5.7](../versions/1.12.0.md#56-formal-grammar).
+[UWS 1.12 sections 5.6–5.7](https://github.com/OpenUdon/uws/blob/main/versions/1.12.0.md#56-formal-grammar).
 It adds no expression language feature and performs no source/provider I/O.
 Published specification/schema/archive bytes remain unchanged.
 

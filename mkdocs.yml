@@ -26,6 +26,7 @@ nav:
     - 1. Source Operation Binding: 01-OpenAPI-Operation-Binding.md
     - 2. Six Structural Constructs: 02-Six-Structural-Constructs.md
     - 3. Runtime Expression Grammar: 03-Runtime-Expression-Grammar.md
+    - Core Expression Reference Library: expression-reference.md
     - 4. Triggers and Route Dispatch: 04-Triggers-and-Route-Dispatch.md
     - 5. Structural Results: 05-Structural-Results.md
     - 6. Success Criteria and Actions: 06-Success-Criteria-and-Actions.md
