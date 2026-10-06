@@ -192,7 +192,7 @@ One execution owner, serial execution and task commits under the later confirmed
 |---|---|---|
 
 
-| C09 | [status-C09.md](status-C09.md) | pending; review 0/10 |
+| C09 | [status-C09.md](status-C09.md) | in progress; review 0/10 |
 
 | M08 | [status-M08.md](status-M08.md) | pending; review 0/10 |
 

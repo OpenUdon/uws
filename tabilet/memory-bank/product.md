@@ -6,6 +6,8 @@ C08 is accepted/retired after review 2 at `0411eea6fc84fbd6aa97cef94f53f301260f4
 
 ## Approved Stage 11 product direction — not implemented
 
+C09.1 adds the public source-neutral binding shape/resolver contract. Metadata completeness, exact identity and security OR/AND semantics are explicit; metadata never grants execution.
+
 C08.1 now provides the public expressions parser for the existing core grammar, including version/field/loop gates and value-free errors. C08.2 adds exact scalar comparison, null propagation and workflow/nearest-iteration lookup with shared vectors. C08.3 now makes the mock consume the shared evaluator and exposes opt-in CheckPortability diagnostics. Historical mock extensions remain explicit compatibility adapters; ordinary validation is unchanged.
 
 [Stage 11](../../../kinet/docs/stage11.md) and [local milestones](milestone.md#stage-11-cross-package-refactoring) define the approved target. UWS will own opt-in expression portability, source-neutral binding diagnostics and a verified HCL presentation module. Source parsing and product authority remain outside UWS. Existing published versions and ordinary validation compatibility stay intact; HCL input removal is outside Stage 11.

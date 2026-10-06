@@ -11,6 +11,8 @@ Both phases belong to one stage. C08 acceptance/publication is recorded above; C
 
 ## Language And Module
 
+C09.1 adds binding using the standard library plus existing internal strict-JSON support. No module/lockfile changes; shape-table race/vet tests pass.
+
 C08 adds expressions with standard-library parsing and a reference evaluator using existing uws1 context/strict-JSON support. No go.mod/go.sum or published-version bytes change. Parser/evaluator/mock race/vet and published-version immutability checks pass; the new 18-case reference corpus uses lossless value projections. C08.3 replaces the duplicate mock expression implementation with delegation and adds opt-in portability tests; no dependency version changed.
 
 - Go 1.25.4
