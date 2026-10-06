@@ -1,5 +1,9 @@
 # Milestones
 
+## Stage 11 active horizon
+
+Approved 2026-10-06: both phases of [Kinet STG-11](../../../kinet/docs/stage11.md), with one serial execution owner across Kinet, UWS, APItools, Udon and OpenUdon. This package owns C08, C09, M08; all rows are pending and each review is 0/10. [Specifications](#stage-11-cross-package-refactoring) below are the current horizon. Earlier completed horizons and records remain historical; planning grants no implementation or external authority.
+
 M01, M02, M03, C01, C02, B01, B02, C03, C05, C04, M04, C06, C07, M06, and M07
 completed acceptance and bounded review; their IDs remain reserved in the
 history index. C03 published UWS 1.10.0, C04 published UWS 1.11.0, and C07
@@ -65,8 +69,7 @@ work automatically.
 | UWS 2.0 expression, trigger, polling, and enforcement redesign | C2–C4 and E1/E2/E6/E8/E11 require new wire or governance choices: an expression marker/escape and interpolation, richer operators and names, literal `items`, decoupled profile/core versions, extensible source types, trigger kinds, possible content-trust enforcement, and portable `await` operation reexecution. C04 added numeric `batchSize` literals and corrected the existing `await` guide; portable operation reexecution remains deferred. | A concrete multi-runtime need and compatibility analysis support a separately approved 2.0 proposal. |
 | Other profile documentation | D7's remaining runtime-supplement ambiguity and D10's registration 1.2 authoring detail remain separate from Browser 1.10. M05 published the Browser profile versioning procedure and count profile; earlier profile versions remain immutable. | A relevant later profile version or an explicitly approved meaning-preserving editorial amendment for the remaining topics. |
 | Authoring diagnostics and examples | Third-review R3/R10: numeric `wait`/`batchSize` tokens must stay quoted under the existing string wire shape; raw-number diagnostics and the runtime-specific `$error.*` guide excerpt could be clearer. | A named authoring consumer and approved diagnostics or guide amendment with fixtures. Unquoted numbers require a separately versioned wire decision. |
-| Optional expression portability tooling | Third-review R4: core validation intentionally allows implementation-specific expressions under §5.5; strict grammar checking is not ordinary semantic validation. | A consumer requests an opt-in portability check with a specified interface and compatibility tests. |
-| Conformance corpus supplement | Third-review R9: Go tests cover behaviors absent from the pinned 1.11 corpus. Changing that frozen corpus would alter published evidence. | Design and approve a separately pinned supplement or a later release corpus with interoperable vectors. |
+| Remaining conformance corpus supplement | Stage 11 C08/C09 now own separately pinned expression/binding vectors. Other third-review R9 gaps remain deferred; changing the frozen 1.11 corpus would alter published evidence. | A named need for the remaining behaviors and a separately approved supplement or later release corpus. |
 | Browser text-safety expansion | Third-review R8: the Browser 1.9 text rule omits some Unicode `Cf` characters; a multilingual-safe replacement rule is undecided. | A reviewed allowlist or profile-version proposal with Unicode safety and compatibility evidence. |
 | Browser default migration | Third-review R12: empty profile lookup intentionally selects Browser 1.8 for compatibility, while Browser 1.10 remains opt-in. | Caller migration analysis and an approved default/deprecation policy. |
 | Interoperability formats | D6 file extensions, C16/E9 content-trust wire reports/resolvers, E4 stable error codes, E10 normative HCL mapping, and C10 portable error taxonomy require independent consumer and compatibility evidence beyond C04's executable conformance corpus. | A named independent consumer or portable conformance requirement and separately approved contract. |
@@ -174,3 +177,59 @@ ones only after preserving that evidence. Ordinary editorial changes need no
 entry. A retirement needs no separate archive run. Follow the governing commit
 policy, then refresh disposable goal input for remaining work or remove it when
 the active horizon is empty.
+
+## Stage 11 cross-package refactoring
+
+Approved review-intake amendment, 2026-10-06: 18 required milestones / 87 pending rows across the five owners. Scope and milestone IDs are unchanged; the coordinator records the approved publication proposal, which needs a separate execution-time grant. Full local source baseline remains `a7688f54c68f5a75c7cc95aa2b31cea98b31af41`, including the reviewed uncommitted planning state. This intake does not start a closing review or authorize implementation.
+
+**Approved source.** User-approved complete proposal, 2026-10-06; source baseline `a7688f54c68f5a75c7cc95aa2b31cea98b31af41`. [Coordinated contract](../../../kinet/docs/stage11.md) defines both phases, cross-package order, compatibility and acceptance. The request to implement the proposal authorizes its planning files only.
+
+One execution owner, serial execution and task commits under the later confirmed goal. Planning authorizes no code execution, commit, publication or external operation. Source publication requires separately named authority; a status marker or local build is not publication. Consumers must record exact accepted and published prerequisites before adoption. Default checks are offline, credential-free and model-free. No deployment, live ledger migration, real API/model/mail action or registration change.
+
+### Stage 11 status index
+
+| ID | Status file | State |
+|---|---|---|
+
+| C08 | [status-C08.md](status-C08.md) | Kinet:M45 |
+
+| C09 | [status-C09.md](status-C09.md) | UWS:C08 |
+
+| M08 | [status-M08.md](status-M08.md) | APItools:M82 |
+
+## C08 — Portable expressions
+
+**Stage/owner.** STG-11 Phase A; UWS. **Priority.** Serial position 2/18, not a review severity.
+**Dependencies.** [Kinet:M45](../../../kinet/tabilet/memory-bank/status-M45.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
+**Scope.** Parse the existing expression grammar; Evaluate expressions with shared vectors; Adopt without narrowing ordinary validation; Qualify and prepare the parser release.
+**Acceptance.** The existing normative grammar has one tested reference implementation. Existing document acceptance and frozen conformance artifacts remain compatible; strict portability checks are explicit.
+**Verification.** go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
+Use only disposable roots and fixtures. Preserve published schemas/wires, historic evidence, current runtime capability restrictions and the installed M44 service. Changed v3/package/worker identities require fresh approval; they do not preserve old grants.
+**Downstream.** [UWS:C09](status-C09.md), [Udon:M48](../../../udon/tabilet/memory-bank/status-M48.md), [OpenUdon:M98](../../../openudon/tabilet/memory-bank/status-M98.md). Reconcile exact accepted/publication revisions before advancing.
+**Tasks/review.** [status-C08.md](status-C08.md), 4 pending task commit units; review 0/10, not started. Approved intake provenance and consumer requirements are in that status. No implementation, acceptance or publication yet.
+
+## C09 — Binding contracts
+
+**Stage/owner.** STG-11 Phase A; UWS. **Priority.** Serial position 3/18, not a review severity.
+**Dependencies.** [UWS:C08](status-C08.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
+**Scope.** Define operation shapes and resolvers; Validate bindings and security declarations; Analyze flow deterministically; Qualify and publish the shape contract.
+**Acceptance.** Portable binding and flow diagnostics have stable codes and deterministic fixtures. Shape production stays outside UWS; no diagnostic grants execution or silently tightens legacy validation.
+**Verification.** go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
+Use only disposable roots and fixtures. Preserve published schemas/wires, historic evidence, current runtime capability restrictions and the installed M44 service. Changed v3/package/worker identities require fresh approval; they do not preserve old grants.
+**Downstream.** [APItools:M82](../../../apitools/tabilet/memory-bank/status-M82.md), [Udon:M47](../../../udon/tabilet/memory-bank/status-M47.md), [Kinet:M46](../../../kinet/tabilet/memory-bank/status-M46.md), [OpenUdon:P09](../../../openudon/tabilet/memory-bank/status-P09.md). Reconcile exact accepted/publication revisions before advancing.
+**Tasks/review.** [status-C09.md](status-C09.md), 4 pending task commit units; review 0/10, not started. Approved intake provenance and consumer requirements are in that status. No implementation, acceptance or publication yet.
+
+## M08 — Verified HCL presentation
+
+**Stage/owner.** STG-11 Phase A; UWS. **Priority.** Serial position 5/18, not a review severity.
+**Dependencies.** [APItools:M82](../../../apitools/tabilet/memory-bank/status-M82.md); exact accepted/published contract closure recorded before adoption. Serial gates and direct contract/regression dependencies are reconciled in the coordinator.
+**Scope.** Specify the additive 1.13 transition; Add render verify and import APIs; Prove lossless presentation; Qualify and publish both modules.
+**Acceptance.** A deterministic HCL view can be proved against the approved document. Existing HCL readers remain available; removal and core dependency extraction are deferred, not falsely claimed complete.
+**Verification.** go test ./...; go test -race ./...; go vet ./...; schema/conformance and published-version immutability checks; mkdocs build --strict; git diff --check. Run the separate codec module checks once it exists.
+Use only disposable roots and fixtures. Preserve published schemas/wires, historic evidence, current runtime capability restrictions and the installed M44 service. Changed v3/package/worker identities require fresh approval; they do not preserve old grants.
+**Downstream.** [Udon:M47](../../../udon/tabilet/memory-bank/status-M47.md), [Udon:M48](../../../udon/tabilet/memory-bank/status-M48.md), [Kinet:M46](../../../kinet/tabilet/memory-bank/status-M46.md), [Kinet:W17](../../../kinet/tabilet/memory-bank/status-W17.md). Reconcile exact accepted/publication revisions before advancing.
+**Tasks/review.** [status-M08.md](status-M08.md), 4 pending task commit units; review 0/10, not started. Approved intake provenance and consumer requirements are in that status. No implementation, acceptance or publication yet.
+
+## Stage 11 candidate dispositions
+
+C08 promotes opt-in expression portability. C08/C09 promote the expression/binding subset of a separately pinned conformance supplement; the frozen 1.11 corpus and broader remaining conformance work stay unchanged. M08 promotes only the additive HCL presentation/deprecation subset of interoperability. New grammar, trigger/polling redesign, general diagnostic wire standardization and HCL removal remain deferred.

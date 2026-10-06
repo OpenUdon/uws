@@ -151,3 +151,41 @@ profile adds count outputs without changing UWS core or earlier profile bytes.
 **Evidence.** `versions/1.12.0.json`; `versions/1.12.0.md`; `versions/CHANGELOG.md`; `testdata/examples/pending-only.1.12.json`; `uws1/validation_version.go`; `schemas/version_immutability_test.go`.
 
 **Replacement.** [Current Contract Surface](../../memory-bank/product.md#current-contract-surface)
+
+## Stage 11 approved target provenance — 2026-10-06
+
+Source: `AGENTS.md` at `a7688f54c68f5a75c7cc95aa2b31cea98b31af41` (clean). The following literal prior boundary remains evidence for existing behavior. The approved Stage 11 proposal adds a scoped target/transition; it does not claim that code has already moved. Replacement target: [Stage 11](../../../../kinet/docs/stage11.md) and the active milestone specifications. No retired record is changed.
+
+````markdown
+## Conversion
+
+`convert/` provides JSON, YAML, and HCL helpers.
+
+Key invariants:
+
+- JSON and YAML preserve `x-*` extensions through the `Extensions` map pattern.
+- HCL preserves object-level `x-*` extensions through `extensions { ... }` blocks. JSON and YAML keep extensions flattened as normal `x-*` fields.
+- HCL key rewriting preserves `$`-prefixed keys on round-trip. Legacy JSON Schema keys (`$ref`, `$id`, `$schema`, `$defs`, etc.) use the `_`-prefix form in HCL; other `$foo` keys use `__dollar__foo`.
+- `MarshalHCL` works on a deep copy and does not mutate the caller's document.
+- The `uws1.Document` wire tree and all fields/sub-structs reachable from it should carry `json` and `hcl` tags for parsing.
+````
+
+## Stage 11 candidate promotion — 2026-10-06
+
+Literal prior rows from `tabilet/memory-bank/milestone.md` at `a7688f54c68f5a75c7cc95aa2b31cea98b31af41`; user-approved promotion now belongs to the active Stage 11 owners, not a duplicate candidate.
+
+````markdown
+| Optional expression portability tooling | Third-review R4: core validation intentionally allows implementation-specific expressions under §5.5; strict grammar checking is not ordinary semantic validation. | A consumer requests an opt-in portability check with a specified interface and compatibility tests. |
+````
+
+Replacement: active [Stage 11 milestones](../../memory-bank/milestone.md#stage-11-cross-package-refactoring). Other candidate scope remains deferred.
+
+## Partial conformance candidate promotion — 2026-10-06
+
+Literal prior candidate from milestone.md at a7688f54c68f5a75c7cc95aa2b31cea98b31af41:
+
+````markdown
+| Conformance corpus supplement | Third-review R9: Go tests cover behaviors absent from the pinned 1.11 corpus. Changing that frozen corpus would alter published evidence. | Design and approve a separately pinned supplement or a later release corpus with interoperable vectors. |
+````
+
+C08/C09 now own the expression/binding subset; the active candidate retains the other corpus gaps. The frozen 1.11 corpus is unchanged. See [the current plan](../../memory-bank/milestone.md#stage-11-cross-package-refactoring).
