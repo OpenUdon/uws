@@ -1,6 +1,7 @@
 package expressions
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/OpenUdon/uws/uws1"
@@ -19,6 +20,57 @@ func TestStrictItemIndexContextDoesNotChangeParse(t *testing.T) {
 		if got := CheckPortability(d); len(got) != 0 {
 			t.Fatalf("forEach iteration %s: %+v", text, got)
 		}
+	}
+}
+
+func TestDependenciesUseIncomingIterationContext(t *testing.T) {
+	var d uws1.Document
+	text := `{"uws":"1.13.0","info":{"title":"fixture","version":"1"},"operations":[{"operationId":"read","x-uws-operation-profile":"fixture","outputs":{"value":"$item","batch":"$batchIndex"}},{"operationId":"noop","x-uws-operation-profile":"fixture"}],"workflows":[{"workflowId":"main","type":"loop","items":"$variables.items","steps":[{"stepId":"dependency","operationRef":"read"},{"stepId":"entry","operationRef":"noop","dependsOn":["dependency"]}]}],"triggers":[{"triggerId":"event","outputs":["ready"],"routes":[{"output":"ready","to":["entry"]}]}]}`
+	if err := json.Unmarshal([]byte(text), &d); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Validate(); err != nil {
+		t.Fatal("ordinary fixture invalid", err)
+	}
+	if got := CheckPortability(&d); len(got) != 2 {
+		t.Fatalf("transitive direct trigger context: %+v", got)
+	}
+	// A dependency runs before its depender creates a forEach iteration.
+	d.Triggers = nil
+	d.Workflows[0].Type = uws1.WorkflowTypeSequence
+	d.Workflows[0].Items = ""
+	d.Workflows[0].Steps = []*uws1.Step{{StepID: "each", OperationRef: "noop"}}
+	d.Operations[1].ForEach = "$variables.items"
+	d.Operations[1].DependsOn = []string{"read"}
+	if got := CheckPortability(&d); len(got) != 2 {
+		t.Fatalf("future iteration inherited by dependency: %+v", got)
+	}
+	// A workflow dependency inside a structural loop inherits that loop.
+	d.Operations[1].ForEach = ""
+	d.Operations[1].DependsOn = nil
+	d.Operations[0].Outputs = nil
+	d.Workflows[0].Type = uws1.WorkflowTypeLoop
+	d.Workflows[0].Items = "$variables.items"
+	d.Workflows[0].Steps = []*uws1.Step{{StepID: "join", Type: uws1.WorkflowTypeMerge, StepExecutionFields: uws1.StepExecutionFields{DependsOn: []string{"helper"}}}}
+	d.Workflows = append(d.Workflows, &uws1.Workflow{WorkflowID: "helper", Type: uws1.WorkflowTypeSequence, WorkflowExecutionFields: uws1.WorkflowExecutionFields{When: "$index == 0"}})
+	if got := CheckPortability(&d); len(got) != 0 {
+		t.Fatalf("valid loop dependency context lost: %+v", got)
+	}
+}
+
+func TestForEachControlsRunBeforeNewIteration(t *testing.T) {
+	d := &uws1.Document{UWS: "1.13.0", Operations: []*uws1.Operation{{OperationID: "read", OperationExecutionFields: uws1.OperationExecutionFields{ForEach: "$variables.items", When: "$index == 0", Wait: "$index"}}}, Workflows: []*uws1.Workflow{{WorkflowID: "main", Type: uws1.WorkflowTypeSequence, WorkflowExecutionFields: uws1.WorkflowExecutionFields{ForEach: "$variables.items", When: "$item"}, Steps: []*uws1.Step{{StepID: "read", OperationRef: "read"}}}}}
+	// Workflow body iteration is available to its operation, but the workflow's
+	// own when still runs outside that newly-created iteration.
+	got := CheckPortability(d)
+	if len(got) != 1 || got[0].Path != "/workflows/0/when" {
+		t.Fatal(got)
+	}
+	d.Workflows[0].ForEach = ""
+	d.Workflows[0].When = ""
+	got = CheckPortability(d)
+	if len(got) != 2 || got[0].Path != "/operations/0/when" || got[1].Path != "/operations/0/wait" {
+		t.Fatal(got)
 	}
 }
 

@@ -229,7 +229,10 @@ func arrayContainment(source, target map[string]any, cs, ct *jsonschema.Schema, 
 	if ct.DraftVersion >= 2020 {
 		allowed = append(allowed, "prefixItems")
 	} else {
-		allowed = append(allowed, "additionalItems", "prefixItems", "unevaluatedItems", "minContains", "maxContains")
+		allowed = append(allowed, "additionalItems", "prefixItems")
+		if ct.DraftVersion < 2019 {
+			allowed = append(allowed, "unevaluatedItems", "minContains", "maxContains")
+		}
 	}
 	if !constraintKeysKnown(target, allowed...) {
 		return Indeterminate

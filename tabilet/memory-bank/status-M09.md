@@ -30,8 +30,8 @@ Inputs within byte limits but above depth 100 refuse before unbounded HCL/strict
 | M09.1 — Bound HCL and shape-table parsing before recursion | `[x]` | Iterative lexical preflight counts delimiters and refuses unsupported active templates before HCL parsing; strict JSON uses an iterative depth-100 stack. Exact duplicate/Unicode/numeric/trailing checks remain. Fatal-depth Import, strict-JSON and ParseTable child processes passed with a 1 MiB stack. Focused root tests/races/vet and separate full codec tests/races/vet passed, GOWORK=off GOPROXY=off Go 1.26.6. Sources W1/W2. |
 | M09.2 — Verify canonical HCL views and retain inert import symmetry | `[x]` | Shared nonrecursive writer path enforces exact deterministic bytes before independent complete-value/numeric-lexeme proof. Self-hashed comment/escape/formatting tests, typed-block empty/null/mismatch symmetry and JSON/YAML NFD string/key fail-closed tests pass. Deprecated is a separate Go doc paragraph; README states the limitation. Separate full codec races and vet passed. Sources W6 and P3.2/P3.3/P3.8. |
 | M09.3 — Restore sound binding containment and schema context | `[x]` | Original compiled child nodes preserve dialect/local-reference context. Pattern-driven closure and nullable/pattern paths are indeterminate where unsupported; false leaves refuse. Draft-07 tuple/future-keyword/local-reference tests agree with whole-schema literal validation; binding full tests/races/vet passed. The original dependencies claim remains unconfirmed. Sources W3/W4/W5/P3.1. |
-| M09.4 — Scope flow references and strict portability contexts | `[x]` | Kind/workflow-scoped dependencies and output references no longer use a global cross-kind/foreign-step fallback; same-scope duplicate definitions remain ambiguous. Strict checker tracks loop and item/index contexts separately, including trigger workflow/direct-step entry and forEach collection/body distinction. Binding/expressions full tests/races/vet passed; ordinary Parse remains compatible. Sources P3.4/P3.5. |
-| M09.5 — Qualify and hand off exact root and nested codec revisions | `[ ]` | Run root/codec conformance, races, immutable-version/corpus guards and independent module-only builds. Add successor regression vectors without rewriting frozen evidence. Persist normal review counts and publish only under fresh named authority; record exact accepted root/codec sources, sums and APItools/OpenUdon/Kinet handoffs. |
+| M09.4 — Scope flow references and strict portability contexts | `[x]` | Explicit identities retain generic group barriers and step→workflow→operation dependency precedence; genuine duplicate step definitions remain ambiguous. Output references use explicit workflow/result owners and known operation invocation contexts, with no foreign-name fallback. Strict checker separates loop/item availability and pre-forEach controls, including transitive trigger/dependency contexts. Root full tests/races/vet pass; ordinary Parse remains compatible. Sources P3.4/P3.5. |
+| M09.5 — Qualify and hand off exact root and nested codec revisions | `[~]` | Running root/codec conformance, races, immutable-version/corpus guards and independent module-only builds. Successor regressions are additive. Publication and ordinary new-root downstream proof require fresh named authority; prepare reviewed exact artifacts before that gate. |
 
 ## Active finding provenance
 
@@ -62,12 +62,62 @@ Public schemas/wires, published grammar/version bytes, accepted historical quali
 
 ## Closing review
 
-**Review iterations:** 0/10.
-**Review state:** not started; this is review intake, not a pass of an existing gate.
-**Findings/fixes:** no implementation or fix verification claimed.
-**Execution owner:** sole serial UWS:M09 owner; coordinator makes no writes during this handoff. No row is in progress after M09.1 verification.
+**Review iterations:** 1/10.
+**Review state:** iteration 1 completed with findings, 2026-10-08; fixes verified before the next whole pass. No pass/acceptance claimed.
+**Findings/fixes:** ten persisted P2 findings below are addressed. Root full tests/races/vet, separate full codec races/vet, strict docs build and protected version/corpus/module-pin guards pass. Standalone corrected-source artifacts are the next qualification step.
+**Execution owner:** sole serial UWS:M09 owner; coordinator makes no writes during this handoff. Only M09.5 is in progress.
 **Commit policy:** Confirmed GOAL COMMIT_POLICY: task; verified task commits and substantive review/closure commits, without amend/rewrite/push/tag authority.
 **Closure:** persist each started review iteration before reviewing; resume an interrupted pass at the same number. No open P1/P2 may remain at acceptance. Required verification, exact downstream reconciliation and owner-specific consolidation/retirement follow implementation; never reopen completed Stage 11 history.
+
+### Iteration 1 findings (persisted before fixes)
+
+- R1-F01 / P2 / M09.1: delimiter/unary preflight still admitted a shallow
+  20,000-term conditional chain (`true ? 0 : ...`), which overflowed a 1 MiB
+  child stack in hclsyntax.parseTernaryConditional. Read-only anonymous-overlay
+  regression reproduced the failure on Go 1.26.6. Refuse already-unsupported
+  conditional syntax before recursive parsing and add isolated child coverage.
+- R1-F02 / P2 / M09.3: a declared property intersected by a false
+  patternProperties schema was reported reachable/compatible. The read-only
+  overlay reproduced whole-schema rejection versus schemaPath compatibility.
+  Pattern intersections need conservative proof or indeterminate refusal.
+- R1-F03 / P2 / M09.4: owner-kind-only dependency prefixes narrowed the frozen
+  generic dependsOn contract, which permits cross-kind targets and defines
+  step→workflow→operation precedence plus parallel groups. Preserve that
+  precedence without global cross-kind ambiguity; output references remain
+  scoped to their workflow.
+- R1-F04 / P2 / M09.3: draft-2019 unevaluatedItems was incorrectly treated as
+  an ignored future keyword; an expression template was compatible while the
+  corresponding literal was rejected. Keep effective unsupported constraints
+  indeterminate under their inherited draft.
+- R1-F05 / P2 / M09.4: structural results with From=main.join retained an empty
+  reference workflow after removing fallback, falsely classifying the named
+  join output as unused. Resolve the result's explicit owner context.
+- R1-F06 / P2 / M09.4: direct-trigger context was not propagated through a
+  step's transitive generic dependsOn, so an ordinary-valid dependency operation
+  using item/batchIndex was incorrectly portable outside a loop.
+- R1-F07 / P2 / M09.4: the checker created forEach item/index availability before
+  its when condition, but executeRunnable evaluates when before forEach binds an
+  item. Preserve outer iteration context for pre-iteration controls.
+- R1-F08 / P2 / M09.3: draft-07 $ref ignores sibling type, but raw source type
+  was used to prove containment. Effective unsupported source references must
+  remain indeterminate rather than proving the ignored sibling.
+- R1-F09 / P2 / M09.4: dependency contexts also incorrectly inherited an
+  operation's not-yet-created forEach iteration, while workflow/step generic
+  dependencies were omitted. Traverse dependencies in incoming execution context,
+  including group members, before creating body iteration state.
+- R1-F10 / P2 / M09.4: source-bound operation request expressions retained an
+  empty workflow after fallback removal, falsely marking a same-workflow producer
+  output unused. Project operation expressions into their known invocation owners
+  rather than selecting a foreign step by name.
+
+**Iteration 1 fix verification:** Unsupported conditionals refuse before parsing;
+the existing isolated low-stack child suite also proves codec source JSON is
+bounded while its standalone dependency remains C09. Pattern intersections,
+draft-2019 constraints and source references remain indeterminate without proof;
+local-reference literal proofs retain original compiled children. Generic/group
+dependencies, result/operation owners, transitive trigger contexts and incoming
+pre-forEach controls have new deterministic regressions. All ten findings are
+fixed for full re-review; review counter remains 1 until that pass starts.
 
 ## Accepted serial predecessor — Udon:M49, 2026-10-08
 

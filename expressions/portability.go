@@ -34,12 +34,12 @@ func CheckPortability(document *uws1.Document) []Diagnostic {
 		loop := onlyLoop(opScopes[op.OperationID])
 		c.iteration = onlyIteration(opScopes[op.OperationID])
 		c.check(op.ForEach, base+"/forEach", Value, loop)
+		c.check(op.When, base+"/when", Predicate, loop)
+		c.check(op.Wait, base+"/wait", Wait, loop)
 		if op.ForEach != "" {
 			loop = false
 			c.iteration = true
 		}
-		c.check(op.When, base+"/when", Predicate, loop)
-		c.check(op.Wait, base+"/wait", Wait, loop)
 		// Core source request bindings are expressions only when explicitly marked
 		// with a source or legacy wrapper. Extension-owned request templates aren't.
 		browser := false
@@ -76,12 +76,17 @@ func CheckPortability(document *uws1.Document) []Diagnostic {
 		loop := onlyLoop(workflowScopes[w.WorkflowID])
 		c.iteration = onlyIteration(workflowScopes[w.WorkflowID])
 		c.check(w.ForEach, base+"/forEach", Value, loop)
+		c.check(w.When, base+"/when", Predicate, loop)
+		bodyWait := w.Wait
+		if w.Type != uws1.WorkflowTypeAwait {
+			c.check(w.Wait, base+"/wait", Wait, loop)
+			bodyWait = ""
+		}
 		if w.ForEach != "" {
 			loop = false
 			c.iteration = true
 		}
-		c.check(w.When, base+"/when", Predicate, loop)
-		c.structural(w.Type, w.Wait, w.Items, w.BatchSize, base, loop)
+		c.structural(w.Type, bodyWait, w.Items, w.BatchSize, base, loop)
 		bodyLoop := loop || w.Type == uws1.WorkflowTypeLoop
 		c.outputs(w.Outputs, base+"/outputs", loop)
 		c.iteration = c.iteration || w.Type == uws1.WorkflowTypeLoop
@@ -236,13 +241,18 @@ func (c *checker) steps(steps []*uws1.Step, path string, loop bool, depth int) {
 			c.iteration = onlyIteration(scope)
 		}
 		c.check(step.ForEach, base+"/forEach", Value, stepLoop)
+		c.check(step.When, base+"/when", Predicate, stepLoop)
+		bodyWait := step.Wait
+		if step.Type != uws1.WorkflowTypeAwait {
+			c.check(step.Wait, base+"/wait", Wait, stepLoop)
+			bodyWait = ""
+		}
 		effective := stepLoop
 		if step.ForEach != "" {
 			effective = false
 			c.iteration = true
 		}
-		c.check(step.When, base+"/when", Predicate, effective)
-		c.structural(step.Type, step.Wait, step.Items, step.BatchSize, base, effective)
+		c.structural(step.Type, bodyWait, step.Items, step.BatchSize, base, effective)
 		childLoop := effective || step.Type == uws1.WorkflowTypeLoop
 		c.values(step.Inputs, base+"/inputs", effective, 0)
 		c.outputs(step.Outputs, base+"/outputs", effective)
@@ -276,14 +286,50 @@ func invocationScopes(d *uws1.Document) (map[string]uint8, map[string]uint8, map
 	stepScopes := map[*uws1.Step]uint8{}
 	byID := map[string]*uws1.Workflow{}
 	opByID := map[string]*uws1.Operation{}
+	stepsByID := map[string]*uws1.Step{}
+	groups := map[string][]string{}
+	indexed := map[*uws1.Step]bool{}
+	var indexSteps func([]*uws1.Step, int)
+	indexSteps = func(steps []*uws1.Step, depth int) {
+		if depth > maxExpressionDepth {
+			return
+		}
+		for _, s := range steps {
+			if s == nil || indexed[s] {
+				continue
+			}
+			indexed[s] = true
+			stepsByID[s.StepID] = s
+			if s.ParallelGroup != "" {
+				groups[s.ParallelGroup] = append(groups[s.ParallelGroup], s.StepID)
+			}
+			indexSteps(s.Steps, depth+1)
+			indexSteps(s.Default, depth+1)
+			for _, branch := range s.Cases {
+				if branch != nil {
+					indexSteps(branch.Steps, depth+1)
+				}
+			}
+		}
+	}
 	for _, w := range d.Workflows {
 		if w != nil {
 			byID[w.WorkflowID] = w
+			indexSteps(w.Steps, 0)
+			indexSteps(w.Default, 0)
+			for _, branch := range w.Cases {
+				if branch != nil {
+					indexSteps(branch.Steps, 0)
+				}
+			}
 		}
 	}
 	for _, op := range d.Operations {
 		if op != nil {
 			opByID[op.OperationID] = op
+			if op.ParallelGroup != "" {
+				groups[op.ParallelGroup] = append(groups[op.ParallelGroup], op.OperationID)
+			}
 		}
 	}
 	bit := func(loop, iteration bool) uint8 {
@@ -299,21 +345,31 @@ func invocationScopes(d *uws1.Document) (map[string]uint8, map[string]uint8, map
 	var visitWorkflow func(string, bool, bool, int)
 	var visitSteps func([]*uws1.Step, bool, bool, int)
 	var visitOperation func(string, bool, bool, int)
+	var visitDependency func(string, bool, bool, int)
+	visitDependency = func(id string, loop, iteration bool, depth int) {
+		if depth > maxExpressionDepth {
+			return
+		}
+		if members := groups[id]; len(members) > 0 {
+			for _, member := range members {
+				visitDependency(member, loop, iteration, depth+1)
+			}
+		} else if s := stepsByID[id]; s != nil {
+			visitSteps([]*uws1.Step{s}, loop, iteration, depth+1)
+		} else if byID[id] != nil {
+			visitWorkflow(id, loop, iteration, depth+1)
+		} else if opByID[id] != nil {
+			visitOperation(id, loop, iteration, depth+1)
+		}
+	}
 	visitOperation = func(id string, loop, iteration bool, depth int) {
 		if depth > maxExpressionDepth || operations[id]&bit(loop, iteration) != 0 {
 			return
 		}
 		operations[id] |= bit(loop, iteration)
 		if op := opByID[id]; op != nil {
-			effective := loop
-			if op.ForEach != "" {
-				effective = false
-				iteration = true
-			}
 			for _, dependency := range op.DependsOn {
-				if opByID[dependency] != nil {
-					visitOperation(dependency, effective, iteration, depth+1)
-				}
+				visitDependency(dependency, loop, iteration, depth+1)
 			}
 		}
 	}
@@ -322,10 +378,13 @@ func invocationScopes(d *uws1.Document) (map[string]uint8, map[string]uint8, map
 			return
 		}
 		for _, s := range steps {
-			if s == nil {
+			if s == nil || stepScopes[s]&bit(loop, iteration) != 0 {
 				continue
 			}
 			stepScopes[s] |= bit(loop, iteration)
+			for _, dependency := range s.DependsOn {
+				visitDependency(dependency, loop, iteration, depth+1)
+			}
 			effective := loop
 			bodyIteration := iteration
 			if s.ForEach != "" {
@@ -357,6 +416,9 @@ func invocationScopes(d *uws1.Document) (map[string]uint8, map[string]uint8, map
 		w := byID[id]
 		if w == nil {
 			return
+		}
+		for _, dependency := range w.DependsOn {
+			visitDependency(dependency, loop, iteration, depth+1)
 		}
 		effective := loop
 		if w.ForEach != "" {

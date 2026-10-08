@@ -354,6 +354,9 @@ func schemaContainment(s, t any, cs, ct *jsonschema.Schema, depth int) Outcome {
 		}
 		return Incompatible
 	}
+	if cs.Ref != nil || cs.DynamicRef != nil || cs.RecursiveRef != nil {
+		return Indeterminate
+	}
 	sm, ok := s.(map[string]any)
 	if !ok {
 		return Indeterminate
@@ -470,6 +473,13 @@ func schemaPath(schema Schema, fragment string) Outcome {
 		}
 		switch kinds[0] {
 		case "object":
+			// A declared property and every matching pattern constrain the same
+			// value. Do not discard that intersection when walking a property.
+			for pattern := range node.PatternProperties {
+				if pattern.MatchString(part) {
+					return Indeterminate
+				}
+			}
 			child, ok := node.Properties[part]
 			if !ok {
 				if len(node.PatternProperties) > 0 {

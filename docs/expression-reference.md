@@ -86,7 +86,8 @@ reference is checked in its actual call scope, not merely its declaration.
 Trigger-route workflows and direct top-level step routes contribute their
 actual entry contexts. Direct steps bypass the enclosing workflow loop body.
 The strict checker also diagnoses `$item`/`$index` outside known iterations;
-forEach creates item/index context after its collection expression is checked,
+forEach creates item/index context after dependencies, when, non-await wait
+and its collection expression are checked in the incoming context,
 while its separate batch-index behavior remains unchanged. Ordinary Parse
 continues accepting the declared grammar independently of availability.
 

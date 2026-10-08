@@ -24,7 +24,8 @@ ShapeTable.Validate/Marshal/ParseTable check closed structure, bounded data,
 source identity consistency, selector/input/output uniqueness and schema JSON.
 Serialization sorts copied source/operation slices while preserving declaration
 and security alternative order. No caller metadata is mutated. Limits are
-8 MiB per table, 512 sources, 10000 operations and 256 KiB per schema.
+8 MiB per table, 512 sources, 10000 operations and 256 KiB per schema. Strict
+JSON container nesting is limited to 100 before model/schema decoding.
 
 NewResolver owns a private decoded snapshot and returns independent results.
 It resolves exact source/selector identities, reports missing or ambiguous
@@ -54,6 +55,10 @@ unproved constraint containment stays indeterminate. Nested body/array templates
 are projected as closed schemas using reviewed expression types and literal
 const leaves; structural containment is proved only for the supported constraint
 subset. Partial number/integer overlap is indeterminate, not disjoint.
+Nested proofs retain compiled child nodes in the original dialect/resource.
+Unsupported effective constraints, source references, pattern-based closure
+and overlapping pattern/path constraints remain indeterminate. False leaves
+are incompatible; nullable or pattern-driven fields are not proof of absence.
 Typed JSON-compatible containers are normalized with UseNumber before
 template discovery, so they have the same binding meaning as ordinary JSON
 objects/arrays; invalid/duplicate-key values are refused without excerpts.
@@ -68,6 +73,9 @@ AnalyzeFlow reports possible structural reachability from the main/sole entry
 workflow and declared trigger routes, including dependencies, workflow calls
 and explicit goto targets. Conditions are not evaluated. Merge children are
 not treated as executed. Missing/ambiguous references and cycles remain visible.
+Generic dependencies retain group barriers and step→workflow→operation
+precedence. Core step-output references use their explicit workflow or known
+operation invocation owner; no foreign-workflow name fallback is used.
 Known core references mark step/operation outputs used; output_unreferenced
 means no recognized core reference, not proof that an opaque profile cannot
 consume the value. Findings are sorted by path/code, capped at 128 with an

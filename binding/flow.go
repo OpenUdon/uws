@@ -29,14 +29,17 @@ type flowNode struct {
 	wf                                  *uws1.Workflow
 }
 type flowAnalyzer struct {
-	ctx       context.Context
-	doc       *uws1.Document
-	nodes     map[string]*flowNode
-	ambiguous map[string]bool
-	reached   map[string]bool
-	used      map[string]bool
-	findings  map[string]FlowFinding
-	stepOps   map[string]string
+	ctx         context.Context
+	doc         *uws1.Document
+	nodes       map[string]*flowNode
+	ambiguous   map[string]bool
+	stepsByName map[string][]string
+	groups      map[string][]string
+	contexts    map[string]map[string]bool
+	reached     map[string]bool
+	used        map[string]bool
+	findings    map[string]FlowFinding
+	stepOps     map[string]string
 }
 
 // AnalyzeFlow observes possible control flow. Conditions aren't executed;
@@ -49,15 +52,12 @@ func AnalyzeFlow(ctx context.Context, document *uws1.Document) (FlowReport, erro
 	if err := ctx.Err(); err != nil {
 		return report, err
 	}
-	a := flowAnalyzer{ctx: ctx, doc: document, nodes: map[string]*flowNode{}, ambiguous: map[string]bool{}, reached: map[string]bool{}, used: map[string]bool{}, findings: map[string]FlowFinding{}, stepOps: map[string]string{}}
+	a := flowAnalyzer{ctx: ctx, doc: document, nodes: map[string]*flowNode{}, ambiguous: map[string]bool{}, stepsByName: map[string][]string{}, groups: map[string][]string{}, contexts: map[string]map[string]bool{}, reached: map[string]bool{}, used: map[string]bool{}, findings: map[string]FlowFinding{}, stepOps: map[string]string{}}
 	for i, op := range document.Operations {
 		if op != nil {
 			key := "op:" + op.OperationID
 			n := &flowNode{key: key, path: "/operations/" + strconv.Itoa(i), op: op, outputs: op.Outputs, dependencies: append([]string(nil), op.DependsOn...)}
 			n.expressions = append(n.expressions, op.When, op.ForEach, op.Wait)
-			for j := range n.dependencies {
-				n.dependencies[j] = "op:" + n.dependencies[j]
-			}
 			a.add(n, op.OperationID)
 			a.operationExpressions(n)
 		}
@@ -67,9 +67,6 @@ func AnalyzeFlow(ctx context.Context, document *uws1.Document) (FlowReport, erro
 			key := "wf:" + w.WorkflowID
 			n := &flowNode{key: key, path: "/workflows/" + strconv.Itoa(i), workflow: w.WorkflowID, wf: w, outputs: w.Outputs, dependencies: append([]string(nil), w.DependsOn...), expressions: []string{w.When, w.ForEach, w.Wait, w.Items, w.BatchSize}}
 			a.add(n, w.WorkflowID)
-			for j := range n.dependencies {
-				n.dependencies[j] = "wf:" + n.dependencies[j]
-			}
 			a.steps(n, w.Steps, n.path+"/steps", w.Type, 0)
 			a.steps(n, w.Default, n.path+"/default", w.Type, 0)
 			for j, c := range w.Cases {
@@ -82,7 +79,14 @@ func AnalyzeFlow(ctx context.Context, document *uws1.Document) (FlowReport, erro
 	}
 	for _, r := range document.Results {
 		if r != nil {
-			a.references(r.Value, "", "")
+			workflow, step, hasStep := strings.Cut(r.From, ".")
+			current := "wf:" + workflow
+			if hasStep {
+				current = "step:" + workflow + ":" + step
+			}
+			if a.nodes[current] != nil {
+				a.references(r.Value, workflow, current)
+			}
 		}
 	}
 	entry := "wf:main"
@@ -90,7 +94,7 @@ func AnalyzeFlow(ctx context.Context, document *uws1.Document) (FlowReport, erro
 		entry = "wf:" + document.Workflows[0].WorkflowID
 	}
 	if a.nodes[entry] != nil {
-		a.visit(entry, map[string]bool{})
+		a.visit(entry, map[string]bool{}, "")
 	} else {
 		a.find("flow.entry_indeterminate", "/workflows")
 	}
@@ -115,7 +119,7 @@ func AnalyzeFlow(ctx context.Context, document *uws1.Document) (FlowReport, erro
 								continue
 							}
 						}
-						a.visitReference(ref, "/triggers", map[string]bool{})
+						a.visitReference(ref, "/triggers", map[string]bool{}, "")
 					}
 				}
 			}
@@ -134,11 +138,21 @@ func AnalyzeFlow(ctx context.Context, document *uws1.Document) (FlowReport, erro
 		if !a.reached[key] {
 			a.find("flow.unreachable", n.path)
 		}
-		for _, expression := range n.expressions {
-			a.references(expression, n.workflow, n.key)
+		scopes := []string{n.workflow}
+		if n.op != nil && len(a.contexts[key]) > 0 {
+			scopes = nil
+			for workflow := range a.contexts[key] {
+				scopes = append(scopes, workflow)
+			}
+			sort.Strings(scopes)
 		}
-		for _, expression := range n.outputs {
-			a.references(expression, n.workflow, n.key)
+		for _, workflow := range scopes {
+			for _, expression := range n.expressions {
+				a.references(expression, workflow, n.key)
+			}
+			for _, expression := range n.outputs {
+				a.references(expression, workflow, n.key)
+			}
 		}
 	}
 	for _, key := range keys {
@@ -178,6 +192,17 @@ func (a *flowAnalyzer) add(n *flowNode, name string) {
 		return
 	}
 	a.nodes[n.key] = n
+	group := ""
+	if n.op != nil {
+		group = n.op.ParallelGroup
+	}
+	if n.step != nil {
+		a.stepsByName[name] = append(a.stepsByName[name], n.key)
+		group = n.step.ParallelGroup
+	}
+	if group != "" {
+		a.groups[group] = append(a.groups[group], n.key)
+	}
 }
 func (a *flowAnalyzer) find(code, path string) {
 	a.findings[code+"\x00"+path] = FlowFinding{Code: code, Path: path}
@@ -195,9 +220,6 @@ func (a *flowAnalyzer) steps(parent *flowNode, steps []*uws1.Step, path, kind st
 		base := path + "/" + strconv.Itoa(i)
 		key := "step:" + parent.workflow + ":" + s.StepID
 		n := &flowNode{key: key, path: base, workflow: parent.workflow, step: s, outputs: s.Outputs, dependencies: append([]string(nil), s.DependsOn...), expressions: []string{s.When, s.ForEach, s.Wait, s.Items, s.BatchSize}}
-		for j := range n.dependencies {
-			n.dependencies[j] = "step:" + parent.workflow + ":" + n.dependencies[j]
-		}
 		a.add(n, s.StepID)
 		if kind != uws1.WorkflowTypeMerge {
 			parent.children = append(parent.children, key)
@@ -352,13 +374,37 @@ func (a *flowAnalyzer) valueExpressions(value any, out *[]string, depth int) {
 		}
 	}
 }
-func (a *flowAnalyzer) visitReference(ref, path string, stack map[string]bool) {
+func (a *flowAnalyzer) visitReference(ref, path string, stack map[string]bool, workflow string) {
 	if a.ambiguous[ref] {
 		a.find("flow.reference_ambiguous", path)
 		return
 	}
 	if a.nodes[ref] != nil {
-		a.visit(ref, stack)
+		a.visit(ref, stack, workflow)
+		return
+	}
+	// Generic dependsOn retains the published group barrier and unqualified
+	// step/workflow/operation precedence. Cross-kind names are not ambiguity.
+	if members := a.groups[ref]; len(members) > 0 {
+		for _, member := range members {
+			a.visitReference(member, path, stack, workflow)
+		}
+		return
+	}
+	if steps := a.stepsByName[ref]; len(steps) > 0 {
+		if len(steps) != 1 || a.ambiguous[steps[0]] {
+			a.find("flow.reference_ambiguous", path)
+			return
+		}
+		a.visit(steps[0], stack, workflow)
+		return
+	}
+	if a.nodes["wf:"+ref] != nil {
+		a.visitReference("wf:"+ref, path, stack, workflow)
+		return
+	}
+	if a.nodes["op:"+ref] != nil {
+		a.visitReference("op:"+ref, path, stack, workflow)
 		return
 	}
 	a.find("flow.reference_missing", path)
@@ -371,7 +417,7 @@ func (a *flowAnalyzer) entryStepKey(id string) string {
 	}
 	return "step:" + workflow + ":" + id
 }
-func (a *flowAnalyzer) visit(key string, stack map[string]bool) {
+func (a *flowAnalyzer) visit(key string, stack map[string]bool, workflow string) {
 	n := a.nodes[key]
 	if n == nil {
 		a.find("flow.reference_missing", "/")
@@ -381,16 +427,23 @@ func (a *flowAnalyzer) visit(key string, stack map[string]bool) {
 		a.find("flow.cycle", n.path)
 		return
 	}
-	if a.reached[key] {
+	if n.wf != nil || n.step != nil {
+		workflow = n.workflow
+	}
+	if a.contexts[key] == nil {
+		a.contexts[key] = map[string]bool{}
+	}
+	if a.contexts[key][workflow] {
 		return
 	}
+	a.contexts[key][workflow] = true
 	a.reached[key] = true
 	stack[key] = true
 	for _, ref := range n.dependencies {
-		a.visitReference(ref, n.path+"/dependsOn", stack)
+		a.visitReference(ref, n.path+"/dependsOn", stack, workflow)
 	}
 	for _, child := range n.children {
-		a.visit(child, stack)
+		a.visit(child, stack, workflow)
 	}
 	delete(stack, key)
 }

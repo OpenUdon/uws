@@ -17,12 +17,36 @@ func TestPatternSourceDoesNotProveClosedContainment(t *testing.T) {
 	}
 }
 
+func TestEffective2019ArrayConstraintsRemainIndeterminate(t *testing.T) {
+	target := knownSchema(`{"$schema":"https://json-schema.org/draft/2019-09/schema","type":"array","unevaluatedItems":false}`)
+	value := []any{"$inputs.marker"}
+	types := map[string]Schema{"$inputs.marker": knownSchema(`{"type":"string"}`)}
+	if got := validateLiteral(target, []any{"value"}); got != Incompatible {
+		t.Fatal(got)
+	}
+	if got := validateBoundValue(target, value, types, expressions.Context{Version: "1.13.0", Field: expressions.Value}); got != Indeterminate {
+		t.Fatal(got)
+	}
+}
+
+func TestIgnoredReferenceSiblingDoesNotProveType(t *testing.T) {
+	source := knownSchema(`{"$schema":"http://json-schema.org/draft-07/schema#","definitions":{"n":{"type":"integer"}},"$ref":"#/definitions/n","type":"string"}`)
+	target := knownSchema(`{"type":"string"}`)
+	if validateLiteral(source, 1) != Compatible || validateLiteral(target, 1) != Incompatible {
+		t.Fatal("dialect fixture")
+	}
+	if got := schemaCompatibility(source, target); got != Indeterminate {
+		t.Fatal("ignored type proved", got)
+	}
+}
+
 func TestSchemaPathsFalseNullableAndPatterns(t *testing.T) {
 	for _, tc := range []struct {
 		schema, path string
 		want         Outcome
 	}{
 		{`{"type":"object","properties":{"x":false}}`, "#/x", Incompatible},
+		{`{"type":"object","properties":{"x":{"type":"string"}},"patternProperties":{"^x":false},"additionalProperties":false}`, "#/x", Indeterminate},
 		{`{"type":["object","null"],"properties":{"x":{"type":"string"}},"additionalProperties":false}`, "#/x", Indeterminate},
 		{`{"type":"object","patternProperties":{"^x":{"type":"string"}},"additionalProperties":false}`, "#/xyz", Indeterminate},
 		{`{"$schema":"http://json-schema.org/draft-07/schema#","type":"array","items":[false],"additionalItems":false}`, "#/0", Incompatible},

@@ -50,10 +50,16 @@ func TestHostileDepthSubprocess(t *testing.T) {
 			"uws = " + strings.Repeat("{x=", 20000) + "1" + strings.Repeat("}", 20000),
 			"uws = \"${" + strings.Repeat("(", 20000) + "1" + strings.Repeat(")", 20000) + "}\"",
 			"uws = \"" + strings.Repeat("%{if true}", 20000) + "x" + strings.Repeat("%{endif}", 20000) + "\"",
+			"uws = " + strings.Repeat("true ? 0 : ", 20000) + "0\n",
+			"uws = " + strings.Repeat("true ? ", 20000) + "0" + strings.Repeat(" : 0", 20000) + "\n",
 		} {
 			if _, err := Import(context.Background(), []byte(data)); err == nil {
 				t.Fatal("hostile input accepted")
 			}
+		}
+		source := Source{Format: JSON, Bytes: []byte(`{"variables":{"deep":` + strings.Repeat("[", 20000) + "0" + strings.Repeat("]", 20000) + "}}")}
+		if _, err := Render(context.Background(), source, Options{Revision: fixtureRevision}); err == nil {
+			t.Fatal("hostile source JSON accepted")
 		}
 		return
 	}

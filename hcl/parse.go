@@ -70,6 +70,10 @@ func preflightHCL(ctx context.Context, data []byte) error {
 			// These are already outside the inert subset. Refuse before the
 			// parser can recurse through interpolations or template directives.
 			return ErrCodec
+		case hclsyntax.TokenQuestion:
+			// Conditional chains recurse without adding delimiter nesting, and
+			// conditionals are also outside the supported inert value subset.
+			return ErrCodec
 		case hclsyntax.TokenCBrace, hclsyntax.TokenCBrack, hclsyntax.TokenCParen, hclsyntax.TokenCQuote, hclsyntax.TokenCHeredoc:
 			if len(stack) == 0 || stack[len(stack)-1] != token.Type {
 				return ErrCodec
