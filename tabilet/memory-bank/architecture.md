@@ -2,6 +2,11 @@
 
 ## M09 parser remediation
 
+Accepted source `b099f6803277ae94c7e9f1da0904a0140b278f20` is independently
+published as root/codec `v0.0.0-20261008043726-b099f6803277`, whole review 7.
+[Ordinary module proof](../../docs/m09-publication.md) distinguishes exact
+reviewed file contents and Go checksums from ZIP-container compression.
+
 Strict JSON prevalidation now uses a bounded iterative container stack (depth
 100) before shape-table/model decoding. The separate codec preflights HCL with
 the retained dependency's iterative lexer before recursive parsing, counting

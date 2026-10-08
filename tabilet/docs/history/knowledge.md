@@ -466,3 +466,34 @@ in their respective repositories and active ledgers. The GOAL protocol remains
 unchanged.
 
 ````
+
+## 2026-10-08 — M09 accepted parser and binding lesson evidence
+
+Source: lessons.md, Preserve indeterminate schema evidence when proving bindings;
+Enforce parser budgets before calling a recursive dependency. Reason: replace
+intake/pending claims with accepted corrections while preserving exact earlier
+wording. Evidence: runtime b099f6803277ae94c7e9f1da0904a0140b278f20; ordinary
+publication proof at 51a74545b016b8ab75e30d454338c52f7945a836, review 7 passed.
+Replacement: [current lessons](../../memory-bank/lessons.md) and
+[accepted M09](status-M09.md).
+
+````markdown
+Containment must also preserve the original schema dialect and reference
+context through children. The Stage 11 intake probe found a nested draft-07
+array incompatible/indeterminate while literal validation against its whole
+schema was compatible; the specific dependencies example did not reproduce.
+Pattern properties and nullable paths are not proof of absence, and a false
+leaf cannot be reported compatible. [M09.3](status-M09.md) owns these pending
+corrections at revalidated 0a4597122a7baa7e79e46e79e4ec60dbfffc3720.
+
+M09 reviews 4–6 reproduce the public false-compatibility and false-indeterminacy
+cases with bounded fixtures; qualified local source is
+b099f6803277ae94c7e9f1da0904a0140b278f20, pending separate publication acceptance.
+
+**Evidence.** hcl/parse.go invokes hclsyntax.ParseConfig before the existing
+depth-100 budget; binding/table.go reaches unbounded strictjson.consumeValue.
+The intake comment probe passed semantic Verify with an added approval claim,
+and NFD text failed closed because cty normalizes it. [M09.1/M09.2](status-M09.md)
+are pending; published version/corpus bytes and numeric-lexeme evidence remain
+frozen.
+````

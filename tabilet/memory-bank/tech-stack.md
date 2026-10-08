@@ -1,5 +1,22 @@
 # Technical Stack
 
+## Accepted M09 ordinary modules
+
+Root and nested codec accepted source is
+`b099f6803277ae94c7e9f1da0904a0140b278f20`, version
+`v0.0.0-20261008043726-b099f6803277`, whole review 7/10. Independent ordinary
+module downloads match full source provenance, Go archive/GoMod sums and every
+reviewed filename/content. Root and codec module-only full tests/races/vet/build
+pass with retained Go 1.26.6, GOWORK=off, GOTOOLCHAIN=local and GOPROXY=off
+after acquisition. Complete selected closures contain 52 root / 50 codec
+modules. Standalone codec retains C09 root; the 52-module ordinary consumer
+explicitly selects both corrected modules and passes races without replacements.
+Use owned root-filesystem temporary directories for the retained qualification;
+the separate /tmp quota is not inferred from root filesystem free space.
+[Publication](../../docs/m09-publication.md) records actual ordinary ZIP hashes,
+canonical sums, full closures and proof locations. No declared dependency,
+workspace, browser, frozen-consumer or installed pin is changed by this release.
+
 ## Stage 11 public foundations
 
 Accepted C08/C09 add no dependency upgrade, source/provider parser or private

@@ -63,9 +63,14 @@ at its recorded context and is not relabeled as independent publication.
 
 Whole review 7 passed after this proof with no remaining blocker from either
 read-only whole-milestone reviewer. M09.5 and all five task rows are qualified;
-milestone acceptance still requires exact downstream reconciliation and closure.
-This evidence does not retire the milestone or activate a consumer.
-Parent owns cross-package reconciliation and final retirement. All publication
+coordinator consolidation and exact APItools:M83/OpenUdon:M99/Kinet:M49
+reconciliation close acceptance. The [retired record](https://github.com/OpenUdon/uws/blob/main/tabilet/docs/history/status-M09.md)
+retains the complete validated specification/status and review counter. Changed
+consumer identities still require fresh assessment/confirmation/grants; no
+consumer or installed runtime is activated by this release. Normal reviewed
+retirement publication under the same main-only grant is independently observed
+before consumer implementation; its observed head is recorded in the coordinator
+and pending consumer ledgers after the push. All publication
 heads use [skip ci] under the retained convention to suppress the main-push
 workflow's force docs deployment to another ref. Local checks are the evidence;
 no hosted CI or docs-deployment result is claimed. No force push, tag, gh-pages,

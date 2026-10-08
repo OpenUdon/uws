@@ -1,5 +1,19 @@
 # Product
 
+## Accepted Stage 11 remediation — M09
+
+M09 is accepted after whole review 7/10. Corrected root and codec source
+`b099f6803277ae94c7e9f1da0904a0140b278f20` independently resolves as
+`v0.0.0-20261008043726-b099f6803277`. Public HCL/shape decoding refuses
+excessive nesting before recursive parsing; verified views require exact
+deterministic bytes and independent value/numeric proof. Binding evidence
+preserves schema dialect, containing constraints and uncertainty, while flow
+and opt-in portability reflect native execution scopes and iteration contexts.
+Ordinary validation, execution, published versions and browser contracts remain
+compatible. [Publication](../../docs/m09-publication.md) records the root/codec
+and ordinary consumer proof; [history](../docs/history/index.md) retains M09.
+Consumer adoption and installed behavior remain package-local decisions.
+
 ## Stage 11 public foundations
 
 C08 and C09 are accepted/published: shared expression parsing/reference

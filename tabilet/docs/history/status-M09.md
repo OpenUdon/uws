@@ -1,7 +1,50 @@
+# Retired milestone M09 — Stage 11 parser and binding contract remediation
+
+**Milestone.** M09
+**Outcome.** completed
+**Retired.** 2026-10-08
+**Source status.** tabilet/memory-bank/status-M09.md
+**Source specification.** tabilet/memory-bank/milestone.md#m09--stage-11-parser-and-binding-contract-remediation
+**Evidence.** 51a74545b016b8ab75e30d454338c52f7945a836
+**Worktree.** includes uncommitted changes
+**Review.** passed
+**Review iterations.** 7
+**Verification.** Root/codec ordinary module-only full suites/races/vet/build, exact source/origin/version/file-content and archive/GoMod sum proof, 52/50/52 selected closures, public consumer races, strict docs, protected versions/corpora/pins, whitespace and retirement-envelope checks passed; whole review 7 passed.
+**Consolidated into.** [product](../../memory-bank/product.md), [architecture](../../memory-bank/architecture.md), [technical stack](../../memory-bank/tech-stack.md), [lessons](../../memory-bank/lessons.md), [knowledge](knowledge.md), [publication](../../../docs/m09-publication.md), [qualification](../../../docs/m09-qualification.md); APItools:M83, OpenUdon:M99 and Kinet:M49 exact prerequisite reconciliation. Retirement metadata includes coordinator closure changes after the published evidence baseline. No new evolution version or live authority.
+
+## Milestone specification
+
+``````markdown
+## M09 — Stage 11 parser and binding contract remediation
+
+**Stage/owner.** STG-11 post-acceptance remediation; uws. Approved planning 2026-10-08. **Placement.** Core/cross-cutting lane; new remediation, never a reopened historical gate.
+**Lineage.** [C08](../docs/history/status-C08.md), [C09](../docs/history/status-C09.md) and [M08](../docs/history/status-M08.md).
+**Dependencies.** Accepted/published C08/C09/M08 contracts. Serial scheduling follows Udon:M49; this is not a new runtime dependency. Root and nested codec qualification/publication must be independently resolved before APItools:M83, OpenUdon:M99 and Kinet:M49 adoption.
+**Scope.** Bound untrusted HCL and shape JSON before recursive parsing, enforce deterministic verified-view bytes, make deprecated inert import structurally symmetric, repair supported binding containment/path/draft context and scoped flow/strict-portability diagnostics. Keep existing published grammar/wire/schema and frozen conformance bytes unchanged.
+**Acceptance.** Inputs within byte limits but above depth 100 refuse before unbounded HCL/strict-JSON recursion; comments, strings and template/interpolation delimiters are handled correctly by preflight. Verify accepts only exact deterministic Render bytes plus independent value/numeric-lexeme proof, without recursive Render/Verify calls. Deprecated Import rejects invalid typed blocks; non-NFC refusal stays fail-closed and is documented. Pattern-property containment, false leaves, nullable/pattern paths and inherited draft/reference contexts never produce unsupported compatibility or false missing-field claims. Flow references respect node kind/workflow scope; opt-in portability traverses trigger routes and diagnoses absent iteration context without narrowing ordinary Parse/validation. Root and codec standalone builds, immutable version/corpus guards and owner review pass.
+**Verification.** Root go test ./... and go vet ./...; affected binding/expressions/strictjson race tests; separate hcl-module tests/vet/races with GOWORK=off GOPROXY=off; adversarial-depth subprocess fixtures; canonical-comment/escape/numeric/NFD/import symmetry cases; whole-schema versus nested draft-07 array proof; flow namespace and trigger-loop fixtures; immutable published versions/schema/conformance digest checks; exact root/nested-codec archive and ordinary downstream-consumer qualification; git diff --check.
+**Compatibility/recovery.** Preserve public wires/schemas, declared grammar versions and frozen evidence/pins. Corrected derived tables/packages/workers require fresh consumer assessment, confirmation and grants; never upgrade historical authority or replay unknown writes. Installed M44 is unchanged. Rollout ends at a new exact-source qualified handoff; real installation, migration, sends and registration need separate named authority.
+**Downstream.** APItools:M83 native shapes, OpenUdon:M99 package/source verification and Kinet:M49 author/private-exec workers. Retained browser profiles and frozen consumers remain separately pinned.
+**Tasks.** 5 task/commit units in status-M09.md: M09.1 Bound HCL and shape-table parsing before recursion; M09.2 Verify canonical HCL views and retain inert import symmetry; M09.3 Restore sound binding containment and schema context; M09.4 Scope flow references and strict portability contexts; M09.5 Qualify and hand off exact root and nested codec revisions.
+**Review/authority.** Closing review under confirmed execution; the linked status owns the single persisted counter and findings/fixes. Publication is an external prerequisite requiring fresh named authority and independent resolution. Planning itself grants no code execution, commit, publication, deployment or goal launch.
+
+**Accepted result.** All five task units and whole review 7/10 pass. Root/codec
+runtime b099f6803277ae94c7e9f1da0904a0140b278f20 independently resolves as
+v0.0.0-20261008043726-b099f6803277; ordinary module/consumer proofs, full selected
+closures and downloaded full suites/races/vet/builds pass. M09.5 evidence
+51a74545b016b8ab75e30d454338c52f7945a836 is independently published. Current
+knowledge and exact pending consumer assumptions are consolidated; normal
+retirement closure publication precedes consumer execution. Frozen historical
+contracts/pins and installed M44 remain unchanged; no live authority follows.
+``````
+
+## Status record
+
+``````markdown
 # M09 — Stage 11 parser and binding contract remediation
 
 **Stage:** STG-11 post-acceptance remediation. **Owner:** UWS.
-**State:** Executing under the confirmed serial GOAL request, 2026-10-08.
+**State:** All five rows complete; whole review 7/10 passed; accepted and retired on 2026-10-08 after ordinary publication proof and exact consumer reconciliation.
 **Authority:** The confirmed GOAL request names Udon:M49 → UWS:M09 → APItools:M83
 → OpenUdon:M99 → Kinet:M49, task commits and no external mutations. The separately
 granted UWS-only normal main source/closure publication exception is recorded
@@ -21,15 +64,16 @@ b099f6803277ae94c7e9f1da0904a0140b278f20, root/codec
 v0.0.0-20261008043726-b099f6803277; initial public evidence head
 af225f8b0b5cfbd5848e28e5ce49eaebc0f228bb. Actual ordinary artifact/closure
 identities are recorded in [publication](../../docs/m09-publication.md).
-Milestone acceptance remains pending review/downstream reconciliation; local
-HEAD, replacements and prior consumed grants do not substitute for that gate.
+All five rows and whole review 7 pass. Coordinator consolidation and exact
+consumer reconciliation close acceptance; the full retired record preserves
+source/publication proof without substituting local HEAD or replacements.
 
-**Reviewed local candidate:** b099f6803277ae94c7e9f1da0904a0140b278f20,
-proposed root/codec v0.0.0-20261008043726-b099f6803277; whole review 6/10 passed.
-Local exact module-only qualification and owner bootstrap proof are recorded in
-[qualification](../../docs/m09-qualification.md). These identities are not yet
-accepted prerequisites until milestone closure. The separately granted source
-publication/ordinary proof is now recorded in [publication](../../docs/m09-publication.md).
+**Accepted root/codec source:** b099f6803277ae94c7e9f1da0904a0140b278f20,
+v0.0.0-20261008043726-b099f6803277, whole review 7/10 passed. Local/bootstrap
+qualification remains separate from independent ordinary module/consumer proof
+in [publication](../../docs/m09-publication.md). Published M09.5 evidence head
+51a74545b016b8ab75e30d454338c52f7945a836 was independently observed before
+coordinator closure; final retirement publication is observed before adoption.
 
 **Downstream:** APItools:M83 native shapes, OpenUdon:M99 package/source verification and Kinet:M49 author/private-exec workers. Retained browser profiles and frozen consumers remain separately pinned.
 
@@ -83,15 +127,16 @@ Public schemas/wires, published grammar/version bytes, accepted historical quali
 normal source publication and passing ordinary downloaded module/consumer proof.
 Both read-only reviewers rechecked the whole implementation at
 b099f6803277ae94c7e9f1da0904a0140b278f20 and current publication evidence;
-no remaining P1/P2 or higher finding. Final coordinator acceptance is pending.
+no remaining P1/P2 or higher finding. Coordinator acceptance closes after
+current-truth consolidation and exact downstream reconciliation.
 **Findings/fixes:** iterations 1–5 findings are addressed and whole reviews 6/7
 passed. Root full tests/vet, affected races, strict docs and protected-byte/pin
 guards pass. Final corrected exact source passes root/codec module-only full
 qualification and isolated owner-bootstrap consumer proof; earlier candidate
 proofs remain preliminary at their recorded sources. Standalone codec retains
 C09 root. Separately authorized initial publication and independent ordinary
-resolution/full verification now pass; milestone acceptance/retirement are not
-claimed before review/downstream reconciliation.
+resolution/full verification pass. Coordinator acceptance and retirement retain
+this full evidence after completed review and downstream reconciliation.
 **Execution owner:** sole serial UWS:M09 owner through the M09.5 publication
 handoff; all five rows are complete and none is in progress. Coordinator resumes
 cross-package reconciliation/acceptance/retirement after the final handoff.
@@ -450,3 +495,31 @@ reviewed normal closure publication. Retained source/proof materials and all
 original Stage 11/history/browser/consumer pins remain preserved. Implementation
 source is b099f6803277ae94c7e9f1da0904a0140b278f20 and ordinary root/codec version
 v0.0.0-20261008043726-b099f6803277; no consumer adoption is inferred by publication.
+
+## Coordinator acceptance and retirement — 2026-10-08
+
+All five rows and whole review 7/10 pass at exact runtime
+b099f6803277ae94c7e9f1da0904a0140b278f20, root/codec
+v0.0.0-20261008043726-b099f6803277. Independent ordinary resolution, every
+reviewed file, canonical sums, complete 52/50/52 selected closures, downloaded
+full suites/races/vet/builds and ordinary consumer proof pass. Published evidence
+51a74545b016b8ab75e30d454338c52f7945a836 is independently observed on main.
+
+Product/architecture/technical truth and reusable lessons are consolidated;
+materially superseded lesson paragraphs are preserved literally in knowledge.md.
+APItools:M83, OpenUdon:M99 and Kinet:M49 retain their pending rows with the exact
+accepted root/codec contract and ordinary proof. Standalone codec still declares
+C09 root; combined consumers require both corrected modules. Canonical views
+must be regenerated from exact source, and changed package/shape/worker identities
+require fresh assessments/confirmations/grants. Ordinary validation/execution,
+published versions/corpora and browser/media/Phase A/legacy/frozen-consumer pins
+remain unchanged. No new evolution version is triggered.
+
+The complete specification/status are retired after envelope/byte validation;
+normal reviewed retirement closure publication under the same UWS-only grant is
+independently observed before APItools implementation. Exact final head is
+recorded by the coordinator and downstream ledgers after publication, avoiding
+a self-referential commit identity. No deployment, installed migration,
+registration, provider/API/model/mail action or live run follows. Sole execution
+ownership returns to the coordinator; no row remains in progress here.
+``````

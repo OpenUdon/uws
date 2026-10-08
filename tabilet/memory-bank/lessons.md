@@ -109,17 +109,19 @@ context through children. The Stage 11 intake probe found a nested draft-07
 array incompatible/indeterminate while literal validation against its whole
 schema was compatible; the specific dependencies example did not reproduce.
 Pattern properties and nullable paths are not proof of absence, and a false
-leaf cannot be reported compatible. [M09.3](status-M09.md) owns these pending
-corrections at revalidated 0a4597122a7baa7e79e46e79e4ec60dbfffc3720.
+leaf cannot be reported compatible. Accepted [M09.3](../docs/history/status-M09.md)
+corrects the confirmed cases at b099f6803277ae94c7e9f1da0904a0140b278f20,
+whole review 7, without turning the unsupported example into a new claim.
 
 Output paths must also retain containing cardinality and required property/item
 predecessor constraints. A native literal witness proves a value exists; failed
 samples prove only indeterminacy. False or exhausted finite const/enum schemas
 can prove absence. Mixed templates need valid exact constant schemas for empty
 arrays rather than prefixItems:[], which fails the 2020-12 metaschema.
-M09 reviews 4–6 reproduce the public false-compatibility and false-indeterminacy
-cases with bounded fixtures; qualified local source is
-b099f6803277ae94c7e9f1da0904a0140b278f20, pending separate publication acceptance.
+M09 reviews 4–7 reproduce the public false-compatibility and false-indeterminacy
+cases with bounded fixtures. Accepted source
+b099f6803277ae94c7e9f1da0904a0140b278f20 passes independent ordinary root/codec
+and consumer proof; [publication](../../docs/m09-publication.md) records it.
 
 ## Distinguish record snapshots from invocation metadata
 
@@ -152,9 +154,12 @@ interpolation; strict JSON prevalidation must not recursively traverse without
 a bound. Canonical presentation verification also needs exact rendered bytes:
 semantic equality alone accepts comments that claim authority.
 
-**Evidence.** hcl/parse.go invokes hclsyntax.ParseConfig before the existing
-depth-100 budget; binding/table.go reaches unbounded strictjson.consumeValue.
-The intake comment probe passed semantic Verify with an added approval claim,
-and NFD text failed closed because cty normalizes it. [M09.1/M09.2](status-M09.md)
-are pending; published version/corpus bytes and numeric-lexeme evidence remain
-frozen.
+**Evidence.** At intake source 0a4597122a7baa7e79e46e79e4ec60dbfffc3720,
+hcl/parse.go parsed before its later depth budget and strict JSON traversed
+recursively. The added-comment probe passed semantic Verify; NFD failed closed
+because cty normalizes it. Accepted [M09.1/M09.2](../docs/history/status-M09.md)
+add lexical/iterative depth-100 preflight and exact canonical-byte verification.
+Unsupported conditional chains refuse before recursive parsing. Low-stack child
+regressions and independent ordinary root/codec suites pass at
+b099f6803277ae94c7e9f1da0904a0140b278f20, whole review 7. NFD remains a documented
+fail-closed limitation; frozen versions/corpora and numeric-lexeme proof remain.
