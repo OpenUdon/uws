@@ -12,7 +12,7 @@ import (
 
 // ValidateSingleValue rejects invalid UTF-8, duplicate object member names,
 // malformed JSON, and trailing values. Duplicate names are compared after
-// JSON string escapes have been decoded.
+// JSON string escapes have been decoded. Containers are limited to depth 100.
 func ValidateSingleValue(data []byte) error {
 	if len(bytes.TrimSpace(data)) == 0 {
 		return fmt.Errorf("JSON document is empty")
@@ -105,56 +105,56 @@ func parseHexCodeUnit(data []byte) (uint16, error) {
 }
 
 func consumeValue(decoder *json.Decoder) error {
-	token, err := decoder.Token()
-	if err != nil {
-		return err
+	// Decoder.Token scans values without recursively decoding containers. Keep
+	// our own bounded stack for duplicate member checks and object key state.
+	type frame struct {
+		end  json.Delim
+		seen map[string]struct{}
+		key  bool
 	}
-	delim, isDelim := token.(json.Delim)
-	if !isDelim {
-		return nil
-	}
-	switch delim {
-	case '{':
-		seen := make(map[string]struct{})
-		for decoder.More() {
-			keyToken, err := decoder.Token()
-			if err != nil {
-				return err
-			}
-			key, ok := keyToken.(string)
-			if !ok {
-				return fmt.Errorf("JSON object member name is not a string")
-			}
-			if _, exists := seen[key]; exists {
-				return fmt.Errorf("JSON object contains duplicate member %q", key)
-			}
-			seen[key] = struct{}{}
-			if err := consumeValue(decoder); err != nil {
-				return err
-			}
-		}
-		end, err := decoder.Token()
+	stack := make([]frame, 0, 100)
+	for {
+		token, err := decoder.Token()
 		if err != nil {
 			return err
 		}
-		if end != json.Delim('}') {
-			return fmt.Errorf("malformed JSON object")
-		}
-	case '[':
-		for decoder.More() {
-			if err := consumeValue(decoder); err != nil {
-				return err
+		if len(stack) > 0 {
+			parent := &stack[len(stack)-1]
+			if end, ok := token.(json.Delim); ok && end == parent.end {
+				stack = stack[:len(stack)-1]
+				if len(stack) == 0 {
+					return nil
+				}
+				continue
 			}
+			if parent.seen != nil && parent.key {
+				key, ok := token.(string)
+				if !ok {
+					return fmt.Errorf("JSON object member name is not a string")
+				}
+				if _, exists := parent.seen[key]; exists {
+					return fmt.Errorf("JSON object contains duplicate member %q", key)
+				}
+				parent.seen[key] = struct{}{}
+				parent.key = false
+				continue
+			}
+			parent.key = true
 		}
-		end, err := decoder.Token()
-		if err != nil {
-			return err
+		if delim, ok := token.(json.Delim); ok {
+			if len(stack) == 100 {
+				return fmt.Errorf("JSON nesting exceeds depth 100")
+			}
+			switch delim {
+			case '{':
+				stack = append(stack, frame{end: '}', seen: map[string]struct{}{}, key: true})
+			case '[':
+				stack = append(stack, frame{end: ']'})
+			default:
+				return fmt.Errorf("unexpected JSON delimiter %q", delim)
+			}
+		} else if len(stack) == 0 {
+			return nil
 		}
-		if end != json.Delim(']') {
-			return fmt.Errorf("malformed JSON array")
-		}
-	default:
-		return fmt.Errorf("unexpected JSON delimiter %q", delim)
 	}
-	return nil
 }

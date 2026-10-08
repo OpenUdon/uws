@@ -1,8 +1,8 @@
 # M09 — Stage 11 parser and binding contract remediation
 
 **Stage:** STG-11 post-acceptance remediation. **Owner:** UWS.
-**State:** Approved planning, 2026-10-08; implementation not started. All 5 task rows are pending.
-**Authority:** The user approved the complete reconciliation proposal with “Implement the plan.” This applies planning files only. A separate execution request is required; no code, commit, source-publication, deployment or live-operation authority follows.
+**State:** Executing under the confirmed serial GOAL request, 2026-10-08.
+**Authority:** The confirmed GOAL request names Udon:M49 → UWS:M09 → APItools:M83 → OpenUdon:M99 → Kinet:M49, task commits and no external mutations. UWS source publication remains a separate exact gate.
 **Review source:** stage11-siblings-review.md — Stage 11 code review — sibling packages; uws section.
 **Review baseline/range:** `a7688f54c68f5a75c7cc95aa2b31cea98b31af41` → `0a4597122a7baa7e79e46e79e4ec60dbfffc3720`.
 **Revalidation HEAD:** `0a4597122a7baa7e79e46e79e4ec60dbfffc3720`; clean worktree, no relevant uncommitted code in the evidence. Approved planning changes are not implementation evidence.
@@ -27,7 +27,7 @@ Inputs within byte limits but above depth 100 refuse before unbounded HCL/strict
 
 | Item | State | Notes |
 |---|---|---|
-| M09.1 — Bound HCL and shape-table parsing before recursion | `[ ]` | Preflight lexical HCL nesting including parentheses, brackets, braces and template/interpolation contexts while ignoring inert string/comment content; enforce depth 100 before hclsyntax.ParseConfig. Replace recursive strict-JSON prevalidation with bounded iterative scanning under existing byte/duplicate/Unicode/numeric rules. Prove fatal-depth inputs refuse in disposable child processes. Sources W1/W2. |
+| M09.1 — Bound HCL and shape-table parsing before recursion | `[x]` | Iterative lexical preflight counts delimiters and refuses unsupported active templates before HCL parsing; strict JSON uses an iterative depth-100 stack. Exact duplicate/Unicode/numeric/trailing checks remain. Fatal-depth Import, strict-JSON and ParseTable child processes passed with a 1 MiB stack. Focused root tests/races/vet and separate full codec tests/races/vet passed, GOWORK=off GOPROXY=off Go 1.26.6. Sources W1/W2. |
 | M09.2 — Verify canonical HCL views and retain inert import symmetry | `[ ]` | Derive canonical bytes through a nonrecursive shared rendering path, then independently parse and compare complete values and numeric lexemes. Reject self-hashed comments/misleading escapes. Reject typed-block shape mismatches in Import, fix the Deprecated paragraph, and document/test non-NFC failure without promising normalization. Keep Import deprecated and nonauthoritative. Sources W6 and P3.2/P3.3/P3.8. |
 | M09.3 — Restore sound binding containment and schema context | `[ ]` | Account for patternProperties and true closure evidence; reject false leaf schemas; avoid false missing-field claims for nullable objects/pattern keys, using indeterminate when proof is unavailable. Preserve inherited draft/reference context through nested containment. The review's dependencies example did not reproduce, but draft-07 array probes produced indeterminate/incompatible while whole-schema literal validation was compatible. Sources W3/W4/W5/P3.1. |
 | M09.4 — Scope flow references and strict portability contexts | `[ ]` | Resolve dependencies/output references within the appropriate workflow/node namespace and retain genuine ambiguity diagnostics. Traverse trigger-route entrypoints as well as main for effective loop context; diagnose item/index availability in the opt-in checker only. Preserve profile field ownership, ordinary grammar/validation and all published version semantics. Sources P3.4/P3.5. |
@@ -65,6 +65,18 @@ Public schemas/wires, published grammar/version bytes, accepted historical quali
 **Review iterations:** 0/10.
 **Review state:** not started; this is review intake, not a pass of an existing gate.
 **Findings/fixes:** no implementation or fix verification claimed.
-**Execution owner:** one serial owner across the five ledgers; no row is in progress.
-**Commit policy:** The user separately authorized a planning commit on 2026-10-08 with “git commit and then report the index refresh issue in ~/skill-index.md”. This authorizes one commit of the approved planning changes in this owner repository; implementation, publication and deployment remain outside this request. Future task commits follow the separately invoked GOAL/request policy.
+**Execution owner:** sole serial UWS:M09 owner; coordinator makes no writes during this handoff. No row is in progress after M09.1 verification.
+**Commit policy:** Confirmed GOAL COMMIT_POLICY: task; verified task commits and substantive review/closure commits, without amend/rewrite/push/tag authority.
 **Closure:** persist each started review iteration before reviewing; resume an interrupted pass at the same number. No open P1/P2 may remain at acceptance. Required verification, exact downstream reconciliation and owner-specific consolidation/retirement follow implementation; never reopen completed Stage 11 history.
+
+## Accepted serial predecessor — Udon:M49, 2026-10-08
+
+Udon:M49 is accepted/published after final whole review4/10. Accepted runtime
+cd99ccdaa84bd7b0df16e8b9c81bd2e52abd1fd5 independently resolves as
+v0.0.0-20261008031303-cd99ccdaa84b; normal publication/closure is independently
+observed at 10abc1ffeb5f2b2d10322817b9be9e31c1ff43da.
+[Owner handoff](../../../udon/docs/m49-release-handoff.md) records full ordinary
+module/CLI proof and frozen dependency/browser boundaries. This satisfies only
+the serial scheduling predecessor; UWS imports no new Udon dependency. M09
+may start under the confirmed task-commit goal. UWS source publication still
+requires its own fresh named authority; the Udon-only grant is consumed.

@@ -25,6 +25,9 @@ func hclValue(ctx context.Context, data []byte) (map[string]any, error) {
 	if len(data) == 0 || len(data) > MaxViewBytes {
 		return nil, ErrCodec
 	}
+	if err := preflightHCL(ctx, data); err != nil {
+		return nil, err
+	}
 	file, diags := hclsyntax.ParseConfig(data, "view.hcl", hashihcl.Pos{Line: 1, Column: 1})
 	if diags.HasErrors() {
 		return nil, ErrCodec
@@ -35,6 +38,63 @@ func hclValue(ctx context.Context, data []byte) (map[string]any, error) {
 	}
 	reader := viewReader{data: data, budget: workBudget{ctx: ctx}}
 	return reader.body(body, reflect.TypeOf(uws1.Document{}), 0)
+}
+
+// LexConfig is the dependency's iterative finite-state scanner, not its
+// recursive expression parser. Tokens distinguish inert comments/string text
+// from syntax, including escaped template markers and heredoc contents.
+func preflightHCL(ctx context.Context, data []byte) error {
+	tokens, diags := hclsyntax.LexConfig(data, "view.hcl", hashihcl.Pos{Line: 1, Column: 1})
+	if diags.HasErrors() {
+		return ErrCodec
+	}
+	stack := make([]hclsyntax.TokenType, 0, maxDepth)
+	unary := 0
+	for _, token := range tokens {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		var end hclsyntax.TokenType
+		switch token.Type {
+		case hclsyntax.TokenOBrace:
+			end = hclsyntax.TokenCBrace
+		case hclsyntax.TokenOBrack:
+			end = hclsyntax.TokenCBrack
+		case hclsyntax.TokenOParen:
+			end = hclsyntax.TokenCParen
+		case hclsyntax.TokenOQuote:
+			end = hclsyntax.TokenCQuote
+		case hclsyntax.TokenOHeredoc:
+			end = hclsyntax.TokenCHeredoc
+		case hclsyntax.TokenTemplateInterp, hclsyntax.TokenTemplateControl:
+			// These are already outside the inert subset. Refuse before the
+			// parser can recurse through interpolations or template directives.
+			return ErrCodec
+		case hclsyntax.TokenCBrace, hclsyntax.TokenCBrack, hclsyntax.TokenCParen, hclsyntax.TokenCQuote, hclsyntax.TokenCHeredoc:
+			if len(stack) == 0 || stack[len(stack)-1] != token.Type {
+				return ErrCodec
+			}
+			stack = stack[:len(stack)-1]
+		}
+		if end != 0 {
+			if len(stack) == maxDepth {
+				return ErrCodec
+			}
+			stack = append(stack, end)
+		}
+		if token.Type == hclsyntax.TokenMinus || token.Type == hclsyntax.TokenBang {
+			unary++
+			if unary > maxDepth {
+				return ErrCodec
+			}
+		} else if token.Type != hclsyntax.TokenComment && token.Type != hclsyntax.TokenNewline {
+			unary = 0
+		}
+	}
+	if len(stack) != 0 {
+		return ErrCodec
+	}
+	return ctx.Err()
 }
 
 func (r *viewReader) body(body *hclsyntax.Body, kind reflect.Type, depth int) (map[string]any, error) {

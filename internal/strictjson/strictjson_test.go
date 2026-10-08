@@ -1,6 +1,12 @@
 package strictjson
 
-import "testing"
+import (
+	"os"
+	"os/exec"
+	"runtime/debug"
+	"strings"
+	"testing"
+)
 
 func TestValidateSingleValue(t *testing.T) {
 	for _, input := range []string{
@@ -25,5 +31,33 @@ func TestValidateSingleValue(t *testing.T) {
 	}
 	if err := ValidateSingleValue([]byte{'{', '"', 'x', '"', ':', '"', 0xff, '"', '}'}); err == nil {
 		t.Fatal("invalid UTF-8 was accepted")
+	}
+}
+
+func TestNestingBudget(t *testing.T) {
+	for _, n := range []int{99, 100, 101} {
+		data := []byte(strings.Repeat("[", n) + "0" + strings.Repeat("]", n))
+		if (ValidateSingleValue(data) != nil) != (n > 100) {
+			t.Fatalf("depth %d", n)
+		}
+	}
+	if err := ValidateSingleValue([]byte(`{"x":"[[[{{{", "n":9007199254740993e+42}`)); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestHostileDepthSubprocess(t *testing.T) {
+	if os.Getenv("UWS_STRICTJSON_DEPTH_CHILD") == "1" {
+		debug.SetMaxStack(1 << 20)
+		data := []byte(strings.Repeat("[", 20000) + "0" + strings.Repeat("]", 20000))
+		if ValidateSingleValue(data) == nil {
+			t.Fatal("hostile depth accepted")
+		}
+		return
+	}
+	cmd := exec.Command(os.Args[0], "-test.run=^TestHostileDepthSubprocess$")
+	cmd.Env = append(os.Environ(), "UWS_STRICTJSON_DEPTH_CHILD=1")
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("child: %v\n%s", err, out)
 	}
 }

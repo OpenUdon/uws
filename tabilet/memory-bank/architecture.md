@@ -1,5 +1,14 @@
 # Architecture
 
+## M09 parser remediation
+
+Strict JSON prevalidation now uses a bounded iterative container stack (depth
+100) before shape-table/model decoding. The separate codec preflights HCL with
+the retained dependency's iterative lexer before recursive parsing, counting
+syntactic delimiters and refusing active template constructs outside its inert
+subset. Comments, escaped template markers and literal text remain inert.
+Worker process resource/cancellation custody remains consumer-owned.
+
 ## Stage 11 public foundations
 
 Accepted C08 expressions use standard-library parsing and UWS-owned in-memory
