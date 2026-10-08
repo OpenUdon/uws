@@ -24,6 +24,7 @@ type flowNode struct {
 	key, path, workflow                 string
 	children, dependencies, expressions []string
 	transfers                           []string
+	controlContexts                     map[string]bool
 	outputs                             map[string]string
 	op                                  *uws1.Operation
 	step                                *uws1.Step
@@ -94,7 +95,7 @@ func AnalyzeFlow(ctx context.Context, document *uws1.Document) (FlowReport, erro
 		entry = "wf:" + document.Workflows[0].WorkflowID
 	}
 	if a.nodes[entry] != nil {
-		a.visit(entry, map[string]bool{}, "")
+		a.visitWorkflow(entry, map[string]bool{}, "", false)
 	} else {
 		a.find("flow.entry_indeterminate", "/workflows")
 	}
@@ -146,10 +147,20 @@ func AnalyzeFlow(ctx context.Context, document *uws1.Document) (FlowReport, erro
 			}
 			sort.Strings(scopes)
 		}
-		for _, workflow := range scopes {
+		expressionScopes := scopes
+		if n.wf != nil && len(n.controlContexts) > 0 {
+			expressionScopes = nil
+			for workflow := range n.controlContexts {
+				expressionScopes = append(expressionScopes, workflow)
+			}
+			sort.Strings(expressionScopes)
+		}
+		for _, workflow := range expressionScopes {
 			for _, expression := range n.expressions {
 				a.references(expression, workflow, n.key)
 			}
+		}
+		for _, workflow := range scopes {
 			for _, expression := range n.outputs {
 				a.references(expression, workflow, n.key)
 			}
@@ -379,10 +390,9 @@ func (a *flowAnalyzer) visitReference(ref, path string, stack map[string]bool, w
 		return
 	}
 	if n := a.nodes[ref]; n != nil {
-		// Root workflow dependencies share unqualified records. A workflow
-		// dependency inside an existing call creates its own child frame.
-		if n.wf != nil && workflow != "" {
-			workflow = n.workflow
+		if n.wf != nil {
+			a.visitWorkflow(ref, stack, workflow, false)
+			return
 		}
 		a.visit(ref, stack, workflow)
 		return
@@ -437,7 +447,25 @@ func (a *flowAnalyzer) visitTransfer(ref, path string, stack map[string]bool) {
 		a.find("flow.reference_ambiguous", path)
 		return
 	}
-	a.visit(ref, stack, "")
+	if a.nodes[ref].wf != nil {
+		a.visitWorkflow(ref, stack, "", false)
+	} else {
+		a.visit(ref, stack, "")
+	}
+}
+func (a *flowAnalyzer) visitWorkflow(key string, stack map[string]bool, incoming string, call bool) {
+	n := a.nodes[key]
+	if n.controlContexts == nil {
+		n.controlContexts = map[string]bool{}
+	}
+	// Native controls retain executeOnce's incoming record snapshot. Child
+	// runnables and final outputs refresh records in the body's invocation frame.
+	n.controlContexts[incoming] = true
+	workflow := incoming
+	if call || incoming != "" {
+		workflow = n.workflow
+	}
+	a.visit(key, stack, workflow)
 }
 func (a *flowAnalyzer) visit(key string, stack map[string]bool, workflow string) {
 	n := a.nodes[key]
@@ -462,11 +490,11 @@ func (a *flowAnalyzer) visit(key string, stack map[string]bool, workflow string)
 		a.visitReference(ref, n.path+"/dependsOn", stack, workflow)
 	}
 	for _, child := range n.children {
-		childWorkflow := workflow
 		if target := a.nodes[child]; target != nil && target.wf != nil {
-			childWorkflow = target.workflow
+			a.visitWorkflow(child, stack, workflow, true)
+		} else {
+			a.visit(child, stack, workflow)
 		}
-		a.visit(child, stack, childWorkflow)
 	}
 	for _, target := range n.transfers {
 		a.visitTransfer(target, n.path+"/goto", stack)

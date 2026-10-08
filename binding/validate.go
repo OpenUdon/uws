@@ -464,6 +464,9 @@ func schemaPath(schema Schema, fragment string) Outcome {
 		if node.Ref != nil || node.DynamicRef != nil || node.RecursiveRef != nil || len(node.AnyOf) > 0 || len(node.OneOf) > 0 || len(node.AllOf) > 0 || node.Not != nil || node.If != nil {
 			return Indeterminate
 		}
+		if node.Const != nil || node.Enum != nil {
+			return Indeterminate
+		}
 		if node.Types == nil {
 			return Indeterminate
 		}
@@ -473,6 +476,41 @@ func schemaPath(schema Schema, fragment string) Outcome {
 		}
 		switch kinds[0] {
 		case "object":
+			if node.MaxProperties != nil {
+				required := map[string]bool{part: true}
+				for _, name := range node.Required {
+					required[name] = true
+				}
+				if len(required) > *node.MaxProperties {
+					return Incompatible
+				}
+			}
+			if node.PropertyNames != nil || len(node.Dependencies) > 0 || len(node.DependentRequired) > 0 || len(node.DependentSchemas) > 0 || node.UnevaluatedProperties != nil {
+				return Indeterminate
+			}
+			required := map[string]bool{part: true}
+			for _, name := range node.Required {
+				required[name] = true
+				if name == part {
+					continue
+				}
+				if len(node.PatternProperties) > 0 {
+					return Indeterminate
+				}
+				child := node.Properties[name]
+				if child == nil {
+					if node.AdditionalProperties == false {
+						return Incompatible
+					}
+					return Indeterminate
+				}
+				if state := schemaCanHaveValue(child); state != Compatible {
+					return state
+				}
+			}
+			if node.MinProperties != nil && *node.MinProperties > len(required) {
+				return Indeterminate
+			}
 			// A declared property and every matching pattern constrain the same
 			// value. Do not discard that intersection when walking a property.
 			for pattern := range node.PatternProperties {
@@ -499,14 +537,20 @@ func schemaPath(schema Schema, fragment string) Outcome {
 			if node.MaxItems != nil && index >= *node.MaxItems {
 				return Incompatible
 			}
+			if node.UniqueItems || node.Contains != nil || node.UnevaluatedItems != nil || node.MinItems != nil && *node.MinItems > index+1 {
+				return Indeterminate
+			}
 			var child *jsonschema.Schema
+			var prefix []*jsonschema.Schema
 			if node.DraftVersion >= 2020 {
+				prefix = node.PrefixItems
 				if index < len(node.PrefixItems) {
 					child = node.PrefixItems[index]
 				} else {
 					child = node.Items2020
 				}
 			} else if tuple, ok := node.Items.([]*jsonschema.Schema); ok {
+				prefix = tuple
 				if index < len(tuple) {
 					child = tuple[index]
 				} else {
@@ -517,6 +561,11 @@ func schemaPath(schema Schema, fragment string) Outcome {
 				}
 			} else {
 				child, _ = node.Items.(*jsonschema.Schema)
+			}
+			for i := 0; i < index && i < len(prefix); i++ {
+				if state := schemaCanHaveValue(prefix[i]); state != Compatible {
+					return state
+				}
 			}
 			if child == nil {
 				return Indeterminate
@@ -535,7 +584,41 @@ func schemaPath(schema Schema, fragment string) Outcome {
 	if len(node.AllOf) > 0 || len(node.AnyOf) > 0 || len(node.OneOf) > 0 || node.Not != nil || node.If != nil {
 		return Indeterminate
 	}
-	return Compatible
+	return schemaCanHaveValue(node)
+}
+
+// A successful native literal check proves a value exists; failed sample checks
+// never prove absence. Boolean and finite const/enum schemas can prove absence.
+func schemaCanHaveValue(node *jsonschema.Schema) Outcome {
+	if node == nil {
+		return Indeterminate
+	}
+	if node.Bool != nil {
+		if *node.Bool {
+			return Compatible
+		}
+		return Incompatible
+	}
+	if node.Const != nil {
+		if node.Validate(*node.Const) == nil {
+			return Compatible
+		}
+		return Incompatible
+	}
+	if node.Enum != nil {
+		for _, value := range node.Enum.Values {
+			if node.Validate(value) == nil {
+				return Compatible
+			}
+		}
+		return Incompatible
+	}
+	for _, value := range []any{nil, false, json.Number("0"), "", []any{}, map[string]any{}} {
+		if node.Validate(value) == nil {
+			return Compatible
+		}
+	}
+	return Indeterminate
 }
 
 func selectorMatches(shape OperationShape, b Binding) bool {

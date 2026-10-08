@@ -62,10 +62,10 @@ Public schemas/wires, published grammar/version bytes, accepted historical quali
 
 ## Closing review
 
-**Review iterations:** 4/10.
-**Review state:** iteration 4 completed with three P2 findings and one lower
+**Review iterations:** 5/10.
+**Review state:** iteration 5 completed with three P2 findings and one lower
 metadata finding, 2026-10-08; verified fixes require the next whole pass.
-**Findings/fixes:** iterations 1–4 findings are addressed. Root full tests/vet
+**Findings/fixes:** iterations 1–5 findings are addressed. Root full tests/vet
 and affected races, strict docs and protected-byte/module-pin guards pass.
 Earlier root/codec module-only proofs remain preliminary at their recorded
 sources; the final corrected exact source still requires archive qualification.
@@ -231,6 +231,61 @@ and pass after fixes. Root full tests/vet, affected races, strict docs and
 protected-byte/module-pin guards passed. The active index now records actual
 execution. Preliminary adb closure files are retained separately as
 docs/m09-review4-{root,codec}-module-closure.json; no source is accepted.
+
+### Iteration 5 findings (persisted before fixes)
+
+- R5-F01 / P2 / M09.3: schemaPath drops containing object constraints.
+  Complete schemas declaring x:string with maxProperties:0, const:{}, enum:[{}]
+  or propertyNames:false admit {} and reject {x:"fixture"}, but public
+  ValidateBinding reports #/x compatible. Check effective supported bounds and
+  preserve indeterminate for unproved parent constraints before walking.
+  The same issue includes array predecessors: a false index-zero prefix/tuple
+  followed by string items reports #/1 compatible although reaching index one
+  requires the forbidden prior index. Preserve compiled dialect and all required
+  predecessor constraints without discarding them when selecting a later item.
+- R5-F02 / P2 / M09.4: flow assigns all workflow expressions to its body frame.
+  Workflow controls retain executeOnce's incoming caller record snapshot;
+  changing WorkflowScope metadata does not refresh Records. Ordinary/executable
+  main.fetch → call helper fixtures whose forEach or when reads fetch outputs
+  succeed through the pure reference runtime, but flow marks those outputs
+  unreferenced. Record incoming control snapshots separately from refreshed
+  body/output contexts. The initial when/body interpretation was corrected by
+  exact native execution before code fixes; runtime semantics stay unchanged.
+- R5-F03 / P2 / M09.3: templateSchema emits prefixItems:[] for an empty array,
+  violating the effective 2020-12 metaschema. A mixed body with a known empty
+  array and reviewed string expression cannot be proved compatible, while the
+  corresponding literal passes. Represent the exact empty array without an
+  invalid prefixItems value and retain inherited target dialect context.
+- R5-F04 / Lower / M09.5: the active index's duplicated review number becomes
+  stale as soon as the authoritative status starts another pass. Replace that
+  duplicate with a status pointer so the persisted counter has one source.
+
+Both read-only reviewers confirm the grouped parent-constraint finding at exact
+e89060b456ebcedb6cf3e1427fe60af9d734c04e; bounded public/pure-runtime probes
+remain at /tmp/uws-m09-review5-q5gkkijj. The contracts reviewer additionally
+reported a convert test linker infrastructure failure (mapping output file:
+disk quota exceeded) during a fresh full root run; other root packages and the
+separate fresh codec suite passed. Earlier owner-required checks passed. Record
+this as a verification gap until a successful fresh required run, not as a
+product test failure or an excuse to accept. No capability refusal occurred.
+
+**Iteration 5 fix verification:** Parent cardinality, required property and array
+predecessor constraints remain in path proofs; unsupported parent constraints
+stay indeterminate. Native literal witnesses prove viable leaves, while failed
+samples never prove absence; false and exhausted finite const/enum schemas can
+prove absence. Empty arrays use exact const proof, including inherited draft-07
+local references. Workflow controls have separately recorded incoming contexts;
+their native record snapshots are not conflated with refreshed body outputs.
+All six control forms (forEach, duration wait, when, loop items, switch case when
+and immediate await wait), plus the negative body-output counterpart, pass
+ordinary/executable validation and pure reference checks. Public parent-path and
+empty-template probes reproduce against preserved e890 overlay and pass after
+fixes. Fresh serial full root tests (including convert), affected races, vet,
+strict MkDocs and protected-byte/module-pin guards passed. The quota gap is
+closed without a waiver; the coordinator removed only old regenerative build
+cache entries, preserving source, module downloads and proofs. The active index
+now points to the status counter rather than duplicating it. No new evolution
+version or publication is claimed; prior candidate archives stay preliminary.
 
 ## Accepted serial predecessor — Udon:M49, 2026-10-08
 

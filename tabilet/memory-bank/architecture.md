@@ -14,6 +14,9 @@ and dialect. Pattern-based closure and nullable/pattern output paths remain
 indeterminate where no proof exists; false leaves are incompatible. Draft-07
 tuples use their effective items/additionalItems semantics, preserving offline
 local references and ignoring future array keywords under that dialect.
+Path proofs preserve containing cardinality and required predecessor constraints;
+unproved constraints remain indeterminate and native literal witnesses prove
+possible values. Mixed templates preserve empty arrays as exact const schemas.
 
 M09 flow uses explicit identities while preserving generic dependency group
 barriers and step→workflow→operation precedence. Step outputs use explicit
@@ -23,6 +26,8 @@ target in the root invocation, independently of dependency caller frames.
 Root workflow dependencies share unqualified records; nested workflow
 dependencies and explicit workflow calls create child invocation frames.
 Step and operation outputs stay separate even when their names or IDs match.
+Workflow controls retain incoming record snapshots, separately from refreshed
+body/output frames.
 Strict portability records loop/iteration availability
 separately, including transitive trigger/dependency contexts and pre-forEach
 controls. These opt-in diagnostics do not change ordinary parsing or validation.

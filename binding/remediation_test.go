@@ -92,3 +92,61 @@ func TestNestedDraftAndReferenceContext(t *testing.T) {
 		}
 	}
 }
+
+func TestOutputPathsRetainParentAndPredecessorConstraints(t *testing.T) {
+	for _, tc := range []struct {
+		schema, path string
+		want         Outcome
+	}{
+		{`{"type":"object","maxProperties":0,"properties":{"x":{"type":"string"}}}`, "#/x", Incompatible},
+		{`{"type":"object","const":{},"properties":{"x":{"type":"string"}}}`, "#/x", Indeterminate},
+		{`{"type":"object","enum":[{}],"properties":{"x":{"type":"string"}}}`, "#/x", Indeterminate},
+		{`{"type":"object","propertyNames":false,"properties":{"x":{"type":"string"}}}`, "#/x", Indeterminate},
+		{`{"type":"object","required":["y"],"properties":{"x":{"type":"string"},"y":false}}`, "#/x", Incompatible},
+		{`{"type":"array","prefixItems":[false],"items":{"type":"string"}}`, "#/1", Incompatible},
+		{`{"$schema":"http://json-schema.org/draft-07/schema#","type":"array","items":[false],"additionalItems":{"type":"string"}}`, "#/1", Incompatible},
+		{`{"type":"array","prefixItems":[{"type":"string"}],"items":{"type":"string"}}`, "#/1", Compatible},
+		{`{"type":"array","prefixItems":[{"type":"string","minLength":2}],"items":{"type":"string"}}`, "#/1", Indeterminate},
+		{`{"type":"string","minLength":2,"maxLength":1}`, "", Indeterminate},
+	} {
+		table := tableFixture()
+		table.Operations[0].Outputs = []Output{{Location: "body", Name: "response", Schema: knownSchema(tc.schema)}}
+		resolver, err := NewResolver(table)
+		if err != nil {
+			t.Fatal(err)
+		}
+		request := requestFixture()
+		request.OutputReferences = []OutputReference{{Location: "body", Name: "response", Pointer: tc.path}}
+		report, err := ValidateBinding(t.Context(), resolver, request)
+		if err != nil || report.Outcome != tc.want {
+			t.Fatalf("%s at %s: %+v, %v", tc.schema, tc.path, report, err)
+		}
+	}
+}
+
+func TestEmptyArrayMixedTemplateRetainsExactLiteralProof(t *testing.T) {
+	for _, raw := range []string{
+		`{"type":"object","properties":{"empty":{"type":"array","maxItems":0},"marker":{"type":"string"}},"required":["empty","marker"],"additionalProperties":false}`,
+		`{"$schema":"http://json-schema.org/draft-07/schema#","definitions":{"empty":{"type":"array","maxItems":0}},"type":"object","properties":{"empty":{"$ref":"#/definitions/empty"},"marker":{"type":"string"}},"required":["empty","marker"],"additionalProperties":false}`,
+	} {
+		target := knownSchema(raw)
+		literal := map[string]any{"empty": []any{}, "marker": "fixture"}
+		if validateLiteral(target, literal) != Compatible {
+			t.Fatal("literal fixture invalid")
+		}
+		value := map[string]any{"empty": []any{}, "marker": "$inputs.marker"}
+		types := map[string]Schema{"$inputs.marker": knownSchema(`{"type":"string"}`)}
+		scope := expressions.Context{Version: "1.13.0", Field: expressions.Value}
+		generated, ok := templateSchema(value, types, scope, 0)
+		data, err := json.Marshal(generated)
+		if !ok || err != nil {
+			t.Fatal("template projection failed", err)
+		}
+		if _, err := compile(Schema{Known: true, JSON: data}); err != nil {
+			t.Fatal("generated schema invalid", err)
+		}
+		if got := validateBoundValue(target, value, types, scope); got != Compatible {
+			t.Fatal("empty array lost literal proof", got)
+		}
+	}
+}

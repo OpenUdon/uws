@@ -59,6 +59,11 @@ Nested proofs retain compiled child nodes in the original dialect/resource.
 Unsupported effective constraints, source references, pattern-based closure
 and overlapping pattern/path constraints remain indeterminate. False leaves
 are incompatible; nullable or pattern-driven fields are not proof of absence.
+Path proofs also retain parent cardinality and prerequisite item/property
+constraints. Unsupported parent const/enum/name/dependency constraints remain
+indeterminate. Native literal witnesses can prove a schema admits a value;
+failed sample checks never prove absence, while false or exhausted finite
+const/enum schemas can. Empty arrays in mixed templates use exact const proof.
 Typed JSON-compatible containers are normalized with UseNumber before
 template discovery, so they have the same binding meaning as ordinary JSON
 objects/arrays; invalid/duplicate-key values are refused without excerpts.
@@ -81,6 +86,8 @@ step/workflow and starts in the root invocation frame. No foreign-workflow name
 fallback is used.
 Workflow dependencies at root share that root frame; dependencies within a
 workflow call create their child invocation frame, matching native execution.
+Workflow controls read the incoming record snapshot; child runnables and final
+workflow outputs use refreshed records in the body's frame.
 Core step-output references mark the step's own output used. Operation outputs
 remain separate records; matching names or step/operation IDs do not alias them.
 Known core references mark their exact output owner used; output_unreferenced

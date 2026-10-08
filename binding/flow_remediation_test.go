@@ -150,6 +150,60 @@ func TestStepReferenceDoesNotConsumeOperationOutput(t *testing.T) {
 	}
 }
 
+func TestWorkflowControlsUseIncomingRecordsAndOutputsUseBody(t *testing.T) {
+	for _, control := range []string{"forEach", "wait", "when", "items", "case", "await", "outputs"} {
+		var d uws1.Document
+		text := `{"uws":"1.13.0","info":{"title":"fixture","version":"1"},"variables":{"items":[1],"zero":0,"ready":true},"operations":[{"operationId":"noop","x-uws-operation-profile":"fixture"}],"workflows":[{"workflowId":"main","type":"sequence","steps":[{"stepId":"fetch","operationRef":"noop","outputs":{"items":"$variables.items","zero":"$variables.zero","ready":"$variables.ready"}},{"stepId":"call","workflow":"helper"}]},{"workflowId":"helper","type":"sequence","steps":[{"stepId":"read","operationRef":"noop"}]}]}`
+		if err := json.Unmarshal([]byte(text), &d); err != nil {
+			t.Fatal(err)
+		}
+		helper := d.Workflows[1]
+		output := "ready"
+		switch control {
+		case "forEach":
+			helper.ForEach = "$steps.fetch.outputs.items"
+			output = "items"
+		case "wait":
+			helper.Wait = "$steps.fetch.outputs.zero"
+			output = "zero"
+		case "when":
+			helper.When = "$steps.fetch.outputs.ready"
+		case "items":
+			helper.Type = uws1.WorkflowTypeLoop
+			helper.Items = "$steps.fetch.outputs.items"
+			output = "items"
+		case "case":
+			helper.Type = uws1.WorkflowTypeSwitch
+			helper.Cases = []*uws1.Case{{CaseFields: uws1.CaseFields{Name: "ready", When: "$steps.fetch.outputs.ready"}, Steps: helper.Steps}}
+			helper.Steps = nil
+		case "await":
+			helper.Type = uws1.WorkflowTypeAwait
+			helper.Wait = "$steps.fetch.outputs.ready"
+		case "outputs":
+			helper.Outputs = map[string]string{"ready": "$steps.fetch.outputs.ready"}
+		}
+		if err := d.Validate(); err != nil {
+			t.Fatal("ordinary fixture invalid", control, err)
+		}
+		if err := d.ValidateExecutable(); err != nil {
+			t.Fatal("executable fixture invalid", control, err)
+		}
+		r, err := AnalyzeFlow(t.Context(), &d)
+		if err != nil || hasCode(r, "flow.output_unreferenced", "/workflows/0/steps/0/outputs/"+output) != (control == "outputs") {
+			t.Fatal("record snapshot scope lost", control, r, err)
+		}
+		e, err := expressions.NewEvaluator(&d)
+		if err != nil {
+			t.Fatal(err)
+		}
+		d.SetRuntime(&flowReferenceRuntime{e})
+		err = d.Execute(t.Context())
+		if control != "outputs" && err != nil || control == "outputs" && (err == nil || !strings.Contains(err.Error(), "fetch")) {
+			t.Fatal("native record scope differs", control, err)
+		}
+	}
+}
+
 func TestFlowDependenciesUseKindAndWorkflow(t *testing.T) {
 	d := &uws1.Document{UWS: "1.13.0", Operations: []*uws1.Operation{
 		{OperationID: "same"},

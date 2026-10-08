@@ -7,7 +7,7 @@ The user approved the complete reconciliation proposal and its planning-file app
 **Serial order:** Udon:M49 → UWS:M09 → APItools:M83 → OpenUdon:M99 → Kinet:M49.
 **Direct dependency graph:** UWS:M09 → APItools:M83, OpenUdon:M99, Kinet:M49; APItools:M83 → OpenUdon:M99, Kinet:M49; OpenUdon:M99 → Kinet:M49; Udon:M49 → Kinet:M49. Serial order is a scheduling gate, not an additional library dependency.
 
-**Local owner:** M09 — Stage 11 parser and binding contract remediation; four implementation rows complete, M09.5 in progress, closing review 4/10. The confirmed serial GOAL authorizes implementation/task commits; the linked status owns current execution/review evidence. One serial execution owner across the five ledgers. Planning itself authorized no execution. Fresh separately named source publication authority remains required; consumed Stage 11 publication/deployment envelopes are not reusable.
+**Local owner:** M09 — Stage 11 parser and binding contract remediation; four implementation rows complete, M09.5 in progress. The confirmed serial GOAL authorizes implementation/task commits; the linked status owns the single persisted closing-review counter and findings. One serial execution owner across the five ledgers. Planning itself authorized no execution. Fresh separately named source publication authority remains required; consumed Stage 11 publication/deployment envelopes are not reusable.
 
 **Coordinator:** [Stage 11](../../../kinet/docs/stage11.md#post-acceptance-remediation--2026-10-08). Exact accepted/published successor revisions remain unset until independently observed; downstream adoption requires them. Installed M44 and independent browser/media/Phase A/legacy/frozen-consumer pins remain unchanged. Stage 12 remains provisional.
 
@@ -205,7 +205,7 @@ One execution owner, serial execution and task commits under the later confirmed
 
 | ID | Milestone | Status file | State |
 |---|---|---|---|
-| M09 | Stage 11 parser and binding contract remediation | [status-M09.md](status-M09.md) | M09.5 in progress; review 4/10 |
+| M09 | Stage 11 parser and binding contract remediation | [status-M09.md](status-M09.md) | M09.5 in progress; review in linked status |
 
 Completed IDs and full accepted records remain reserved in history.
 
@@ -224,4 +224,4 @@ C08 promotes opt-in expression portability. C08/C09 promote the expression/bindi
 **Compatibility/recovery.** Preserve public wires/schemas, declared grammar versions and frozen evidence/pins. Corrected derived tables/packages/workers require fresh consumer assessment, confirmation and grants; never upgrade historical authority or replay unknown writes. Installed M44 is unchanged. Rollout ends at a new exact-source qualified handoff; real installation, migration, sends and registration need separate named authority.
 **Downstream.** APItools:M83 native shapes, OpenUdon:M99 package/source verification and Kinet:M49 author/private-exec workers. Retained browser profiles and frozen consumers remain separately pinned.
 **Tasks.** 5 task/commit units in status-M09.md: M09.1 Bound HCL and shape-table parsing before recursion; M09.2 Verify canonical HCL views and retain inert import symmetry; M09.3 Restore sound binding containment and schema context; M09.4 Scope flow references and strict portability contexts; M09.5 Qualify and hand off exact root and nested codec revisions.
-**Review/authority.** Closing review 4/10 under confirmed execution; the linked status owns persisted findings/fixes. Publication is an external prerequisite requiring fresh named authority and independent resolution. Planning itself grants no code execution, commit, publication, deployment or goal launch.
+**Review/authority.** Closing review under confirmed execution; the linked status owns the single persisted counter and findings/fixes. Publication is an external prerequisite requiring fresh named authority and independent resolution. Planning itself grants no code execution, commit, publication, deployment or goal launch.

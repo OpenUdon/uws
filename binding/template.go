@@ -94,6 +94,11 @@ func templateSchema(value any, types map[string]Schema, scope expressions.Contex
 		}
 		return map[string]any{"type": "object", "properties": props, "required": required, "additionalProperties": false, "minProperties": len(v), "maxProperties": len(v)}, true
 	case []any:
+		if len(v) == 0 {
+			// prefixItems must be nonempty under the effective 2020-12 schema.
+			// A const proves the exact empty array against the original target.
+			return map[string]any{"const": []any{}}, true
+		}
 		prefix := make([]any, len(v))
 		for i, x := range v {
 			child, ok := templateSchema(x, types, scope, depth+1)
