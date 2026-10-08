@@ -40,7 +40,6 @@ type flowAnalyzer struct {
 	reached     map[string]bool
 	used        map[string]bool
 	findings    map[string]FlowFinding
-	stepOps     map[string]string
 }
 
 // AnalyzeFlow observes possible control flow. Conditions aren't executed;
@@ -53,7 +52,7 @@ func AnalyzeFlow(ctx context.Context, document *uws1.Document) (FlowReport, erro
 	if err := ctx.Err(); err != nil {
 		return report, err
 	}
-	a := flowAnalyzer{ctx: ctx, doc: document, nodes: map[string]*flowNode{}, ambiguous: map[string]bool{}, stepsByName: map[string][]string{}, groups: map[string][]string{}, contexts: map[string]map[string]bool{}, reached: map[string]bool{}, used: map[string]bool{}, findings: map[string]FlowFinding{}, stepOps: map[string]string{}}
+	a := flowAnalyzer{ctx: ctx, doc: document, nodes: map[string]*flowNode{}, ambiguous: map[string]bool{}, stepsByName: map[string][]string{}, groups: map[string][]string{}, contexts: map[string]map[string]bool{}, reached: map[string]bool{}, used: map[string]bool{}, findings: map[string]FlowFinding{}}
 	for i, op := range document.Operations {
 		if op != nil {
 			key := "op:" + op.OperationID
@@ -95,7 +94,7 @@ func AnalyzeFlow(ctx context.Context, document *uws1.Document) (FlowReport, erro
 		entry = "wf:" + document.Workflows[0].WorkflowID
 	}
 	if a.nodes[entry] != nil {
-		a.visit(entry, map[string]bool{}, strings.TrimPrefix(entry, "wf:"))
+		a.visit(entry, map[string]bool{}, "")
 	} else {
 		a.find("flow.entry_indeterminate", "/workflows")
 	}
@@ -231,7 +230,6 @@ func (a *flowAnalyzer) steps(parent *flowNode, steps []*uws1.Step, path, kind st
 		}
 		if s.OperationRef != "" {
 			n.children = append(n.children, "op:"+s.OperationRef)
-			a.stepOps[key] = "op:" + s.OperationRef
 			op := a.nodes["op:"+s.OperationRef]
 			if op != nil {
 				if op.op.Effect == uws1.OperationEffectUnknown || op.op.Effect == "" {
@@ -381,7 +379,9 @@ func (a *flowAnalyzer) visitReference(ref, path string, stack map[string]bool, w
 		return
 	}
 	if n := a.nodes[ref]; n != nil {
-		if n.wf != nil || n.step != nil && workflow == "" {
+		// Root workflow dependencies share unqualified records. A workflow
+		// dependency inside an existing call creates its own child frame.
+		if n.wf != nil && workflow != "" {
 			workflow = n.workflow
 		}
 		a.visit(ref, stack, workflow)
@@ -414,13 +414,6 @@ func (a *flowAnalyzer) visitReference(ref, path string, stack map[string]bool, w
 	a.find("flow.reference_missing", path)
 }
 
-func (a *flowAnalyzer) rootWorkflow() string {
-	workflow := "main"
-	if a.nodes["wf:main"] == nil && len(a.doc.Workflows) == 1 && a.doc.Workflows[0] != nil {
-		workflow = a.doc.Workflows[0].WorkflowID
-	}
-	return workflow
-}
 func (a *flowAnalyzer) visitTransfer(ref, path string, stack map[string]bool) {
 	if id, step := strings.CutPrefix(ref, "step:"); step {
 		targets := a.stepsByName[id]
@@ -444,7 +437,7 @@ func (a *flowAnalyzer) visitTransfer(ref, path string, stack map[string]bool) {
 		a.find("flow.reference_ambiguous", path)
 		return
 	}
-	a.visit(ref, stack, a.rootWorkflow())
+	a.visit(ref, stack, "")
 }
 func (a *flowAnalyzer) visit(key string, stack map[string]bool, workflow string) {
 	n := a.nodes[key]
@@ -517,9 +510,6 @@ func (a *flowAnalyzer) references(text, workflow, current string) {
 				continue
 			}
 			a.used[key+"\x00"+parts[2]] = true
-			if op := a.stepOps[key]; op != "" {
-				a.used[op+"\x00"+parts[2]] = true
-			}
 		} else if strings.HasPrefix(source, "$outputs.") {
 			name := strings.Split(strings.TrimPrefix(source, "$outputs."), ".")[0]
 			a.used[current+"\x00"+name] = true

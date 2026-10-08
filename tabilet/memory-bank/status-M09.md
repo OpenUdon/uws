@@ -62,10 +62,10 @@ Public schemas/wires, published grammar/version bytes, accepted historical quali
 
 ## Closing review
 
-**Review iterations:** 3/10.
-**Review state:** iteration 3 completed with three P2 findings and verified fixes,
-2026-10-08; corrected source requires the next whole pass before acceptance.
-**Findings/fixes:** iterations 1–3 findings are addressed. Root full tests/vet
+**Review iterations:** 4/10.
+**Review state:** iteration 4 completed with three P2 findings and one lower
+metadata finding, 2026-10-08; verified fixes require the next whole pass.
+**Findings/fixes:** iterations 1–4 findings are addressed. Root full tests/vet
 and affected races, strict docs and protected-byte/module-pin guards pass.
 Earlier root/codec module-only proofs remain preliminary at their recorded
 sources; the final corrected exact source still requires archive qualification.
@@ -186,6 +186,51 @@ All three regressions fail against the exact 8b2 baseline through a disposable
 read-only overlay and pass on corrected source. Root full tests/vet, affected
 binding/expressions/strictjson races, strict MkDocs and protected-byte/module-pin
 guards passed. No new large parser inputs or external actions were generated.
+
+### Iteration 4 findings (persisted before fixes)
+
+- R4-F01 / P2 / M09.4: generic workflow dependencies always reset flow to the
+  declaration workflow, although ExecuteWorkflow invoked from a root dependency
+  retains the unqualified root record frame (uws1/execution.go:145,155–160).
+  An ordinary/executable-valid main.fetch → main.join dependsOn helper fixture
+  resolves fetch in helper through the pure reference evaluator, but flow marks
+  main.fetch's output unreferenced. Preserve the actual incoming root frame;
+  explicit/nested workflow calls continue creating their separate frames.
+- R4-F02 / P2 / M09.3: schemaPath ignores effective maxItems when traversing
+  an array index. An array with maxItems:0 and string items reports #/0 compatible
+  despite admitting only an empty array. Compare canonical indexes with the
+  compiled node's effective length limit before proving reachability.
+- R4-F03 / P2 / M09.4: a core step-output reference blindly marks a same-named
+  operation output used. ExecuteStep copies only the operation Result, while
+  finalizeOutputs stores the step's separate definitions. An ordinary/executable
+  fixture produces different step/operation values and the pure consumer reads
+  only the step value; flow suppresses the operation's unreferenced finding.
+  Preserve separate output ownership rather than inferring an alias.
+- R4-F04 / Lower / M09.5: active milestone summary/index still says all five
+  rows are pending and review is 0/10. The authoritative status is executing
+  M09.5 at review 4/10. Reconcile routine current-state metadata without changing
+  the approved scope, publication boundary or frozen planning provenance.
+
+The read-only correctness reviewer reproduced both findings against exact
+adb0a5aa74179f335ca5c5dddab4bbd84089e39d using bounded disposable fixtures at
+/tmp/uws-m09-review4-9eyy90_u. The independent contracts/tests reviewer reported
+no additional finding. Exact adb0a5a root/codec archive full races/vet/build
+passed, but remain preliminary because these P2s block the whole review.
+
+**Iteration 4 fix verification:** Root entry/trigger/goto now use the unqualified
+root frame. Root workflow dependencies retain that frame; explicit calls and
+workflow dependencies inside a call create their child frame. Paired supported
+fixtures prove the root reference succeeds and the nested caller reference
+fails, matching native execution. Compiled maxItems excludes unreachable array
+indexes. Step references no longer infer operation-output aliases; separate
+ordinary/executable-valid native fixtures pass with distinct and equivalent
+step/operation IDs. Two older non-frozen flow unit tests now assert the native
+separate-output contract rather than the faulty alias. All five reviewer probe
+assertions reproduce against exact adb through its preserved original overlay
+and pass after fixes. Root full tests/vet, affected races, strict docs and
+protected-byte/module-pin guards passed. The active index now records actual
+execution. Preliminary adb closure files are retained separately as
+docs/m09-review4-{root,codec}-module-closure.json; no source is accepted.
 
 ## Accepted serial predecessor — Udon:M49, 2026-10-08
 

@@ -79,7 +79,11 @@ step/operation invocation owner; cross-declaration dependencies retain their
 known caller frame. Terminal goto instead selects the globally indexed exact
 step/workflow and starts in the root invocation frame. No foreign-workflow name
 fallback is used.
-Known core references mark step/operation outputs used; output_unreferenced
+Workflow dependencies at root share that root frame; dependencies within a
+workflow call create their child invocation frame, matching native execution.
+Core step-output references mark the step's own output used. Operation outputs
+remain separate records; matching names or step/operation IDs do not alias them.
+Known core references mark their exact output owner used; output_unreferenced
 means no recognized core reference, not proof that an opaque profile cannot
 consume the value. Findings are sorted by path/code, capped at 128 with an
 explicit Truncated flag, and contain no document values or content excerpts.

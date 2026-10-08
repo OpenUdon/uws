@@ -82,6 +82,74 @@ func TestGotoDoesNotInheritHelperOutputFrame(t *testing.T) {
 	}
 }
 
+func TestWorkflowDependencyUsesRootOrChildFrame(t *testing.T) {
+	for _, nested := range []bool{false, true} {
+		var d uws1.Document
+		text := `{"uws":"1.13.0","info":{"title":"fixture","version":"1"},"variables":{"value":"fixture"},"operations":[{"operationId":"noop","x-uws-operation-profile":"fixture"},{"operationId":"consume","x-uws-operation-profile":"fixture","outputs":{"value":"$steps.fetch.outputs.value"}}],"workflows":[{"workflowId":"main","type":"sequence","steps":[{"stepId":"fetch","operationRef":"noop","outputs":{"value":"$variables.value"}},{"stepId":"join","type":"merge","dependsOn":["reader"]}]},{"workflowId":"reader","type":"sequence","steps":[{"stepId":"read","operationRef":"consume"}]}]}`
+		if err := json.Unmarshal([]byte(text), &d); err != nil {
+			t.Fatal(err)
+		}
+		if nested {
+			d.Workflows[0].WorkflowID = "caller"
+			d.Workflows = append(d.Workflows, &uws1.Workflow{WorkflowID: "main", Type: uws1.WorkflowTypeSequence, Steps: []*uws1.Step{{StepID: "call", StepExecutionFields: uws1.StepExecutionFields{Workflow: "caller"}}}})
+		}
+		if err := d.Validate(); err != nil {
+			t.Fatal("ordinary fixture invalid", err)
+		}
+		if err := d.ValidateExecutable(); err != nil {
+			t.Fatal("executable fixture invalid", err)
+		}
+		r, err := AnalyzeFlow(t.Context(), &d)
+		if err != nil || hasCode(r, "flow.output_unreferenced", "/workflows/0/steps/0/outputs/value") != nested {
+			t.Fatal("workflow dependency lost its invocation frame", nested, r, err)
+		}
+		e, err := expressions.NewEvaluator(&d)
+		if err != nil {
+			t.Fatal(err)
+		}
+		d.SetRuntime(&flowReferenceRuntime{e})
+		err = d.Execute(t.Context())
+		if !nested && err != nil || nested && (err == nil || !strings.Contains(err.Error(), "fetch")) {
+			t.Fatal("reference execution disagrees with invocation frame", nested, err)
+		}
+	}
+}
+
+func TestStepReferenceDoesNotConsumeOperationOutput(t *testing.T) {
+	for _, sameID := range []bool{false, true} {
+		var d uws1.Document
+		text := `{"uws":"1.13.0","info":{"title":"fixture","version":"1"},"variables":{"used":"step","unused":"operation"},"operations":[{"operationId":"produce","x-uws-operation-profile":"fixture","outputs":{"value":"$variables.unused"}},{"operationId":"consume","x-uws-operation-profile":"fixture","outputs":{"found":"$steps.fetch.outputs.value"}}],"workflows":[{"workflowId":"main","type":"sequence","steps":[{"stepId":"fetch","operationRef":"produce","outputs":{"value":"$variables.used"}},{"stepId":"read","operationRef":"consume"}]}]}`
+		if err := json.Unmarshal([]byte(text), &d); err != nil {
+			t.Fatal(err)
+		}
+		if sameID {
+			d.Workflows[0].Steps[0].StepID = "produce"
+			d.Operations[1].Outputs["found"] = "$steps.produce.outputs.value"
+		}
+		if err := d.Validate(); err != nil {
+			t.Fatal("ordinary fixture invalid", err)
+		}
+		if err := d.ValidateExecutable(); err != nil {
+			t.Fatal("executable fixture invalid", err)
+		}
+		e, err := expressions.NewEvaluator(&d)
+		if err != nil {
+			t.Fatal(err)
+		}
+		d.SetRuntime(&flowReferenceRuntime{e})
+		if err := d.Execute(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		if d.ExecutionRecords()["stepop:read:consume"].Outputs["found"] != "step" {
+			t.Fatal("consumer did not read the step output")
+		}
+		r, err := AnalyzeFlow(t.Context(), &d)
+		if err != nil || !hasCode(r, "flow.output_unreferenced", "/operations/0/outputs/value") || hasCode(r, "flow.output_unreferenced", "/workflows/0/steps/0/outputs/value") {
+			t.Fatal("distinct step/operation output ownership lost", r, err)
+		}
+	}
+}
+
 func TestFlowDependenciesUseKindAndWorkflow(t *testing.T) {
 	d := &uws1.Document{UWS: "1.13.0", Operations: []*uws1.Operation{
 		{OperationID: "same"},
@@ -104,7 +172,7 @@ func TestFlowDependenciesUseKindAndWorkflow(t *testing.T) {
 
 func TestOperationReferencesUseInvocationWorkflow(t *testing.T) {
 	var d uws1.Document
-	text := `{"uws":"1.13.0","info":{"title":"fixture","version":"1"},"sourceDescriptions":[{"name":"api","type":"openapi","url":"fixture.json"}],"operations":[{"operationId":"read","sourceDescription":"api","sourceOperationId":"read","outputs":{"value":"$response.body"}},{"operationId":"send","sourceDescription":"api","sourceOperationId":"send","request":{"body":"$steps.fetch.outputs.value"}}],"workflows":[{"workflowId":"main","type":"sequence","steps":[{"stepId":"fetch","operationRef":"read"},{"stepId":"deliver","operationRef":"send"}]}]}`
+	text := `{"uws":"1.13.0","info":{"title":"fixture","version":"1"},"sourceDescriptions":[{"name":"api","type":"openapi","url":"fixture.json"}],"operations":[{"operationId":"read","sourceDescription":"api","sourceOperationId":"read","outputs":{"value":"$response.body"}},{"operationId":"send","sourceDescription":"api","sourceOperationId":"send","request":{"body":"$steps.fetch.outputs.value"}}],"workflows":[{"workflowId":"main","type":"sequence","steps":[{"stepId":"fetch","operationRef":"read","outputs":{"value":"$response.body"}},{"stepId":"deliver","operationRef":"send"}]}]}`
 	if err := json.Unmarshal([]byte(text), &d); err != nil {
 		t.Fatal(err)
 	}
@@ -112,7 +180,7 @@ func TestOperationReferencesUseInvocationWorkflow(t *testing.T) {
 		t.Fatal("ordinary fixture invalid", err)
 	}
 	r, _ := AnalyzeFlow(t.Context(), &d)
-	if hasCode(r, "flow.output_unreferenced", "/operations/0/outputs/value") {
+	if hasCode(r, "flow.output_unreferenced", "/workflows/0/steps/0/outputs/value") || !hasCode(r, "flow.output_unreferenced", "/operations/0/outputs/value") {
 		t.Fatal(r)
 	}
 }

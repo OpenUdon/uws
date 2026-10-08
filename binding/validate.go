@@ -496,6 +496,9 @@ func schemaPath(schema Schema, fragment string) Outcome {
 			if err != nil || index < 0 || strconv.Itoa(index) != part {
 				return Incompatible
 			}
+			if node.MaxItems != nil && index >= *node.MaxItems {
+				return Incompatible
+			}
 			var child *jsonschema.Schema
 			if node.DraftVersion >= 2020 {
 				if index < len(node.PrefixItems) {

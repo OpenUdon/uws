@@ -42,14 +42,17 @@ func TestFlowReachabilityPendingEffectsAndPrivacy(t *testing.T) {
 		t.Fatal("nondeterministic report")
 	}
 }
-func TestFlowReferencesKeepUsedOutputsAndUnknownEffects(t *testing.T) {
-	d := &uws1.Document{UWS: "1.12.0", Operations: []*uws1.Operation{{OperationID: "read", Outputs: map[string]string{"value": "$response.body"}}, {OperationID: "write", Effect: uws1.OperationEffectWrite}}, Workflows: []*uws1.Workflow{{WorkflowID: "main", Type: uws1.WorkflowTypeSequence, Steps: []*uws1.Step{{StepID: "fetch", OperationRef: "read"}, {StepID: "consume", OperationRef: "write", Inputs: map[string]any{"n": "$steps.fetch.outputs.value"}}}}}}
+func TestFlowReferencesKeepStepAndOperationOutputsDistinct(t *testing.T) {
+	d := &uws1.Document{UWS: "1.12.0", Operations: []*uws1.Operation{{OperationID: "read", Outputs: map[string]string{"value": "$response.body"}}, {OperationID: "write", Effect: uws1.OperationEffectWrite}}, Workflows: []*uws1.Workflow{{WorkflowID: "main", Type: uws1.WorkflowTypeSequence, Steps: []*uws1.Step{{StepID: "fetch", OperationRef: "read", Outputs: map[string]string{"value": "$response.body"}}, {StepID: "consume", OperationRef: "write", Inputs: map[string]any{"n": "$steps.fetch.outputs.value"}}}}}}
 	r, err := AnalyzeFlow(t.Context(), d)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if hasCode(r, "flow.output_unreferenced", "/operations/0/outputs/value") {
+	if hasCode(r, "flow.output_unreferenced", "/workflows/0/steps/0/outputs/value") {
 		t.Fatal("used output classified unused", r)
+	}
+	if !hasCode(r, "flow.output_unreferenced", "/operations/0/outputs/value") {
+		t.Fatal("separate operation output classified used", r)
 	}
 	if !hasCode(r, "flow.effect_unknown", "/workflows/0/steps/0") {
 		t.Fatal("unknown effect inferred", r)

@@ -20,6 +20,9 @@ barriers and step→workflow→operation precedence. Step outputs use explicit
 workflow/result ownership and known operation invocation owners, without a
 foreign-workflow fallback. Terminal goto selects the exact globally indexed
 target in the root invocation, independently of dependency caller frames.
+Root workflow dependencies share unqualified records; nested workflow
+dependencies and explicit workflow calls create child invocation frames.
+Step and operation outputs stay separate even when their names or IDs match.
 Strict portability records loop/iteration availability
 separately, including transitive trigger/dependency contexts and pre-forEach
 controls. These opt-in diagnostics do not change ordinary parsing or validation.
