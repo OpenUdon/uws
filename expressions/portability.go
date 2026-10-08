@@ -24,16 +24,19 @@ func CheckPortability(document *uws1.Document) []Diagnostic {
 		return []Diagnostic{{Code: "expression.document", Path: "/"}}
 	}
 	c := checker{version: document.UWS}
-	opScopes, workflowScopes := invocationScopes(document)
+	opScopes, workflowScopes, stepScopes := invocationScopes(document)
+	c.stepScopes = stepScopes
 	for i, op := range document.Operations {
 		if op == nil {
 			continue
 		}
 		base := "/operations/" + strconv.Itoa(i)
-		loop := opScopes[op.OperationID] == 2
+		loop := onlyLoop(opScopes[op.OperationID])
+		c.iteration = onlyIteration(opScopes[op.OperationID])
 		c.check(op.ForEach, base+"/forEach", Value, loop)
 		if op.ForEach != "" {
 			loop = false
+			c.iteration = true
 		}
 		c.check(op.When, base+"/when", Predicate, loop)
 		c.check(op.Wait, base+"/wait", Wait, loop)
@@ -70,21 +73,25 @@ func CheckPortability(document *uws1.Document) []Diagnostic {
 			continue
 		}
 		base := "/workflows/" + strconv.Itoa(i)
-		loop := workflowScopes[w.WorkflowID] == 2
+		loop := onlyLoop(workflowScopes[w.WorkflowID])
+		c.iteration = onlyIteration(workflowScopes[w.WorkflowID])
 		c.check(w.ForEach, base+"/forEach", Value, loop)
 		if w.ForEach != "" {
 			loop = false
+			c.iteration = true
 		}
 		c.check(w.When, base+"/when", Predicate, loop)
 		c.structural(w.Type, w.Wait, w.Items, w.BatchSize, base, loop)
 		bodyLoop := loop || w.Type == uws1.WorkflowTypeLoop
 		c.outputs(w.Outputs, base+"/outputs", loop)
+		c.iteration = c.iteration || w.Type == uws1.WorkflowTypeLoop
 		c.steps(w.Steps, base+"/steps", bodyLoop, 0)
 		c.steps(w.Default, base+"/default", bodyLoop, 0)
 		c.cases(w.Cases, base+"/cases", bodyLoop, 0)
 	}
 	for i, result := range document.Results {
 		if result != nil {
+			c.iteration = result.Kind == uws1.WorkflowTypeLoop
 			c.check(result.Value, "/results/"+strconv.Itoa(i)+"/value", Value, result.Kind == uws1.WorkflowTypeLoop)
 		}
 	}
@@ -93,6 +100,8 @@ func CheckPortability(document *uws1.Document) []Diagnostic {
 
 type checker struct {
 	version     string
+	iteration   bool
+	stepScopes  map[*uws1.Step]uint8
 	diagnostics []Diagnostic
 }
 
@@ -109,8 +118,14 @@ func (c *checker) check(text, path string, field Field, loop bool) {
 		c.add("expression.legacy-wrapper", path)
 		return
 	}
-	_, err := Parse(text, Context{Version: c.version, Field: field, InLoop: loop})
+	parsed, err := Parse(text, Context{Version: c.version, Field: field, InLoop: loop})
 	if err == nil {
+		for _, source := range []string{parsed.Source(), parsed.OperandSource()} {
+			if !c.iteration && (source == "$item" || source == "$index" || strings.HasPrefix(source, "$item.")) {
+				c.add("expression.context", path)
+				break
+			}
+		}
 		return
 	}
 	code := "expression.syntax"
@@ -214,19 +229,28 @@ func (c *checker) steps(steps []*uws1.Step, path string, loop bool, depth int) {
 			continue
 		}
 		base := path + "/" + strconv.Itoa(i)
-		c.check(step.ForEach, base+"/forEach", Value, loop)
-		effective := loop
+		outerIteration := c.iteration
+		stepLoop := loop
+		if scope := c.stepScopes[step]; scope != 0 {
+			stepLoop = onlyLoop(scope)
+			c.iteration = onlyIteration(scope)
+		}
+		c.check(step.ForEach, base+"/forEach", Value, stepLoop)
+		effective := stepLoop
 		if step.ForEach != "" {
 			effective = false
+			c.iteration = true
 		}
 		c.check(step.When, base+"/when", Predicate, effective)
 		c.structural(step.Type, step.Wait, step.Items, step.BatchSize, base, effective)
 		childLoop := effective || step.Type == uws1.WorkflowTypeLoop
 		c.values(step.Inputs, base+"/inputs", effective, 0)
 		c.outputs(step.Outputs, base+"/outputs", effective)
+		c.iteration = c.iteration || step.Type == uws1.WorkflowTypeLoop
 		c.steps(step.Steps, base+"/steps", childLoop, depth+1)
 		c.steps(step.Default, base+"/default", childLoop, depth+1)
 		c.cases(step.Cases, base+"/cases", childLoop, depth+1)
+		c.iteration = outerIteration
 	}
 }
 func (c *checker) cases(cases []*uws1.Case, path string, loop bool, depth int) {
@@ -246,9 +270,10 @@ func (c *checker) cases(cases []*uws1.Case, path string, loop bool, depth int) {
 // invocationScopes records known invocation contexts, not authorization or
 // reachability guarantees. A reusable operation must be valid in every known
 // call context; unused declarations are checked conservatively outside a loop.
-func invocationScopes(d *uws1.Document) (map[string]uint8, map[string]uint8) {
+func invocationScopes(d *uws1.Document) (map[string]uint8, map[string]uint8, map[*uws1.Step]uint8) {
 	operations := map[string]uint8{}
 	workflows := map[string]uint8{}
+	stepScopes := map[*uws1.Step]uint8{}
 	byID := map[string]*uws1.Workflow{}
 	opByID := map[string]*uws1.Operation{}
 	for _, w := range d.Workflows {
@@ -261,33 +286,38 @@ func invocationScopes(d *uws1.Document) (map[string]uint8, map[string]uint8) {
 			opByID[op.OperationID] = op
 		}
 	}
-	bit := func(loop bool) uint8 {
+	bit := func(loop, iteration bool) uint8 {
+		index := 0
 		if loop {
-			return 2
+			index++
 		}
-		return 1
+		if iteration {
+			index += 2
+		}
+		return 1 << index
 	}
-	var visitWorkflow func(string, bool, int)
-	var visitSteps func([]*uws1.Step, bool, int)
-	var visitOperation func(string, bool, int)
-	visitOperation = func(id string, loop bool, depth int) {
-		if depth > maxExpressionDepth || operations[id]&bit(loop) != 0 {
+	var visitWorkflow func(string, bool, bool, int)
+	var visitSteps func([]*uws1.Step, bool, bool, int)
+	var visitOperation func(string, bool, bool, int)
+	visitOperation = func(id string, loop, iteration bool, depth int) {
+		if depth > maxExpressionDepth || operations[id]&bit(loop, iteration) != 0 {
 			return
 		}
-		operations[id] |= bit(loop)
+		operations[id] |= bit(loop, iteration)
 		if op := opByID[id]; op != nil {
 			effective := loop
 			if op.ForEach != "" {
 				effective = false
+				iteration = true
 			}
 			for _, dependency := range op.DependsOn {
 				if opByID[dependency] != nil {
-					visitOperation(dependency, effective, depth+1)
+					visitOperation(dependency, effective, iteration, depth+1)
 				}
 			}
 		}
 	}
-	visitSteps = func(steps []*uws1.Step, loop bool, depth int) {
+	visitSteps = func(steps []*uws1.Step, loop, iteration bool, depth int) {
 		if depth > maxExpressionDepth {
 			return
 		}
@@ -295,31 +325,35 @@ func invocationScopes(d *uws1.Document) (map[string]uint8, map[string]uint8) {
 			if s == nil {
 				continue
 			}
+			stepScopes[s] |= bit(loop, iteration)
 			effective := loop
+			bodyIteration := iteration
 			if s.ForEach != "" {
 				effective = false
+				bodyIteration = true
 			}
 			if s.OperationRef != "" {
-				visitOperation(s.OperationRef, effective, depth+1)
+				visitOperation(s.OperationRef, effective, bodyIteration, depth+1)
 			}
 			if s.Workflow != "" {
-				visitWorkflow(s.Workflow, effective, depth+1)
+				visitWorkflow(s.Workflow, effective, bodyIteration, depth+1)
 			}
 			body := effective || s.Type == uws1.WorkflowTypeLoop
-			visitSteps(s.Steps, body, depth+1)
-			visitSteps(s.Default, body, depth+1)
+			bodyIteration = bodyIteration || s.Type == uws1.WorkflowTypeLoop
+			visitSteps(s.Steps, body, bodyIteration, depth+1)
+			visitSteps(s.Default, body, bodyIteration, depth+1)
 			for _, branch := range s.Cases {
 				if branch != nil {
-					visitSteps(branch.Steps, body, depth+1)
+					visitSteps(branch.Steps, body, bodyIteration, depth+1)
 				}
 			}
 		}
 	}
-	visitWorkflow = func(id string, loop bool, depth int) {
-		if depth > maxExpressionDepth || workflows[id]&bit(loop) != 0 {
+	visitWorkflow = func(id string, loop, iteration bool, depth int) {
+		if depth > maxExpressionDepth || workflows[id]&bit(loop, iteration) != 0 {
 			return
 		}
-		workflows[id] |= bit(loop)
+		workflows[id] |= bit(loop, iteration)
 		w := byID[id]
 		if w == nil {
 			return
@@ -327,13 +361,15 @@ func invocationScopes(d *uws1.Document) (map[string]uint8, map[string]uint8) {
 		effective := loop
 		if w.ForEach != "" {
 			effective = false
+			iteration = true
 		}
 		body := effective || w.Type == uws1.WorkflowTypeLoop
-		visitSteps(w.Steps, body, depth+1)
-		visitSteps(w.Default, body, depth+1)
+		iteration = iteration || w.Type == uws1.WorkflowTypeLoop
+		visitSteps(w.Steps, body, iteration, depth+1)
+		visitSteps(w.Default, body, iteration, depth+1)
 		for _, branch := range w.Cases {
 			if branch != nil {
-				visitSteps(branch.Steps, body, depth+1)
+				visitSteps(branch.Steps, body, iteration, depth+1)
 			}
 		}
 	}
@@ -344,7 +380,35 @@ func invocationScopes(d *uws1.Document) (map[string]uint8, map[string]uint8) {
 		}
 	}
 	if byID[entry] != nil {
-		visitWorkflow(entry, false, 0)
+		visitWorkflow(entry, false, false, 0)
 	}
-	return operations, workflows
+	// Trigger workflows start without inherited iteration state. Direct route
+	// steps are top-level entry steps and likewise bypass enclosing loop bodies.
+	for _, trigger := range d.Triggers {
+		if trigger == nil {
+			continue
+		}
+		for _, route := range trigger.Routes {
+			if route == nil {
+				continue
+			}
+			for _, target := range route.To {
+				if byID[target] != nil {
+					visitWorkflow(target, false, false, 0)
+					continue
+				}
+				if root := byID[entry]; root != nil {
+					for _, s := range root.Steps {
+						if s != nil && s.StepID == target {
+							visitSteps([]*uws1.Step{s}, false, false, 0)
+						}
+					}
+				}
+			}
+		}
+	}
+	return operations, workflows, stepScopes
 }
+
+func onlyLoop(scopes uint8) bool      { return scopes != 0 && scopes&5 == 0 }
+func onlyIteration(scopes uint8) bool { return scopes != 0 && scopes&3 == 0 }

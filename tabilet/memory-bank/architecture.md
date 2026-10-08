@@ -15,6 +15,11 @@ indeterminate where no proof exists; false leaves are incompatible. Draft-07
 tuples use their effective items/additionalItems semantics, preserving offline
 local references and ignoring future array keywords under that dialect.
 
+M09 flow references use operation/workflow/scoped-step namespaces, with no
+foreign-workflow fallback for step outputs. Strict portability records loop and
+iteration availability separately, including trigger workflow and direct-step
+roots. These opt-in diagnostics do not change ordinary parsing or validation.
+
 ## Stage 11 public foundations
 
 Accepted C08 expressions use standard-library parsing and UWS-owned in-memory

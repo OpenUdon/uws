@@ -83,6 +83,12 @@ Root x-* request extensions remain profile-owned; identically named keys inside
 ordinary body/query payloads are still checked as data bindings.
 Known loop invocation contexts are tracked so a reusable operation's batch
 reference is checked in its actual call scope, not merely its declaration.
+Trigger-route workflows and direct top-level step routes contribute their
+actual entry contexts. Direct steps bypass the enclosing workflow loop body.
+The strict checker also diagnoses `$item`/`$index` outside known iterations;
+forEach creates item/index context after its collection expression is checked,
+while its separate batch-index behavior remains unchanged. Ordinary Parse
+continues accepting the declared grammar independently of availability.
 
 The mock now delegates source lookup, comparison and item resolution to the
 shared evaluator. Its historical generic numeric-evaluation and encoded-root
