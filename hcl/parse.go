@@ -121,7 +121,7 @@ func (r *viewReader) body(body *hclsyntax.Body, kind reflect.Type, depth int) (m
 			return nil, err
 		}
 		if f.mode == "block" && value != nil {
-			if list, ok := value.([]any); !ok || len(list) != 0 {
+			if list, ok := value.([]any); !ok || len(list) != 0 || indirect(f.kind).Kind() != reflect.Slice {
 				return nil, ErrCodec
 			}
 		}
@@ -312,6 +312,18 @@ func (r *viewReader) typed(value any, kind reflect.Type, depth int) (any, error)
 	}
 	if kind != nil {
 		kind = indirect(kind)
+		if value != nil {
+			switch kind.Kind() {
+			case reflect.Struct, reflect.Map:
+				if _, ok := value.(map[string]any); !ok {
+					return nil, ErrCodec
+				}
+			case reflect.Slice:
+				if _, ok := value.([]any); !ok {
+					return nil, ErrCodec
+				}
+			}
+		}
 	}
 	switch object := value.(type) {
 	case map[string]any:

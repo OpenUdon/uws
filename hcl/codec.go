@@ -68,19 +68,19 @@ func Render(ctx context.Context, source Source, options Options) (View, error) {
 	if err != nil {
 		return View{}, err
 	}
-	writer := viewWriter{budget: workBudget{ctx: ctx}}
-	if err := writer.body(value, reflect.TypeOf(uws1.Document{}), "", 0); err != nil {
+	data, err := canonicalHCL(ctx, value)
+	if err != nil {
 		return View{}, err
 	}
-	view := View{HCL: append([]byte(nil), writer.Bytes()...), Provenance: Provenance{Version: ContractVersion, Format: source.Format, SourceSHA256: digest(source.Bytes), CodecRevision: options.Revision, ViewSHA256: digest(writer.Bytes())}}
+	view := View{HCL: data, Provenance: Provenance{Version: ContractVersion, Format: source.Format, SourceSHA256: digest(source.Bytes), CodecRevision: options.Revision, ViewSHA256: digest(data)}}
 	if err := Verify(ctx, source, view, options); err != nil {
 		return View{}, err
 	}
 	return view, nil
 }
 
-// Verify checks exact source/codec/view provenance and independently reconstructs
-// all values. Hashes alone cannot prove correspondence or grant authority.
+// Verify checks exact source/codec/view provenance, deterministic writer bytes,
+// and independently reconstructed values. Hashes alone cannot grant authority.
 func Verify(ctx context.Context, source Source, view View, options Options) error {
 	ctx = codecContext(ctx)
 	if err := ctx.Err(); err != nil {
@@ -92,6 +92,13 @@ func Verify(ctx context.Context, source Source, view View, options Options) erro
 	want, err := sourceValue(ctx, source)
 	if err != nil {
 		return err
+	}
+	canonical, err := canonicalHCL(ctx, want)
+	if err != nil {
+		return err
+	}
+	if !bytes.Equal(canonical, view.HCL) {
+		return ErrCodec
 	}
 	got, err := hclValue(ctx, view.HCL)
 	if err != nil {
@@ -106,6 +113,7 @@ func Verify(ctx context.Context, source Source, view View, options Options) erro
 
 // Import reconstructs JSON from the supported inert typed HCL subset. It never
 // evaluates functions/variables or supplies semantic validation/authority.
+//
 // Deprecated: author new documents as JSON/YAML and use verified views.
 func Import(ctx context.Context, data []byte) ([]byte, error) {
 	ctx = codecContext(ctx)
@@ -121,6 +129,16 @@ func Import(ctx context.Context, data []byte) ([]byte, error) {
 		return nil, err
 	}
 	return out, nil
+}
+
+// Both entry points share only the deterministic writer. This function calls
+// neither Render nor Verify; independent inert parsing remains a separate proof.
+func canonicalHCL(ctx context.Context, value map[string]any) ([]byte, error) {
+	writer := viewWriter{budget: workBudget{ctx: ctx}}
+	if err := writer.body(value, reflect.TypeOf(uws1.Document{}), "", 0); err != nil {
+		return nil, err
+	}
+	return append([]byte(nil), writer.Bytes()...), nil
 }
 
 func codecContext(ctx context.Context) context.Context {

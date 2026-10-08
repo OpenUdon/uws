@@ -34,6 +34,12 @@ use float64 or JCS equality. YAML aliases/merges/explicit tags (including tagged
 spellings outside JSON numeric syntax refuse. JSON duplicate members/trailing
 values/invalid Unicode refuse. Strings remain literal, including template markers.
 
+Verify requires byte-for-byte deterministic writer output as well as independent
+full-value and numeric-token proof. Self-hashed comments, alternate escapes and
+formatting refuse. The HCL dependency normalizes some non-NFC strings and keys;
+when that changes a value, Render fails closed and returns no view. Lossless NFD
+presentation is unsupported; this module does not normalize source bytes.
+
 Bounds: 8 MiB source and HCL, 100,000 work nodes, nesting depth 100. Writer growth
 is checked before append and context cancellation is propagated. Parser/library
 work is cooperative; consumers own hard CPU/RSS/deadline/mount/network isolation
