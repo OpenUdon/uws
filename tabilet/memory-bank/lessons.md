@@ -104,6 +104,14 @@ expressions. C09 review R1/R2 fixtures reproduced nested and typed-body false
 rejections and an incorrect disjoint numeric classification; the fixed checks
 pass without key/provider loading or value-bearing diagnostics.
 
+Containment must also preserve the original schema dialect and reference
+context through children. The Stage 11 intake probe found a nested draft-07
+array incompatible/indeterminate while literal validation against its whole
+schema was compatible; the specific dependencies example did not reproduce.
+Pattern properties and nullable paths are not proof of absence, and a false
+leaf cannot be reported compatible. [M09.3](status-M09.md) owns these pending
+corrections at revalidated 0a4597122a7baa7e79e46e79e4ec60dbfffc3720.
+
 ## Ship nested-module conformance fixtures with the module
 
 Go module downloads exclude parent-module fixture directories. Keep byte-pinned
@@ -112,3 +120,20 @@ Prove the tests in a disposable module-only copy before release. For presentatio
 code, use an independent UseNumber value-tree oracle and exact numeric token
 strings; rendered text or floating-point equality cannot prove losslessness.
 M08.3's six-source manifest and exact-number/key corpus provide the evidence.
+
+## Enforce parser budgets before calling a recursive dependency
+
+**Applies when** a public inert parser accepts bounded but untrusted bytes.
+
+**Lesson.** A byte cap and a later semantic depth check do not bound the parser
+that runs first. Lexical preflight must account for comments, strings and
+interpolation; strict JSON prevalidation must not recursively traverse without
+a bound. Canonical presentation verification also needs exact rendered bytes:
+semantic equality alone accepts comments that claim authority.
+
+**Evidence.** hcl/parse.go invokes hclsyntax.ParseConfig before the existing
+depth-100 budget; binding/table.go reaches unbounded strictjson.consumeValue.
+The intake comment probe passed semantic Verify with an added approval claim,
+and NFD text failed closed because cty normalizes it. [M09.1/M09.2](status-M09.md)
+are pending; published version/corpus bytes and numeric-lexeme evidence remain
+frozen.

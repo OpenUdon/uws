@@ -1,5 +1,16 @@
 # Milestones
 
+## Stage 11 post-acceptance remediation — 2026-10-08
+
+The user approved the complete reconciliation proposal and its planning-file application. Five new package-local milestones / 28 pending task rows restore accepted supported contracts. Original Stage 11 acceptance and all completed records remain frozen; this intake starts no closing review.
+
+**Serial order:** Udon:M49 → UWS:M09 → APItools:M83 → OpenUdon:M99 → Kinet:M49.
+**Direct dependency graph:** UWS:M09 → APItools:M83, OpenUdon:M99, Kinet:M49; APItools:M83 → OpenUdon:M99, Kinet:M49; OpenUdon:M99 → Kinet:M49; Udon:M49 → Kinet:M49. Serial order is a scheduling gate, not an additional library dependency.
+
+**Local owner:** M09 — Stage 11 parser and binding contract remediation; all 5 rows pending, normal closing review not started (0/10). One serial execution owner across the five ledgers. No implementation, commit, goal launch, source publication or deployment is authorized by this planning write. A separate execution request and fresh separately named publication authority are required. Consumed Stage 11 publication/deployment envelopes are not reusable.
+
+**Coordinator:** [Stage 11](../../../kinet/docs/stage11.md#post-acceptance-remediation--2026-10-08). Exact accepted/published successor revisions remain unset until independently observed; downstream adoption requires them. Installed M44 and independent browser/media/Phase A/legacy/frozen-consumer pins remain unchanged. Stage 12 remains provisional.
+
 ## Stage 11 active horizon
 
 Approved 2026-10-06: both phases of [Kinet STG-11](../../../kinet/docs/stage11.md), with one serial execution owner across Kinet, UWS, APItools, Udon and OpenUdon. All UWS Stage 11 rows are accepted/retired; M08 accepted/published `c0b19385a3b034cd45de16726668b9150f0633f2` after review 3; C09 is accepted/retired at 6a267306032edc687a298cefc8bba7019d3ad059 after review 3. C08 is accepted/retired at 0411eea6fc84fbd6aa97cef94f53f301260f4844 after review 2. The [history index](../docs/history/index.md) retains the complete accepted status/specification; downstream adoption remains package-local. Earlier completed horizons and records remain historical; planning grants no implementation or external authority.
@@ -76,6 +87,9 @@ work automatically.
 | Interoperability formats | D6 file extensions, C16/E9 content-trust wire reports/resolvers, E4 stable error codes, E10 normative HCL mapping, and C10 portable error taxonomy require independent consumer and compatibility evidence beyond C04's executable conformance corpus. | A named independent consumer or portable conformance requirement and separately approved contract. |
 | `uws.*` profile-name namespace reservation | C18's proposed reservation is a governance change, not a correction to the present core list of `x-uws-*` fields. | An approved namespace/governance or 2.0 design with migration analysis. |
 | Evaluation-cost hardening | N16 identifies repeated recursive truthiness scans and expression-pattern compilation, but supplies no measured cost or representative workload. | A reproducible benchmark shows material latency or resource impact and a compatible cache/validation design is approved. |
+| URL participation in shape source identity (stage11-siblings-review.md uws P3.6; source P3/local Lower; UWS binding owner) | binding/table.go compares the full Source, including URL. Provenance-only wording forbids fetch authority but does not establish URL-independent identity. | A named consumer and approved identity contract decide whether URL differences represent the same source; preserve exact hashes/native selectors and no-fetch rules. |
+| Literal versus self-referential input expressions (stage11-siblings-review.md uws P3.7; source P3/local Lower; UWS expression owner) | expressions/evaluate.go bounds self-reference but the supported literal/expression interpretation is not established by this review. | A named consumer needs an explicit literal/escape/self-reference policy with compatibility fixtures; reconcile before changing evaluation. |
+| Non-NFC presentation support (stage11-siblings-review.md uws P3.3 normalization component; source P3/local Lower; UWS codec owner) | cty normalization causes fail-closed Render refusal; M09 documents/tests the limitation without promising arbitrary Unicode normalization. | A named consumer requires lossless NFD text and an approved codec representation can retain exact values/numeric lexemes without changing frozen view or authority contracts. |
 
 The second-review remediation (C05, B02, C04, M04) is complete. The third
 review's two normative UWS 1.11 contradictions were corrected in C06; the
@@ -189,8 +203,25 @@ One execution owner, serial execution and task commits under the later confirmed
 
 ### Stage 11 status index
 
-No active UWS milestone remains; IDs and full accepted records stay reserved in history.
+| ID | Milestone | Status file | State |
+|---|---|---|---|
+| M09 | Stage 11 parser and binding contract remediation | [status-M09.md](status-M09.md) | Pending; review 0/10 |
+
+Completed IDs and full accepted records remain reserved in history.
 
 ## Stage 11 candidate dispositions
 
 C08 promotes opt-in expression portability. C08/C09 promote the expression/binding subset of a separately pinned conformance supplement; the frozen 1.11 corpus and broader remaining conformance work stay unchanged. M08 promotes only the additive HCL presentation/deprecation subset of interoperability. New grammar, trigger/polling redesign, general diagnostic wire standardization and HCL removal remain deferred.
+
+## M09 — Stage 11 parser and binding contract remediation
+
+**Stage/owner.** STG-11 post-acceptance remediation; uws. Approved planning 2026-10-08. **Placement.** Core/cross-cutting lane; new remediation, never a reopened historical gate.
+**Lineage.** [C08](../docs/history/status-C08.md), [C09](../docs/history/status-C09.md) and [M08](../docs/history/status-M08.md).
+**Dependencies.** Accepted/published C08/C09/M08 contracts. Serial scheduling follows Udon:M49; this is not a new runtime dependency. Root and nested codec qualification/publication must be independently resolved before APItools:M83, OpenUdon:M99 and Kinet:M49 adoption.
+**Scope.** Bound untrusted HCL and shape JSON before recursive parsing, enforce deterministic verified-view bytes, make deprecated inert import structurally symmetric, repair supported binding containment/path/draft context and scoped flow/strict-portability diagnostics. Keep existing published grammar/wire/schema and frozen conformance bytes unchanged.
+**Acceptance.** Inputs within byte limits but above depth 100 refuse before unbounded HCL/strict-JSON recursion; comments, strings and template/interpolation delimiters are handled correctly by preflight. Verify accepts only exact deterministic Render bytes plus independent value/numeric-lexeme proof, without recursive Render/Verify calls. Deprecated Import rejects invalid typed blocks; non-NFC refusal stays fail-closed and is documented. Pattern-property containment, false leaves, nullable/pattern paths and inherited draft/reference contexts never produce unsupported compatibility or false missing-field claims. Flow references respect node kind/workflow scope; opt-in portability traverses trigger routes and diagnoses absent iteration context without narrowing ordinary Parse/validation. Root and codec standalone builds, immutable version/corpus guards and owner review pass.
+**Verification.** Root go test ./... and go vet ./...; affected binding/expressions/strictjson race tests; separate hcl-module tests/vet/races with GOWORK=off GOPROXY=off; adversarial-depth subprocess fixtures; canonical-comment/escape/numeric/NFD/import symmetry cases; whole-schema versus nested draft-07 array proof; flow namespace and trigger-loop fixtures; immutable published versions/schema/conformance digest checks; exact root/nested-codec archive and ordinary downstream-consumer qualification; git diff --check.
+**Compatibility/recovery.** Preserve public wires/schemas, declared grammar versions and frozen evidence/pins. Corrected derived tables/packages/workers require fresh consumer assessment, confirmation and grants; never upgrade historical authority or replay unknown writes. Installed M44 is unchanged. Rollout ends at a new exact-source qualified handoff; real installation, migration, sends and registration need separate named authority.
+**Downstream.** APItools:M83 native shapes, OpenUdon:M99 package/source verification and Kinet:M49 author/private-exec workers. Retained browser profiles and frozen consumers remain separately pinned.
+**Tasks.** 5 pending task/commit units in status-M09.md: M09.1 Bound HCL and shape-table parsing before recursion; M09.2 Verify canonical HCL views and retain inert import symmetry; M09.3 Restore sound binding containment and schema context; M09.4 Scope flow references and strict portability contexts; M09.5 Qualify and hand off exact root and nested codec revisions.
+**Review/authority.** Review 0/10, not started; persist the normal counter only during later execution. Publication is an external prerequisite requiring fresh named authority and independent resolution. Planning grants no code execution, commit, publication, deployment or goal launch.
