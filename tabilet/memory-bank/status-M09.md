@@ -2,7 +2,10 @@
 
 **Stage:** STG-11 post-acceptance remediation. **Owner:** UWS.
 **State:** Executing under the confirmed serial GOAL request, 2026-10-08.
-**Authority:** The confirmed GOAL request names Udon:M49 → UWS:M09 → APItools:M83 → OpenUdon:M99 → Kinet:M49, task commits and no external mutations. UWS source publication remains a separate exact gate.
+**Authority:** The confirmed GOAL request names Udon:M49 → UWS:M09 → APItools:M83
+→ OpenUdon:M99 → Kinet:M49, task commits and no external mutations. The separately
+granted UWS-only normal main source/closure publication exception is recorded
+below; it grants no deployment, installed-consumer change or live run.
 **Review source:** stage11-siblings-review.md — Stage 11 code review — sibling packages; uws section.
 **Review baseline/range:** `a7688f54c68f5a75c7cc95aa2b31cea98b31af41` → `0a4597122a7baa7e79e46e79e4ec60dbfffc3720`.
 **Revalidation HEAD:** `0a4597122a7baa7e79e46e79e4ec60dbfffc3720`; clean worktree, no relevant uncommitted code in the evidence. Approved planning changes are not implementation evidence.
@@ -13,14 +16,20 @@
 
 Accepted/published C08/C09/M08 contracts. Serial scheduling follows Udon:M49; this is not a new runtime dependency. Root and nested codec qualification/publication must be independently resolved before APItools:M83, OpenUdon:M99 and Kinet:M49 adoption.
 
-**Exact successor acceptance/publication/build identities:** unset; record full independently observed revisions and hashes during the later execution. Never substitute local HEAD, directory replacements or prior consumed publication authority.
+**Exact successor publication/build identities:** independently observed runtime
+b099f6803277ae94c7e9f1da0904a0140b278f20, root/codec
+v0.0.0-20261008043726-b099f6803277; initial public evidence head
+af225f8b0b5cfbd5848e28e5ce49eaebc0f228bb. Actual ordinary artifact/closure
+identities are recorded in [publication](../../docs/m09-publication.md).
+Milestone acceptance remains pending review/downstream reconciliation; local
+HEAD, replacements and prior consumed grants do not substitute for that gate.
 
 **Reviewed local candidate:** b099f6803277ae94c7e9f1da0904a0140b278f20,
 proposed root/codec v0.0.0-20261008043726-b099f6803277; whole review 6/10 passed.
 Local exact module-only qualification and owner bootstrap proof are recorded in
 [qualification](../../docs/m09-qualification.md). These identities are not yet
-independently accepted/published prerequisites. Fresh UWS authority remains the
-only outstanding operational prerequisite in the [proposal](../../docs/m09-publication-proposal.md).
+accepted prerequisites until milestone closure. The separately granted source
+publication/ordinary proof is now recorded in [publication](../../docs/m09-publication.md).
 
 **Downstream:** APItools:M83 native shapes, OpenUdon:M99 package/source verification and Kinet:M49 author/private-exec workers. Retained browser profiles and frozen consumers remain separately pinned.
 
@@ -34,11 +43,11 @@ Inputs within byte limits but above depth 100 refuse before unbounded HCL/strict
 
 | Item | State | Notes |
 |---|---|---|
-| M09.1 — Bound HCL and shape-table parsing before recursion | `[x]` | Iterative lexical preflight counts delimiters and refuses unsupported active templates before HCL parsing; strict JSON uses an iterative depth-100 stack. Exact duplicate/Unicode/numeric/trailing checks remain. Fatal-depth Import, strict-JSON and ParseTable child processes passed with a 1 MiB stack. Focused root tests/races/vet and separate full codec tests/races/vet passed, GOWORK=off GOPROXY=off Go 1.26.6. Sources W1/W2. |
-| M09.2 — Verify canonical HCL views and retain inert import symmetry | `[x]` | Shared nonrecursive writer path enforces exact deterministic bytes before independent complete-value/numeric-lexeme proof. Self-hashed comment/escape/formatting tests, typed-block empty/null/mismatch symmetry and JSON/YAML NFD string/key fail-closed tests pass. Deprecated is a separate Go doc paragraph; README states the limitation. Separate full codec races and vet passed. Sources W6 and P3.2/P3.3/P3.8. |
-| M09.3 — Restore sound binding containment and schema context | `[x]` | Original compiled child nodes preserve dialect/local-reference context. Pattern-driven closure and nullable/pattern paths are indeterminate where unsupported; false leaves refuse. Draft-07 tuple/future-keyword/local-reference tests agree with whole-schema literal validation; binding full tests/races/vet passed. The original dependencies claim remains unconfirmed. Sources W3/W4/W5/P3.1. |
-| M09.4 — Scope flow references and strict portability contexts | `[x]` | Explicit identities retain generic group barriers and step→workflow→operation dependency precedence; genuine duplicate step definitions remain ambiguous. Output references use explicit workflow/result owners and known operation invocation contexts, with no foreign-name fallback. Strict checker separates loop/item availability and pre-forEach controls, including transitive trigger/dependency contexts. Root full tests/races/vet pass; ordinary Parse remains compatible. Sources P3.4/P3.5. |
-| M09.5 — Qualify and hand off exact root and nested codec revisions | `[~]` | Exact local root/codec archives pass full races/vet/build, immutable-version/corpus/pin guards and isolated owner-bootstrap consumer proof. Whole review 6/10 passed at b099f6803277ae94c7e9f1da0904a0140b278f20. Publication and independent ordinary new-root proof still require fresh named UWS authority; the concrete qualified proposal is ready. |
+| M09.1 — Bound HCL and shape-table parsing before recursion | `[+]` | Iterative lexical preflight counts delimiters and refuses unsupported active templates before HCL parsing; strict JSON uses an iterative depth-100 stack. Exact duplicate/Unicode/numeric/trailing checks remain. Fatal-depth Import, strict-JSON and ParseTable child processes passed with a 1 MiB stack. Focused root tests/races/vet and separate full codec tests/races/vet passed, GOWORK=off GOPROXY=off Go 1.26.6. Sources W1/W2. |
+| M09.2 — Verify canonical HCL views and retain inert import symmetry | `[+]` | Shared nonrecursive writer path enforces exact deterministic bytes before independent complete-value/numeric-lexeme proof. Self-hashed comment/escape/formatting tests, typed-block empty/null/mismatch symmetry and JSON/YAML NFD string/key fail-closed tests pass. Deprecated is a separate Go doc paragraph; README states the limitation. Separate full codec races and vet passed. Sources W6 and P3.2/P3.3/P3.8. |
+| M09.3 — Restore sound binding containment and schema context | `[+]` | Original compiled child nodes preserve dialect/local-reference context. Pattern-driven closure and nullable/pattern paths are indeterminate where unsupported; false leaves refuse. Draft-07 tuple/future-keyword/local-reference tests agree with whole-schema literal validation; binding full tests/races/vet passed. The original dependencies claim remains unconfirmed. Sources W3/W4/W5/P3.1. |
+| M09.4 — Scope flow references and strict portability contexts | `[+]` | Explicit identities retain generic group barriers and step→workflow→operation dependency precedence; genuine duplicate step definitions remain ambiguous. Output references use explicit workflow/result owners and known operation invocation contexts, with no foreign-name fallback. Strict checker separates loop/item availability and pre-forEach controls, including transitive trigger/dependency contexts. Root full tests/races/vet pass; ordinary Parse remains compatible. Sources P3.4/P3.5. |
+| M09.5 — Qualify and hand off exact root and nested codec revisions | `[+]` | Separately authorized normal initial af225f8 publication independently observed; runtime b099f6803277ae94c7e9f1da0904a0140b278f20 root/codec independently resolve with exact version/origin/sums/file bytes. Downloaded module-only full suites/races/vet/build and ordinary 52-module consumer proof pass. Whole review 7/10 passed; all five rows qualified. Coordinator owns downstream reconciliation and final acceptance/retirement. No deployment or live authority follows. |
 
 ## Active finding provenance
 
@@ -69,19 +78,26 @@ Public schemas/wires, published grammar/version bytes, accepted historical quali
 
 ## Closing review
 
-**Review iterations:** 6/10.
-**Review state:** iteration 6 passed, 2026-10-08; both independent read-only
-whole-milestone reviewers found no remaining P1/P2 or higher at exact source
-b099f6803277ae94c7e9f1da0904a0140b278f20. Publication/acceptance remain pending.
-**Findings/fixes:** iterations 1–5 findings are addressed and whole review 6
+**Review iterations:** 7/10.
+**Review state:** iteration 7 passed, 2026-10-08, after independently observed
+normal source publication and passing ordinary downloaded module/consumer proof.
+Both read-only reviewers rechecked the whole implementation at
+b099f6803277ae94c7e9f1da0904a0140b278f20 and current publication evidence;
+no remaining P1/P2 or higher finding. Final coordinator acceptance is pending.
+**Findings/fixes:** iterations 1–5 findings are addressed and whole reviews 6/7
 passed. Root full tests/vet, affected races, strict docs and protected-byte/pin
 guards pass. Final corrected exact source passes root/codec module-only full
 qualification and isolated owner-bootstrap consumer proof; earlier candidate
 proofs remain preliminary at their recorded sources. Standalone codec retains
-C09 root. Acceptance, publication and independent ordinary resolution are not
-claimed.
-**Execution owner:** sole serial UWS:M09 owner; coordinator makes no writes during this handoff. Only M09.5 is in progress.
-**Commit policy:** Confirmed GOAL COMMIT_POLICY: task; verified task commits and substantive review/closure commits, without amend/rewrite/push/tag authority.
+C09 root. Separately authorized initial publication and independent ordinary
+resolution/full verification now pass; milestone acceptance/retirement are not
+claimed before review/downstream reconciliation.
+**Execution owner:** sole serial UWS:M09 owner through the M09.5 publication
+handoff; all five rows are complete and none is in progress. Coordinator resumes
+cross-package reconciliation/acceptance/retirement after the final handoff.
+**Commit policy:** Confirmed GOAL COMMIT_POLICY: task; verified task commits and
+substantive review/closure commits, without amend/rewrite/tag authority. Fresh
+UWS-only main publication authority is recorded below.
 **Closure:** persist each started review iteration before reviewing; resume an interrupted pass at the same number. No open P1/P2 may remain at acceptance. Required verification, exact downstream reconciliation and owner-specific consolidation/retirement follow implementation; never reopen completed Stage 11 history.
 
 ### Iteration 1 findings (persisted before fixes)
@@ -334,3 +350,103 @@ module/CLI proof and frozen dependency/browser boundaries. This satisfies only
 the serial scheduling predecessor; UWS imports no new Udon dependency. M09
 may start under the confirmed task-commit goal. UWS source publication still
 requires its own fresh named authority; the Udon-only grant is consumed.
+
+## Publication gate handoff — 2026-10-08
+
+Local implementation/qualification and whole review6/10 pass at
+b099f6803277ae94c7e9f1da0904a0140b278f20. Clean reviewed initial publication
+head af225f8b0b5cfbd5848e28e5ce49eaebc0f228bb [skip ci] is the concrete
+[proposal](../../docs/m09-publication-proposal.md). The coordinator independently
+checked clean source/head, implementation ancestry, documentation-only later
+changes, protected versions/corpora/module pins/history, closure bytes and
+fresh remote main0a4597122a7baa7e79e46e79e4ec60dbfffc3720.
+A fresh named UWS-only grant was requested; no answer/authority is inferred.
+M09.5 is blocked on that grant and independent ordinary root/codec upstream
+proof. No row is in progress; coordinator owns continuation. Acceptance and
+retirement remain incomplete. The consumed Udon/original source grants are not
+UWS authority. No push, module adoption, deployment or live action occurred.
+
+## Active status marker correction — 2026-10-08
+
+Coordinator verification found four completed task rows using noncanonical
+lowercase [x]. They now use the governing GOAL completed marker [+], in
+backticks, while M09.5 remains blocked. This is a current active-record factual
+format correction, not a completed-history edit or acceptance/publication claim.
+No runtime, source archive, module pin, review counter or frozen byte changes.
+The four verified implementation outcomes and review6 remain preserved.
+
+## Fresh UWS source-publication authority — 2026-10-08
+
+The user explicitly grants: "I give UWS:M09 separate source-publication", in
+response to the concrete proposal. This grants normal fast-forward publication
+of reviewed initial head af225f8b0b5cfbd5848e28e5ce49eaebc0f228bb and reviewed
+evidence/acceptance-retirement closure heads to the unchanged exact origin
+git@github.com-tabilet:OpenUdon/uws.git refs/heads/main. All push heads use
+[skip ci] to suppress the existing force docs deployment to another ref.
+The grant includes independent ordinary root/codec resolution and consumer
+proof. It grants no tag, force push, gh-pages/docs deployment, host deployment,
+live run, installed-consumer migration or unrelated sibling change.
+
+Sole serial ownership resumes in UWS; M09.5 is in progress before any push.
+Fresh ls-remote observes main 0a4597122a7baa7e79e46e79e4ec60dbfffc3720, an
+ancestor of the exact initial head. Runtime source b099f6803277ae94c7e9f1da0904a0140b278f20
+is also its ancestor; later committed changes are evidence/docs only. Live
+parent marker/gate bookkeeping and this grant are uncommitted at initial push
+and are not claimed to be contained in outgoing af225f8. They will be retained
+in the substantive M09.5 evidence commit. Parent owns later cross-package
+reconciliation/retirement; this owner writes no sibling ledger or goal/audit
+lifecycle. Historical grants and records remain frozen.
+
+## Initial source publication and independent resolution — 2026-10-08
+
+Normal push published exact reviewed af225f8b0b5cfbd5848e28e5ce49eaebc0f228bb
+to origin/main from 0a4597122a7baa7e79e46e79e4ec60dbfffc3720. Fresh independent
+ls-remote observed that exact head. Its [skip ci] subject preserves main-only
+scope; no hosted-CI/docs-deployment result is claimed. The grant and parent
+bookkeeping were uncommitted during this initial push, as recorded above.
+
+A fresh separate ordinary module cache resolves root and codec through the
+configured proxy.golang.org/direct and sum.golang.org source. Both queries bind
+v0.0.0-20261008043726-b099f6803277 to Origin.Hash
+b099f6803277ae94c7e9f1da0904a0140b278f20, with codec Subdir hcl. Both Go archive
+and GoMod sums match the reviewed candidate. All 360 root and 21 codec archive
+files match exact reviewed VCS archive names/content. Ordinary ZIP compression
+differs, so raw ordinary byte/SHA identities are recorded separately in
+docs/m09-ordinary-module-proof.json rather than relabeling local ZIP artifacts.
+Standalone go.mod/sum bytes remain exact. The 52-root/50-codec selected closures
+match local qualification; the ordinary combined 52-module consumer closure is
+docs/m09-ordinary-consumer-module-closure.json. No replacement, workspace,
+bootstrap file proxy or bootstrap module cache supplies this independent proof.
+
+Fresh full tests, full races, vet and builds pass separately from both exact
+ordinary downloaded module-only copies. The ordinary combined consumer passes
+full races, selecting both exact new modules without replacements. The complete
+selected artifacts downloaded successfully from the ordinary configured source;
+no network failure remains. Whole review 7 starts after these checks, before
+reviewing source/evidence. This proof paragraph alone does not mark the milestone
+accepted or retired.
+
+## Iteration 7 outcome and M09.5 handoff — 2026-10-08
+
+The persisted seventh whole pass reviewed complete runtime source and the actual
+ordinary publication/module/consumer evidence. Both independent read-only
+reviewers found no remaining P1/P2 or higher and no evidence discrepancy.
+All required tests, full races, vet/build, strict MkDocs, protected immutable
+versions/corpora/module pins and staged/new-file whitespace checks pass.
+Only evidence/current-state documentation changed after runtime source b099.
+
+All five task rows are complete with canonical [+] markers; M09.5 is a focused
+task commit under the confirmed policy and fresh source-only grant. The
+coordinator's marker correction and prior blocked-gate bookkeeping are retained
+in that same commit, with honest uncommitted provenance during initial af225f8
+publication. The reviewed evidence head may be normally published under the
+same grant using [skip ci], then independently observed before ownership returns.
+No amendment/history rewrite, force/tag/docs deployment or native goal/audit
+lifecycle change is included.
+
+Parent still owns exact downstream specification reconciliation, shared-memory
+knowledge consolidation/journaling, final acceptance and retirement, and later
+reviewed normal closure publication. Retained source/proof materials and all
+original Stage 11/history/browser/consumer pins remain preserved. Implementation
+source is b099f6803277ae94c7e9f1da0904a0140b278f20 and ordinary root/codec version
+v0.0.0-20261008043726-b099f6803277; no consumer adoption is inferred by publication.

@@ -3,9 +3,11 @@
 Reviewed implementation source is
 `b099f6803277ae94c7e9f1da0904a0140b278f20`, whole review **6/10 passed** on
 2026-10-08. Both read-only whole-milestone reviewers found no remaining blocker.
-M09.1–M09.4 are implemented; M09.5 remains in progress. This record qualifies a
-local candidate; acceptance, publication and independent ordinary module proof
-remain pending the [separate publication proposal](m09-publication-proposal.md).
+The final whole review **7/10 passed** after independent ordinary proof; all five
+M09 task rows are qualified. This record preserves local qualification; the separately granted
+[publication and independent ordinary module proof](m09-publication.md) now
+records actual source availability. Milestone acceptance/retirement remain with
+the coordinator after review and downstream reconciliation.
 
 Both module archives have proposed version
 `v0.0.0-20261008043726-b099f6803277` and are generated from that exact clean Git

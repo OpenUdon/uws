@@ -7,7 +7,7 @@ The user approved the complete reconciliation proposal and its planning-file app
 **Serial order:** Udon:M49 → UWS:M09 → APItools:M83 → OpenUdon:M99 → Kinet:M49.
 **Direct dependency graph:** UWS:M09 → APItools:M83, OpenUdon:M99, Kinet:M49; APItools:M83 → OpenUdon:M99, Kinet:M49; OpenUdon:M99 → Kinet:M49; Udon:M49 → Kinet:M49. Serial order is a scheduling gate, not an additional library dependency.
 
-**Local owner:** M09 — Stage 11 parser and binding contract remediation; four implementation rows complete, M09.5 in progress. The confirmed serial GOAL authorizes implementation/task commits; the linked status owns the single persisted closing-review counter and findings. One serial execution owner across the five ledgers. Planning itself authorized no execution. Fresh separately named source publication authority remains required; consumed Stage 11 publication/deployment envelopes are not reusable.
+**Local owner:** M09 — Stage 11 parser and binding contract remediation; all five task rows qualified, independent ordinary publication/proof passed, whole review 7 passed. Coordinator owns downstream reconciliation and final acceptance/retirement. The confirmed serial GOAL authorizes task commits; the linked status owns the single persisted review counter and fresh UWS-only publication grant. One serial execution owner across the five ledgers; no earlier consumed grant is reused.
 
 **Coordinator:** [Stage 11](../../../kinet/docs/stage11.md#post-acceptance-remediation--2026-10-08). Exact accepted/published successor revisions remain unset until independently observed; downstream adoption requires them. Installed M44 and independent browser/media/Phase A/legacy/frozen-consumer pins remain unchanged. Stage 12 remains provisional.
 
@@ -205,7 +205,7 @@ One execution owner, serial execution and task commits under the later confirmed
 
 | ID | Milestone | Status file | State |
 |---|---|---|---|
-| M09 | Stage 11 parser and binding contract remediation | [status-M09.md](status-M09.md) | M09.5 in progress; review in linked status |
+| M09 | Stage 11 parser and binding contract remediation | [status-M09.md](status-M09.md) | All rows qualified; coordinator reconciliation/retirement pending |
 
 Completed IDs and full accepted records remain reserved in history.
 

@@ -1,5 +1,10 @@
 # M09 source publication proposal
 
+**Outcome, 2026-10-08:** the user separately granted this exact UWS-only scope.
+Initial reviewed source publication and independent ordinary module proof are
+recorded in [publication evidence](m09-publication.md). The original proposed
+boundary below remains preserved; acceptance/retirement are still pending.
+
 The [qualified exact source](m09-qualification.md) is
 `b099f6803277ae94c7e9f1da0904a0140b278f20`, whole review 6/10 passed. Proposed
 root and nested codec module version is
