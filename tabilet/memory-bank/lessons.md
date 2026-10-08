@@ -112,6 +112,27 @@ Pattern properties and nullable paths are not proof of absence, and a false
 leaf cannot be reported compatible. [M09.3](status-M09.md) owns these pending
 corrections at revalidated 0a4597122a7baa7e79e46e79e4ec60dbfffc3720.
 
+Output paths must also retain containing cardinality and required property/item
+predecessor constraints. A native literal witness proves a value exists; failed
+samples prove only indeterminacy. False or exhausted finite const/enum schemas
+can prove absence. Mixed templates need valid exact constant schemas for empty
+arrays rather than prefixItems:[], which fails the 2020-12 metaschema.
+M09 reviews 4–6 reproduce the public false-compatibility and false-indeterminacy
+cases with bounded fixtures; qualified local source is
+b099f6803277ae94c7e9f1da0904a0140b278f20, pending separate publication acceptance.
+
+## Distinguish record snapshots from invocation metadata
+
+Changing a workflow-scope field does not necessarily refresh its record snapshot.
+Native workflow controls consume executeOnce's incoming records, while child
+runnables and final outputs refresh records in the body's frame. Test the actual
+reference execution for positive and negative scope cases before deriving flow
+ownership from a context label. Root generic workflow dependencies share root
+records; explicit/nested calls create child frames, and terminal goto uses the
+global exact target at root. Step and operation outputs are separate records
+even when their IDs or output names match. M09 reviews 3–6 and its bounded
+ordinary/executable-valid pure-runtime regressions provide the evidence.
+
 ## Ship nested-module conformance fixtures with the module
 
 Go module downloads exclude parent-module fixture directories. Keep byte-pinned

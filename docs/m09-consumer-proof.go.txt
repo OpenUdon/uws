@@ -1,0 +1,65 @@
+package consumer_test
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"github.com/OpenUdon/uws/binding"
+	"github.com/OpenUdon/uws/expressions"
+	viewhcl "github.com/OpenUdon/uws/hcl"
+	"github.com/OpenUdon/uws/uws1"
+	"reflect"
+	"testing"
+)
+
+func TestQualifiedPublicModules(t *testing.T) {
+	source := viewhcl.Source{Format: viewhcl.JSON, Bytes: []byte(`{"uws":"1.13.0","info":{"title":"fixture","version":"1"},"operations":[],"variables":{"big":900719925474099312345,"decimal":1.2300}}`)}
+	options := viewhcl.Options{Revision: "b099f6803277ae94c7e9f1da0904a0140b278f20"}
+	view, err := viewhcl.Render(context.Background(), source, options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = viewhcl.Verify(context.Background(), source, view, options); err != nil {
+		t.Fatal(err)
+	}
+	imported, err := viewhcl.Import(context.Background(), view.HCL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decode := func(data []byte) any {
+		d := json.NewDecoder(bytes.NewReader(data))
+		d.UseNumber()
+		var value any
+		if err := d.Decode(&value); err != nil {
+			t.Fatal(err)
+		}
+		return value
+	}
+	if !reflect.DeepEqual(decode(source.Bytes), decode(imported)) {
+		t.Fatal("complete values or numeric lexemes changed")
+	}
+	var doc uws1.Document
+	wire := []byte(`{"uws":"1.13.0","info":{"title":"fixture","version":"1"},"variables":{"items":[1]},"operations":[{"operationId":"read","x-uws-operation-profile":"fixture","outputs":{"batch":"$batchIndex"}},{"operationId":"jump","x-uws-operation-profile":"fixture","onSuccess":[{"name":"transfer","type":"goto","stepId":"target"}]}],"workflows":[{"workflowId":"main","type":"loop","items":"$variables.items","steps":[{"stepId":"call","workflow":"helper"},{"stepId":"transfer","operationRef":"jump"}]},{"workflowId":"helper","type":"sequence","steps":[{"stepId":"target","operationRef":"read"}]}]}`)
+	if err = json.Unmarshal(wire, &doc); err != nil {
+		t.Fatal(err)
+	}
+	if err = doc.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	if err = doc.ValidateExecutable(); err != nil {
+		t.Fatal(err)
+	}
+	flow, err := binding.AnalyzeFlow(context.Background(), &doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, finding := range flow.Findings {
+		if finding.Code == "flow.reference_missing" {
+			t.Fatal("global goto target missing")
+		}
+	}
+	diagnostics := expressions.CheckPortability(&doc)
+	if len(diagnostics) != 1 || diagnostics[0].Code != "expression.context" || diagnostics[0].Path != "/operations/0/outputs/batch" {
+		t.Fatal(diagnostics)
+	}
+}

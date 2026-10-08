@@ -15,6 +15,13 @@ Accepted/published C08/C09/M08 contracts. Serial scheduling follows Udon:M49; th
 
 **Exact successor acceptance/publication/build identities:** unset; record full independently observed revisions and hashes during the later execution. Never substitute local HEAD, directory replacements or prior consumed publication authority.
 
+**Reviewed local candidate:** b099f6803277ae94c7e9f1da0904a0140b278f20,
+proposed root/codec v0.0.0-20261008043726-b099f6803277; whole review 6/10 passed.
+Local exact module-only qualification and owner bootstrap proof are recorded in
+[qualification](../../docs/m09-qualification.md). These identities are not yet
+independently accepted/published prerequisites. Fresh UWS authority remains the
+only outstanding operational prerequisite in the [proposal](../../docs/m09-publication-proposal.md).
+
 **Downstream:** APItools:M83 native shapes, OpenUdon:M99 package/source verification and Kinet:M49 author/private-exec workers. Retained browser profiles and frozen consumers remain separately pinned.
 
 ## Scope and acceptance
@@ -31,7 +38,7 @@ Inputs within byte limits but above depth 100 refuse before unbounded HCL/strict
 | M09.2 — Verify canonical HCL views and retain inert import symmetry | `[x]` | Shared nonrecursive writer path enforces exact deterministic bytes before independent complete-value/numeric-lexeme proof. Self-hashed comment/escape/formatting tests, typed-block empty/null/mismatch symmetry and JSON/YAML NFD string/key fail-closed tests pass. Deprecated is a separate Go doc paragraph; README states the limitation. Separate full codec races and vet passed. Sources W6 and P3.2/P3.3/P3.8. |
 | M09.3 — Restore sound binding containment and schema context | `[x]` | Original compiled child nodes preserve dialect/local-reference context. Pattern-driven closure and nullable/pattern paths are indeterminate where unsupported; false leaves refuse. Draft-07 tuple/future-keyword/local-reference tests agree with whole-schema literal validation; binding full tests/races/vet passed. The original dependencies claim remains unconfirmed. Sources W3/W4/W5/P3.1. |
 | M09.4 — Scope flow references and strict portability contexts | `[x]` | Explicit identities retain generic group barriers and step→workflow→operation dependency precedence; genuine duplicate step definitions remain ambiguous. Output references use explicit workflow/result owners and known operation invocation contexts, with no foreign-name fallback. Strict checker separates loop/item availability and pre-forEach controls, including transitive trigger/dependency contexts. Root full tests/races/vet pass; ordinary Parse remains compatible. Sources P3.4/P3.5. |
-| M09.5 — Qualify and hand off exact root and nested codec revisions | `[~]` | Running root/codec conformance, races, immutable-version/corpus guards and independent module-only builds. Successor regressions are additive. Publication and ordinary new-root downstream proof require fresh named authority; prepare reviewed exact artifacts before that gate. |
+| M09.5 — Qualify and hand off exact root and nested codec revisions | `[~]` | Exact local root/codec archives pass full races/vet/build, immutable-version/corpus/pin guards and isolated owner-bootstrap consumer proof. Whole review 6/10 passed at b099f6803277ae94c7e9f1da0904a0140b278f20. Publication and independent ordinary new-root proof still require fresh named UWS authority; the concrete qualified proposal is ready. |
 
 ## Active finding provenance
 
@@ -62,14 +69,17 @@ Public schemas/wires, published grammar/version bytes, accepted historical quali
 
 ## Closing review
 
-**Review iterations:** 5/10.
-**Review state:** iteration 5 completed with three P2 findings and one lower
-metadata finding, 2026-10-08; verified fixes require the next whole pass.
-**Findings/fixes:** iterations 1–5 findings are addressed. Root full tests/vet
-and affected races, strict docs and protected-byte/module-pin guards pass.
-Earlier root/codec module-only proofs remain preliminary at their recorded
-sources; the final corrected exact source still requires archive qualification.
-Standalone codec retains C09 root. No pass/acceptance or publication is claimed.
+**Review iterations:** 6/10.
+**Review state:** iteration 6 passed, 2026-10-08; both independent read-only
+whole-milestone reviewers found no remaining P1/P2 or higher at exact source
+b099f6803277ae94c7e9f1da0904a0140b278f20. Publication/acceptance remain pending.
+**Findings/fixes:** iterations 1–5 findings are addressed and whole review 6
+passed. Root full tests/vet, affected races, strict docs and protected-byte/pin
+guards pass. Final corrected exact source passes root/codec module-only full
+qualification and isolated owner-bootstrap consumer proof; earlier candidate
+proofs remain preliminary at their recorded sources. Standalone codec retains
+C09 root. Acceptance, publication and independent ordinary resolution are not
+claimed.
 **Execution owner:** sole serial UWS:M09 owner; coordinator makes no writes during this handoff. Only M09.5 is in progress.
 **Commit policy:** Confirmed GOAL COMMIT_POLICY: task; verified task commits and substantive review/closure commits, without amend/rewrite/push/tag authority.
 **Closure:** persist each started review iteration before reviewing; resume an interrupted pass at the same number. No open P1/P2 may remain at acceptance. Required verification, exact downstream reconciliation and owner-specific consolidation/retirement follow implementation; never reopen completed Stage 11 history.
@@ -286,6 +296,32 @@ closed without a waiver; the coordinator removed only old regenerative build
 cache entries, preserving source, module downloads and proofs. The active index
 now points to the status counter rather than duplicating it. No new evolution
 version or publication is claimed; prior candidate archives stay preliminary.
+
+### Iteration 6 whole review and qualification
+
+Both independent reviewers rechecked the complete milestone implementation,
+including all preceding fixes, and found no remaining blocker. Source
+b099f6803277ae94c7e9f1da0904a0140b278f20 is the reviewed local release candidate.
+Root and nested codec exact module-only archives pass full races/vet/build with
+GOWORK=off GOPROXY=off and no replacements. The standalone codec still selects
+accepted C09 root; that declaration is not mislabeled as the new root.
+
+The /tmp mount's separate user quota caused initial archive linker/unpack
+failures despite the root filesystem's free space. Successful serial rechecks
+use owned GOTMPDIR/TMPDIR under /home/peter/.cache/uws-m09-proof-b099f680 and
+an isolated bootstrap module cache there. No source, module-download cache,
+retained proof or pin was deleted; no quota waiver or skipped check applies.
+The archive go.mod/sum bytes remain exact after verification. Whole fresh root
+and codec suites, affected races, strict docs and protected guards passed.
+
+Exact source/archive/closure identities, a reusable public consumer fixture and
+the main-only publication proposal are in docs/m09-qualification.md and
+docs/m09-publication-proposal.md. Local VCS archives and the isolated file-proxy
+consumer are owner bootstrap evidence, not independently published Go modules.
+M09.5 remains in progress until fresh separately named UWS publication authority,
+normal source publication and independent ordinary module/consumer proof.
+M09 is not accepted or retired; downstream adoption and external actions remain
+outside this owner's present authority. Original Stage 11 history stays frozen.
 
 ## Accepted serial predecessor — Udon:M49, 2026-10-08
 
