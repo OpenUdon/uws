@@ -23,6 +23,7 @@ type FlowReport struct {
 type flowNode struct {
 	key, path, workflow                 string
 	children, dependencies, expressions []string
+	transfers                           []string
 	outputs                             map[string]string
 	op                                  *uws1.Operation
 	step                                *uws1.Step
@@ -94,7 +95,7 @@ func AnalyzeFlow(ctx context.Context, document *uws1.Document) (FlowReport, erro
 		entry = "wf:" + document.Workflows[0].WorkflowID
 	}
 	if a.nodes[entry] != nil {
-		a.visit(entry, map[string]bool{}, "")
+		a.visit(entry, map[string]bool{}, strings.TrimPrefix(entry, "wf:"))
 	} else {
 		a.find("flow.entry_indeterminate", "/workflows")
 	}
@@ -139,7 +140,7 @@ func AnalyzeFlow(ctx context.Context, document *uws1.Document) (FlowReport, erro
 			a.find("flow.unreachable", n.path)
 		}
 		scopes := []string{n.workflow}
-		if (n.op != nil || n.step != nil) && len(a.contexts[key]) > 0 {
+		if len(a.contexts[key]) > 0 {
 			scopes = nil
 			for workflow := range a.contexts[key] {
 				scopes = append(scopes, workflow)
@@ -325,10 +326,10 @@ func (a *flowAnalyzer) operationExpressions(n *flowNode) {
 			criteria(action.Criteria)
 			if action.Type == "goto" {
 				if action.WorkflowID != "" {
-					n.children = append(n.children, "wf:"+action.WorkflowID)
+					n.transfers = append(n.transfers, "wf:"+action.WorkflowID)
 				}
 				if action.StepID != "" {
-					n.dependencies = append(n.dependencies, a.entryStepKey(action.StepID))
+					n.transfers = append(n.transfers, "step:"+action.StepID)
 				}
 			}
 		}
@@ -338,10 +339,10 @@ func (a *flowAnalyzer) operationExpressions(n *flowNode) {
 			criteria(action.Criteria)
 			if action.Type == "goto" {
 				if action.WorkflowID != "" {
-					n.children = append(n.children, "wf:"+action.WorkflowID)
+					n.transfers = append(n.transfers, "wf:"+action.WorkflowID)
 				}
 				if action.StepID != "" {
-					n.dependencies = append(n.dependencies, a.entryStepKey(action.StepID))
+					n.transfers = append(n.transfers, "step:"+action.StepID)
 				}
 			}
 			if action.Type == "retry" && action.RetryLimit <= 0 {
@@ -379,7 +380,10 @@ func (a *flowAnalyzer) visitReference(ref, path string, stack map[string]bool, w
 		a.find("flow.reference_ambiguous", path)
 		return
 	}
-	if a.nodes[ref] != nil {
+	if n := a.nodes[ref]; n != nil {
+		if n.wf != nil || n.step != nil && workflow == "" {
+			workflow = n.workflow
+		}
 		a.visit(ref, stack, workflow)
 		return
 	}
@@ -410,12 +414,37 @@ func (a *flowAnalyzer) visitReference(ref, path string, stack map[string]bool, w
 	a.find("flow.reference_missing", path)
 }
 
-func (a *flowAnalyzer) entryStepKey(id string) string {
+func (a *flowAnalyzer) rootWorkflow() string {
 	workflow := "main"
 	if a.nodes["wf:main"] == nil && len(a.doc.Workflows) == 1 && a.doc.Workflows[0] != nil {
 		workflow = a.doc.Workflows[0].WorkflowID
 	}
-	return "step:" + workflow + ":" + id
+	return workflow
+}
+func (a *flowAnalyzer) visitTransfer(ref, path string, stack map[string]bool) {
+	if id, step := strings.CutPrefix(ref, "step:"); step {
+		targets := a.stepsByName[id]
+		if len(targets) == 0 {
+			a.find("flow.reference_missing", path)
+			return
+		}
+		if len(targets) != 1 || a.ambiguous[targets[0]] {
+			a.find("flow.reference_ambiguous", path)
+			return
+		}
+		ref = targets[0]
+	}
+	if a.nodes[ref] == nil {
+		a.find("flow.reference_missing", path)
+		return
+	}
+	// Terminal goto uses the global exact target in the root invocation,
+	// independently of the caller frame retained by generic dependencies.
+	if a.ambiguous[ref] {
+		a.find("flow.reference_ambiguous", path)
+		return
+	}
+	a.visit(ref, stack, a.rootWorkflow())
 }
 func (a *flowAnalyzer) visit(key string, stack map[string]bool, workflow string) {
 	n := a.nodes[key]
@@ -426,9 +455,6 @@ func (a *flowAnalyzer) visit(key string, stack map[string]bool, workflow string)
 	if stack[key] {
 		a.find("flow.cycle", n.path)
 		return
-	}
-	if n.wf != nil || n.step != nil && workflow == "" {
-		workflow = n.workflow
 	}
 	if a.contexts[key] == nil {
 		a.contexts[key] = map[string]bool{}
@@ -443,7 +469,14 @@ func (a *flowAnalyzer) visit(key string, stack map[string]bool, workflow string)
 		a.visitReference(ref, n.path+"/dependsOn", stack, workflow)
 	}
 	for _, child := range n.children {
-		a.visit(child, stack, workflow)
+		childWorkflow := workflow
+		if target := a.nodes[child]; target != nil && target.wf != nil {
+			childWorkflow = target.workflow
+		}
+		a.visit(child, stack, childWorkflow)
+	}
+	for _, target := range n.transfers {
+		a.visitTransfer(target, n.path+"/goto", stack)
 	}
 	delete(stack, key)
 }

@@ -76,7 +76,9 @@ not treated as executed. Missing/ambiguous references and cycles remain visible.
 Generic dependencies retain group barriers and step→workflow→operation
 precedence. Core step-output references use their explicit workflow or known
 step/operation invocation owner; cross-declaration dependencies retain their
-known caller frame. No foreign-workflow name fallback is used.
+known caller frame. Terminal goto instead selects the globally indexed exact
+step/workflow and starts in the root invocation frame. No foreign-workflow name
+fallback is used.
 Known core references mark step/operation outputs used; output_unreferenced
 means no recognized core reference, not proof that an opaque profile cannot
 consume the value. Findings are sorted by path/code, capped at 128 with an

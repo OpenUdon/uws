@@ -18,7 +18,9 @@ local references and ignoring future array keywords under that dialect.
 M09 flow uses explicit identities while preserving generic dependency group
 barriers and step→workflow→operation precedence. Step outputs use explicit
 workflow/result ownership and known operation invocation owners, without a
-foreign-workflow fallback. Strict portability records loop/iteration availability
+foreign-workflow fallback. Terminal goto selects the exact globally indexed
+target in the root invocation, independently of dependency caller frames.
+Strict portability records loop/iteration availability
 separately, including transitive trigger/dependency contexts and pre-forEach
 controls. These opt-in diagnostics do not change ordinary parsing or validation.
 

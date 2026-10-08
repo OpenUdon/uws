@@ -62,9 +62,14 @@ Public schemas/wires, published grammar/version bytes, accepted historical quali
 
 ## Closing review
 
-**Review iterations:** 2/10.
-**Review state:** iteration 2 completed with findings, 2026-10-08. Four additional P2 refinements are fixed and verified before the next whole pass; no pass/acceptance claimed.
-**Findings/fixes:** iteration-1 findings and four iteration-2 findings below are addressed. Current root full tests/vet, affected binding/expressions races, strict docs and diff checks pass. Exact edd4db40 root/codec archive proof remains preliminary at its recorded context; corrected archive qualification precedes iteration 3. Standalone codec retains C09 root without replacements.
+**Review iterations:** 3/10.
+**Review state:** iteration 3 completed with three P2 findings and verified fixes,
+2026-10-08; corrected source requires the next whole pass before acceptance.
+**Findings/fixes:** iterations 1–3 findings are addressed. Root full tests/vet
+and affected races, strict docs and protected-byte/module-pin guards pass.
+Earlier root/codec module-only proofs remain preliminary at their recorded
+sources; the final corrected exact source still requires archive qualification.
+Standalone codec retains C09 root. No pass/acceptance or publication is claimed.
 **Execution owner:** sole serial UWS:M09 owner; coordinator makes no writes during this handoff. Only M09.5 is in progress.
 **Commit policy:** Confirmed GOAL COMMIT_POLICY: task; verified task commits and substantive review/closure commits, without amend/rewrite/push/tag authority.
 **Closure:** persist each started review iteration before reviewing; resume an interrupted pass at the same number. No open P1/P2 may remain at acceptance. Required verification, exact downstream reconciliation and owner-specific consolidation/retirement follow implementation; never reopen completed Stage 11 history.
@@ -145,6 +150,42 @@ Unsupported applicators refuse proof at intermediate and terminal schema paths.
 Success/failure goto targets contribute fresh exact root iteration contexts.
 New ordinary-valid regression fixtures, full root tests/vet, affected races,
 strict docs and protected-byte/module-pin guards passed before committing fixes.
+
+### Iteration 3 findings (persisted before fixes)
+
+- R3-F01 / P2 / M09.4: goto StepID lookup in binding/flow.go and
+  expressions/portability.go searches only main/sole-entry declarations, while
+  uws1/execution_actions.go:124 selects the globally indexed exact step. The
+  returned ordinary/executable-valid pure fixture calls helper.target inside a
+  main loop, then goes to target at root; flow reports a missing target and
+  strict portability omits its absent batchIndex context. Resolve the exact
+  indexed step without changing generic dependency/group precedence.
+- R3-F02 / P2 / M09.4: flow stores goto-step edges as dependencies and carries
+  the current helper invocation frame, although terminal goto executes the
+  target from the original root context. The returned supported pure fixture
+  proves the root target cannot resolve helper outputs that flow marks used.
+  Keep root transfer context separate from dependency caller frames.
+- R3-F03 / P2 / M09.3: binding/validate.go schemaPath returns Compatible for
+  an empty fragment before its terminal applicator checks. Composed root
+  schemas allOf:[false] and not:{} reject every literal but receive root-path
+  compatibility. Apply conservative terminal proof to root and child paths,
+  retaining the existing offline compiled resource/dialect context.
+
+The interrupted pass resumes at iteration 3. These returned read-only findings
+were revalidated against exact source 8b2f8dfb5da419284ee98e9404b5279bec463bae
+before corrections. No acceptance or publication is inferred. Preliminary
+docs/m09-root-module-closure.json and docs/m09-codec-module-closure.json remain
+at their recorded 8b2f8dfb5da419284ee98e9404b5279bec463bae context.
+
+**Iteration 3 fix verification:** Global goto step resolution and separate root
+transfers pass bounded ordinary/executable-valid regressions. The pure reference
+runtime rejects batchIndex without an iteration and helper-only outputs after
+root transfer. Both success/failure targets are checked. Empty root pointers now
+receive the same conservative terminal applicator proof as child pointers.
+All three regressions fail against the exact 8b2 baseline through a disposable
+read-only overlay and pass on corrected source. Root full tests/vet, affected
+binding/expressions/strictjson races, strict MkDocs and protected-byte/module-pin
+guards passed. No new large parser inputs or external actions were generated.
 
 ## Accepted serial predecessor — Udon:M49, 2026-10-08
 

@@ -1,11 +1,86 @@
 package binding
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
+	"strings"
 	"testing"
 
+	"github.com/OpenUdon/uws/expressions"
 	"github.com/OpenUdon/uws/uws1"
 )
+
+type flowReferenceRuntime struct{ *expressions.Evaluator }
+
+func (r *flowReferenceRuntime) ExecuteLeaf(context.Context, *uws1.Operation) error { return nil }
+func (r *flowReferenceRuntime) EvaluateExpression(ctx context.Context, text string) (any, error) {
+	field := expressions.Value
+	if !strings.HasPrefix(text, "$") {
+		field = expressions.Wait
+	}
+	return r.Evaluate(ctx, text, field)
+}
+
+func TestGotoUsesGloballyIndexedStepAndRootContext(t *testing.T) {
+	var d uws1.Document
+	text := `{"uws":"1.13.0","info":{"title":"fixture","version":"1"},"variables":{"items":[1]},"operations":[{"operationId":"read","x-uws-operation-profile":"fixture","outputs":{"batch":"$batchIndex"}},{"operationId":"jump","x-uws-operation-profile":"fixture","onSuccess":[{"name":"transfer","type":"goto","stepId":"target"}]}],"workflows":[{"workflowId":"main","type":"loop","items":"$variables.items","steps":[{"stepId":"call","workflow":"helper"},{"stepId":"transfer","operationRef":"jump"}]},{"workflowId":"helper","type":"sequence","steps":[{"stepId":"target","operationRef":"read"}]}]}`
+	if err := json.Unmarshal([]byte(text), &d); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Validate(); err != nil {
+		t.Fatal("ordinary fixture invalid", err)
+	}
+	if err := d.ValidateExecutable(); err != nil {
+		t.Fatal("executable fixture invalid", err)
+	}
+	r, err := AnalyzeFlow(t.Context(), &d)
+	if err != nil || hasCode(r, "flow.reference_missing", "") {
+		t.Fatal("global target lost", r, err)
+	}
+	if got := expressions.CheckPortability(&d); len(got) != 1 || got[0].Path != "/operations/0/outputs/batch" || got[0].Code != "expression.context" {
+		t.Fatal("root goto retained loop context", got)
+	}
+	e, err := expressions.NewEvaluator(&d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	d.SetRuntime(&flowReferenceRuntime{e})
+	if err := d.Execute(t.Context()); !errors.Is(err, expressions.ErrContext) {
+		t.Fatal("root reference execution did not reject batchIndex", err)
+	}
+	d.Operations[1].OnSuccess = nil
+	d.Operations[1].OnFailure = []*uws1.FailureAction{{Name: "transfer", Type: "goto", StepID: "target"}}
+	if got := expressions.CheckPortability(&d); len(got) != 1 || got[0].Code != "expression.context" {
+		t.Fatal("failure target lost", got)
+	}
+}
+
+func TestGotoDoesNotInheritHelperOutputFrame(t *testing.T) {
+	var d uws1.Document
+	text := `{"uws":"1.13.0","info":{"title":"fixture","version":"1"},"variables":{"value":"fixture"},"operations":[{"operationId":"noop","x-uws-operation-profile":"fixture"},{"operationId":"read","x-uws-operation-profile":"fixture","outputs":{"value":"$steps.fetch.outputs.value"}},{"operationId":"jump","x-uws-operation-profile":"fixture","onSuccess":[{"name":"transfer","type":"goto","stepId":"target"}]}],"workflows":[{"workflowId":"main","type":"sequence","steps":[{"stepId":"targets","type":"merge","dependsOn":["noop"],"steps":[{"stepId":"target","operationRef":"read"}]},{"stepId":"call","workflow":"helper"}]},{"workflowId":"helper","type":"sequence","steps":[{"stepId":"fetch","operationRef":"noop","outputs":{"value":"$variables.value"}},{"stepId":"transfer","operationRef":"jump"}]}]}`
+	if err := json.Unmarshal([]byte(text), &d); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Validate(); err != nil {
+		t.Fatal("ordinary fixture invalid", err)
+	}
+	if err := d.ValidateExecutable(); err != nil {
+		t.Fatal("executable fixture invalid", err)
+	}
+	r, err := AnalyzeFlow(t.Context(), &d)
+	if err != nil || !hasCode(r, "flow.output_unreferenced", "/workflows/1/steps/0/outputs/value") {
+		t.Fatal("helper output attributed to root target", r, err)
+	}
+	e, err := expressions.NewEvaluator(&d)
+	if err != nil {
+		t.Fatal(err)
+	}
+	d.SetRuntime(&flowReferenceRuntime{e})
+	if err := d.Execute(t.Context()); err == nil || !strings.Contains(err.Error(), "fetch") {
+		t.Fatal("root target resolved helper output", err)
+	}
+}
 
 func TestFlowDependenciesUseKindAndWorkflow(t *testing.T) {
 	d := &uws1.Document{UWS: "1.13.0", Operations: []*uws1.Operation{

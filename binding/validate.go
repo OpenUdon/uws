@@ -450,12 +450,12 @@ func schemaPath(schema Schema, fragment string) Outcome {
 	if bytes.Equal(bytes.TrimSpace(schema.JSON), []byte("false")) {
 		return Incompatible
 	}
-	if fragment == "" {
-		return Compatible
-	}
-	parts, err := expressions.Pointer(fragment)
-	if err != nil {
-		return Incompatible
+	var parts []string
+	if fragment != "" {
+		parts, err = expressions.Pointer(fragment)
+		if err != nil {
+			return Incompatible
+		}
 	}
 	for _, part := range parts {
 		if node.Bool != nil && !*node.Bool {

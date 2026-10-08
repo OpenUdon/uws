@@ -377,18 +377,8 @@ func invocationScopes(d *uws1.Document) (map[string]uint8, map[string]uint8, map
 					visitWorkflow(workflow, false, false, depth+1)
 				}
 				if step != "" {
-					entry := byID["main"]
-					if entry == nil && len(byID) == 1 {
-						for _, w := range byID {
-							entry = w
-						}
-					}
-					if entry != nil {
-						for _, s := range entry.Steps {
-							if s != nil && s.StepID == step {
-								visitSteps([]*uws1.Step{s}, false, false, depth+1)
-							}
-						}
+					if s := stepsByID[step]; s != nil {
+						visitSteps([]*uws1.Step{s}, false, false, depth+1)
 					}
 				}
 			}
