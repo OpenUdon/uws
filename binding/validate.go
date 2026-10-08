@@ -461,7 +461,7 @@ func schemaPath(schema Schema, fragment string) Outcome {
 		if node.Bool != nil && !*node.Bool {
 			return Incompatible
 		}
-		if node.Ref != nil || node.DynamicRef != nil || node.RecursiveRef != nil || len(node.AnyOf) > 0 || len(node.OneOf) > 0 || len(node.AllOf) > 0 {
+		if node.Ref != nil || node.DynamicRef != nil || node.RecursiveRef != nil || len(node.AnyOf) > 0 || len(node.OneOf) > 0 || len(node.AllOf) > 0 || node.Not != nil || node.If != nil {
 			return Indeterminate
 		}
 		if node.Types == nil {
@@ -527,6 +527,9 @@ func schemaPath(schema Schema, fragment string) Outcome {
 		return Incompatible
 	}
 	if node.Ref != nil || node.DynamicRef != nil || node.RecursiveRef != nil {
+		return Indeterminate
+	}
+	if len(node.AllOf) > 0 || len(node.AnyOf) > 0 || len(node.OneOf) > 0 || node.Not != nil || node.If != nil {
 		return Indeterminate
 	}
 	return Compatible

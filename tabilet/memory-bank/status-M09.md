@@ -62,9 +62,9 @@ Public schemas/wires, published grammar/version bytes, accepted historical quali
 
 ## Closing review
 
-**Review iterations:** 1/10.
-**Review state:** iteration 1 completed with findings, 2026-10-08; fixes verified before the next whole pass. No pass/acceptance claimed.
-**Findings/fixes:** ten persisted P2 findings below are addressed. Root full tests/races/vet, separate full codec races/vet, strict docs build and protected version/corpus/module-pin guards pass. Standalone corrected-source artifacts are the next qualification step.
+**Review iterations:** 2/10.
+**Review state:** iteration 2 completed with findings, 2026-10-08. Four additional P2 refinements are fixed and verified before the next whole pass; no pass/acceptance claimed.
+**Findings/fixes:** iteration-1 findings and four iteration-2 findings below are addressed. Current root full tests/vet, affected binding/expressions races, strict docs and diff checks pass. Exact edd4db40 root/codec archive proof remains preliminary at its recorded context; corrected archive qualification precedes iteration 3. Standalone codec retains C09 root without replacements.
 **Execution owner:** sole serial UWS:M09 owner; coordinator makes no writes during this handoff. Only M09.5 is in progress.
 **Commit policy:** Confirmed GOAL COMMIT_POLICY: task; verified task commits and substantive review/closure commits, without amend/rewrite/push/tag authority.
 **Closure:** persist each started review iteration before reviewing; resume an interrupted pass at the same number. No open P1/P2 may remain at acceptance. Required verification, exact downstream reconciliation and owner-specific consolidation/retirement follow implementation; never reopen completed Stage 11 history.
@@ -118,6 +118,33 @@ local-reference literal proofs retain original compiled children. Generic/group
 dependencies, result/operation owners, transitive trigger contexts and incoming
 pre-forEach controls have new deterministic regressions. All ten findings are
 fixed for full re-review; review counter remains 1 until that pass starts.
+
+### Iteration 2 findings (persisted before fixes)
+
+- R2-F01 / P2 / M09.4: parallel-group members were stored as typed keys,
+  bypassing the published member-name step→workflow→operation precedence. An
+  ordinary-valid step sharing its operation's ID executes as a group dependency
+  but was marked unreachable. Preserve bare member resolution with the same
+  generic dependency rules; the explicit step/operation identity remains intact.
+- R2-F02 / P2 / M09.4: cross-declaration step dependencies inherit the caller's
+  invocation frame, but flow reset every step to its declaration workflow. A
+  harmless pure-runtime probe resolved the caller's fetch output while flow
+  marked it unused. Record/evaluate step and operation expressions in their known
+  invocation owners; never choose a foreign step by bare-name fallback.
+- R2-F03 / P2 / M09.3: terminal composed leaves (allOf with false, or not:{})
+  were compatible although they admitted no value. Preserve indeterminate for
+  unproved terminal applicators rather than dropping their constraints.
+- R2-F04 / P2 / M09.4: goto workflow/entry-step targets were omitted from strict
+  invocation contexts. A root goto to a loop-declared step falsely retained
+  item/index availability. Visit exact terminal goto targets in fresh root context.
+
+**Iteration 2 fix verification:** Bare group-member names retain published
+dependency precedence. Cross-declaration steps retain known incoming caller
+frames, and step/operation references use recorded same-invocation owners.
+Unsupported applicators refuse proof at intermediate and terminal schema paths.
+Success/failure goto targets contribute fresh exact root iteration contexts.
+New ordinary-valid regression fixtures, full root tests/vet, affected races,
+strict docs and protected-byte/module-pin guards passed before committing fixes.
 
 ## Accepted serial predecessor — Udon:M49, 2026-10-08
 

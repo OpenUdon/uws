@@ -371,6 +371,37 @@ func invocationScopes(d *uws1.Document) (map[string]uint8, map[string]uint8, map
 			for _, dependency := range op.DependsOn {
 				visitDependency(dependency, loop, iteration, depth+1)
 			}
+			// Terminal goto unwinds the caller and invokes exact root targets.
+			visitTarget := func(workflow, step string) {
+				if workflow != "" {
+					visitWorkflow(workflow, false, false, depth+1)
+				}
+				if step != "" {
+					entry := byID["main"]
+					if entry == nil && len(byID) == 1 {
+						for _, w := range byID {
+							entry = w
+						}
+					}
+					if entry != nil {
+						for _, s := range entry.Steps {
+							if s != nil && s.StepID == step {
+								visitSteps([]*uws1.Step{s}, false, false, depth+1)
+							}
+						}
+					}
+				}
+			}
+			for _, action := range op.OnSuccess {
+				if action != nil && action.Type == "goto" {
+					visitTarget(action.WorkflowID, action.StepID)
+				}
+			}
+			for _, action := range op.OnFailure {
+				if action != nil && action.Type == "goto" {
+					visitTarget(action.WorkflowID, action.StepID)
+				}
+			}
 		}
 	}
 	visitSteps = func(steps []*uws1.Step, loop, iteration bool, depth int) {

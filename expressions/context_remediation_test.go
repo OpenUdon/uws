@@ -74,6 +74,25 @@ func TestForEachControlsRunBeforeNewIteration(t *testing.T) {
 	}
 }
 
+func TestGotoTargetsUseRootIterationContext(t *testing.T) {
+	var d uws1.Document
+	text := `{"uws":"1.13.0","info":{"title":"fixture","version":"1"},"operations":[{"operationId":"read","x-uws-operation-profile":"fixture","outputs":{"value":"$item","batch":"$batchIndex"}},{"operationId":"jump","x-uws-operation-profile":"fixture","onSuccess":[{"name":"transfer","type":"goto","stepId":"target"}]}],"workflows":[{"workflowId":"main","type":"loop","items":"$variables.items","steps":[{"stepId":"target","operationRef":"read"},{"stepId":"transfer","operationRef":"jump"}]}]}`
+	if err := json.Unmarshal([]byte(text), &d); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Validate(); err != nil {
+		t.Fatal("ordinary fixture invalid", err)
+	}
+	if got := CheckPortability(&d); len(got) != 2 {
+		t.Fatalf("root goto retained loop context: %+v", got)
+	}
+	d.Operations[1].OnSuccess = nil
+	d.Operations[1].OnFailure = []*uws1.FailureAction{{Name: "transfer", Type: "goto", StepID: "target"}}
+	if got := CheckPortability(&d); len(got) != 2 {
+		t.Fatalf("failure goto retained loop context: %+v", got)
+	}
+}
+
 func TestTriggerWorkflowLoopAndDirectStepContext(t *testing.T) {
 	d := &uws1.Document{UWS: "1.13.0", Operations: []*uws1.Operation{{OperationID: "read", Outputs: map[string]string{"value": "$item", "batch": "$batchIndex"}}}, Workflows: []*uws1.Workflow{
 		{WorkflowID: "main", Type: uws1.WorkflowTypeSequence},

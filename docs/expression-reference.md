@@ -85,6 +85,7 @@ Known loop invocation contexts are tracked so a reusable operation's batch
 reference is checked in its actual call scope, not merely its declaration.
 Trigger-route workflows and direct top-level step routes contribute their
 actual entry contexts. Direct steps bypass the enclosing workflow loop body.
+Explicit goto targets also contribute fresh root contexts.
 The strict checker also diagnoses `$item`/`$index` outside known iterations;
 forEach creates item/index context after dependencies, when, non-await wait
 and its collection expression are checked in the incoming context,

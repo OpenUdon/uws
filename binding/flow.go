@@ -139,7 +139,7 @@ func AnalyzeFlow(ctx context.Context, document *uws1.Document) (FlowReport, erro
 			a.find("flow.unreachable", n.path)
 		}
 		scopes := []string{n.workflow}
-		if n.op != nil && len(a.contexts[key]) > 0 {
+		if (n.op != nil || n.step != nil) && len(a.contexts[key]) > 0 {
 			scopes = nil
 			for workflow := range a.contexts[key] {
 				scopes = append(scopes, workflow)
@@ -201,7 +201,7 @@ func (a *flowAnalyzer) add(n *flowNode, name string) {
 		group = n.step.ParallelGroup
 	}
 	if group != "" {
-		a.groups[group] = append(a.groups[group], n.key)
+		a.groups[group] = append(a.groups[group], name)
 	}
 }
 func (a *flowAnalyzer) find(code, path string) {
@@ -427,7 +427,7 @@ func (a *flowAnalyzer) visit(key string, stack map[string]bool, workflow string)
 		a.find("flow.cycle", n.path)
 		return
 	}
-	if n.wf != nil || n.step != nil {
+	if n.wf != nil || n.step != nil && workflow == "" {
 		workflow = n.workflow
 	}
 	if a.contexts[key] == nil {
@@ -466,8 +466,19 @@ func (a *flowAnalyzer) references(text, workflow, current string) {
 				continue
 			}
 			key := "step:" + workflow + ":" + parts[0]
-			if a.nodes[key] == nil {
-				continue
+			if a.nodes[key] == nil || len(a.contexts[key]) > 0 && !a.contexts[key][workflow] {
+				// A cross-declaration dependency may execute in this exact caller
+				// frame. Only recorded invocation evidence can supply that owner.
+				matches := []string{}
+				for _, candidate := range a.stepsByName[parts[0]] {
+					if a.contexts[candidate][workflow] {
+						matches = append(matches, candidate)
+					}
+				}
+				if len(matches) != 1 {
+					continue
+				}
+				key = matches[0]
 			}
 			if a.ambiguous[key] {
 				continue

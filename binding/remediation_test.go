@@ -46,6 +46,9 @@ func TestSchemaPathsFalseNullableAndPatterns(t *testing.T) {
 		want         Outcome
 	}{
 		{`{"type":"object","properties":{"x":false}}`, "#/x", Incompatible},
+		{`{"type":"object","properties":{"x":{"allOf":[{"type":"string"},false]}}}`, "#/x", Indeterminate},
+		{`{"type":"object","properties":{"x":{"not":{}}}}`, "#/x", Indeterminate},
+		{`{"type":"object","not":{},"properties":{"x":{"type":"string"}}}`, "#/x", Indeterminate},
 		{`{"type":"object","properties":{"x":{"type":"string"}},"patternProperties":{"^x":false},"additionalProperties":false}`, "#/x", Indeterminate},
 		{`{"type":["object","null"],"properties":{"x":{"type":"string"}},"additionalProperties":false}`, "#/x", Indeterminate},
 		{`{"type":"object","patternProperties":{"^x":{"type":"string"}},"additionalProperties":false}`, "#/xyz", Indeterminate},
