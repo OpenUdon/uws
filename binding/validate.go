@@ -325,26 +325,49 @@ func schemaCompatibility(source, target Schema) Outcome {
 	if err != nil {
 		return Indeterminate
 	}
-	if _, err := compile(source); err != nil {
+	cs, err := compile(source)
+	if err != nil {
 		return Indeterminate
 	}
-	if _, err := compile(target); err != nil {
+	ct, err := compile(target)
+	if err != nil {
 		return Indeterminate
 	}
 	if reflect.DeepEqual(s, t) {
 		return Compatible
 	}
+	return schemaContainment(s, t, cs, ct, 0)
+}
+
+// Child nodes stay attached to the original compiled resource. Recompiling raw
+// child maps would lose inherited dialect, local references and resource IDs.
+func schemaContainment(s, t any, cs, ct *jsonschema.Schema, depth int) Outcome {
+	if cs == nil || ct == nil || depth > 32 {
+		return Indeterminate
+	}
+	if cs.Bool != nil && !*cs.Bool {
+		return Compatible
+	}
+	if ct.Bool != nil {
+		if *ct.Bool {
+			return Compatible
+		}
+		return Incompatible
+	}
 	sm, ok := s.(map[string]any)
 	if !ok {
 		return Indeterminate
 	}
-	if constant, ok := sm["const"]; ok {
-		return validateLiteral(target, constant)
+	if cs.Const != nil {
+		if ct.Validate(*cs.Const) == nil {
+			return Compatible
+		}
+		return Incompatible
 	}
-	if enums, ok := sm["enum"].([]any); ok && len(enums) > 0 {
+	if cs.Enum != nil && len(cs.Enum.Values) > 0 {
 		state := Compatible
-		for _, v := range enums {
-			if validateLiteral(target, v) != Compatible {
+		for _, v := range cs.Enum.Values {
+			if ct.Validate(v) != nil {
 				state = Indeterminate
 			}
 		}
@@ -385,7 +408,7 @@ func schemaCompatibility(source, target Schema) Outcome {
 	typeOnly := true
 	for key := range tm {
 		switch key {
-		case "type", "title", "description", "$schema":
+		case "type", "title", "description", "$schema", "$id", "$defs", "definitions", "$comment":
 		default:
 			typeOnly = false
 		}
@@ -394,10 +417,10 @@ func schemaCompatibility(source, target Schema) Outcome {
 		return Compatible
 	}
 	if subset && len(from) == 1 && len(to) == 1 && from[0] == "object" && to[0] == "object" {
-		return objectContainment(sm, tm)
+		return objectContainment(sm, tm, cs, ct, depth+1)
 	}
 	if subset && len(from) == 1 && len(to) == 1 && from[0] == "array" && to[0] == "array" {
-		return arrayContainment(sm, tm)
+		return arrayContainment(sm, tm, cs, ct, depth+1)
 	}
 	return Indeterminate
 }
@@ -417,7 +440,8 @@ func types(value any) []string {
 	return nil
 }
 func schemaPath(schema Schema, fragment string) Outcome {
-	if _, err := compile(schema); err != nil {
+	node, err := compile(schema)
+	if err != nil {
 		return Indeterminate
 	}
 	if bytes.Equal(bytes.TrimSpace(schema.JSON), []byte("false")) {
@@ -430,52 +454,70 @@ func schemaPath(schema Schema, fragment string) Outcome {
 	if err != nil {
 		return Incompatible
 	}
-	value, err := decode(schema.JSON)
-	if err != nil {
-		return Indeterminate
-	}
 	for _, part := range parts {
-		m, ok := value.(map[string]any)
-		if !ok {
+		if node.Bool != nil && !*node.Bool {
+			return Incompatible
+		}
+		if node.Ref != nil || node.DynamicRef != nil || node.RecursiveRef != nil || len(node.AnyOf) > 0 || len(node.OneOf) > 0 || len(node.AllOf) > 0 {
 			return Indeterminate
 		}
-		if m["$ref"] != nil || m["anyOf"] != nil || m["oneOf"] != nil || m["allOf"] != nil {
+		if node.Types == nil {
 			return Indeterminate
 		}
-		switch m["type"] {
+		kinds := node.Types.ToStrings()
+		if len(kinds) != 1 {
+			return Indeterminate
+		}
+		switch kinds[0] {
 		case "object":
-			props, _ := m["properties"].(map[string]any)
-			child, ok := props[part]
+			child, ok := node.Properties[part]
 			if !ok {
-				if m["additionalProperties"] == false {
+				if len(node.PatternProperties) > 0 {
+					return Indeterminate
+				}
+				if node.AdditionalProperties == false {
 					return Incompatible
 				}
 				return Indeterminate
 			}
-			value = child
+			node = child
 		case "array":
 			index, err := strconv.Atoi(part)
 			if err != nil || index < 0 || strconv.Itoa(index) != part {
 				return Incompatible
 			}
-			if prefix, ok := m["prefixItems"].([]any); ok && index < len(prefix) {
-				value = prefix[index]
+			var child *jsonschema.Schema
+			if node.DraftVersion >= 2020 {
+				if index < len(node.PrefixItems) {
+					child = node.PrefixItems[index]
+				} else {
+					child = node.Items2020
+				}
+			} else if tuple, ok := node.Items.([]*jsonschema.Schema); ok {
+				if index < len(tuple) {
+					child = tuple[index]
+				} else {
+					if node.AdditionalItems == false {
+						return Incompatible
+					}
+					child, _ = node.AdditionalItems.(*jsonschema.Schema)
+				}
 			} else {
-				child, ok := m["items"]
-				if !ok {
-					return Indeterminate
-				}
-				if child == false {
-					return Incompatible
-				}
-				value = child
+				child, _ = node.Items.(*jsonschema.Schema)
 			}
-		default:
-			if m["type"] == nil {
+			if child == nil {
 				return Indeterminate
 			}
+			node = child
+		default:
 			return Incompatible
 		}
+	}
+	if node.Bool != nil && !*node.Bool {
+		return Incompatible
+	}
+	if node.Ref != nil || node.DynamicRef != nil || node.RecursiveRef != nil {
+		return Indeterminate
 	}
 	return Compatible
 }

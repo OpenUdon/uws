@@ -9,6 +9,7 @@ import (
 
 	"github.com/OpenUdon/uws/expressions"
 	"github.com/OpenUdon/uws/internal/strictjson"
+	jsonschema "github.com/santhosh-tekuri/jsonschema/v6"
 )
 
 func expressionValue(value any) (string, bool) {
@@ -115,7 +116,7 @@ func templateSchema(value any, types map[string]Schema, scope expressions.Contex
 	}
 }
 func constraintKeysKnown(schema map[string]any, allowed ...string) bool {
-	known := map[string]bool{"type": true, "title": true, "description": true, "$schema": true}
+	known := map[string]bool{"type": true, "title": true, "description": true, "$schema": true, "$id": true, "$defs": true, "definitions": true, "$comment": true}
 	for _, key := range allowed {
 		known[key] = true
 	}
@@ -125,10 +126,6 @@ func constraintKeysKnown(schema map[string]any, allowed ...string) bool {
 		}
 	}
 	return true
-}
-func schemaFrom(value any) Schema {
-	data, err := json.Marshal(value)
-	return Schema{Known: err == nil, JSON: data}
 }
 func minmaxContains(source, target map[string]any, minKey, maxKey string) bool {
 	number := func(v any) (int, bool) {
@@ -157,11 +154,16 @@ func minmaxContains(source, target map[string]any, minKey, maxKey string) bool {
 	}
 	return true
 }
-func objectContainment(source, target map[string]any) Outcome {
+func objectContainment(source, target map[string]any, cs, ct *jsonschema.Schema, depth int) Outcome {
 	if !constraintKeysKnown(target, "properties", "required", "additionalProperties", "minProperties", "maxProperties") {
 		return Indeterminate
 	}
 	if !minmaxContains(source, target, "minProperties", "maxProperties") {
+		return Indeterminate
+	}
+	// additionalProperties:false closes only keys unmatched by patterns. Proving
+	// arbitrary pattern-language containment is outside this advisory checker.
+	if len(cs.PatternProperties) > 0 || len(ct.PatternProperties) > 0 {
 		return Indeterminate
 	}
 	sp, _ := source["properties"].(map[string]any)
@@ -199,6 +201,7 @@ func objectContainment(source, target map[string]any) Outcome {
 	state := Compatible
 	for key, from := range sp {
 		to, declared := tp[key]
+		targetNode := ct.Properties[key]
 		if !declared {
 			if !hasExtra || targetExtra == true {
 				continue
@@ -207,8 +210,9 @@ func objectContainment(source, target map[string]any) Outcome {
 				return Incompatible
 			}
 			to = targetExtra
+			targetNode, _ = ct.AdditionalProperties.(*jsonschema.Schema)
 		}
-		child := schemaCompatibility(schemaFrom(from), schemaFrom(to))
+		child := schemaContainment(from, to, cs.Properties[key], targetNode, depth)
 		if child == Incompatible {
 			return Incompatible
 		}
@@ -218,8 +222,16 @@ func objectContainment(source, target map[string]any) Outcome {
 	}
 	return state
 }
-func arrayContainment(source, target map[string]any) Outcome {
-	if !constraintKeysKnown(target, "prefixItems", "items", "minItems", "maxItems") {
+func arrayContainment(source, target map[string]any, cs, ct *jsonschema.Schema, depth int) Outcome {
+	// Inspect effective compiled array keywords under the inherited dialect.
+	// Draft-07 ignores prefixItems; its tuple form is items:[...].
+	allowed := []string{"items", "minItems", "maxItems"}
+	if ct.DraftVersion >= 2020 {
+		allowed = append(allowed, "prefixItems")
+	} else {
+		allowed = append(allowed, "additionalItems", "prefixItems", "unevaluatedItems", "minContains", "maxContains")
+	}
+	if !constraintKeysKnown(target, allowed...) {
 		return Indeterminate
 	}
 	if !minmaxContains(source, target, "minItems", "maxItems") {
@@ -235,22 +247,45 @@ func arrayContainment(source, target map[string]any) Outcome {
 		return Indeterminate
 	}
 	targetPrefix, _ := target["prefixItems"].([]any)
+	targetNodes := ct.PrefixItems
+	extra := target["items"]
+	extraNode := ct.Items2020
+	if ct.DraftVersion < 2020 {
+		if tuple, ok := target["items"].([]any); ok {
+			targetPrefix = tuple
+			targetNodes, _ = ct.Items.([]*jsonschema.Schema)
+			extra = target["additionalItems"]
+			extraNode, _ = ct.AdditionalItems.(*jsonschema.Schema)
+		} else {
+			targetPrefix = nil
+			targetNodes = nil
+			extraNode, _ = ct.Items.(*jsonschema.Schema)
+		}
+	}
 	state := Compatible
 	for i, from := range prefix {
 		var to any
+		var targetNode *jsonschema.Schema
 		if i < len(targetPrefix) {
 			to = targetPrefix[i]
+			if i < len(targetNodes) {
+				targetNode = targetNodes[i]
+			}
 		} else {
-			var provided bool
-			to, provided = target["items"]
-			if !provided || to == true {
+			to = extra
+			targetNode = extraNode
+			if to == nil || to == true {
 				continue
 			}
 			if to == false {
 				return Incompatible
 			}
 		}
-		child := schemaCompatibility(schemaFrom(from), schemaFrom(to))
+		var sourceNode *jsonschema.Schema
+		if i < len(cs.PrefixItems) {
+			sourceNode = cs.PrefixItems[i]
+		}
+		child := schemaContainment(from, to, sourceNode, targetNode, depth)
 		if child == Incompatible {
 			return Incompatible
 		}

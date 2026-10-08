@@ -9,6 +9,12 @@ syntactic delimiters and refusing active template constructs outside its inert
 subset. Comments, escaped template markers and literal text remain inert.
 Worker process resource/cancellation custody remains consumer-owned.
 
+M09 binding proofs retain compiled child nodes from the original schema resource
+and dialect. Pattern-based closure and nullable/pattern output paths remain
+indeterminate where no proof exists; false leaves are incompatible. Draft-07
+tuples use their effective items/additionalItems semantics, preserving offline
+local references and ignoring future array keywords under that dialect.
+
 ## Stage 11 public foundations
 
 Accepted C08 expressions use standard-library parsing and UWS-owned in-memory
