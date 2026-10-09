@@ -137,3 +137,82 @@ func TestBrowserNativeIntegerWholeBodyProofRequiresCompletePropertyInventory(t *
 		t.Fatal("complete declared property proof refused", r, err)
 	}
 }
+
+func TestBrowserNativeIntegerReferenceProofDoesNotTrustIgnoredSiblings(t *testing.T) {
+	for name, raw := range map[string]string{
+		"direct draft07":         `{"$schema":"http://json-schema.org/draft-07/schema#","definitions":{"unsafe":{"const":9007199254740992}},"$ref":"#/definitions/unsafe","type":"integer","minimum":0,"maximum":1}`,
+		"const sibling unproved": `{"$schema":"http://json-schema.org/draft-07/schema#","definitions":{"unsafe":{"const":9007199254740992}},"$ref":"#/definitions/unsafe","type":"integer","const":0}`,
+		"inherited draft07":      `{"$schema":"http://json-schema.org/draft-07/schema#","definitions":{"unsafe":{"const":9007199254740992}},"type":"object","properties":{"n":{"$ref":"#/definitions/unsafe","type":"integer","minimum":0,"maximum":1}},"required":["n"],"additionalProperties":false}`,
+		"ancestor draft07":       `{"$schema":"http://json-schema.org/draft-07/schema#","definitions":{"unsafe":{"const":{"n":9007199254740992}}},"$ref":"#/definitions/unsafe","type":"object","properties":{"n":{"type":"integer","minimum":0,"maximum":1}},"required":["n"],"additionalProperties":false}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			schema := Schema{Known: true, JSON: json.RawMessage(raw)}
+			// Primary regressions use an effective unsafe compiler witness.
+			// Const siblings separately exercise unproved reference context;
+			// ordinary equality-based containment is intentionally unchanged.
+			compiled, err := compile(schema)
+			if err != nil {
+				t.Fatal(err)
+			}
+			value := any(json.Number("9007199254740992"))
+			if name == "inherited draft07" || name == "ancestor draft07" {
+				value = map[string]any{"n": json.Number("9007199254740992")}
+			}
+			if name != "const sibling unproved" && compiled.Validate(value) != nil {
+				t.Fatal("regression does not exercise ignored Draft07 siblings")
+			}
+			if schemaCompatibility(schema, schema) != Compatible {
+				t.Fatal("generic identical-schema compatibility changed")
+			}
+			r, err := integerBrowserRequest(t, "uws.browser.1.9", raw, "$inputs.value", schema)
+			if err != nil || r.Outcome != Indeterminate || len(r.Diagnostics) == 0 || r.Diagnostics[0].Code != "binding.browser_integer_range" {
+				t.Fatal("reference siblings proved native safety", r, err)
+			}
+			plainTarget := `{"type":"integer"}`
+			if name == "inherited draft07" || name == "ancestor draft07" {
+				plainTarget = `{"type":"object","properties":{"n":{"type":"integer"}},"required":["n"],"additionalProperties":false}`
+			}
+			// Also isolate the source-proof guard: a reference-free target must
+			// not mask a missing native diagnostic behind generic containment.
+			r, err = integerBrowserRequest(t, "uws.browser.1.9", plainTarget, "$inputs.value", schema)
+			if err != nil || r.Outcome != Indeterminate || len(r.Diagnostics) == 0 || r.Diagnostics[0].Code != "binding.browser_integer_range" {
+				t.Fatal("reference-bearing source proof read raw siblings", r, err)
+			}
+			if string(schema.JSON) != raw {
+				t.Fatal("numeric proof rewrote raw source schema")
+			}
+		})
+	}
+}
+
+func TestBrowserNativeIntegerUnprovedDynamicAndRecursiveReferences(t *testing.T) {
+	for _, keyword := range []string{"$dynamicRef", "$recursiveRef"} {
+		for _, nested := range []bool{false, true} {
+			raw := `{"$schema":"http://json-schema.org/draft-07/schema#","` + keyword + `":"#unknown","type":"integer","minimum":0,"maximum":1}`
+			if nested {
+				raw = `{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"n":{"` + keyword + `":"#unknown","type":"integer","minimum":0,"maximum":1}},"required":["n"],"additionalProperties":false}`
+			}
+			schema := Schema{Known: true, JSON: json.RawMessage(raw)}
+			if schemaCompatibility(schema, schema) != Compatible {
+				t.Fatal("generic equality control failed")
+			}
+			r, err := integerBrowserRequest(t, "uws.browser.1.9", raw, "$inputs.value", schema)
+			if err != nil || r.Outcome != Indeterminate {
+				t.Fatal("unproved reference context became positive", keyword, nested, r, err)
+			}
+		}
+	}
+	// Reference-shaped data and property names are not schema references.
+	raw := `{"type":"object","properties":{"n":{"type":"integer"},"$ref":{"type":"string"}},"required":["n","$ref"],"additionalProperties":false}`
+	proof := Schema{Known: true, JSON: json.RawMessage(`{"const":{"n":1,"$ref":"literal data"}}`)}
+	r, err := integerBrowserRequest(t, "uws.browser.1.9", raw, "$inputs.value", proof)
+	if err != nil || r.Outcome != Compatible {
+		t.Fatal("literal reference-shaped data reinterpreted", r, err)
+	}
+	for _, raw := range []string{`{"$schema":"http://json-schema.org/draft-07/schema#","type":"integer","minimum":0,"maximum":1}`, `{"$schema":"http://json-schema.org/draft-07/schema#","type":"object","properties":{"n":{"type":"integer","minimum":0,"maximum":1}},"required":["n"],"additionalProperties":false}`} {
+		r, err := integerBrowserRequest(t, "uws.browser.1.9", raw, "$inputs.value", Schema{Known: true, JSON: json.RawMessage(raw)})
+		if err != nil || r.Outcome != Compatible {
+			t.Fatal("reference-free Draft07 safe control refused", r, err)
+		}
+	}
+}

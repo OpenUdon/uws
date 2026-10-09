@@ -1,8 +1,8 @@
 # C10 — Browser-profile shape activation
 
 **Stage:** Kinet STG-12, Phase A. **Owner:** UWS.
-**State:** Candidate pre-review corrections in progress in retained lease
-`goal/C10`; required publication remains unperformed. Closing review 0/10.
+**State:** Final numeric-proof candidate correction in progress in retained
+lease `goal/C10`; required publication remains unperformed. Closing review 0/10.
 **Source baseline:** `989e3f2c88cac5c0f5a2911dfe04c36a61e43126` (clean at planning).
 **Coordinator:** [Stage 12 contract](../../../kinet/docs/stage12.md). This
 package-local milestone and status own acceptance. Planning was approved on
@@ -67,7 +67,7 @@ Consumers adopt only the exact accepted and independently published revision.
 | C10.1 — Activate the browser-profile shape kind | `[x]` | Additive exact browser metadata, native profile fragment checks, closed lossless decoding, no HTTP fields/aliases, immutable resolver snapshots and unchanged non-browser table bytes. Focused tests/race/vet passed offline with Go1.26.6. |
 | C10.2 — Browser binding and flow rules | `[x]` | Browser body templates use core binding/reference grammar and actual invocation scopes. Stable body-location/required-symbolic-credential diagnostics; partial/unknown evidence remains indeterminate. Native placeholders, extensions and private declarations stay opaque. Focused tests/race/vet passed. |
 | C10.3 — Conformance vectors | `[x]` | Eleven native action/authentication/registration profile vectors, frozen complete M51 corpus/golden, exact native integer literal/default/symbolic guards, full conditional input schemas, tampered/ambiguous/partial evidence and stable value-free refusals. Focused tests/race/vet passed offline. |
-| C10.4 — Qualify and publish | `[~]` | Apply the two persisted candidate findings and repeat affected local qualification. Required publication remains unperformed and separately gated. Retain lease; no accepted closure/adoption. |
+| C10.4 — Qualify and publish | `[~]` | Prior two findings are fixed; correct the persisted reference/dialect numeric-proof finding and repeat affected qualification. Required publication remains unperformed and separately gated. |
 
 ## Acceptance and verification
 
@@ -101,6 +101,34 @@ status markers grant none; audit stays disabled.
 
 Whole-milestone review: 0/10, not started.
 
+## Final candidate pre-review finding — 2026-10-09
+
+Read-only recheck of exact corrected checkpoint
+`7b1e936e6cf7fa78c63276e585ed98a796feb8f7` reports 0P1/1P2/0P3; prior two P2
+findings are fixed. Coordinator independently confirmed the remaining path;
+the reviewer ran no dynamic tests. The same local-only goal/assignment and
+empty grants govern this correction. Required publication remains unperformed
+and formal closing review stays0. The finding is persisted before code fixes.
+
+- **C10-P2-3 — fixed and focused verification passed.** Numeric proof reads raw
+  min/max siblings even when Draft07 ignores them beside a reference. Identical
+  target/known proof can therefore appear safe while its effective reference
+  selects the unsafe integer9007199254740992. Preserve the generic equal-schema
+  compatibility rule. Native numeric proof must retain effective reference,
+  dialect/base/root context or return Indeterminate before reading unsupported
+  reference siblings. Cover direct/inherited Draft07 and unproved dynamic/recursive
+  references, including nested body proof, with negative and safe controls.
+  Preserve raw schema bytes. Owner: C10 executor.
+  Native numeric analysis now returns Indeterminate for reference-bearing target
+  or source schema nodes before reading const/enum/range siblings or descending.
+  It interprets no reference without compiled dialect/base/root context. Tests
+  exercise effective unsafe direct/inherited/ancestor Draft07 references, isolated
+  source proof, unproved dynamic/recursive references, generic equality remaining
+  compatible, literal reference-shaped data and safe reference-free controls.
+  Focused full binding tests/race/vet and diff checks pass with -p2/GOMAXPROCS2.
+  The inactive private Go build cache was cleared by the coordinator between
+  handoffs for quota recovery; source/module/fixture/proof inputs were preserved.
+
 ## Candidate pre-review findings — 2026-10-09
 
 Coordinator-approved correction request resumes the same local-only goal and
@@ -121,7 +149,8 @@ persisted before fixes; the old checkpoint and qualification evidence are retain
   Complete declarations now validate against the exact embedded native input-slot
   fragment. Required/Condition alignment and full raw values are retained;
   minimal partial declarations remain indeterminate. Go1.26.6 focused binding
-  tests/race/vet and diff checks pass offline. Final packaging remains pending.
+  tests/race/vet and diff checks pass offline. Final packaging was pending at
+  that focused checkpoint; the corrected handoff below records its result.
 - **C10-P2-2 — fixed and focused verification passed.** Whole-body typed integer
   proof checks target properties but ignores open or extra source properties;
   a bounded n inside an open object can incorrectly become Compatible while
@@ -134,6 +163,34 @@ persisted before fixes; the old checkpoint and qualification evidence are retain
   including bounded additional-property schemas not proved by this implementation.
   Closed fully described property controls stay compatible. Focused binding
   tests/race/vet and diff checks pass offline; stored schemas are unchanged.
+
+## Corrected C10.4 candidate handoff — 2026-10-09
+
+Corrected source is `7b1e936e6cf7fa78c63276e585ed98a796feb8f7`, after verified
+corrective commits for the two findings. Complete registration declarations now
+use exact embedded native1.1/1.2 input-slot fragments; minimal preservation-only
+projections cannot assert completeness. Whole-object integer proof cannot ignore
+open, patterned or undeclared source properties. Closed completely covered
+controls stay compatible and unproved extras remain indeterminate.
+
+Affected root full tests/races/vet and candidate ZIP-only full tests/races/vet
+pass. Standalone HCL source/declarations/pinned dependency closure are unchanged,
+so their prior successful full checks remain valid. All seven frozen consumer
+builds pass on provisional private proxy version
+`v0.0.0-20261009213144-7b1e936e6cf7`, Go archive sum
+`h1:TJd0T/K36np0eGodBJNjk06qgVshbyTCeErCeT0/V/k=`, unchanged GoMod sum
+`h1:DlqFOnO9lbmYWLLIh5WicNX6NTWIuytU6mIHmxj9BVw=`. All396 ordinary root ZIP
+filenames/content match the corrected committed snapshot. Frozen repository
+hashes are unchanged; private mutable version lists remain regular files and
+the retained cache contains none of the three provisional candidates.
+
+Captured integration ref/base remain `refs/heads/main` and
+`4429c07bab4616ab46d9a151d50fb26b1370b1fe`; local rebase is up to date.
+Ordinary qualification/handoff/manifest documents now name the corrected source
+and remain uncommitted with this final C10.4 status. Strict docs/diff checks are
+repeated after these documentation updates. Independent pre-review did not run
+tests; fixes and local qualification do not claim a fresh independent pass.
+Closing review remains0 and required publication remains unperformed.
 
 ## C10.4 local candidate handoff — 2026-10-09
 

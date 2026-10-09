@@ -84,6 +84,9 @@ func browserIntegerValue(target, value any, present bool, proofs map[string]Sche
 	if !ok {
 		return Indeterminate
 	}
+	if browserNumericReference(m) {
+		return Indeterminate
+	}
 	state := Compatible
 	join := func(next Outcome) {
 		if next == Incompatible || next == Indeterminate && state == Compatible {
@@ -147,6 +150,12 @@ func browserIntegerType(target, source any, lo, hi *big.Rat, depth int) Outcome 
 	}
 	s, ok := source.(map[string]any)
 	if !ok {
+		return Indeterminate
+	}
+	// Raw siblings are not effective constraints in every dialect. Never read
+	// const/enum/range or descend from a reference-bearing node without its
+	// compiled resource context. Unsupported refs remain indeterminate.
+	if browserNumericReference(t) || browserNumericReference(s) {
 		return Indeterminate
 	}
 	if constant, exists := s["const"]; exists {
@@ -213,4 +222,13 @@ func browserIntegerType(target, source any, lo, hi *big.Rat, depth int) Outcome 
 		return Compatible
 	}
 	return Indeterminate
+}
+
+func browserNumericReference(schema map[string]any) bool {
+	for _, key := range []string{"$ref", "$dynamicRef", "$recursiveRef"} {
+		if _, present := schema[key]; present {
+			return true
+		}
+	}
+	return false
 }
