@@ -56,6 +56,6 @@ browser, deployment, live/provider action or automatic sibling adoption.
 Audit remains disabled. C10.4 qualification and whole review1 pass, with no
 remaining findings. The P3 retained-log locator was corrected without changing
 evidence bytes. Serialized integration/conformance/vet checks pass and C10 is accepted/retired.
-[Complete retired record](../tabilet/docs/history/status-C10.md) declares the
+[Complete retired record](https://github.com/OpenUdon/uws/blob/eb5ac8919abe8598da1845f3282361b65c29a450/tabilet/docs/history/status-C10.md) declares the
 observed evidence baseline and included coordinator closure. Final closure
 publication is independently resolved before downstream dispatch.
