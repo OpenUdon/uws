@@ -81,11 +81,25 @@ host binding only. Missing required declarations return
 No check reads credential values or verifies a live session. Existing unknown
 schema, security, resolver and output codes retain their indeterminate outcomes.
 
+Browser action binding applies native integer ranges without changing schema
+bytes: signed 64-bit in Browser 1.8, and ±9007199254740991 in Browser 1.9/1.10.
+Exact literals and known defaults outside those ranges receive
+`binding.browser_integer_range`. Dynamic integer references need independent
+constant/enum/range proof; unproved ranges and unknown parameter types remain
+indeterminate. Checks preserve exact `json.Number` lexemes before comparison.
+These advisory rules do not claim source reproduction or runtime support.
+
 `AnalyzeFlow` observes core references in source-bound browser `request.body`,
 including typed map/slice payloads, to account for prior step-output use. It
 retains declared UWS effect observations; native effects never create authority
 or replace an unknown operation effect. Native profile placeholders/extensions
 and authentication/registration declarations remain opaque and value-free.
+
+The fixture-only [browser shape corpus](examples/browser-shapes/v1/manifest.json)
+pins eleven native action/authentication/registration sources, exact M51 public
+fixtures and the lossless canonical golden. Public consumer tests validate
+native sources, exact selector/source identities, complete metadata preservation,
+partial evidence and ambiguous/malformed cases without browser or runtime calls.
 
 ## Advisory binding validation
 

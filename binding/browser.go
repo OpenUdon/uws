@@ -192,9 +192,10 @@ func browserShapeValid(op OperationShape) bool {
 		}
 		seen[slot.Name] = true
 	}
+	credentials := seen
 	seen = map[string]bool{}
 	for _, slot := range b.RegistrationInputSlots {
-		if b.CallKind != "registration" || !browserIdentifier.MatchString(slot.Name) || seen[slot.Name] || !schemaValid(Schema{Known: true, JSON: slot.Schema}) || slot.Kind != "string" && slot.Kind != "boolean" && slot.Kind != "integer" && slot.Kind != "number" {
+		if b.CallKind != "registration" || !browserIdentifier.MatchString(slot.Name) || seen[slot.Name] || credentials[slot.Name] || !schemaValid(Schema{Known: true, JSON: slot.Schema}) || slot.Kind != "string" && slot.Kind != "boolean" && slot.Kind != "integer" && slot.Kind != "number" {
 			return false
 		}
 		seen[slot.Name] = true
@@ -202,6 +203,21 @@ func browserShapeValid(op OperationShape) bool {
 		var kind string
 		if json.Unmarshal(slot.Schema, &schema) != nil || json.Unmarshal(schema["type"], &kind) != nil || kind != slot.Kind {
 			return false
+		}
+		if raw, present := schema["required"]; present {
+			var required bool
+			if bytes.Equal(bytes.TrimSpace(raw), []byte("null")) || json.Unmarshal(raw, &required) != nil || required != slot.Required {
+				return false
+			}
+		}
+		if raw, present := schema["requiredWhen"]; present {
+			a, ea := decode(raw)
+			b, eb := decode(slot.Condition)
+			x, _ := json.Marshal(a)
+			y, _ := json.Marshal(b)
+			if ea != nil || eb != nil || !bytes.Equal(x, y) {
+				return false
+			}
 		}
 		if len(slot.Condition) != 0 {
 			var condition struct {
@@ -249,8 +265,22 @@ func browserShapeValid(op OperationShape) bool {
 		if !controller.Required || len(controller.Condition) != 0 {
 			return false
 		}
+		// Native slot declarations may contain scalar schema annotations plus
+		// required/requiredWhen metadata. Preserve their bytes; remove only native
+		// declaration keys from this temporary JSON Schema validation projection.
+		var schema map[string]json.RawMessage
+		if json.Unmarshal(controller.Schema, &schema) != nil || len(schema["enum"]) == 0 {
+			return false
+		}
+		delete(schema, "required")
+		delete(schema, "requiredWhen")
+		delete(schema, "label")
+		projection, err := json.Marshal(schema)
+		if err != nil {
+			return false
+		}
 		value, err := decode(condition.Equals)
-		if err != nil || validateLiteral(Schema{Known: true, JSON: controller.Schema}, value) != Compatible {
+		if err != nil || validateLiteral(Schema{Known: true, JSON: projection}, value) != Compatible {
 			return false
 		}
 	}

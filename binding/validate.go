@@ -141,6 +141,15 @@ func ValidateBinding(ctx context.Context, resolver Resolver, request Request) (R
 		declared[key] = true
 		path := "/inputs/" + pointer(in.Location) + "/" + pointer(in.Name)
 		value, present := supplied[key]
+		if shape.Browser != nil && shape.Browser.CallKind == "action" && in.Schema.Known {
+			lo, hi := browserIntegerBounds(shape.Browser.ProfileVersion)
+			if lo != nil {
+				state := browserIntegerInput(in.Schema, value.Value, present, request.ExpressionTypes, lo, hi)
+				if state != Compatible {
+					report.add("binding.browser_integer_range", path, state)
+				}
+			}
+		}
 		if !present {
 			if in.Required {
 				report.add("binding.input_required", path, Incompatible)

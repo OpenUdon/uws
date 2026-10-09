@@ -1,0 +1,98 @@
+{
+  "version": "kinet.m51-browser-shape-vectors.v1",
+  "fixture_only": true,
+  "scope": "frozen preservation vectors for native C10/M33/P10; no Kinet shape engine",
+  "vectors": [
+    {
+      "name": "signed64-wide-integer",
+      "profile_version": "uws.browser.1.8",
+      "raw_numeric_token": "9223372036854775807",
+      "expected_preserved_token": "9223372036854775807",
+      "runtime_protocol": "udon.browser-driver.v10"
+    },
+    {
+      "name": "safe-integer-upper-bound",
+      "profile_version": "uws.browser.1.9",
+      "raw_numeric_token": "9007199254740991",
+      "expected_preserved_token": "9007199254740991",
+      "runtime_protocol": "udon.browser-driver.v10"
+    },
+    {
+      "name": "unsafe-integer-refused",
+      "profile_version": "uws.browser.1.9",
+      "raw_numeric_token": "9007199254740992",
+      "expected_admission": "refused"
+    },
+    {
+      "name": "presence-false-zero-empty",
+      "values": {
+        "present": false,
+        "count": 0,
+        "text": ""
+      },
+      "expected_preserved": {
+        "present": false,
+        "count": 0,
+        "text": ""
+      }
+    },
+    {
+      "name": "brace-escapes",
+      "profile_version": "uws.browser.1.9",
+      "input": "{{{{literal}}}}",
+      "expected_literal": "{{literal}}"
+    },
+    {
+      "name": "conditional-registration-slot",
+      "profile_version": "uws.browser-registration.1.2",
+      "slot": {
+        "name": "contact",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "condition": {
+          "slot": "country",
+          "equals": "fixture-country"
+        }
+      },
+      "preserve_full_native_condition_and_schema": true
+    },
+    {
+      "name": "schema-valid-not-runtime-supported",
+      "profile_version": "uws.browser.1.10",
+      "output_mode": "text",
+      "expected_schema_known": true,
+      "expected_runtime_supported": false
+    },
+    {
+      "name": "default-port-canonical",
+      "origins": [
+        "http://example.test",
+        "https://example.test"
+      ],
+      "reject_noncanonical": [
+        "http://example.test:80",
+        "https://example.test:443"
+      ]
+    },
+    {
+      "name": "action-schema-extensions",
+      "profile_version": "uws.browser.1.9",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "example": {
+            "type": "string",
+            "default": "",
+            "x-fixture-extension": {
+              "zero": 0,
+              "flag": false
+            }
+          }
+        }
+      },
+      "preserve_complete_schema": true
+    }
+  ]
+}

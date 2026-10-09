@@ -1,0 +1,171 @@
+{
+  "version": "uws.browser-shape-conformance.v1",
+  "fixture_only": true,
+  "producer_scope": "test-only inert shape projection; no public source producer/runtime claim",
+  "kinet_revision": "ec760d83b6e344e9e9cd7c034f9a92eba99f38b1",
+  "kinet_manifest_sha256": "0c445a5c90d2c09be561e713c364747f4ab9a3698ea8ab46e7b7b774ccf16bad",
+  "frozen_files": {
+    "m51-host-interface.json": "e4d9c2df1f8a7e800084d69604c41f02658f79f094c99836ff10c322c4c13500",
+    "m51-report-v5-cases.json": "219f2700e34516a7f64d48392e184ffafabce6138c336742c20a0cee6ed62b35",
+    "m51-public-contract.json": "22f4af63d35bee95e537797442da269f84bd3fcfb16ccf6c6ec600c65b240dd3",
+    "m51-session-save-contract.json": "7f829101443fb5b8404135f453fa0406d5b09e9d52a61b3340b9c918b32c873f",
+    "m51-shape-cases.json": "190297fc8d7ccfa20bcf7a2b7ae0a553be064cebeb7b9ca1acf2e1a09cbd8655",
+    "m51-canonical-golden.json": "672dc17c020fb87aa1b2986bea84662ec73b4bc7f4cd9b19b8d4be6de6aa3f3e"
+  },
+  "vectors": [
+    {
+      "name": "action-1.5",
+      "source": "action-1.5.json",
+      "sha256": "6ae0717de71b76e89a6082afed93efba8a587db5bcb243de54b45fd57cd31a7c",
+      "profile_version": "uws.browser.1.5",
+      "call_kind": "action",
+      "selector": "read_status",
+      "fixture_only": true,
+      "lineage": {
+        "source": "testdata/browser-profile/read-only.yaml",
+        "sha256": "f0b302db2cdfa2e6b815e0805f48436e8b5073f30da7ee049c32ac2ee47c4746",
+        "discriminator_adaptation": "uws.browser.1.5"
+      }
+    },
+    {
+      "name": "action-1.6",
+      "source": "action-1.6.json",
+      "sha256": "eddf651a4d7769f1d338bd96c6d0f15bf628114ff6f12ff4b05d666d53092b54",
+      "profile_version": "uws.browser.1.6",
+      "call_kind": "action",
+      "selector": "read_status",
+      "fixture_only": true,
+      "lineage": {
+        "source": "testdata/browser-profile/read-only.yaml",
+        "sha256": "f0b302db2cdfa2e6b815e0805f48436e8b5073f30da7ee049c32ac2ee47c4746",
+        "discriminator_adaptation": "uws.browser.1.6"
+      }
+    },
+    {
+      "name": "action-1.7",
+      "source": "action-1.7.json",
+      "sha256": "21c345dd76adf72361c59a85c51271ae69c7b4ceebb87a88e7dc343537579acf",
+      "profile_version": "uws.browser.1.7",
+      "call_kind": "action",
+      "selector": "read_status",
+      "fixture_only": true,
+      "lineage": {
+        "source": "testdata/browser-profile/read-only.yaml",
+        "sha256": "f0b302db2cdfa2e6b815e0805f48436e8b5073f30da7ee049c32ac2ee47c4746",
+        "discriminator_adaptation": "uws.browser.1.7"
+      }
+    },
+    {
+      "name": "action-1.8",
+      "source": "action-1.8.json",
+      "sha256": "3a3b66d7e3dc9980f241790c637f4a5d283a7a2f2d69d9ff5858a5951731adc2",
+      "profile_version": "uws.browser.1.8",
+      "call_kind": "action",
+      "selector": "read_status",
+      "fixture_only": true,
+      "lineage": {
+        "source": "testdata/browser-profile/read-only.yaml",
+        "sha256": "f0b302db2cdfa2e6b815e0805f48436e8b5073f30da7ee049c32ac2ee47c4746",
+        "discriminator_adaptation": "uws.browser.1.8"
+      }
+    },
+    {
+      "name": "action-1.9",
+      "source": "action-1.9.json",
+      "sha256": "25469010663ab176a810f8b92975d2938a4caa157b2564e6d535a9fe089adf60",
+      "profile_version": "uws.browser.1.9",
+      "call_kind": "action",
+      "selector": "read_status",
+      "fixture_only": true,
+      "lineage": {
+        "source": "testdata/browser-profile/read-only.yaml",
+        "sha256": "f0b302db2cdfa2e6b815e0805f48436e8b5073f30da7ee049c32ac2ee47c4746",
+        "discriminator_adaptation": "uws.browser.1.9"
+      }
+    },
+    {
+      "name": "action-1.10",
+      "source": "action-1.10.json",
+      "sha256": "56b48d53a4f1e6834bccab3bb4c1027b852b46fdd5b48986642c1791890bed87",
+      "profile_version": "uws.browser.1.10",
+      "call_kind": "action",
+      "selector": "inspect_results",
+      "fixture_only": true,
+      "lineage": {
+        "source": "testdata/browser-profile/count-outputs-1.10.yaml",
+        "sha256": "e7b187defdb0663ac8a7d6aa6b554d2774e524e1780fdbb4eb06b59ddb46145d",
+        "discriminator_adaptation": "uws.browser.1.10"
+      }
+    },
+    {
+      "name": "authentication-1.0",
+      "source": "authentication-1.0.json",
+      "sha256": "0cc6352ae5e06b00a50d8222a855db5dc5c6d87c64397dd63e1a35d61f3a184b",
+      "profile_version": "uws.browser-authentication.1.0",
+      "call_kind": "authentication",
+      "selector": "member_login_push",
+      "fixture_only": true,
+      "lineage": {
+        "source": "testdata/browser-authentication/member-push.yaml",
+        "sha256": "809ad3b51a4451145e6e7fe493e4220ac66fea32e932eb222e202e4ce068c89e",
+        "discriminator_adaptation": "uws.browser-authentication.1.0"
+      }
+    },
+    {
+      "name": "authentication-1.1",
+      "source": "authentication-1.1.json",
+      "sha256": "83ee838914b9b64a3a479bc0af5649e5d01317cd5283d30f9286f148f87fbb98",
+      "profile_version": "uws.browser-authentication.1.1",
+      "call_kind": "authentication",
+      "selector": "member_login_sms",
+      "fixture_only": true,
+      "lineage": {
+        "source": "testdata/browser-authentication/member-popup-frame.yaml",
+        "sha256": "2d66c468b8fe59c52102c7b9fd0f3d14cf44cfd36bd6beffa3d135dc1ebbd4b6",
+        "discriminator_adaptation": "uws.browser-authentication.1.1"
+      }
+    },
+    {
+      "name": "registration-1.0",
+      "source": "registration-1.0.json",
+      "sha256": "eb3f4a526973cec4231433e20552c90e9f8832392cc3d857b11795f5248e57ac",
+      "profile_version": "uws.browser-registration.1.0",
+      "call_kind": "registration",
+      "selector": "create_dedicated_test_user",
+      "fixture_only": true,
+      "lineage": {
+        "source": "testdata/browser-registration/dedicated-test-user.yaml",
+        "sha256": "12956fe956a6c3bccd1904672d4bfffa1885e05d9fd43b4e22a7d72bc381ebf2",
+        "discriminator_adaptation": "uws.browser-registration.1.0"
+      }
+    },
+    {
+      "name": "registration-1.1",
+      "source": "registration-1.1.json",
+      "sha256": "fabe630e539946cbc49aa578b70c730701541eb3839d5dec50404d2e3ca559a8",
+      "profile_version": "uws.browser-registration.1.1",
+      "call_kind": "registration",
+      "selector": "advertiser",
+      "fixture_only": true,
+      "lineage": {
+        "source": "testdata/browser-registration/private-form.json",
+        "sha256": "fabe630e539946cbc49aa578b70c730701541eb3839d5dec50404d2e3ca559a8",
+        "discriminator_adaptation": "uws.browser-registration.1.1"
+      }
+    },
+    {
+      "name": "registration-1.2",
+      "source": "registration-1.2.json",
+      "sha256": "827807d22bde77e350bb21322eafd89c9da769c2d9aa450c8c72e7b8a0e7c194",
+      "profile_version": "uws.browser-registration.1.2",
+      "call_kind": "registration",
+      "selector": "advertiser",
+      "fixture_only": true,
+      "lineage": {
+        "source": "testdata/browser-registration/verification-form.json",
+        "sha256": "827807d22bde77e350bb21322eafd89c9da769c2d9aa450c8c72e7b8a0e7c194",
+        "discriminator_adaptation": "uws.browser-registration.1.2"
+      }
+    }
+  ]
+}

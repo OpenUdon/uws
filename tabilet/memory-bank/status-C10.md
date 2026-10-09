@@ -65,8 +65,8 @@ Consumers adopt only the exact accepted and independently published revision.
 |---|---|---|
 | C10.1 — Activate the browser-profile shape kind | `[x]` | Additive exact browser metadata, native profile fragment checks, closed lossless decoding, no HTTP fields/aliases, immutable resolver snapshots and unchanged non-browser table bytes. Focused tests/race/vet passed offline with Go1.26.6. |
 | C10.2 — Browser binding and flow rules | `[x]` | Browser body templates use core binding/reference grammar and actual invocation scopes. Stable body-location/required-symbolic-credential diagnostics; partial/unknown evidence remains indeterminate. Native placeholders, extensions and private declarations stay opaque. Focused tests/race/vet passed. |
-| C10.3 — Conformance vectors | `[~]` | Positive and negative vectors for Browser 1.5–1.10 actions and for browser-authentication and browser-registration calls. Tampered, ambiguous and incomplete cases. |
-| C10.4 — Qualify and publish | `[ ]` | Docs, published-version immutability, consumer builds (APItools, OpenUdon, Udon, Browsertools, Kinet workers) and an exact publication handoff. Publish only with named authority. |
+| C10.3 — Conformance vectors | `[x]` | Eleven native action/authentication/registration profile vectors, frozen complete M51 corpus/golden, exact native integer literal/default/symbolic guards, full conditional input schemas, tampered/ambiguous/partial evidence and stable value-free refusals. Focused tests/race/vet passed offline. |
+| C10.4 — Qualify and publish | `[~]` | Finish authorized docs/immutability/full-module/consumer qualification and exact publication handoff. Publication remains separately gated; no grant is supplied. |
 
 ## Acceptance and verification
 
@@ -118,6 +118,28 @@ lease resources for GOCACHE/GOTMPDIR under `/dev/shm`. No installed/downloaded
 dependency, browser operation, shared cache deletion or publication occurred.
 
 ## Authorized isolated execution — 2026-10-09
+
+**C10.3 evidence.** The self-contained `docs/examples/browser-shapes/v1` corpus
+pins eleven fixture-only native sources (Browser1.5–1.10, authentication1.0/1.1,
+registration1.0–1.2), every exact M51 manifest-linked JSON artifact and the
+canonical golden. External-package consumers validate native sources, exact
+source/selector resolution, full parameter/output/extraction metadata and native
+conditional slot schema/condition preservation. Test-only projections start no
+browser and implement no public source producer. Negative cases cover foreign
+sources, unsupported ref expansion, malformed/duplicate/wrong-kind/colliding
+slots and ambiguous or incomplete evidence.
+
+Native action integer binding checks implicit ranges using exact bounded
+rationals without rewriting stored schemas: signed64 in Browser1.8 and safe
+integer ±9007199254740991 in Browser1.9/1.10. Proved out-of-range literals/defaults
+are incompatible; symbolic integer const/enum/range proof is required and unknown
+types/ranges remain indeterminate. Frozen unsafe-integer refusal, wide1.8 values,
+numeric lexemes, presence false/zero/empty, brace escapes and extensions are
+covered. Complete native registration slot declarations retain label/required/
+requiredWhen; only a temporary condition-value validation projection removes
+those native annotation keys. Offline Go1.26.6 `go test -p 2 ./binding
+./expressions ./schemas`, corresponding `-race`, `go vet -p 2` and
+`git diff --check` passed using private resources and disabled module networking.
 
 **C10.2 evidence.** Source-bound browser `request.body` participates in binding,
 deterministic prior-step output-use observations and strict core portability.
