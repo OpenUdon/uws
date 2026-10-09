@@ -1,5 +1,10 @@
 # C10 local browser-shape candidate qualification
 
+**Historical local candidate qualification.** Statements below retain the pre-publication
+checkpoint context. Actual publication and passing whole review1 are recorded
+in [current publication proof](c10-publication.md); no new operation is
+authorized by this record.
+
 C10.1–3 are implemented and locally verified. C10.4 remains incomplete because
 required source publication and its independent verification are pending.
 Whole-milestone closing review remains 0/10. This candidate is unaccepted and

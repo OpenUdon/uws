@@ -2,7 +2,7 @@
 
 **Stage:** Kinet STG-12, Phase A. **Owner:** UWS.
 **State:** Limited-subset local candidate ready in retained lease `goal/C10`;
-C10.4 qualified and independently published; closing review 0/10 pending.
+C10.4 qualified and independently published; whole review1 passed, closure pending.
 **Source baseline:** `989e3f2c88cac5c0f5a2911dfe04c36a61e43126` (clean at planning).
 **Coordinator:** [Stage 12 contract](../../../kinet/docs/stage12.md). This
 package-local milestone and status own acceptance. Planning was approved on
@@ -99,7 +99,7 @@ status markers grant none; audit stays disabled.
 
 ## Review
 
-Whole-milestone review: 0/10, not started.
+Whole-milestone review: 1/10, passed; 0 unresolved P1/P2/P3.
 
 ## Approved publication resumption — 2026-10-09
 
@@ -440,3 +440,35 @@ contact; fresh successful retrieval is independently proved. The first public
 race link hit quota; its failed log is retained, two inactive owned derived Go
 caches were cleared, and affected checks pass afterward. Module/source/artifact
 evidence is preserved. No real ledger, browser, deployment or audit action.
+
+## Authoritative whole-milestone review iteration1 — started
+
+Persisted before review, after all four task rows and required automated
+verification/publication proof passed. Full diff is against captured integration
+base `4429c07bab4616ab46d9a151d50fb26b1370b1fe`; local rebase is up to date.
+Reviewed task/evidence tip `a35e7b23be525030e8c1347e8d2a484fb7b9f4e0`.
+Implementation remains exact published f01a2542410c583d0ea909dadd8f17527cc0d27d.
+Review covers complete code/contracts/tests/failure/security/compatibility and
+local/public qualification evidence. The read-only reviewer receives no
+mutation authority. No acceptance, integration or retirement is claimed yet.
+
+**Iteration1 finding C10-R1-P3-1 — persisted before correction.** The current
+publication manifest points successful public-module-tests at its former path;
+quota recovery moved that log into quota-interrupted-offline-pass/offline-logs.
+The exact recorded checksum is retained there. This is an evidence locator
+defect, with no missing verification/source defect. Owner: coordinator; correct
+the current manifest locator while preserving the historical pass records.
+
+C10-R1-P3-1 corrected: current manifest now resolves the retained successful
+log and records its original execution path/relocation reason. Exact log
+SHA256 is unchanged. Historical pass records are preserved.
+
+**Iteration1 result — passed.** Independent full review finds no remaining
+P1/P2/P3. All prior source fixes, complete native metadata/body/numeric proof,
+compatibility/contracts and actual public qualification are reviewed against
+4429c07bab4616ab46d9a151d50fb26b1370b1fe. All396 files, approved checksums,
+17 successful checks and seven consumer closures match. One P3 locator was
+persisted and corrected without changing evidence bytes; 0P1/0P2/1P3 corrected.
+The reviewer performed no edits, tests or protected actions. Coordinator
+integration, current-truth consolidation, downstream reconciliation and
+retirement remain separate closure work.

@@ -43,8 +43,10 @@
       "cwd": "/dev/shm/kinet-stage12-c10-public-proof-20261009/modcache/github.com/!open!udon/uws@v0.0.0-20261009220914-f01a2542410c",
       "exit_code": 0,
       "seconds": 28.06,
-      "log": "/dev/shm/kinet-stage12-c10-public-proof-20261009/offline-logs/public-module-tests.log",
-      "sha256": "c7945f81907ce0b4c85877efc8fabae64d539d34309241029c84865b08297f98"
+      "log": "/dev/shm/kinet-stage12-c10-public-proof-20261009/quota-interrupted-offline-pass/offline-logs/public-module-tests.log",
+      "sha256": "c7945f81907ce0b4c85877efc8fabae64d539d34309241029c84865b08297f98",
+      "original_execution_log_path": "/dev/shm/kinet-stage12-c10-public-proof-20261009/offline-logs/public-module-tests.log",
+      "relocation_reason": "Retained successful log moved with interrupted first offline pass during quota recovery."
     },
     {
       "check": "public-module-races",
@@ -9548,7 +9550,19 @@
     "source_modules_artifacts_logs_manifests_preserved": true
   },
   "public_retrieval_forwarder": "Exact approved public HTTPS upstream artifacts/checksum proof only; no generated or private source substitution; credential-free upstream TLS and native checksum signatures verified. Initial equivalent-URI-encoding refusal preserved separately; successful attempt used a fresh cache.",
-  "formal_review_pending": true,
+  "formal_review_pending": false,
   "installed_or_consumer_pins_changed": false,
-  "audit_enabled": false
+  "audit_enabled": false,
+  "whole_review": {
+    "iterations": 1,
+    "result": "passed",
+    "p1": 0,
+    "p2": 0,
+    "p3_found": 1,
+    "p3_resolved": 1,
+    "unresolved_findings": 0,
+    "reviewed_integration_base": "4429c07bab4616ab46d9a151d50fb26b1370b1fe",
+    "reviewed_task_evidence_revision": "a35e7b23be525030e8c1347e8d2a484fb7b9f4e0",
+    "reviewer_mutations_or_tests": false
+  }
 }

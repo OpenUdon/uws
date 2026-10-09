@@ -1,5 +1,10 @@
 # C10 pending source publication handoff
 
+**Historical prepared publication handoff.** Statements below retain the pre-publication
+checkpoint context. Actual publication and passing whole review1 are recorded
+in [current publication proof](c10-publication.md); no new operation is
+authorized by this record.
+
 The human approved the exact Kinet launch amendment at SHA256
 `f7f453d1ca3fe94068475b3f440aea89c5178f054640ac0b4aaa67c18836f75a`.
 The coordinator may perform the scoped C10 publication checkpoint, fast-forward
