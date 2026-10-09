@@ -83,10 +83,10 @@ func TestBrowserShapeRejectsMalformedNativeMetadata(t *testing.T) {
 		"duplicate origins": func(o *OperationShape) { o.Browser.Origins = []string{"https://example.test", "https://example.test"} },
 		"unknown effect":    func(o *OperationShape) { o.Browser.Effects = json.RawMessage(`["unknown"]`) },
 		"read mixed with write": func(o *OperationShape) {
-			o.Browser.Effects = json.RawMessage(`["read_only","submits_form"]`)
+			o.Browser.Effects = json.RawMessage(`["read_only","state_change"]`)
 			o.Browser.ConfirmationPolicy = json.RawMessage(`{"required":true}`)
 		},
-		"unconfirmed write": func(o *OperationShape) { o.Browser.Effects = json.RawMessage(`["submits_form"]`) },
+		"unconfirmed write": func(o *OperationShape) { o.Browser.Effects = json.RawMessage(`["state_change"]`) },
 		"private policy field": func(o *OperationShape) {
 			o.Browser.ConfirmationPolicy = json.RawMessage(`{"required":false,"token":"private-canary"}`)
 		},

@@ -76,8 +76,12 @@ edit any published schema or earlier executable contract.
 core expression fields only. Ordinary Document.Validate is unchanged. Core
 controls, outputs/structural-result values, simple criteria, standard source-bound request values and step input
 bindings use the parser; regex/JSONPath/XPath queries, extensions, opaque bodies,
-trigger options and function/browser-profile request templates remain owned by
-their profiles. Legacy expr wrappers receive an explicit diagnostic. Traversal
+trigger options, function templates and native browser profile placeholders
+remain owned by their profiles. Source-bound browser `request.body` values use
+the same core reference grammar and invocation scopes as other source payloads;
+browser path/query/header/cookie fields are not interpreted. Authentication and
+registration credential/session/input declarations remain opaque. Legacy expr
+wrappers receive an explicit diagnostic. Traversal
 is depth bounded; diagnostics are capped at 128 and carry no expression values.
 Root x-* request extensions remain profile-owned; identically named keys inside
 ordinary body/query payloads are still checked as data bindings.

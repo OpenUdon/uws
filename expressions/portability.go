@@ -17,7 +17,7 @@ type Diagnostic struct {
 }
 
 // CheckPortability is opt-in. It examines only UWS core expression fields;
-// profile bodies, extensions, trigger options and function/browser strings are
+// profile bodies, extensions, trigger options and native browser strings are
 // never reinterpreted. It does not call or change ordinary document validation.
 func CheckPortability(document *uws1.Document) []Diagnostic {
 	if document == nil {
@@ -40,16 +40,20 @@ func CheckPortability(document *uws1.Document) []Diagnostic {
 			loop = false
 			c.iteration = true
 		}
-		// Core source request bindings are expressions only when explicitly marked
-		// with a source or legacy wrapper. Extension-owned request templates aren't.
+		// Source-bound browser body values use core references. Native profile
+		// placeholders, credential/session declarations and extensions stay opaque.
 		browser := false
 		for _, source := range document.SourceDescriptions {
 			if source != nil && source.Name == op.SourceDescription && source.Type == "browser-profile" {
 				browser = true
 			}
 		}
-		if op.HasSourceBinding() && !browser {
-			for _, binding := range []string{"path", "query", "header", "cookie", "body"} {
+		if op.HasSourceBinding() {
+			bindings := []string{"path", "query", "header", "cookie", "body"}
+			if browser {
+				bindings = []string{"body"}
+			}
+			for _, binding := range bindings {
 				if value, ok := op.Request[binding]; ok {
 					c.values(value, base+"/request/"+binding, loop, 0)
 				}

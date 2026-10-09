@@ -72,6 +72,21 @@ fragments are validated only against the immutable embedded native schemas;
 external schema resources are never fetched. Shapes and diagnostics supply no
 approval, authentication readiness, containment or execution permission.
 
+`ValidateBinding` applies the existing literal/template-schema and response
+reference checks to browser body contracts. Supplying a browser input outside
+`body` returns `binding.browser_input_location`. Required native credential
+declarations match `SecurityBinding.Scheme`; `CredentialSlot` is a symbolic
+host binding only. Missing required declarations return
+`binding.browser_credential_missing`, indeterminate when the shape is partial.
+No check reads credential values or verifies a live session. Existing unknown
+schema, security, resolver and output codes retain their indeterminate outcomes.
+
+`AnalyzeFlow` observes core references in source-bound browser `request.body`,
+including typed map/slice payloads, to account for prior step-output use. It
+retains declared UWS effect observations; native effects never create authority
+or replace an unknown operation effect. Native profile placeholders/extensions
+and authentication/registration declarations remain opaque and value-free.
+
 ## Advisory binding validation
 
 ValidateBinding accepts a resolver plus a consumer-prepared projection of bound

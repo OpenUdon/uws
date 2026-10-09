@@ -124,6 +124,9 @@ func ValidateBinding(ctx context.Context, resolver Resolver, request Request) (R
 		if !text(in.Location, 128, true) || !text(in.Name, 1024, true) {
 			return report, ErrTable
 		}
+		if shape.Browser != nil && in.Location != "body" {
+			report.add("binding.browser_input_location", path, Incompatible)
+		}
 		if _, ok := supplied[key]; ok {
 			report.add("binding.input_duplicate", path, Incompatible)
 		}
@@ -189,6 +192,25 @@ func ValidateBinding(ctx context.Context, resolver Resolver, request Request) (R
 		}
 	}
 	checkSecurity(&report, shape.Security, request.Security)
+	if shape.Browser != nil {
+		// Scheme identifies the native declaration; CredentialSlot is only a
+		// symbolic host binding. No credential values or session state are read.
+		bound := map[string]bool{}
+		for _, b := range request.Security {
+			if text(b.CredentialSlot, 256, true) {
+				bound[b.Scheme] = true
+			}
+		}
+		for _, slot := range shape.Browser.CredentialSlots {
+			if slot.Required && !bound[slot.Name] {
+				state := Incompatible
+				if !shape.Complete {
+					state = Indeterminate
+				}
+				report.add("binding.browser_credential_missing", "/security/"+pointer(slot.Name), state)
+			}
+		}
+	}
 	for i, ref := range request.OutputReferences {
 		if err := ctx.Err(); err != nil {
 			return report, err

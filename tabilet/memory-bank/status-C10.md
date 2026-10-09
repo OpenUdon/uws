@@ -64,8 +64,8 @@ Consumers adopt only the exact accepted and independently published revision.
 | Item | State | Notes |
 |---|---|---|
 | C10.1 — Activate the browser-profile shape kind | `[x]` | Additive exact browser metadata, native profile fragment checks, closed lossless decoding, no HTTP fields/aliases, immutable resolver snapshots and unchanged non-browser table bytes. Focused tests/race/vet passed offline with Go1.26.6. |
-| C10.2 — Browser binding and flow rules | `[~]` | Binding validation, deterministic flow and strict portability for browser request templates, which are skipped today. Stable value-free diagnostic codes. Keep indeterminate results. Diagnostics are observation, not authorization. |
-| C10.3 — Conformance vectors | `[ ]` | Positive and negative vectors for Browser 1.5–1.10 actions and for browser-authentication and browser-registration calls. Tampered, ambiguous and incomplete cases. |
+| C10.2 — Browser binding and flow rules | `[x]` | Browser body templates use core binding/reference grammar and actual invocation scopes. Stable body-location/required-symbolic-credential diagnostics; partial/unknown evidence remains indeterminate. Native placeholders, extensions and private declarations stay opaque. Focused tests/race/vet passed. |
+| C10.3 — Conformance vectors | `[~]` | Positive and negative vectors for Browser 1.5–1.10 actions and for browser-authentication and browser-registration calls. Tampered, ambiguous and incomplete cases. |
 | C10.4 — Qualify and publish | `[ ]` | Docs, published-version immutability, consumer builds (APItools, OpenUdon, Udon, Browsertools, Kinet workers) and an exact publication handoff. Publish only with named authority. |
 
 ## Acceptance and verification
@@ -118,6 +118,20 @@ lease resources for GOCACHE/GOTMPDIR under `/dev/shm`. No installed/downloaded
 dependency, browser operation, shared cache deletion or publication occurred.
 
 ## Authorized isolated execution — 2026-10-09
+
+**C10.2 evidence.** Source-bound browser `request.body` participates in binding,
+deterministic prior-step output-use observations and strict core portability.
+Body references retain actual loop/iteration context. Native profile curly
+placeholders, root request/profile extensions, authentication/registration
+credential/session/input declarations and browser transport-like request fields
+remain opaque. Required native credential slot Name maps to existing consumer
+`SecurityBinding.Scheme`; `CredentialSlot` is only the symbolic host slot name.
+Missing declarations under partial shapes remain indeterminate. No added browser
+wire field, runtime readiness proof or authority. Unit regressions retain
+typed maps, absent/mismatched expression proof, body-only locations, declared
+unknown effect, deterministic/privacy/no-mutation properties. Offline Go1.26.6
+`go test -p 2 ./binding ./expressions`, corresponding `-race`, `go vet -p 2`
+and `git diff --check` passed with the isolated resources above.
 
 Coordinator dispatch follows the human-approved local-only Kinet goal with
 `STATUS_PRIORITY`, `PARALLELISM: 3`, `INTEGRATION: local-rebase-ff`,

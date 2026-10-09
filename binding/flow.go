@@ -1,8 +1,11 @@
 package binding
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -314,8 +317,12 @@ func (a *flowAnalyzer) operationExpressions(n *flowNode) {
 			browser = true
 		}
 	}
-	if op.HasSourceBinding() && !browser {
-		for _, key := range []string{"path", "query", "header", "cookie", "body"} {
+	if op.HasSourceBinding() {
+		keys := []string{"path", "query", "header", "cookie", "body"}
+		if browser {
+			keys = []string{"body"}
+		}
+		for _, key := range keys {
 			a.valueExpressions(op.Request[key], &n.expressions, 0)
 		}
 	}
@@ -381,6 +388,27 @@ func (a *flowAnalyzer) valueExpressions(value any, out *[]string, depth int) {
 	case []any:
 		for _, x := range v {
 			a.valueExpressions(x, out, depth+1)
+		}
+	default:
+		if value == nil {
+			return
+		}
+		kind := reflect.ValueOf(value).Kind()
+		if kind == reflect.String {
+			a.valueExpressions(reflect.ValueOf(value).String(), out, depth+1)
+			return
+		}
+		if kind == reflect.Map || kind == reflect.Slice || kind == reflect.Array || kind == reflect.Struct || kind == reflect.Pointer {
+			data, err := json.Marshal(value)
+			if err != nil || len(data) > MaxTableBytes {
+				return
+			}
+			var normalized any
+			d := json.NewDecoder(bytes.NewReader(data))
+			d.UseNumber()
+			if d.Decode(&normalized) == nil {
+				a.valueExpressions(normalized, out, depth+1)
+			}
 		}
 	}
 }
