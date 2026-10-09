@@ -1,7 +1,8 @@
 # C10 — Browser-profile shape activation
 
 **Stage:** Kinet STG-12, Phase A. **Owner:** UWS.
-**State:** In progress in isolated lease `goal/C10`. Review 0/10.
+**State:** Candidate pre-review corrections in progress in retained lease
+`goal/C10`; required publication remains unperformed. Closing review 0/10.
 **Source baseline:** `989e3f2c88cac5c0f5a2911dfe04c36a61e43126` (clean at planning).
 **Coordinator:** [Stage 12 contract](../../../kinet/docs/stage12.md). This
 package-local milestone and status own acceptance. Planning was approved on
@@ -66,7 +67,7 @@ Consumers adopt only the exact accepted and independently published revision.
 | C10.1 — Activate the browser-profile shape kind | `[x]` | Additive exact browser metadata, native profile fragment checks, closed lossless decoding, no HTTP fields/aliases, immutable resolver snapshots and unchanged non-browser table bytes. Focused tests/race/vet passed offline with Go1.26.6. |
 | C10.2 — Browser binding and flow rules | `[x]` | Browser body templates use core binding/reference grammar and actual invocation scopes. Stable body-location/required-symbolic-credential diagnostics; partial/unknown evidence remains indeterminate. Native placeholders, extensions and private declarations stay opaque. Focused tests/race/vet passed. |
 | C10.3 — Conformance vectors | `[x]` | Eleven native action/authentication/registration profile vectors, frozen complete M51 corpus/golden, exact native integer literal/default/symbolic guards, full conditional input schemas, tampered/ambiguous/partial evidence and stable value-free refusals. Focused tests/race/vet passed offline. |
-| C10.4 — Qualify and publish | `[~]` | Finish authorized docs/immutability/full-module/consumer qualification and exact publication handoff. Publication remains separately gated; no grant is supplied. |
+| C10.4 — Qualify and publish | `[~]` | Apply the two persisted candidate findings and repeat affected local qualification. Required publication remains unperformed and separately gated. Retain lease; no accepted closure/adoption. |
 
 ## Acceptance and verification
 
@@ -99,6 +100,79 @@ status markers grant none; audit stays disabled.
 ## Review
 
 Whole-milestone review: 0/10, not started.
+
+## Candidate pre-review findings — 2026-10-09
+
+Coordinator-approved correction request resumes the same local-only goal and
+assignment with effective AUTHORIZATION_GRANTS empty. Independent read-only
+candidate inspection by `/root/m16_candidate_review` of exact checkpoint
+`23d445227ac09eddbed6c92bc2ba4b27f589ca99` found 0P1/2P2/0P3. No reviewer tests
+were run. This candidate inspection is not the closing review; required
+publication remains unperformed and the formal counter stays0. Findings are
+persisted before fixes; the old checkpoint and qualification evidence are retained.
+
+- **C10-P2-1 — fixed and focused verification passed.** Complete registration input
+  slots currently pass generic schema validation with `{type:string}` despite
+  native1.1/1.2 requiring type, label and exactly one required/requiredWhen branch
+  with closed fields. Validate complete raw declarations against the exact
+  embedded input-slot fragment, align Required/Condition and preserve all bytes.
+  Keep partial evidence explicitly indeterminate. Add missing-label/requiredness,
+  unknown-field and contradictory-declaration regressions. Owner: C10 executor.
+  Complete declarations now validate against the exact embedded native input-slot
+  fragment. Required/Condition alignment and full raw values are retained;
+  minimal partial declarations remain indeterminate. Go1.26.6 focused binding
+  tests/race/vet and diff checks pass offline. Final packaging remains pending.
+- **C10-P2-2 — confirmed; correction in progress.** Whole-body typed integer
+  proof checks target properties but ignores open or extra source properties;
+  a bounded n inside an open object can incorrectly become Compatible while
+  an extra integer remains unsafe. Require closed source objects or supported
+  complete proof of all possible extras; otherwise retain Indeterminate. Add
+  closed/open/declared-extra controls without schema rewriting. Owner: C10 executor.
+
+## C10.4 local candidate handoff — 2026-10-09
+
+Final qualified implementation is `23d445227ac09eddbed6c92bc2ba4b27f589ca99`.
+Captured integration ref remains `refs/heads/main` at
+`4429c07bab4616ab46d9a151d50fb26b1370b1fe`; local rebase was up to date.
+Root and separate unchanged HCL full tests/races/vet, version immutability,
+strict docs and diff checks pass offline with retained Go1.26.6. Final candidate
+root ZIP-only tests/races/vet pass. All396 packaged source filenames/content
+match the committed candidate. Root/codec module declarations, sums, embedded
+schemas and published versions are unchanged.
+
+Provisional private file-proxy version
+`v0.0.0-20261009210335-23d445227ac0` has Go archive sum
+`h1:BLltWADAzCV3SkugyuZwCW/x6iVOUma5P0e+gHM3l/U=` and GoMod sum
+`h1:DlqFOnO9lbmYWLLIh5WicNX6NTWIuytU6mIHmxj9BVw=`. Frozen APItools,
+Browsertools, OpenUdon, Udon and Kinet author/exec copies build after disposable
+module-requirement adaptation, with GOWORKoff and no directory replacement.
+The unchanged Kinet host also builds and consumes no UWS module. Existing Udon
+Docker module-version replacement is retained. Every frozen input hash matches
+its dispatch manifest. Ordinary [qualification](../../docs/c10-qualification.md),
+[complete manifest](../../docs/c10-local-candidate-qualification.json) and
+[pending publication handoff](../../docs/c10-publication-handoff.md) retain exact
+source identities, artifact/verification hashes and seven module closures.
+Those documents and this final blocked status are uncommitted C10.4 work.
+
+Cache-isolation audit caught Go adding the two owned provisional versions to
+the retained module-cache version list through a borrowed symlink. Only those
+introduced list entries were restored; every other entry was preserved. Private
+version lists are now regular copies, a subsequent read recheck passes, and no
+candidate artifact/source directory remains in the retained cache. No frozen
+repository or retained source-module bytes changed. This repaired tooling side
+effect supplies no publication proof.
+
+**Required blocker.** Effective AUTHORIZATION_GRANTS remain empty and
+EXTERNAL_MUTATIONS remains none. No publication action is authorized or performed.
+Owner: coordinator/human for scoped policy reconciliation and exact authority;
+then owning assigned executor for publication and independent ordinary-module
+resolution. Proposed observed destination is origin
+`git@github.com-tabilet:OpenUdon/uws.git`, `refs/heads/main`, fast-forward only.
+The local proxy cannot satisfy this gate. C10.4 remains uncompleted and closing
+review remains0 until required action/verification are supplied. The branch and
+worktree are retained; children do not integrate, close, retire or select a new
+milestone. No browser, provider/model/mail, SSH command, deployment, real ledger
+or audit operation occurred.
 
 ## C10.1 execution evidence — 2026-10-09
 

@@ -211,6 +211,12 @@ func browserShapeValid(op OperationShape) bool {
 		if json.Unmarshal(slot.Schema, &schema) != nil || json.Unmarshal(schema["type"], &kind) != nil || kind != slot.Kind {
 			return false
 		}
+		// Complete means the raw native declaration is complete, not merely a
+		// usable scalar JSON Schema projection. Native slots require a label and
+		// exactly one requiredness branch, and own their closed field inventory.
+		if op.Complete && !browserFragmentValid(b.ProfileVersion, schemaBytes, "/$defs/input-slot", slot.Schema) {
+			return false
+		}
 		if raw, present := schema["required"]; present {
 			var required bool
 			if len(slot.Condition) != 0 || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) || json.Unmarshal(raw, &required) != nil || required != slot.Required {

@@ -396,3 +396,58 @@ func TestNativeRegistrationMetadataRefusalsAndPartialCondition(t *testing.T) {
 		t.Fatal(report, err)
 	}
 }
+
+func TestCompleteNativeRegistrationSlotDeclarations(t *testing.T) {
+	vectors, root := browserCorpus(t)
+	for _, v := range vectors {
+		if v.ProfileVersion != "uws.browser-registration.1.1" && v.ProfileVersion != "uws.browser-registration.1.2" {
+			continue
+		}
+		t.Run(v.Name, func(t *testing.T) {
+			for name, raw := range map[string]string{
+				"missing label":                             `{"type":"string","required":false}`,
+				"missing requiredness":                      `{"type":"string","label":"Contact"}`,
+				"minimal preservation projection":           `{"type":"string"}`,
+				"empty label":                               `{"type":"string","label":"","required":false}`,
+				"unknown field":                             `{"type":"string","label":"Contact","required":false,"private":"private-canary"}`,
+				"schema extension outside native inventory": `{"type":"string","label":"Contact","required":false,"x-extension":false}`,
+				"both requiredness branches":                `{"type":"string","label":"Contact","required":false,"requiredWhen":{"slot":"country","equals":"fixture-country"}}`,
+				"required flag contradiction":               `{"type":"string","label":"Contact","required":true}`,
+				"condition without metadata":                `{"type":"string","label":"Contact","requiredWhen":{"slot":"country","equals":"fixture-country"}}`,
+			} {
+				t.Run(name, func(t *testing.T) {
+					op := vectorShape(t, root, v)
+					op.Browser.RegistrationInputSlots = []binding.RegistrationInputSlotShape{{Name: "contact", Kind: "string", Required: false, Schema: json.RawMessage(raw)}}
+					table := binding.ShapeTable{Version: binding.TableVersion, Sources: []binding.Source{op.Source}, Operations: []binding.OperationShape{op}}
+					if err := table.Validate(); err != binding.ErrTable || strings.Contains(err.Error(), "private-canary") {
+						t.Fatal("incomplete or foreign native declaration accepted", err)
+					}
+				})
+			}
+			op := vectorShape(t, root, v)
+			op.Browser.RegistrationInputSlots = []binding.RegistrationInputSlotShape{{Name: "contact", Kind: "string", Required: false, Schema: json.RawMessage(`{"type":"string","label":"Contact","required":false,"maxLength":0}`)}}
+			table := binding.ShapeTable{Version: binding.TableVersion, Sources: []binding.Source{op.Source}, Operations: []binding.OperationShape{op}}
+			data, err := table.Marshal()
+			if err != nil {
+				t.Fatal("complete native declaration refused", err)
+			}
+			parsed, err := binding.ParseTable(data)
+			if err != nil || !bytes.Equal(canonical(t, parsed.Operations[0].Browser.RegistrationInputSlots[0].Schema), canonical(t, op.Browser.RegistrationInputSlots[0].Schema)) {
+				t.Fatal("complete raw declaration changed", err)
+			}
+			// The frozen minimal slot is a preservation vector. Its incomplete
+			// declaration can be carried only with explicitly partial evidence.
+			op.Complete = false
+			op.Browser.RegistrationInputSlots[0].Schema = json.RawMessage(`{"type":"string"}`)
+			table.Operations[0] = op
+			r, err := binding.NewResolver(table)
+			if err != nil {
+				t.Fatal("partial projection refused", err)
+			}
+			report, err := binding.ValidateBinding(t.Context(), r, binding.Request{Binding: binding.Binding{Source: op.Source, SelectorKind: "id", SelectorValue: op.Selector.Value}})
+			if err != nil || report.Outcome != binding.Indeterminate || len(report.Diagnostics) == 0 || report.Diagnostics[0].Code != "binding.operation_incomplete" {
+				t.Fatal("partial declaration became conclusive", report, err)
+			}
+		})
+	}
+}
