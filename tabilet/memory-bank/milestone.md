@@ -405,3 +405,10 @@ substitution requirements for ordinary published adoption remain in force.
 **Parallel-safe.** no. Execute sequentially; this milestone is on a required integration/contract chain.
 At most one live milestone per package. All tests use private lease ports,
 disposable stores/caches/browser profiles and unique output directories.
+
+## Stage 12 frozen consumer input checkpoint — 2026-10-09
+
+C10's status records exact Kinet:M51.3 contract/fixture input at `589b844628b358167fe0a0137eded11c1028875c`.
+M51 whole acceptance, producer qualification and independently verified
+publication remain required at their existing gates. No row or review starts;
+local-only source work grants no publication, browser or live authority.
