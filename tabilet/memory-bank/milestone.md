@@ -412,3 +412,5 @@ C10's status records exact Kinet:M51.3 contract/fixture input at `589b844628b358
 M51 whole acceptance, producer qualification and independently verified
 publication remain required at their existing gates. No row or review starts;
 local-only source work grants no publication, browser or live authority.
+
+**Accepted local M51 prerequisite.** [Retired M51](../../../kinet/tabilet/docs/history/status-M51.md) at observed task/review evidence `33980aafdc614424f61c32a2d79171689c7952bc` (reviewed implementation874c89e, declared coordinator closure) qualifies the unchanged frozen consumer manifest0c445a5c…. Browser qualification1+3 is consumed. This producer remains pending with its original row count/review counter; exact accepted publication and its own browser authority, where required, remain separate.
