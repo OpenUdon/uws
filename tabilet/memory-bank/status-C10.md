@@ -1,7 +1,7 @@
 # C10 — Browser-profile shape activation
 
 **Stage:** Kinet STG-12, Phase A. **Owner:** UWS.
-**State:** Final numeric-proof candidate correction in progress in retained
+**State:** Supported numeric-proof dialect correction in progress in retained
 lease `goal/C10`; required publication remains unperformed. Closing review 0/10.
 **Source baseline:** `989e3f2c88cac5c0f5a2911dfe04c36a61e43126` (clean at planning).
 **Coordinator:** [Stage 12 contract](../../../kinet/docs/stage12.md). This
@@ -67,7 +67,7 @@ Consumers adopt only the exact accepted and independently published revision.
 | C10.1 — Activate the browser-profile shape kind | `[x]` | Additive exact browser metadata, native profile fragment checks, closed lossless decoding, no HTTP fields/aliases, immutable resolver snapshots and unchanged non-browser table bytes. Focused tests/race/vet passed offline with Go1.26.6. |
 | C10.2 — Browser binding and flow rules | `[x]` | Browser body templates use core binding/reference grammar and actual invocation scopes. Stable body-location/required-symbolic-credential diagnostics; partial/unknown evidence remains indeterminate. Native placeholders, extensions and private declarations stay opaque. Focused tests/race/vet passed. |
 | C10.3 — Conformance vectors | `[x]` | Eleven native action/authentication/registration profile vectors, frozen complete M51 corpus/golden, exact native integer literal/default/symbolic guards, full conditional input schemas, tampered/ambiguous/partial evidence and stable value-free refusals. Focused tests/race/vet passed offline. |
-| C10.4 — Qualify and publish | `[~]` | Prior two findings are fixed; correct the persisted reference/dialect numeric-proof finding and repeat affected qualification. Required publication remains unperformed and separately gated. |
+| C10.4 — Qualify and publish | `[~]` | Prior three findings are fixed; correct the persisted unsupported-dialect proof issue using an explicit limited subset and repeat affected qualification. Publication remains separately gated. |
 
 ## Acceptance and verification
 
@@ -101,7 +101,52 @@ status markers grant none; audit stays disabled.
 
 Whole-milestone review: 0/10, not started.
 
+## Supported-subset candidate finding — 2026-10-09
+
+Independent read-only inspection of checkpoint
+`ca11bf9a02bac4c36ac5bd8b1dad2137870580dc` reports 0P1/1P2/0P3 and confirms
+earlier fixes. The same local-only assignment and empty grants apply; source
+publication remains unperformed and formal closing review stays0. Persisted
+before code fixes:
+
+- **C10-P2-4 — fixed and focused verification passed.** Native proof trusts const
+  under Draft04, where that keyword is ignored. Known `{type:integer,const:0}`
+  proof declared Draft04 can falsely prove safety although its compiled schema
+  permits9007199254740992. Inherited Draft04 body/property proof has the same
+  defect. Define a supported numeric-proof dialect subset and preserve inherited
+  context or refuse unsupported trees before interpreting const/enum/range or
+  descending. Review every proof path together with reference handling. Keep
+  generic compatibility and raw schemas unchanged. Add compiled unsafe direct/
+  inherited Draft04 witnesses and supported/default/unknown-dialect controls.
+  Owner: C10 executor.
+  Whole schema trees now preflight before numeric defaults/literals or typed
+  proof. Only the pinned2020 default and canonical Draft06/07/2019-09/2020-12
+  declarations support the shared const/enum/range/object subset. Unsupported
+  declared dialects or references anywhere in schema-valued positions refuse
+  the whole tree before descent, retaining inherited context. Literal schema-like
+  data and property names stay data. Source typed arrays remain indeterminate
+  without complete tuple/prefix semantics; finite constant arrays remain supported.
+  Compiled unsafe Draft04 direct/inherited and modern prefix-array witnesses,
+  all supported/default keyword-path controls, unknown/nested dialects and prior
+  reference/data controls pass focused tests/race/vet at -p2/GOMAXPROCS2.
+  Generic compatibility and raw schemas remain unchanged.
+
 ## Final candidate pre-review finding — 2026-10-09
+
+**Final corrected handoff.** Qualified implementation
+`ca11bf9a02bac4c36ac5bd8b1dad2137870580dc`, provisional private proxy version
+`v0.0.0-20261009215557-ca11bf9a02ba`, Go archive sum
+`h1:72aD22ilIAGa93/YDfuGp6WP0kZKaGOb0/Cg5QQQHqc=`, unchanged GoMod sum
+`h1:DlqFOnO9lbmYWLLIh5WicNX6NTWIuytU6mIHmxj9BVw=`. Full root and ZIP-only
+tests/races/vet and all seven frozen consumer builds pass with bounded compiler
+concurrency. All396 root ZIP filenames/content match committed source; frozen
+inputs and private mutable-cache boundary are unchanged. Generic compatibility
+code is unchanged. Prior unchanged standalone HCL evidence remains valid.
+Captured integration ref/base remain refs/heads/main and
+`4429c07bab4616ab46d9a151d50fb26b1370b1fe`. The final ordinary qualification,
+manifest/handoff and this blocked status remain uncommitted C10.4 work.
+Strict docs/diff checks are repeated after final edits. No fresh independent
+pass is claimed; formal closing review remains0 and publication is unperformed.
 
 Read-only recheck of exact corrected checkpoint
 `7b1e936e6cf7fa78c63276e585ed98a796feb8f7` reports 0P1/1P2/0P3; prior two P2

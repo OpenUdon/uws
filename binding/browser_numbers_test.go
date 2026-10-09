@@ -2,6 +2,7 @@ package binding
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/OpenUdon/uws/expressions"
@@ -214,5 +215,105 @@ func TestBrowserNativeIntegerUnprovedDynamicAndRecursiveReferences(t *testing.T)
 		if err != nil || r.Outcome != Compatible {
 			t.Fatal("reference-free Draft07 safe control refused", r, err)
 		}
+	}
+}
+
+func TestBrowserNativeIntegerUnsupportedDialectDoesNotTrustConst(t *testing.T) {
+	for name, raw := range map[string]string{
+		"direct draft04":    `{"$schema":"http://json-schema.org/draft-04/schema#","type":"integer","const":0}`,
+		"inherited draft04": `{"$schema":"http://json-schema.org/draft-04/schema#","type":"object","properties":{"n":{"type":"integer","const":0}},"required":["n"],"additionalProperties":false}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			proof := Schema{Known: true, JSON: json.RawMessage(raw)}
+			compiled, err := compile(proof)
+			if err != nil {
+				t.Fatal(err)
+			}
+			target := `{"type":"integer"}`
+			value := any(json.Number("9007199254740992"))
+			if name == "inherited draft04" {
+				target = `{"type":"object","properties":{"n":{"type":"integer"}},"required":["n"],"additionalProperties":false}`
+				value = map[string]any{"n": json.Number("9007199254740992")}
+			}
+			if compiled.Validate(value) != nil {
+				t.Fatal("Draft04 witness does not exercise ignored const")
+			}
+			r, err := integerBrowserRequest(t, "uws.browser.1.9", target, "$inputs.value", proof)
+			if err != nil || r.Outcome != Indeterminate || len(r.Diagnostics) == 0 || r.Diagnostics[0].Code != "binding.browser_integer_range" {
+				t.Fatal("unsupported dialect proved safety", r, err)
+			}
+			if schemaCompatibility(proof, proof) != Compatible {
+				t.Fatal("generic compatibility changed")
+			}
+			if string(proof.JSON) != raw {
+				t.Fatal("proof schema rewritten")
+			}
+		})
+	}
+}
+
+func TestBrowserNativeIntegerSupportedSubsetCoversEveryProofPath(t *testing.T) {
+	for _, dialect := range []string{"", "http://json-schema.org/draft-06/schema#", "http://json-schema.org/draft-07/schema#", "https://json-schema.org/draft/2019-09/schema", "https://json-schema.org/draft/2020-12/schema"} {
+		for name, raw := range map[string]string{"const": `{"const":0}`, "enum": `{"enum":[0,1]}`, "range": `{"type":"integer","minimum":0,"maximum":1}`, "object": `{"type":"object","properties":{"n":{"const":0}},"required":["n"],"additionalProperties":false}`} {
+			t.Run(dialect+"/"+name, func(t *testing.T) {
+				if dialect != "" {
+					raw = `{"$schema":"` + dialect + `",` + raw[1:]
+				}
+				target := `{"type":"integer"}`
+				if name == "object" {
+					target = `{"type":"object","properties":{"n":{"type":"integer"}},"required":["n"],"additionalProperties":false}`
+				}
+				r, err := integerBrowserRequest(t, "uws.browser.1.9", target, "$inputs.value", Schema{Known: true, JSON: json.RawMessage(raw)})
+				if err != nil || r.Outcome != Compatible {
+					t.Fatal("supported proof control refused", r, err)
+				}
+			})
+		}
+	}
+	for _, raw := range []string{
+		`{"$schema":"https://unknown.invalid/schema","type":"integer","const":0}`,
+		`{"type":"object","properties":{"n":{"$schema":"http://json-schema.org/draft-04/schema#","type":"integer","const":0}},"required":["n"],"additionalProperties":false}`,
+		`{"type":"object","properties":{"n":{"$schema":"https://unknown.invalid/schema","type":"integer","minimum":0,"maximum":1}},"required":["n"],"additionalProperties":false}`,
+		`{"type":"integer","const":0,"allOf":[{"$ref":"#unknown"}]}`,
+	} {
+		target := `{"type":"integer"}`
+		if strings.Contains(raw, `"properties"`) {
+			target = `{"type":"object","properties":{"n":{"type":"integer"}},"required":["n"],"additionalProperties":false}`
+		}
+		r, err := integerBrowserRequest(t, "uws.browser.1.9", target, "$inputs.value", Schema{Known: true, JSON: json.RawMessage(raw)})
+		if err != nil || r.Outcome != Indeterminate || len(r.Diagnostics) == 0 || r.Diagnostics[0].Code != "binding.browser_integer_range" {
+			t.Fatal("unproved tree context accepted", r, err)
+		}
+	}
+	// Literal schema-like data and names do not select a dialect or loader.
+	target := `{"type":"object","properties":{"$schema":{"type":"string"},"n":{"type":"integer"}},"required":["$schema","n"],"additionalProperties":false}`
+	proof := Schema{Known: true, JSON: json.RawMessage(`{"const":{"$schema":"http://json-schema.org/draft-04/schema#","n":0}}`)}
+	r, err := integerBrowserRequest(t, "uws.browser.1.9", target, "$inputs.value", proof)
+	if err != nil || r.Outcome != Compatible {
+		t.Fatal("dialect-shaped data reinterpreted", r, err)
+	}
+}
+
+func TestBrowserNativeIntegerSymbolicArrayNeedsEffectiveItemProof(t *testing.T) {
+	raw := `{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"array","prefixItems":[{"type":"integer"}],"items":{"type":"integer","minimum":0,"maximum":1}}`
+	schema := Schema{Known: true, JSON: json.RawMessage(raw)}
+	compiled, err := compile(schema)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if compiled.Validate([]any{json.Number("9007199254740992")}) != nil {
+		t.Fatal("prefix witness does not exercise items gap")
+	}
+	if schemaCompatibility(schema, schema) != Compatible {
+		t.Fatal("generic compatibility changed")
+	}
+	r, err := integerBrowserRequest(t, "uws.browser.1.9", raw, "$inputs.value", schema)
+	if err != nil || r.Outcome != Indeterminate {
+		t.Fatal("typed items proof ignored unsafe prefix", r, err)
+	}
+	target := `{"type":"array","items":{"type":"integer"}}`
+	r, err = integerBrowserRequest(t, "uws.browser.1.9", target, "$inputs.value", Schema{Known: true, JSON: json.RawMessage(`{"const":[0,1]}`)})
+	if err != nil || r.Outcome != Compatible {
+		t.Fatal("finite constant array control refused", r, err)
 	}
 }

@@ -55,7 +55,7 @@ func browserIntegerInput(schema Schema, value any, present bool, proofs map[stri
 		return Indeterminate
 	}
 	target, err := decode(schema.JSON)
-	if err != nil {
+	if err != nil || !browserNumericSchemaSupported(target, 0) {
 		return Indeterminate
 	}
 	if present {
@@ -99,7 +99,7 @@ func browserIntegerValue(target, value any, present bool, proofs map[string]Sche
 			return Indeterminate
 		}
 		source, err := decode(proof.JSON)
-		if err != nil {
+		if err != nil || !browserNumericSchemaSupported(source, 0) {
 			return Indeterminate
 		}
 		return browserIntegerType(target, source, lo, hi, depth+1)
@@ -216,7 +216,9 @@ func browserIntegerType(target, source any, lo, hi *big.Rat, depth int) Outcome 
 		return state
 	}
 	if kind == "array" {
-		return browserIntegerType(t["items"], s["items"], lo, hi, depth+1)
+		// Typed arrays can have dialect-dependent tuple/prefix semantics. A
+		// finite const is handled above; otherwise no complete item proof exists.
+		return Indeterminate
 	}
 	if kind == "string" || kind == "boolean" || kind == "number" || kind == "null" {
 		return Compatible
@@ -231,4 +233,86 @@ func browserNumericReference(schema map[string]any) bool {
 		}
 	}
 	return false
+}
+
+// Preflight complete schema trees before interpreting numeric proof keywords.
+// Absent dialect declarations inherit a supported parent (the pinned compiler's
+// root default is 2020-12). Every declared dialect must support the common
+// const/enum/range/object subset. Ref-bearing schemas and unsupported dialect
+// trees refuse wholesale, so descent never detaches a node from needed context.
+// Schema-valued positions are traversed; const/enum/default data and property
+// names are not reinterpreted as schemas. This adds no reference/dialect engine.
+func browserNumericSchemaSupported(schema any, depth int) bool {
+	if depth > 32 {
+		return false
+	}
+	if _, ok := schema.(bool); ok {
+		return true
+	}
+	node, ok := schema.(map[string]any)
+	if !ok || browserNumericReference(node) {
+		return false
+	}
+	if declared, present := node["$schema"]; present {
+		dialect, ok := declared.(string)
+		if !ok {
+			return false
+		}
+		switch strings.TrimSuffix(dialect, "#") {
+		case "http://json-schema.org/draft-06/schema", "http://json-schema.org/draft-07/schema", "https://json-schema.org/draft/2019-09/schema", "https://json-schema.org/draft/2020-12/schema":
+		default:
+			return false
+		}
+	}
+	for _, key := range []string{"properties", "patternProperties", "$defs", "definitions", "dependentSchemas"} {
+		if children, present := node[key]; present {
+			fields, ok := children.(map[string]any)
+			if !ok {
+				return false
+			}
+			for _, child := range fields {
+				if !browserNumericSchemaSupported(child, depth+1) {
+					return false
+				}
+			}
+		}
+	}
+	for _, key := range []string{"allOf", "anyOf", "oneOf", "prefixItems"} {
+		if children, present := node[key]; present {
+			items, ok := children.([]any)
+			if !ok {
+				return false
+			}
+			for _, child := range items {
+				if !browserNumericSchemaSupported(child, depth+1) {
+					return false
+				}
+			}
+		}
+	}
+	for _, key := range []string{"items", "additionalItems", "additionalProperties", "unevaluatedItems", "unevaluatedProperties", "contains", "propertyNames", "not", "if", "then", "else", "contentSchema"} {
+		if child, present := node[key]; present {
+			if items, tuple := child.([]any); tuple && key == "items" {
+				for _, item := range items {
+					if !browserNumericSchemaSupported(item, depth+1) {
+						return false
+					}
+				}
+			} else if !browserNumericSchemaSupported(child, depth+1) {
+				return false
+			}
+		}
+	}
+	if children, present := node["dependencies"]; present {
+		fields, ok := children.(map[string]any)
+		if !ok {
+			return false
+		}
+		for _, child := range fields {
+			if _, names := child.([]any); !names && !browserNumericSchemaSupported(child, depth+1) {
+				return false
+			}
+		}
+	}
+	return true
 }
