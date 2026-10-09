@@ -1,5 +1,16 @@
 # Technical Stack
 
+## Accepted C10 browser-profile shapes
+
+C10 is accepted after whole review1 at implementation
+`f01a2542410c583d0ea909dadd8f17527cc0d27d`, ordinary root module
+`v0.0.0-20261009220914-f01a2542410c`. [Publication proof](../../docs/c10-publication.md)
+records independent source/archive checks and all seven frozen consumer builds.
+Native source production, actual consumer adoption, browser/runtime containment,
+credential policy and execution authority remain with their owners. Existing
+published profile/schema bytes, root/HCL declarations and actual pins are unchanged.
+
+
 ## Accepted M09 ordinary modules
 
 Root and nested codec accepted source is
@@ -151,3 +162,10 @@ requests also run the strict documentation build.
 - Verify published-version membership and hashes before claiming immutability.
 - Do not modify frozen archive files; create a successor archive when a new
   repository baseline is materially needed.
+
+C10 adds no dependency or tool upgrade. The actual public root ZIP has396 files
+and native archive sum `h1:TTjAn0++TdGHY0vahbXw3XsICQaavBytoqTSHu0K6o0=`;
+GoMod sum `h1:DlqFOnO9lbmYWLLIh5WicNX6NTWIuytU6mIHmxj9BVw=`. Public ZIP
+compression differs from the provisional container, while all source bytes and
+Go checksums match. Go1.26.6/offline isolated cache checks qualify root and all
+seven disposable consumer units; retained unchanged HCL checks remain separate.

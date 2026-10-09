@@ -1,5 +1,16 @@
 # Architecture
 
+## Accepted C10 browser-profile shapes
+
+C10 is accepted after whole review1 at implementation
+`f01a2542410c583d0ea909dadd8f17527cc0d27d`, ordinary root module
+`v0.0.0-20261009220914-f01a2542410c`. [Publication proof](../../docs/c10-publication.md)
+records independent source/archive checks and all seven frozen consumer builds.
+Native source production, actual consumer adoption, browser/runtime containment,
+credential policy and execution authority remain with their owners. Existing
+published profile/schema bytes, root/HCL declarations and actual pins are unchanged.
+
+
 ## M09 parser remediation
 
 Accepted source `b099f6803277ae94c7e9f1da0904a0140b278f20` is independently
@@ -248,3 +259,12 @@ lives in this memory bank; use each archive only at its recorded baseline.
 | [Archive B01](../docs/archive-B01.md) | Browser capability and account lifecycle profiles | `8382d0f26b3b10870125760643078d1a1a3e31b6` | verified | none |
 | [Archive X01](../docs/archive-X01.md) | Source admission and extension profiles | `8382d0f26b3b10870125760643078d1a1a3e31b6` | verified | none |
 | [Archive M01](../docs/archive-M01.md) | Interchange, validation, and distribution tooling | `8382d0f26b3b10870125760643078d1a1a3e31b6` | verified | none |
+
+C10 optional `OperationShape.Browser` preserves complete native metadata and raw
+schema numeric/value/presence information. Browser-only strict decoding refuses
+HTTP fields and aliases, retaining old non-browser table serialization. Binding,
+flow and portability scan core references in browser request bodies while native
+profile/private templates stay opaque. Signed64 (1.8) and safe-integer (1.9/1.10)
+proof uses exact rationals and a rooted supported-dialect/reference-free subset.
+Unproved references, dialects, open objects and symbolic arrays stay indeterminate.
+Source-neutral diagnostics are value-free metadata, never execution readiness.

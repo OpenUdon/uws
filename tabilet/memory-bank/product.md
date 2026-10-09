@@ -1,5 +1,16 @@
 # Product
 
+## Accepted C10 browser-profile shapes
+
+C10 is accepted after whole review1 at implementation
+`f01a2542410c583d0ea909dadd8f17527cc0d27d`, ordinary root module
+`v0.0.0-20261009220914-f01a2542410c`. [Publication proof](../../docs/c10-publication.md)
+records independent source/archive checks and all seven frozen consumer builds.
+Native source production, actual consumer adoption, browser/runtime containment,
+credential policy and execution authority remain with their owners. Existing
+published profile/schema bytes, root/HCL declarations and actual pins are unchanged.
+
+
 ## Accepted Stage 11 remediation — M09
 
 M09 is accepted after whole review 7/10. Corrected root and codec source

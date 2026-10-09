@@ -5,6 +5,15 @@
 [Stage 11](../kinet/docs/stage11.md) coordinates both refactoring phases across five package-local ledgers. Read the local [milestones](tabilet/memory-bank/milestone.md) before selecting work. UWS will own opt-in expression portability, source-neutral binding diagnostics and a verified HCL presentation module. Source parsing and product authority remain outside UWS. Existing published versions and ordinary validation compatibility stay intact; HCL input removal is outside Stage 11.
 Planning is approved; implementation and named publication/deployment authority are separate. One serial execution owner, offline fixtures, exact upstream reconciliation and persisted milestone reviews apply. Completed records and frozen consumer pins stay preserved.
 
+## Accepted Stage 12 C10
+
+C10 is accepted/retired after four rows and whole review1. Public root source
+f01a2542410c583d0ea909dadd8f17527cc0d27d and its exact ordinary module proof
+are in [qualification](docs/c10-publication.md). Browser shapes and body-only
+advisory binding/flow/portability are available; native source production and
+actual consumer/runtime adoption remain separate. Immutable profiles, HCL and
+actual pins are unchanged. Only conditional C11 remains active. Audit is disabled.
+
 ## Stage 12 concurrent goal ownership
 
 For an explicitly authorized STG-12 goal, the governing protocol is

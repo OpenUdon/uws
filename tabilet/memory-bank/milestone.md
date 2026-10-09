@@ -1,5 +1,17 @@
 # Milestones
 
+## Accepted Stage 12 C10 — 2026-10-09
+
+C10 is accepted/retired after four rows and whole review1. Exact implementation
+`f01a2542410c583d0ea909dadd8f17527cc0d27d` is independently public as
+`v0.0.0-20261009220914-f01a2542410c`; [publication proof](../../docs/c10-publication.md)
+and [history](../docs/history/status-C10.md) retain checksums and all consumer
+fixtures. Only conditional C11 remains active in UWS. Consumers adopt exact
+accepted publication in their own milestones; current pins/runtime behavior
+are unchanged. The human approved the scoped C10 envelope at Kinet launch
+SHA256 f7f453d1ca3fe94068475b3f440aea89c5178f054640ac0b4aaa67c18836f75a.
+Audit remains disabled; this ledger records evidence, never authority.
+
 ## Stage 12 approved planning — 2026-10-09
 
 **Approved reconciliation.** Stage 12 planning review, 2026-10-09; source priority
@@ -7,20 +19,21 @@ not supplied. Review baseline/current revalidation `989e3f2c88cac5c0f5a2911dfe04
 including uncommitted Stage 12 planning files. F01/F02 are locally P1; F03–F09
 are P2 (F03 partially confirmed, all others confirmed). F05/F06/F07 (P2) belong to C11 projection, complete core-codec removal and pre-publication migration fixtures.
 Owner status notes retain evidence and lineage. Intake starts no review iteration.
-The coordinator now has 19 milestones / 84 pending rows (13/62 required, 6/22
-conditional). Accepted local Kinet commits satisfy Kinet prerequisites; siblings
+The original coordinator planning baseline had 19 milestones / 84 rows (13/62
+required, 6/22 conditional). Current remaining work is in the coordinator. Accepted local Kinet commits satisfy Kinet prerequisites; siblings
 require exact acceptance and independently verified publication. Publication
-grants remain ungranted launch prerequisites; no implementation is authorized.
+authority requires explicit human approval; planning grants no implementation.
 
 Kinet R65 approved STG-12, browser profiles and legacy cleanup, as planning on
-2026-10-09. UWS owns two units:
+2026-10-09. UWS originally owned two units; only conditional C11 remains active:
 
-- **[C10](status-C10.md)** — required. Activates browser-profile shapes.
+C10 is accepted/retired; see [its complete record](../docs/history/status-C10.md).
+
 - **[C11](status-C11.md)** — conditional. Versioned HCL input removal, triggered
   only by a clean, authorized live inventory (Kinet:M54) and an accepted
   Udon:M54.
 
-No row has started. Specifications are in
+C10 is accepted; C11 remains pending with its conditional trigger absent. Specifications are in
 [Stage 12 browser profiles and legacy cleanup](#stage-12-browser-profiles-and-legacy-cleanup);
 the shared contract is the [coordinator](../../../kinet/docs/stage12.md). Planning
 grants no implementation, commit, publication or live authority.
@@ -295,60 +308,7 @@ independently published sibling prerequisites before adoption. Default checks ar
 
 | ID | Milestone | Status | Depends on |
 |---|---|---|---|
-| C10 | [Browser-profile shape activation](status-C10.md) | Pending | Kinet:M51 contract |
 | C11 | [HCL input removal version (conditional)](status-C11.md) | Pending; conditional | Clean Kinet:M54; accepted Udon:M54; OpenUdon:A32 |
-
-### C10 — Browser-profile shape activation
-
-**Stage/owner.** STG-12 Phase A; UWS. Dispatch priority position 3/19; not a review severity.
-
-**Dependencies.** The Kinet:M51 consumer contract and accepted C09.
-
-**Scope.**
-
-- Activate the reserved `browser-profile` ShapeTable kind.
-- Add binding, flow and strict-portability rules for browser templates.
-- Add Browser 1.5–1.10 conformance vectors.
-- Qualify consumers and publish.
-
-**Acceptance.** Browser shapes validate and bind with stable codes. Shape
-production stays outside UWS. Published bytes are unchanged, and no diagnostic
-grants execution.
-
-**Verification.** `go test ./...`, race and vet checks, `GOWORK=off` module checks
-including `hcl/`, conformance and immutability checks, `mkdocs build --strict` and
-`git diff --check`.
-
-**Downstream.** Browsertools:M33, OpenUdon:P10, Udon:M53, Kinet:M56 and Kinet:W20.
-
-**Tasks/review.** [status-C10.md](status-C10.md), 4 rows, review 0/10.
-
-**Depends on.** Kinet:M51. All required prerequisites must have
-accepted closure at exact revisions; sibling producer adoption also needs
-independently verified publication. A priority position never supplies authority.
-
-**Downstream impacts.** Browsertools:M33, OpenUdon:P10, Udon:M53, Kinet:M56, Kinet:W20.
-
-**Write set.** The owning `uws/` package's implementation, tests, ordinary
-documentation, manifests and qualification outputs only as required by this
-milestone's existing scope, plus `tabilet/memory-bank/status-C10.md` in its
-assigned worktree. Excludes `AGENTS.md`, `tabilet/GOAL.md`, shared memory-bank
-files, other statuses, evolution, stages, history/knowledge, the package audit
-database/sidecars, coordination docs and launch input. The coordinator alone applies shared-memory and closure
-changes serially; no child writes a sibling repository or user ledger.
-
-**Contracts read.** Immutable exact prerequisite artifacts listed above, the
-M51 native-owner-reviewed contract/fixtures when applicable, the assigned
-package baseline and frozen shared-memory/consumer snapshots captured at
-dispatch. Cross-package checks use read-only exact snapshots or approved
-published module inputs, never changing sibling checkouts. Record full source,
-artifact and fixture hashes in the later execution brief; contract drift pauses
-affected leases for coordinator reconciliation. Existing no-workspace/no-directory
-substitution requirements for ordinary published adoption remain in force.
-
-**Parallel-safe.** yes. Eligible only under the explicit Stage 12 lease opt-in, with no dependency path or bidirectional read/write conflict against any running lease.
-At most one live milestone per package. All tests use private lease ports,
-disposable stores/caches/browser profiles and unique output directories.
 
 ### C11 — HCL input removal version (conditional)
 

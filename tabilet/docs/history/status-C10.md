@@ -1,8 +1,81 @@
+# Retired Milestone C10
+
+Milestone: C10
+Outcome: completed
+Retired: 2026-10-09
+Source status: tabilet/memory-bank/status-C10.md
+Source specification: tabilet/memory-bank/milestone.md#c10--browser-profile-shape-activation
+Evidence: e6e537d89f4ef7b00cb352d2f2def3411413aaf0
+Worktree: includes uncommitted changes
+Review: passed
+Review iterations: 1
+Verification: Root/unchanged HCL tests, races and vet; immutable profiles; strict docs/diff; independent Git/public module verification; all396 source files/native checksums; public module tests/races/vet; seven frozen consumer builds/closures; integrated binding/expression/conformance tests and full vet.
+Consolidated into: [product](../../memory-bank/product.md), [architecture](../../memory-bank/architecture.md), [tech-stack](../../memory-bank/tech-stack.md), [lessons](../../memory-bank/lessons.md); exact public proof in [publication](../../../docs/c10-publication.md).
+
+## Complete milestone specification
+
+``````markdown
+### C10 — Browser-profile shape activation
+
+**Stage/owner.** STG-12 Phase A; UWS. Dispatch priority position 3/19; not a review severity.
+
+**Dependencies.** The Kinet:M51 consumer contract and accepted C09.
+
+**Scope.**
+
+- Activate the reserved `browser-profile` ShapeTable kind.
+- Add binding, flow and strict-portability rules for browser templates.
+- Add Browser 1.5–1.10 conformance vectors.
+- Qualify consumers and publish.
+
+**Acceptance.** Browser shapes validate and bind with stable codes. Shape
+production stays outside UWS. Published bytes are unchanged, and no diagnostic
+grants execution.
+
+**Verification.** `go test ./...`, race and vet checks, `GOWORK=off` module checks
+including `hcl/`, conformance and immutability checks, `mkdocs build --strict` and
+`git diff --check`.
+
+**Downstream.** Browsertools:M33, OpenUdon:P10, Udon:M53, Kinet:M56 and Kinet:W20.
+
+**Tasks/review.** [status-C10.md](status-C10.md), 4 rows, whole review 1/10 passed.
+
+**Depends on.** Kinet:M51. All required prerequisites must have
+accepted closure at exact revisions; sibling producer adoption also needs
+independently verified publication. A priority position never supplies authority.
+
+**Downstream impacts.** Browsertools:M33, OpenUdon:P10, Udon:M53, Kinet:M56, Kinet:W20.
+
+**Write set.** The owning `uws/` package's implementation, tests, ordinary
+documentation, manifests and qualification outputs only as required by this
+milestone's existing scope, plus `tabilet/memory-bank/status-C10.md` in its
+assigned worktree. Excludes `AGENTS.md`, `tabilet/GOAL.md`, shared memory-bank
+files, other statuses, evolution, stages, history/knowledge, the package audit
+database/sidecars, coordination docs and launch input. The coordinator alone applies shared-memory and closure
+changes serially; no child writes a sibling repository or user ledger.
+
+**Contracts read.** Immutable exact prerequisite artifacts listed above, the
+M51 native-owner-reviewed contract/fixtures when applicable, the assigned
+package baseline and frozen shared-memory/consumer snapshots captured at
+dispatch. Cross-package checks use read-only exact snapshots or approved
+published module inputs, never changing sibling checkouts. Record full source,
+artifact and fixture hashes in the later execution brief; contract drift pauses
+affected leases for coordinator reconciliation. Existing no-workspace/no-directory
+substitution requirements for ordinary published adoption remain in force.
+
+**Parallel-safe.** yes. Eligible only under the explicit Stage 12 lease opt-in, with no dependency path or bidirectional read/write conflict against any running lease.
+At most one live milestone per package. All tests use private lease ports,
+disposable stores/caches/browser profiles and unique output directories.
+``````
+
+## Complete status
+
+``````markdown
 # C10 — Browser-profile shape activation
 
 **Stage:** Kinet STG-12, Phase A. **Owner:** UWS.
-**State:** Limited-subset local candidate ready in retained lease `goal/C10`;
-C10.4 qualified and independently published; whole review1 passed, closure pending.
+**State:** Accepted/retired after all four rows, whole review1, independent
+source/module publication and serialized integration verification.
 **Source baseline:** `989e3f2c88cac5c0f5a2911dfe04c36a61e43126` (clean at planning).
 **Coordinator:** [Stage 12 contract](../../../kinet/docs/stage12.md). This
 package-local milestone and status own acceptance. Planning was approved on
@@ -472,3 +545,18 @@ persisted and corrected without changing evidence bytes; 0P1/0P2/1P3 corrected.
 The reviewer performed no edits, tests or protected actions. Coordinator
 integration, current-truth consolidation, downstream reconciliation and
 retirement remain separate closure work.
+
+## Coordinator closure — 2026-10-09
+
+Reviewed task/evidence e6e537d89f4ef7b00cb352d2f2def3411413aaf0 is fast-forward integrated
+on captured refs/heads/main. Integrated binding/expression/conformance tests
+and full vet pass with the same frozen inputs; whole review1 has no unresolved
+findings. Current UWS truth/lessons are consolidated and consumers are reconciled
+to exact published implementation f01a2542410c583d0ea909dadd8f17527cc0d27d,
+version v0.0.0-20261009220914-f01a2542410c. This observed evidence commit
+precedes the included coordinator consolidation/retirement changes; no earlier
+commit is claimed to contain them. Final closure is published by the coordinator
+under the approved same-source envelope and independently resolved before
+downstream dispatch. No consumer pin, source/profile/version bytes, native
+producer, driver, runtime, containment, deployment or audit activation changes.
+``````

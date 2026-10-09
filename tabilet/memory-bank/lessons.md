@@ -163,3 +163,19 @@ Unsupported conditional chains refuse before recursive parsing. Low-stack child
 regressions and independent ordinary root/codec suites pass at
 b099f6803277ae94c7e9f1da0904a0140b278f20, whole review 7. NFD remains a documented
 fail-closed limitation; frozen versions/corpora and numeric-lexeme proof remain.
+
+## C10: refuse numeric proof when schema context is unsupported
+
+Raw keyword names alone do not establish their effective constraints: Draft04
+ignores const and older reference dialects may ignore sibling bounds. Preserve
+compiled dialect/root context or refuse the entire unsupported proof before
+reading keywords or descending. C10 uses rooted preflight and exact rationals;
+open/unknown object extras and symbolic arrays remain indeterminate. Preserve
+raw schema bytes instead of repairing them. [C10 evidence](../docs/history/status-C10.md).
+
+A locally generated module ZIP is compatibility preparation. Independent public
+retrieval, native archive/GoMod checksums, exact filenames/content and fresh
+consumer closure checks establish ordinary published input. ZIP compression
+hashes may differ while native source hashes agree. Keep failed and successful
+logs separate, and update retained-log locators when moving task-owned caches.
+[Publication evidence](../../docs/c10-publication.md).

@@ -5,8 +5,8 @@ reachable through checkpoint `e0ee25b72e6d0a6ddfdcc753ef9ad8a1ff7c009a` on
 `git@github.com-tabilet:OpenUdon/uws.git`, `refs/heads/main`. The authorized
 coordinator performed a normal fast-forward push, resolved the remote again,
 and independently fetched it into a fresh bare repository. Follow-up checkpoint
-changes contain qualification/status evidence only. Local integration remains
-at captured `4429c07bab4616ab46d9a151d50fb26b1370b1fe` until the closing gate.
+changes contain qualification/status evidence only. Local integration passed by fast-forward from captured
+`4429c07bab4616ab46d9a151d50fb26b1370b1fe`, preserving linear history.
 
 Fresh ordinary Go retrieval from `https://proxy.golang.org`, with direct native
 `sum.golang.org` signature/inclusion verification, proves:
@@ -55,4 +55,7 @@ these records are evidence, not authority. Source publication supplies no
 browser, deployment, live/provider action or automatic sibling adoption.
 Audit remains disabled. C10.4 qualification and whole review1 pass, with no
 remaining findings. The P3 retained-log locator was corrected without changing
-evidence bytes. Serialized integration and accepted retirement remain pending.
+evidence bytes. Serialized integration/conformance/vet checks pass and C10 is accepted/retired.
+[Complete retired record](../tabilet/docs/history/status-C10.md) declares the
+observed evidence baseline and included coordinator closure. Final closure
+publication is independently resolved before downstream dispatch.

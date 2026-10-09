@@ -497,3 +497,38 @@ and NFD text failed closed because cty normalizes it. [M09.1/M09.2](status-M09.m
 are pending; published version/corpus bytes and numeric-lexeme evidence remain
 frozen.
 ````
+
+## 2026-10-09 — C10 accepted browser shapes supersede pending-only planning
+
+Source: tabilet/memory-bank/milestone.md, Stage 12 approved planning.
+Reason: four rows, whole review1 and exact ordinary publication are accepted.
+Evidence: e6e537d89f4ef7b00cb352d2f2def3411413aaf0 plus declared coordinator closure.
+Replacement: [current milestone bank](../../memory-bank/milestone.md) and
+[accepted C10](status-C10.md). Old current wording preserved literally:
+
+``````markdown
+## Stage 12 approved planning — 2026-10-09
+
+**Approved reconciliation.** Stage 12 planning review, 2026-10-09; source priority
+not supplied. Review baseline/current revalidation `989e3f2c88cac5c0f5a2911dfe04c36a61e43126`,
+including uncommitted Stage 12 planning files. F01/F02 are locally P1; F03–F09
+are P2 (F03 partially confirmed, all others confirmed). F05/F06/F07 (P2) belong to C11 projection, complete core-codec removal and pre-publication migration fixtures.
+Owner status notes retain evidence and lineage. Intake starts no review iteration.
+The coordinator now has 19 milestones / 84 pending rows (13/62 required, 6/22
+conditional). Accepted local Kinet commits satisfy Kinet prerequisites; siblings
+require exact acceptance and independently verified publication. Publication
+grants remain ungranted launch prerequisites; no implementation is authorized.
+
+Kinet R65 approved STG-12, browser profiles and legacy cleanup, as planning on
+2026-10-09. UWS owns two units:
+
+- **[C10](status-C10.md)** — required. Activates browser-profile shapes.
+- **[C11](status-C11.md)** — conditional. Versioned HCL input removal, triggered
+  only by a clean, authorized live inventory (Kinet:M54) and an accepted
+  Udon:M54.
+
+No row has started. Specifications are in
+[Stage 12 browser profiles and legacy cleanup](#stage-12-browser-profiles-and-legacy-cleanup);
+the shared contract is the [coordinator](../../../kinet/docs/stage12.md). Planning
+grants no implementation, commit, publication or live authority.
+``````
