@@ -1,8 +1,8 @@
 # C10 — Browser-profile shape activation
 
 **Stage:** Kinet STG-12, Phase A. **Owner:** UWS.
-**State:** Supported numeric-proof dialect correction in progress in retained
-lease `goal/C10`; required publication remains unperformed. Closing review 0/10.
+**State:** Limited-subset local candidate ready in retained lease `goal/C10`;
+C10.4 executing the approved publication checkpoint. Closing review 0/10.
 **Source baseline:** `989e3f2c88cac5c0f5a2911dfe04c36a61e43126` (clean at planning).
 **Coordinator:** [Stage 12 contract](../../../kinet/docs/stage12.md). This
 package-local milestone and status own acceptance. Planning was approved on
@@ -67,7 +67,7 @@ Consumers adopt only the exact accepted and independently published revision.
 | C10.1 — Activate the browser-profile shape kind | `[x]` | Additive exact browser metadata, native profile fragment checks, closed lossless decoding, no HTTP fields/aliases, immutable resolver snapshots and unchanged non-browser table bytes. Focused tests/race/vet passed offline with Go1.26.6. |
 | C10.2 — Browser binding and flow rules | `[x]` | Browser body templates use core binding/reference grammar and actual invocation scopes. Stable body-location/required-symbolic-credential diagnostics; partial/unknown evidence remains indeterminate. Native placeholders, extensions and private declarations stay opaque. Focused tests/race/vet passed. |
 | C10.3 — Conformance vectors | `[x]` | Eleven native action/authentication/registration profile vectors, frozen complete M51 corpus/golden, exact native integer literal/default/symbolic guards, full conditional input schemas, tampered/ambiguous/partial evidence and stable value-free refusals. Focused tests/race/vet passed offline. |
-| C10.4 — Qualify and publish | `[~]` | Prior three findings are fixed; correct the persisted unsupported-dialect proof issue using an explicit limited subset and repeat affected qualification. Publication remains separately gated. |
+| C10.4 — Qualify and publish | `[~]` | All four candidate findings are fixed; limited-subset proof and affected local qualification pass. The human approved the exact publication/checkpoint/module-verification grants; publication and independent proof remain required. |
 
 ## Acceptance and verification
 
@@ -101,7 +101,52 @@ status markers grant none; audit stays disabled.
 
 Whole-milestone review: 0/10, not started.
 
+## Approved publication resumption — 2026-10-09
+
+The human approved the authorization grants and policy exceptions in Kinet
+`suggested.txt` at SHA256
+`f7f453d1ca3fe94068475b3f440aea89c5178f054640ac0b4aaa67c18836f75a`
+and requested resumption with audit disabled. This records conversation approval
+provenance; this status supplies no authority itself. Coordinator-only grants
+`stg12-uws-c10-push-main`, `stg12-uws-c10-publication-checkpoint` and
+`stg12-uws-c10-published-module-verification` now apply within their exact scopes.
+All other external mutations remain forbidden. Historical empty-grant notes
+below describe earlier checkpoints.
+
+Implementation remains exactly `f01a2542410c583d0ea909dadd8f17527cc0d27d`.
+Fresh independent candidate inspection reports 0P1/0P2/0P3, without dynamic
+tests; retained root/ZIP/consumer qualification is complete. The explicit
+exception permits one reviewed qualification/evidence/status publication
+checkpoint before C10.4 completes. Required publication proof, task completion
+and the formal bounded closing gate remain unperformed. No dependent may adopt
+until accepted closure and independently verified exact publication.
+
+Read-only remote resolution on resumption found origin
+`git@github.com-tabilet:OpenUdon/uws.git`, `refs/heads/main` at
+`989e3f2c88cac5c0f5a2911dfe04c36a61e43126`. Captured local integration ref is
+still `refs/heads/main`, primary `/home/peter/Workspace/uws`, tip
+`4429c07bab4616ab46d9a151d50fb26b1370b1fe`, with a clean worktree. Original
+goal integration base remains `0034148e9ba26cc33295dc4e9247ee589cdb75f5`.
+Only fast-forward publication is authorized; no force, arbitrary SSH, browser,
+deployment or audit operation is included.
+
 ## Supported-subset candidate finding — 2026-10-09
+
+**Limited-subset qualified handoff.** Source
+`f01a2542410c583d0ea909dadd8f17527cc0d27d`, provisional private proxy version
+`v0.0.0-20261009220914-f01a2542410c`, Go archive sum
+`h1:TTjAn0++TdGHY0vahbXw3XsICQaavBytoqTSHu0K6o0=`, unchanged GoMod sum
+`h1:DlqFOnO9lbmYWLLIh5WicNX6NTWIuytU6mIHmxj9BVw=`. Focused/full root and
+ZIP-only tests/races/vet and all seven frozen consumer builds pass at bounded
+concurrency. All396 ZIP files match committed source; frozen input manifests,
+private version lists and retained cache/source boundaries are unchanged.
+Generic compatibility code is unchanged. Prior standalone HCL source/dependency
+evidence remains valid. Captured refs/heads/main/base remain
+`4429c07bab4616ab46d9a151d50fb26b1370b1fe`.
+Final qualification/handoff/manifest and this blocked status remain uncommitted
+C10.4 work; strict docs/diff checks are repeated after final documentation edits.
+No fresh independent pass is claimed. Formal closing review remains0 and source
+publication remains unperformed under the unchanged local-only empty grants.
 
 Independent read-only inspection of checkpoint
 `ca11bf9a02bac4c36ac5bd8b1dad2137870580dc` reports 0P1/1P2/0P3 and confirms
@@ -375,3 +420,10 @@ Kinet:M51.3 completed at local commit `589b844628b358167fe0a0137eded11c1028875c`
 Use the exact source/extraction/identity maps, per-leaf old driver protocols, complete-plan credential lease, private registration inputs, automatic TOTP versus claimed push continuations, original admitted deadline and separate bounded teardown. The supported consumer profile has one durable session binding per execution and permits other fresh named contexts. M16's immutable host-private save plan preserves v2–v11; candidate creation precedes Join and encrypted host acceptance follows Join/current-generation checks. Preserve report-v5 uncertainty and independently reproduce canonical/golden digests and positive/negative host witnesses. No current artifact claims real conformance or adoption.
 
 **Accepted local M51 prerequisite.** [Retired M51](../../../kinet/tabilet/docs/history/status-M51.md) at observed task/review evidence `33980aafdc614424f61c32a2d79171689c7952bc` (reviewed implementation874c89e, declared coordinator closure) qualifies the unchanged frozen consumer manifest0c445a5c…. Browser qualification1+3 is consumed. This producer remains pending with its original row count/review counter; exact accepted publication and its own browser authority, where required, remain separate.
+
+**Approved checkpoint inspection.** Independent read-only review of the four
+qualification/status files reports 0P1/0P2/0P3; all396 source-file hashes,
+10 qualification-log hashes and seven consumer evidence records match.
+Strict MkDocs and diff checks pass after the authorization-note edits; docs log
+SHA256 `3e7b2260221b16d4607174a68c5a2b081b89a44db77964eda339d8148937ce43`.
+The qualified implementation is unchanged. Formal closing review remains0.
