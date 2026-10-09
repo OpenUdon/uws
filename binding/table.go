@@ -83,6 +83,9 @@ func (t ShapeTable) Validate() error {
 		if op.Protocol != "http" && (op.Method != "" || op.Path != "" || len(op.Servers) > 0) {
 			return ErrTable
 		}
+		if !browserShapeValid(op) {
+			return ErrTable
+		}
 		if op.Protocol == "http" && op.Complete && (op.Method == "" || op.Path == "") {
 			return ErrTable
 		}

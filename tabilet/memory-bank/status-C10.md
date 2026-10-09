@@ -1,7 +1,7 @@
 # C10 — Browser-profile shape activation
 
 **Stage:** Kinet STG-12, Phase A. **Owner:** UWS.
-**State:** Pending. No row has started. Review 0/10.
+**State:** In progress in isolated lease `goal/C10`. Review 0/10.
 **Source baseline:** `989e3f2c88cac5c0f5a2911dfe04c36a61e43126` (clean at planning).
 **Coordinator:** [Stage 12 contract](../../../kinet/docs/stage12.md). This
 package-local milestone and status own acceptance. Planning was approved on
@@ -63,8 +63,8 @@ Consumers adopt only the exact accepted and independently published revision.
 
 | Item | State | Notes |
 |---|---|---|
-| C10.1 — Activate the browser-profile shape kind | `[ ]` | Define the `browser-profile` ShapeTable contract: profile version, action key as native selector, typed inputs and outputs, side-effect class, origins, authentication requirement and confirmation policy. Carry no HTTP method, path or server. Versioning is additive; existing `uws.shape-table.v1` bytes and APItools tables stay valid. |
-| C10.2 — Browser binding and flow rules | `[ ]` | Binding validation, deterministic flow and strict portability for browser request templates, which are skipped today. Stable value-free diagnostic codes. Keep indeterminate results. Diagnostics are observation, not authorization. |
+| C10.1 — Activate the browser-profile shape kind | `[x]` | Additive exact browser metadata, native profile fragment checks, closed lossless decoding, no HTTP fields/aliases, immutable resolver snapshots and unchanged non-browser table bytes. Focused tests/race/vet passed offline with Go1.26.6. |
+| C10.2 — Browser binding and flow rules | `[~]` | Binding validation, deterministic flow and strict portability for browser request templates, which are skipped today. Stable value-free diagnostic codes. Keep indeterminate results. Diagnostics are observation, not authorization. |
 | C10.3 — Conformance vectors | `[ ]` | Positive and negative vectors for Browser 1.5–1.10 actions and for browser-authentication and browser-registration calls. Tampered, ambiguous and incomplete cases. |
 | C10.4 — Qualify and publish | `[ ]` | Docs, published-version immutability, consumer builds (APItools, OpenUdon, Udon, Browsertools, Kinet workers) and an exact publication handoff. Publish only with named authority. |
 
@@ -99,6 +99,43 @@ status markers grant none; audit stays disabled.
 ## Review
 
 Whole-milestone review: 0/10, not started.
+
+## C10.1 execution evidence — 2026-10-09
+
+`OperationShape.Browser` is optional and leaves non-browser v1 serialization
+unchanged. Protocol/selector identities exactly match frozen M51 public-contract
+metadata. Browser/authentication/registration metadata uses the immutable native
+schemas, bounded strict JSON and RawMessage preservation. Required false values
+and present empty optional arrays survive roundtrip. Tests cover exact numeric
+lexemes/schema extensions, forged fields, native effects/policy, canonical origins,
+selector/HTTP refusal and private resolver snapshot independence.
+
+`GOWORK=off`, `GOTOOLCHAIN=local`, `GOPROXY=off`, `GOSUMDB=off`:
+Go1.26.6 `go test -p 2 ./binding`, `go test -p 2 -race ./binding`,
+`go vet -p 2 ./binding` and `git diff --check` passed. Initial compilation under
+owned `/tmp/uws-c10-go-tmp` hit its user quota; the completed checks use private
+lease resources for GOCACHE/GOTMPDIR under `/dev/shm`. No installed/downloaded
+dependency, browser operation, shared cache deletion or publication occurred.
+
+## Authorized isolated execution — 2026-10-09
+
+Coordinator dispatch follows the human-approved local-only Kinet goal with
+`STATUS_PRIORITY`, `PARALLELISM: 3`, `INTEGRATION: local-rebase-ff`,
+`COMMIT_POLICY: task`, `EXTERNAL_MUTATIONS: none` and effective
+`AUTHORIZATION_GRANTS: {}`. Governing Kinet `tabilet/GOAL.md` SHA256
+`cad15b1c175094505d380c581f577bde7ced4109ffda40b4b39d5ffe6ae88113`.
+This assignment owns only C10 implementation/tests/ordinary docs and this status;
+the coordinator owns shared memory, integration, closure and retirement.
+
+Lease `/home/peter/Workspace/uws.goal/C10`, branch `goal/C10`, captured
+integration ref `refs/heads/main`, primary `/home/peter/Workspace/uws`.
+Original goal base `0034148e9ba26cc33295dc4e9247ee589cdb75f5`; dispatch base
+`4429c07bab4616ab46d9a151d50fb26b1370b1fe`. Frozen Kinet accepted input
+`ec760d83b6e344e9e9cd7c034f9a92eba99f38b1`; unchanged M51 fixture manifest
+SHA256 `0c445a5c90d2c09be561e713c364747f4ab9a3698ea8ab46e7b7b774ccf16bad`.
+Immutable consumer inputs and lease-private caches/outputs are under the
+coordinator's `/dev/shm/kinet-stage12-leases-f8qot0xc` resource root.
+No publication, browser, install, live target or audit authority is supplied.
 
 ## Frozen M51 producer input checkpoint — 2026-10-09
 

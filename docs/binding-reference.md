@@ -9,8 +9,9 @@ permission. The package imports no APItools/provider/credential client.
 `uws.shape-table.v1` binds each Source ID/kind and exact lowercase SHA-256 to
 operation metadata. Source URLs are provenance, never fetch permission. Native
 selectors retain ID/reference distinctions, stable operation keys and known
-aliases. Browser-profile and runtime-function kinds are reserved metadata;
-UWS does not implement their leaf execution or source production.
+aliases. Runtime-function kinds remain reserved metadata. Browser-profile shapes
+use the additive optional `OperationShape.Browser` contract below; UWS does not
+implement their leaf execution or source production.
 
 OperationShape describes an explicit protocol, supported input/output schemas,
 security and completeness. Non-HTTP operations carry no fabricated HTTP method,
@@ -36,6 +37,40 @@ therefore does not establish trust or enable an operation.
 
 Binding validation and deterministic flow findings are delivered by C09.2/.3.
 Ordinary document validation and frozen published contracts remain unchanged.
+
+## Browser shape metadata
+
+Browser sources use kind `browser-profile`, protocol `browser`, and an `id`
+selector whose value and key are the exact native action or flow key. Reference
+selectors and aliases are refused. HTTP method, path and server fields are
+absent. `Browser.ProfileVersion` selects Browser 1.5–1.10, authentication 1.0/1.1,
+or registration 1.0–1.2; `CallKind` selects `action`, `authentication` or
+`registration` respectively.
+
+`SelectedSHA256` names the complete selected native action/flow subtree. The
+separate `Source.SHA256` binds exact full source bytes. Source tooling produces
+and independently reproduces both identities; table validation proves only
+metadata structure. `Origins` contains sorted unique canonical HTTP(S) origins,
+with default ports omitted. `Effects` and optional `ConfirmationPolicy` retain
+native JSON. Credential slots are symbolic name/kind/required declarations;
+registration input slots additionally preserve their complete schema and
+optional native condition. Private credentials, input values, sessions and
+driver configuration are excluded.
+
+Action inputs and outputs use location `body`. The producer maps the complete
+parameters schema, named parameters and full output contracts, retaining
+presence/count/extraction annotations. Raw JSON preserves numeric lexemes,
+schema extensions and false/zero/empty values. Required boolean fields must be
+present; null and unknown metadata refuse. Absent optional metadata stays absent;
+a present empty registration-slot array stays present. `Complete` and
+`Schema.Known` describe evidence completeness independently of runtime support.
+Partial shapes retain indeterminate diagnostic outcomes.
+
+Adding `Browser` leaves every non-browser shape serialization unchanged and
+does not modify any published profile/schema or the table version. Profile
+fragments are validated only against the immutable embedded native schemas;
+external schema resources are never fetched. Shapes and diagnostics supply no
+approval, authentication readiness, containment or execution permission.
 
 ## Advisory binding validation
 

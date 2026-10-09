@@ -69,17 +69,18 @@ type SecurityRequirement struct {
 // OperationShape is metadata only. HTTP details are absent for non-HTTP leaves;
 // source tooling must never invent a method/server from an RPC selector.
 type OperationShape struct {
-	Source   Source     `json:"source"`
-	Selector Selector   `json:"selector"`
-	Aliases  []Selector `json:"aliases,omitempty"`
-	Protocol string     `json:"protocol"`
-	Method   string     `json:"method,omitempty"`
-	Path     string     `json:"path,omitempty"`
-	Servers  []string   `json:"servers,omitempty"`
-	Inputs   []Input    `json:"inputs,omitempty"`
-	Outputs  []Output   `json:"outputs,omitempty"`
-	Security Security   `json:"security"`
-	Complete bool       `json:"complete"`
+	Source   Source                 `json:"source"`
+	Selector Selector               `json:"selector"`
+	Aliases  []Selector             `json:"aliases,omitempty"`
+	Protocol string                 `json:"protocol"`
+	Method   string                 `json:"method,omitempty"`
+	Path     string                 `json:"path,omitempty"`
+	Servers  []string               `json:"servers,omitempty"`
+	Inputs   []Input                `json:"inputs,omitempty"`
+	Outputs  []Output               `json:"outputs,omitempty"`
+	Security Security               `json:"security"`
+	Complete bool                   `json:"complete"`
+	Browser  *BrowserOperationShape `json:"browser,omitempty"`
 }
 
 // ShapeTable is untrusted until independently reproduced against source bytes.
