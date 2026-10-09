@@ -119,6 +119,19 @@ dependency, browser operation, shared cache deletion or publication occurred.
 
 ## Authorized isolated execution — 2026-10-09
 
+**C10.4 local qualification correction.** Initial committed candidate
+`1b404c59998223d14cd1d4161076fa9c51e9b48d` passed root/codec full tests/races/vet,
+strict docs, module-only ZIP tests/races/vet and all seven frozen consumer builds.
+Further decoder checks found browser HTTP fields could be supplied explicitly
+empty/null and erased by generic optional structs. Browser-only raw-presence
+refusal now enforces the frozen absent-field contract without changing generic
+parsing. Browser metadata also refuses case aliases, invalid bracket/Unicode
+origins and contradictory native conditional declarations. Focused tests/race/vet
+and complete root tests passed after correction. Final candidate packaging and
+consumer checks are repeated below before handoff. This is local task
+qualification, not the whole-milestone closing review; that counter remains0
+while required publication is unperformed.
+
 **C10.3 evidence.** The self-contained `docs/examples/browser-shapes/v1` corpus
 pins eleven fixture-only native sources (Browser1.5–1.10, authentication1.0/1.1,
 registration1.0–1.2), every exact M51 manifest-linked JSON artifact and the

@@ -188,6 +188,24 @@ func ParseTable(data []byte) (ShapeTable, error) {
 	if d.Decode(&t) != nil {
 		return ShapeTable{}, ErrTable
 	}
+	// Browser activation requires transport fields to be absent, including
+	// explicit empty/null fields that a generic optional struct would erase.
+	var wire struct {
+		Operations []map[string]json.RawMessage `json:"operations"`
+	}
+	if json.Unmarshal(data, &wire) != nil {
+		return ShapeTable{}, ErrTable
+	}
+	for i, op := range t.Operations {
+		if op.Source.Kind != KindBrowser {
+			continue
+		}
+		for name := range wire.Operations[i] {
+			if strings.EqualFold(name, "method") || strings.EqualFold(name, "path") || strings.EqualFold(name, "servers") {
+				return ShapeTable{}, ErrTable
+			}
+		}
+	}
 	var extra any
 	if d.Decode(&extra) != io.EOF {
 		return ShapeTable{}, ErrTable

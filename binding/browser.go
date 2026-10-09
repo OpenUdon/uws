@@ -68,7 +68,7 @@ func (b BrowserOperationShape) MarshalJSON() ([]byte, error) {
 func (b *BrowserOperationShape) UnmarshalJSON(data []byte) error {
 	type wire BrowserOperationShape
 	var w wire
-	if err := closedBrowserJSON(data, &w, "profile_version", "call_kind", "selected_sha256", "origins", "effects", "authentication_required", "credential_slots"); err != nil {
+	if err := closedBrowserJSON(data, &w, []string{"profile_version", "call_kind", "selected_sha256", "origins", "effects", "authentication_required", "credential_slots"}, "confirmation_policy", "registration_input_slots"); err != nil {
 		return err
 	}
 	*b = BrowserOperationShape(w)
@@ -77,7 +77,7 @@ func (b *BrowserOperationShape) UnmarshalJSON(data []byte) error {
 func (s *CredentialSlotShape) UnmarshalJSON(data []byte) error {
 	type wire CredentialSlotShape
 	var w wire
-	if err := closedBrowserJSON(data, &w, "name", "kind", "required"); err != nil {
+	if err := closedBrowserJSON(data, &w, []string{"name", "kind", "required"}); err != nil {
 		return err
 	}
 	*s = CredentialSlotShape(w)
@@ -86,13 +86,13 @@ func (s *CredentialSlotShape) UnmarshalJSON(data []byte) error {
 func (s *RegistrationInputSlotShape) UnmarshalJSON(data []byte) error {
 	type wire RegistrationInputSlotShape
 	var w wire
-	if err := closedBrowserJSON(data, &w, "name", "kind", "required", "schema"); err != nil {
+	if err := closedBrowserJSON(data, &w, []string{"name", "kind", "required", "schema"}, "condition"); err != nil {
 		return err
 	}
 	*s = RegistrationInputSlotShape(w)
 	return nil
 }
-func closedBrowserJSON(data []byte, target any, required ...string) error {
+func closedBrowserJSON(data []byte, target any, required []string, optional ...string) error {
 	if strictjson.ValidateSingleValue(data) != nil {
 		return ErrTable
 	}
@@ -100,8 +100,15 @@ func closedBrowserJSON(data []byte, target any, required ...string) error {
 	if json.Unmarshal(data, &fields) != nil || fields == nil {
 		return ErrTable
 	}
-	for _, raw := range fields {
-		if bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+	allowed := map[string]bool{}
+	for _, name := range required {
+		allowed[name] = true
+	}
+	for _, name := range optional {
+		allowed[name] = true
+	}
+	for name, raw := range fields {
+		if !allowed[name] || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
 			return ErrTable
 		}
 	}
@@ -206,7 +213,7 @@ func browserShapeValid(op OperationShape) bool {
 		}
 		if raw, present := schema["required"]; present {
 			var required bool
-			if bytes.Equal(bytes.TrimSpace(raw), []byte("null")) || json.Unmarshal(raw, &required) != nil || required != slot.Required {
+			if len(slot.Condition) != 0 || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) || json.Unmarshal(raw, &required) != nil || required != slot.Required {
 				return false
 			}
 		}
@@ -224,7 +231,7 @@ func browserShapeValid(op OperationShape) bool {
 				Slot   string          `json:"slot"`
 				Equals json.RawMessage `json:"equals"`
 			}
-			if slot.Required || closedBrowserJSON(slot.Condition, &condition, "slot", "equals") != nil || !browserIdentifier.MatchString(condition.Slot) {
+			if slot.Required || closedBrowserJSON(slot.Condition, &condition, []string{"slot", "equals"}) != nil || !browserIdentifier.MatchString(condition.Slot) {
 				return false
 			}
 			v, e := decode(condition.Equals)
@@ -307,6 +314,14 @@ func canonicalBrowserOrigin(raw string) bool {
 	}
 	if u.Hostname() == "" || strings.ContainsAny(u.Hostname(), "\\ *%") || strings.Contains(u.Hostname(), ":") && net.ParseIP(u.Hostname()) == nil {
 		return false
+	}
+	if strings.HasPrefix(u.Host, "[") && (!strings.Contains(u.Hostname(), ":") || net.ParseIP(u.Hostname()) == nil) {
+		return false
+	}
+	for _, r := range u.Hostname() {
+		if r > 127 {
+			return false
+		}
 	}
 	if p := u.Port(); p != "" {
 		n, e := strconv.Atoi(p)

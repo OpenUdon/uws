@@ -65,23 +65,25 @@ func TestBrowserShapeLosslessOptionalAndSnapshot(t *testing.T) {
 
 func TestBrowserShapeRejectsMalformedNativeMetadata(t *testing.T) {
 	cases := map[string]func(*OperationShape){
-		"protocol":          func(o *OperationShape) { o.Protocol = "http" },
-		"method":            func(o *OperationShape) { o.Method = "GET" },
-		"path":              func(o *OperationShape) { o.Path = "/" },
-		"server":            func(o *OperationShape) { o.Servers = []string{"https://example.test"} },
-		"reference":         func(o *OperationShape) { o.Selector.Kind = "ref" },
-		"alias":             func(o *OperationShape) { o.Aliases = []Selector{{Kind: "id", Value: "alias", Key: "read"}} },
-		"foreign key":       func(o *OperationShape) { o.Selector.Key = "other" },
-		"missing metadata":  func(o *OperationShape) { o.Browser = nil },
-		"unknown profile":   func(o *OperationShape) { o.Browser.ProfileVersion = "uws.browser.1.11" },
-		"family mismatch":   func(o *OperationShape) { o.Browser.CallKind = "registration" },
-		"selected digest":   func(o *OperationShape) { o.Browser.SelectedSHA256 = strings.Repeat("B", 64) },
-		"default port":      func(o *OperationShape) { o.Browser.Origins = []string{"https://example.test:443"} },
-		"origin path":       func(o *OperationShape) { o.Browser.Origins = []string{"https://example.test/"} },
-		"origin wildcard":   func(o *OperationShape) { o.Browser.Origins = []string{"https://*.test"} },
-		"unsorted origins":  func(o *OperationShape) { o.Browser.Origins = []string{"https://z.test", "https://a.test"} },
-		"duplicate origins": func(o *OperationShape) { o.Browser.Origins = []string{"https://example.test", "https://example.test"} },
-		"unknown effect":    func(o *OperationShape) { o.Browser.Effects = json.RawMessage(`["unknown"]`) },
+		"protocol":                  func(o *OperationShape) { o.Protocol = "http" },
+		"method":                    func(o *OperationShape) { o.Method = "GET" },
+		"path":                      func(o *OperationShape) { o.Path = "/" },
+		"server":                    func(o *OperationShape) { o.Servers = []string{"https://example.test"} },
+		"reference":                 func(o *OperationShape) { o.Selector.Kind = "ref" },
+		"alias":                     func(o *OperationShape) { o.Aliases = []Selector{{Kind: "id", Value: "alias", Key: "read"}} },
+		"foreign key":               func(o *OperationShape) { o.Selector.Key = "other" },
+		"missing metadata":          func(o *OperationShape) { o.Browser = nil },
+		"unknown profile":           func(o *OperationShape) { o.Browser.ProfileVersion = "uws.browser.1.11" },
+		"family mismatch":           func(o *OperationShape) { o.Browser.CallKind = "registration" },
+		"selected digest":           func(o *OperationShape) { o.Browser.SelectedSHA256 = strings.Repeat("B", 64) },
+		"default port":              func(o *OperationShape) { o.Browser.Origins = []string{"https://example.test:443"} },
+		"origin path":               func(o *OperationShape) { o.Browser.Origins = []string{"https://example.test/"} },
+		"origin wildcard":           func(o *OperationShape) { o.Browser.Origins = []string{"https://*.test"} },
+		"malformed bracket host":    func(o *OperationShape) { o.Browser.Origins = []string{"https://[abcd]"} },
+		"noncanonical Unicode host": func(o *OperationShape) { o.Browser.Origins = []string{"https://éxample.test"} },
+		"unsorted origins":          func(o *OperationShape) { o.Browser.Origins = []string{"https://z.test", "https://a.test"} },
+		"duplicate origins":         func(o *OperationShape) { o.Browser.Origins = []string{"https://example.test", "https://example.test"} },
+		"unknown effect":            func(o *OperationShape) { o.Browser.Effects = json.RawMessage(`["unknown"]`) },
 		"read mixed with write": func(o *OperationShape) {
 			o.Browser.Effects = json.RawMessage(`["read_only","state_change"]`)
 			o.Browser.ConfirmationPolicy = json.RawMessage(`{"required":true}`)
@@ -112,6 +114,10 @@ func TestBrowserShapeRejectsMalformedNativeMetadata(t *testing.T) {
 		strings.Replace(string(data), `"credential_slots":[]`, `"credential_slots":null`, 1),
 		strings.Replace(string(data), `"call_kind":"action"`, `"call_kind":"action","call_kind":"action"`, 1),
 		strings.Replace(string(data), `"credential_slots":[]`, `"credential_slots":[],"private":"private-canary"`, 1),
+		strings.Replace(string(data), `"call_kind":"action"`, `"call_kind":"action","Call_Kind":"action"`, 1),
+		strings.Replace(string(data), `"protocol":"browser"`, `"protocol":"browser","method":""`, 1),
+		strings.Replace(string(data), `"protocol":"browser"`, `"protocol":"browser","path":null`, 1),
+		strings.Replace(string(data), `"protocol":"browser"`, `"protocol":"browser","Servers":[]`, 1),
 	} {
 		if _, err := ParseTable([]byte(bad)); err != ErrTable {
 			t.Fatal("open or incomplete wire accepted", err)
