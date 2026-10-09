@@ -1,0 +1,17 @@
+{
+  "schema": "uws.expression-reference.manifest.v1",
+  "published_specification": "1.12.0",
+  "conformance_supplement": "uws.expression-reference.v1",
+  "scope": "additive reference grammar/evaluation vectors; no published spec/schema/archive changes",
+  "vectors_sha256": "c60618b61524436d3afd0dfa257e0c81d8bf640145d47da66275dde7bd491bf8",
+  "cases": 18,
+  "ordinary_validation": "unchanged; strict portability is explicitly opt-in",
+  "legacy_mock_compatibility": [
+    "generic numeric evaluation",
+    "encoded initial pointer delimiter"
+  ],
+  "source_context": {
+    "revision": "26728ff58fb1f7e80d35aab4cae5f7203149b509",
+    "worktree": "includes documentation navigation/link fixes and C08.4 qualification records"
+  }
+}

@@ -1,0 +1,33 @@
+[
+  {
+    "ArchiveBytes": 2417310,
+    "ArchiveFiles": 360,
+    "ArchiveSHA256": "328e5bec557b05536879bb7b3d159b3a5dbff7027cc2b7ea9a8471093a04013a",
+    "GoModSum": "h1:DlqFOnO9lbmYWLLIh5WicNX6NTWIuytU6mIHmxj9BVw=",
+    "Origin": {
+      "Hash": "b099f6803277ae94c7e9f1da0904a0140b278f20",
+      "URL": "https://github.com/OpenUdon/uws",
+      "VCS": "git"
+    },
+    "Path": "github.com/OpenUdon/uws",
+    "ReviewedFilesExact": true,
+    "Sum": "h1:4xy+/HBNh1CSJDO+qOzWdV/0zC/yFCKAz2kOBWufA7g=",
+    "Version": "v0.0.0-20261008043726-b099f6803277"
+  },
+  {
+    "ArchiveBytes": 48206,
+    "ArchiveFiles": 21,
+    "ArchiveSHA256": "0c6c7c9ece74d888a76213b5b0db233ef31fd297c78145ab8d0513d1d994b21f",
+    "GoModSum": "h1:0cR/xLzEP8vJ9FAUhsLbaKVkU7UarXPc51nJjEaMP5Q=",
+    "Origin": {
+      "Hash": "b099f6803277ae94c7e9f1da0904a0140b278f20",
+      "Subdir": "hcl",
+      "URL": "https://github.com/OpenUdon/uws",
+      "VCS": "git"
+    },
+    "Path": "github.com/OpenUdon/uws/hcl",
+    "ReviewedFilesExact": true,
+    "Sum": "h1:OJsmDK/RcFpyMAMGy84DjcX6kNalYH/E0Q/C3XwD5Uo=",
+    "Version": "v0.0.0-20261008043726-b099f6803277"
+  }
+]

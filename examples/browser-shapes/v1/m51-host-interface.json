@@ -1,0 +1,55 @@
+{
+  "version": "kinet.browser-host-fixture.v1",
+  "fixture_only": true,
+  "exact_declarations": "docs/stage12-browser-host.go.txt",
+  "public_declarations": "docs/stage12-browser-public.go.txt",
+  "public_mapping": "public-contract.json",
+  "save_mechanism": "session-save-contract.json",
+  "capabilities": [
+    "Launch",
+    "Credentials",
+    "Interact",
+    "RegistrationInput",
+    "SessionAcquire",
+    "ClaimDispatch",
+    "ProveNonDispatch",
+    "Join",
+    "SessionSave",
+    "SessionRelease"
+  ],
+  "claim_message_kinds": [
+    "authenticate",
+    "register",
+    "action",
+    "challenge_response",
+    "registration_input_response",
+    "registration_checkpoint_response"
+  ],
+  "closed_interaction_kinds": [
+    "mfa_push",
+    "mfa_number_match",
+    "registration_checkpoint",
+    "registration_submit",
+    "runtime_confirmation",
+    "capture_human_totp"
+  ],
+  "private_registration_input": [
+    "Request",
+    "Previous",
+    "Initial",
+    "Snapshot",
+    "Identity"
+  ],
+  "no_report_v5_extension": true,
+  "one_process_per_execution_per_leaf_protocol": true,
+  "session_generation_positive_safe_integer": true,
+  "teardown_context_separate_bounded_no_dispatch": true,
+  "partial_launch_retains_ownership": true,
+  "unknown_join_quarantines": true,
+  "runtime_totp": "automatic private totp_seed/environment; no challenge_response",
+  "manual_otp": "sms/email/voice unsupported at selected-profile preflight",
+  "durable_session_limit": 1,
+  "other_fresh_named_contexts_allowed": true,
+  "candidate_producing_permission_limit": 1,
+  "credential_lease_scope": "complete approved-plan slots/current revisions before Launch"
+}

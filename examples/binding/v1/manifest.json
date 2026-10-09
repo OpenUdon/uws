@@ -1,0 +1,36 @@
+{
+  "schema": "uws.binding-reference.v1",
+  "upstream_revision": "c2f161d762bc9f2217bbf0c34b00cdef64b0f7d0",
+  "upstream_files": [
+    {
+      "source_path": "docs/examples/step-authoring/v1/example/openapi/project-api.yaml",
+      "path": "project-api.yaml",
+      "sha256": "a46290a985f29d7e68638b1154b180f564ecfe910a8a47b9a17ff079ef82f257"
+    },
+    {
+      "source_path": "docs/examples/step-authoring/v1/results/step-check.json",
+      "path": "step-check-indeterminate.json",
+      "sha256": "46a0487db24e9e69c013c4323532628f1b1eb800e72ddebcf4f4fe95e1a6b27d"
+    },
+    {
+      "source_path": "docs/examples/step-authoring/v1/results/step-check-runnable.json",
+      "path": "step-check-runnable.json",
+      "sha256": "c2d6e00a99113538d04af6a0b2f791eb9f619c7a004fb413e6c6c60c84d4a212"
+    },
+    {
+      "source_path": "docs/examples/step-authoring/v1/requests/step-bind.json",
+      "path": "step-bind.json",
+      "sha256": "4c450c8ea4baaeaebbe44ebf5aaed66773e129cba2a50f10efa57f8505b62080"
+    }
+  ],
+  "shape_sha256": "8b5b5ee0e243dc9beabde899f50b22cee11ff4cfb43e8f6b29af45230a233b50",
+  "comparison": "Source identity/native selector, required input/type, response fields and complete authentication alternative match the accepted runnable step fixture. The indeterminate fixture has effect/account/purpose gaps outside this metadata check, preserved as separate flow/policy evidence.",
+  "qualification_source": "eccd4e809bfc900c326ed38635cc628e65082ead",
+  "qualification_worktree": "includes C09.4 fixture/qualification/navigation changes",
+  "qualification_logs_sha256": {
+    "tests": "9c1e6e3e08a6ba2f1cd4bb76acf6f15f1ca1a13e13a0dfad77aea3a342617bf3",
+    "race": "26b382783b4c1f8d142171c660a64a9bb914ff23e6e5c77eacc7d92089b8d8d2",
+    "vet": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mkdocs": "131f24f0d45712c165b86f7399055adc9b4e76ee022804e2f6c192a661ca7c8f"
+  }
+}

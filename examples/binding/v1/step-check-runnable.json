@@ -1,0 +1,38 @@
+{
+  "version": "openudon.step-authoring.v1",
+  "kind": "result",
+  "command": "step.check",
+  "status": "completed",
+  "diagnostics": [],
+  "result": {
+    "step_id": "list_projects",
+    "intent_sha256": "sha256:6a010a6eef84f5bf3edc7729953d64f1b8a43580a5fffbeffb080ac68b802f79",
+    "operation_ref": {
+      "source_kind": "openapi",
+      "source_id": "src-1d4eb0f1835e8dcc2a650198",
+      "source_sha256": "sha256:a46290a985f29d7e68638b1154b180f564ecfe910a8a47b9a17ff079ef82f257",
+      "native_selector": "#/paths/~1projects/get",
+      "operation_key": "listProjects",
+      "operation_id": "listProjects"
+    },
+    "assessment": "compatible",
+    "checks": [
+      { "code": "intent.digest_match", "status": "pass", "message": "The expected intent digest matches the current bytes." },
+      { "code": "source.digest_match", "status": "pass", "message": "The selected source digest matches the current bytes." },
+      { "code": "operation.exact_match", "status": "pass", "message": "The selected operation identity and native selector match one source operation." },
+      { "code": "operation.intent_binding", "status": "pass", "message": "The selected step names the requested source operation." },
+      { "code": "mapping.required_inputs", "status": "pass", "message": "Required contract and operation inputs have mappings." },
+      { "code": "mapping.output_references", "status": "pass", "message": "Relevant workflow outputs stay within the step contract." },
+      { "code": "mapping.outputs", "status": "pass", "message": "Declared contract outputs are present in the selected response summary." },
+      { "code": "authentication.alternative", "status": "pass", "message": "At least one complete authentication alternative is configured." },
+      { "code": "dependency.mapping", "status": "pass", "message": "Declared and referenced step dependencies resolve." },
+      { "code": "mapping.input_contract", "status": "pass", "message": "Source metadata is compatible with the declared step input contract." },
+      { "code": "mapping.output_contract", "status": "pass", "message": "Source metadata is compatible with the declared step output contract." },
+      { "code": "effect.evidence", "status": "pass", "message": "Source metadata supports the selected operation's effect class." }
+    ],
+    "unresolved_questions": [
+      "Does the configured account satisfy the reviewed account constraint?",
+      "Does the selected operation fulfill the natural-language purpose?"
+    ]
+  }
+}
