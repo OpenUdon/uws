@@ -2,7 +2,7 @@
 
 **Stage:** Kinet STG-12, Phase A. **Owner:** UWS.
 **State:** Limited-subset local candidate ready in retained lease `goal/C10`;
-C10.4 executing the approved publication checkpoint. Closing review 0/10.
+C10.4 qualified and independently published; closing review 0/10 pending.
 **Source baseline:** `989e3f2c88cac5c0f5a2911dfe04c36a61e43126` (clean at planning).
 **Coordinator:** [Stage 12 contract](../../../kinet/docs/stage12.md). This
 package-local milestone and status own acceptance. Planning was approved on
@@ -67,7 +67,7 @@ Consumers adopt only the exact accepted and independently published revision.
 | C10.1 — Activate the browser-profile shape kind | `[x]` | Additive exact browser metadata, native profile fragment checks, closed lossless decoding, no HTTP fields/aliases, immutable resolver snapshots and unchanged non-browser table bytes. Focused tests/race/vet passed offline with Go1.26.6. |
 | C10.2 — Browser binding and flow rules | `[x]` | Browser body templates use core binding/reference grammar and actual invocation scopes. Stable body-location/required-symbolic-credential diagnostics; partial/unknown evidence remains indeterminate. Native placeholders, extensions and private declarations stay opaque. Focused tests/race/vet passed. |
 | C10.3 — Conformance vectors | `[x]` | Eleven native action/authentication/registration profile vectors, frozen complete M51 corpus/golden, exact native integer literal/default/symbolic guards, full conditional input schemas, tampered/ambiguous/partial evidence and stable value-free refusals. Focused tests/race/vet passed offline. |
-| C10.4 — Qualify and publish | `[~]` | All four candidate findings are fixed; limited-subset proof and affected local qualification pass. The human approved the exact publication/checkpoint/module-verification grants; publication and independent proof remain required. |
+| C10.4 — Qualify and publish | `[x]` | Reviewed checkpoint e0ee25b published by normal fast-forward; independent fresh Git fetch and public root module retrieval reproduce exact f01 source and approved Go checksums/all396 files. Public module tests/races/vet and seven frozen consumer builds/closures pass offline. Formal review/accepted closure remain pending. |
 
 ## Acceptance and verification
 
@@ -427,3 +427,16 @@ qualification/status files reports 0P1/0P2/0P3; all396 source-file hashes,
 Strict MkDocs and diff checks pass after the authorization-note edits; docs log
 SHA256 `3e7b2260221b16d4607174a68c5a2b081b89a44db77964eda339d8148937ce43`.
 The qualified implementation is unchanged. Formal closing review remains0.
+
+## C10.4 independently published qualification — 2026-10-09
+
+[Public proof](../../docs/c10-publication.md) and its complete manifest bind
+source f01a2542410c583d0ea909dadd8f17527cc0d27d to checkpoint
+e0ee25b72e6d0a6ddfdcc753ef9ad8a1ff7c009a, fresh remote fetch/public Go
+retrieval, native checksums, all396 files and seven offline consumer closures.
+All required automated checks pass; formal whole review remains0 pending.
+The first local retrieval refused equivalent URI encoding before upstream
+contact; fresh successful retrieval is independently proved. The first public
+race link hit quota; its failed log is retained, two inactive owned derived Go
+caches were cleared, and affected checks pass afterward. Module/source/artifact
+evidence is preserved. No real ledger, browser, deployment or audit action.
