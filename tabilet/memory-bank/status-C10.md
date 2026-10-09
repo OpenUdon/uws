@@ -122,12 +122,18 @@ persisted before fixes; the old checkpoint and qualification evidence are retain
   fragment. Required/Condition alignment and full raw values are retained;
   minimal partial declarations remain indeterminate. Go1.26.6 focused binding
   tests/race/vet and diff checks pass offline. Final packaging remains pending.
-- **C10-P2-2 — confirmed; correction in progress.** Whole-body typed integer
+- **C10-P2-2 — fixed and focused verification passed.** Whole-body typed integer
   proof checks target properties but ignores open or extra source properties;
   a bounded n inside an open object can incorrectly become Compatible while
   an extra integer remains unsafe. Require closed source objects or supported
   complete proof of all possible extras; otherwise retain Indeterminate. Add
   closed/open/declared-extra controls without schema rewriting. Owner: C10 executor.
+  Positive whole-body proof now requires an explicitly closed source object,
+  no unsupported pattern properties and a native target contract for every
+  declared source property. Open/unknown extra inventories remain indeterminate,
+  including bounded additional-property schemas not proved by this implementation.
+  Closed fully described property controls stay compatible. Focused binding
+  tests/race/vet and diff checks pass offline; stored schemas are unchanged.
 
 ## C10.4 local candidate handoff — 2026-10-09
 

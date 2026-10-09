@@ -185,6 +185,18 @@ func browserIntegerType(target, source any, lo, hi *big.Rat, depth int) Outcome 
 	if kind == "object" {
 		props, _ := t["properties"].(map[string]any)
 		sourceProps, _ := s["properties"].(map[string]any)
+		// A proof for named properties does not cover arbitrary extra values.
+		// Only finite closed inventories are supported here; pattern/open
+		// properties need additional proof and remain indeterminate.
+		patterns, _ := s["patternProperties"].(map[string]any)
+		if s["type"] != "object" || s["additionalProperties"] != false || len(patterns) != 0 {
+			return Indeterminate
+		}
+		for name := range sourceProps {
+			if _, declared := props[name]; !declared {
+				return Indeterminate
+			}
+		}
 		state := Compatible
 		for name, child := range props {
 			next := browserIntegerType(child, sourceProps[name], lo, hi, depth+1)
