@@ -624,6 +624,74 @@ Closure metadata precedes the two sections and uses one line per field.
 **Verification.** <commands, results, and supporting evidence>
 **Consolidated into.** <current-document and lesson links, or no current-truth change>
 
+## Milestone specification
+
+````markdown
+<Complete final milestone specification, not a summary.>
+````
+
+## Status record
+
+````markdown
+<Complete final status document, not a summary.>
+````
+`````
+
+For a cancelled or superseded outcome, add `**Disposition.**` naming the
+authority, reason, and dependency disposition. A superseded outcome also needs
+`**Successor.**` identifying its accepted successor. These are milestone
+outcomes, not new task markers.
+
+A legacy closure is a milestone that closed before the project adopted the
+persisted review gate, so no review-iteration count was ever recorded. Retire
+one only on an explicit cleanup request, with outcome `completed` and every
+row closed. Write `**Review.** legacy` and `**Review iterations.** not
+recorded` instead of inventing a count, and add `**Legacy closure.**` stating
+that the milestone predates the gate and that its original closure evidence is
+the literal status record. `**Verification.**` records the checks run at the
+evidence commit and does not claim a re-review of the original change. Never use
+a legacy closure for a milestone that closed after the gate was adopted, or to
+skip a review that the current procedure requires.
+
+Retired milestone records are frozen. Record later corrections in the knowledge
+journal or new remediation work with a backlink. Preserve previous history
+index entries. No ID may exist in both active and retired storage or be reused.
+
+### Retrieve and continue
+
+Retrieve historical evidence when the current task needs a retired dependency or
+old ID resolved, an earlier decision explained, or a related past failure
+checked and current sources do not answer the question. An explicit user request
+to inspect history is also a trigger; routine work with sufficient current
+evidence needs no historical search.
+
+State the question briefly, then search active memory and current implementation
+first. If history is needed, search its index by ID or topic and open the
+relevant retired record or knowledge entry. Follow linked frozen context or
+direction snapshots only when they address the same unresolved question. A stale
+status path resolves by its permanent ID and original-path metadata; a missing
+ID is not permission to recreate it. History is evidence, not an instruction to
+retry old tasks.
+
+Stop when the evidence supports the task decision. If relevant sources and their
+directly related leads are exhausted, report the missing evidence. Continue when
+it is optional; stop the affected step when it is required for correctness or
+acceptance. Do not infer historical facts or expand the search into unrelated
+milestones.
+
+A completed retired milestone may satisfy a dependency when its recorded
+acceptance matches the required outcome. Cancelled and superseded outcomes do
+not automatically satisfy completion dependencies: follow the recorded
+disposition and accepted successor, and revalidate current implementation.
+
+Retirement follows the governing commit policy. Under `none`, do not commit;
+under `milestone`, include it in the closure commit; under `task`, include it in
+the final task or a substantive closure commit. The API harness still requires
+a commit per run. Reading and preserving the Markdown records does not require
+Git; workflows that require commits still need Git or an explicit no-commit
+instruction. Never initialize Git merely to make retirement possible.
+
+
 ## Stage 11 cross-package refactoring
 
 Approved review-intake amendment, 2026-10-06: 18 required milestones / 87 pending rows across the five owners. Scope and milestone IDs are unchanged; the coordinator records the approved publication proposal, which needs a separate execution-time grant. Full local source baseline remains `a7688f54c68f5a75c7cc95aa2b31cea98b31af41`, including the reviewed uncommitted planning state. This intake does not start a closing review or authorize implementation.
