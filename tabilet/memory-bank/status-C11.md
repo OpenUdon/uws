@@ -21,6 +21,73 @@ Evidence: the old Kinet goal/launch rules, owning agent rules, existing pending
 dependencies and sibling consumer checks; Udon `go.mod`/`pkg/execute` import no
 OpenUdon code. This approved intake changes no row state or review counter.
 
+## Status rules
+
+See [`milestone.md`](milestone.md) for milestone definitions and the status ID
+pattern that names this file.
+
+Status markers:
+
+| Symbol | Suggested Status | Interpretation |
+|---|---|---|
+| `[ ]` | Pending | Item is actionable when its dependencies pass. |
+| `[+]` | Completed | Item finished or done. |
+| `[~]` | In Progress | Item is the one general row currently being worked. |
+| `[!]` | Blocked | A current unresolved blocker still prevents progress. |
+| `[X]` | Cancelled | The approved item was withdrawn; any later replacement needs fresh planning. Cancellation does not prove delivery. |
+| `[-]` | Closed Historical | A consumed failed attempt or superseded row retained for audit; it is never retried and does not block its accepted successor. |
+
+Write markers with backticks, exactly as in the table above: `` `[ ]` ``, not
+`[ ]`.
+
+Across the active ledger, zero or one general row may be `[~]`. Resume it before
+selecting another row. An operational launcher additionally requires its exact
+authorized operation row to be `[~]` before invocation; the marker records the
+selected operation but does not grant missing external-mutation authority.
+
+Read this milestone's optional `AUTHORIZATION_REQUIREMENTS` in
+[`milestone.md`](milestone.md#authorization-requirements); do not duplicate its
+declaration here. Check protected actions against the current human-approved
+request and effective grants before acting. Notes may record a grant ID,
+performed-action evidence, or a missing-authority blocker; they never prove
+approval. Required unperformed actions prevent closure. No new task marker is
+introduced, and absent authorization metadata grants no additional authority.
+
+With human-approved `CORRECTIVE_PLANNING: auto`, the owner may prepare and
+check necessary repair plans within the original delivery outcome, existing
+grants and explicit limits. Preserve this row's identity and interrupted work;
+move the interrupted `[~]` row to `[!]` before activating a repair row. Record
+prerequisite IDs, standing approval source and resumption condition. Keep zero
+or one `[~]` row. Once every prerequisite is verified and accepted and all
+blockers clear, restore this row from `[!]` to `[~]` under the same approval.
+Recover this chain on resume; do not select unrelated work. Preserve partial
+implementation; suspension bookkeeping may join the scoped repair checkpoint,
+but unfinished implementation cannot. Pause if overlapping changes cannot be
+separated safely. Explicit project restrictions still govern.
+Preserve review counts and frozen history. Children report needs
+to the owner; a marker never grants planning or action authority.
+
+Each table row is a commit unit: after changing its state, verify the change,
+update the memory bank/docs, and make a scoped `git commit` before starting the
+next row, except the scoped repair suspension bookkeeping above. A `[-]` row's
+notes must record the consumed attempt or supersession
+and identify its accepted successor. If two rows are inseparable, redefine them
+as one row before starting rather than closing several rows in one commit.
+During a goal run, the resolved `COMMIT_POLICY` governs instead; `none` means
+no commits even when a requirement or grant mentions `git.commit`.
+
+Keep this file a current-state record, not a log. Replace a superseded checkpoint
+instead of appending dated narrative, and link per-attempt detail in evidence
+files. A row whose acceptance depends on an expensive check records its attempt
+count here under the [verification-attempt gate](milestone.md#verification-attempt-gate).
+
+After the milestone's review, consolidation, and downstream reconciliation
+pass, follow [the retirement procedure](milestone.md#long-term-memory-and-retirement).
+Preserve this complete document and the full milestone specification in its
+retired record; earlier rows, notes, and original path context must survive.
+Retirement follows the governing commit policy and never changes the task
+markers or permits reuse of this milestone ID.
+
 ## Dispatch and lease boundaries
 
 **Depends on.** Kinet:M54, Udon:M54, OpenUdon:A32. All required prerequisites must have
