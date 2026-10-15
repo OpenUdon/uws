@@ -16,11 +16,13 @@ actual pins are unchanged. Only conditional C11 remains active. Audit is disable
 
 ## Stage 12 concurrent goal ownership
 
-For an explicitly authorized STG-12 goal, the governing protocol is
-[../kinet/tabilet/GOAL.md](../kinet/tabilet/GOAL.md). The coordinator passes that exact protocol and the
-complete resolved request to each child; sibling standalone goal protocols
-remain unchanged. Use the goal skill through a hosting agent with subagents;
-the Python API runner/controller remains serial.
+For an explicitly authorized STG-12 goal, use the memory-bank goal protocol
+bundled with the skills and each participating package's applicable addendum.
+The coordinator passes the exact selected protocol path/hash, `GOAL_IDENTITY`,
+complete resolved request, human approval context and narrowed assignment
+grants to every child; read-only reviewers receive no mutation authority.
+Use the goal skill through a hosting agent with subagents; the Python API
+runner/controller remains serial.
 
 This is a scoped exception to serial and whole-ledger single-row wording:
 
@@ -115,18 +117,30 @@ evidence at its recorded context; current truth remains in the memory bank.
 Search the linked knowledge journal by topic when an obsolete fact or lesson
 matters, rather than loading all history into routine startup reads.
 
-This project ships [tabilet/GOAL.md](tabilet/GOAL.md), one optional protocol for
-goal requests that span multiple status files. Follow it when a request names
-it. A request that names a different protocol, or none, does not use it; an
-authorized Stage 12 goal uses the protocol named in
-[Stage 12 concurrent goal ownership](#stage-12-concurrent-goal-ownership).
+Goal requests may use the memory-bank goal protocol bundled with the skills.
+Follow it only when the request selects it; another protocol or no protocol
+remains supported. Optional `tabilet/GOAL.md` is a project addendum that adds
+or narrows local rules, never a replacement or merged protocol.
 
-A goal run is a deliberate exception to the Work Cadence below. For the
-duration of that run, its resolved `COMMIT_POLICY` is the entire commit rule and
-"each row is a commit unit" does not apply: `COMMIT_POLICY: none` means no
-commits at all. Pass `COMMIT_POLICY: task` to get the usual per-row commits.
-Precedence is the request, then the governing goal protocol, then this file;
-only commits are delegated, and only inside the run.
+A goal run uses its resolved `COMMIT_POLICY`: `none` means no commits and
+`task` selects the usual per-row cadence. Precedence is the request, then the
+project addendum, then the selected goal protocol, then this file. Existing
+project restrictions and explicitly authorized lease ownership/integration
+still apply; local integration grants no remote push.
+
+Resolve the selected full protocol before a run. Verify the bundled stock
+protocol against its bundled fingerprint registry.
+Record `GOAL_IDENTITY` for the protocol and every participating package's
+addendum, `ignored-stock` copy or absence. Recheck it on resume and child
+dispatch; compare hashes and classifications, not diagnostic version labels.
+Protocol/addendum fingerprints normalize CRLF to LF only; launch approval
+checksums hash raw bytes. Preserve an explicitly selected `GOAL_PROTOCOL`
+alternative. Recognized stock project copies are ignored and removable; a
+modified full copy stops execution until explicitly reduced or selected.
+For a legacy launch or paused goal without identity, show the resolved identity
+and recover the original human-approved request where available; obtain any
+missing or changed identity approval without resetting grants, counters or
+limits. An upgrade never resumes execution or activates launch grants.
 
 Do not recreate duplicate root-level product, architecture, roadmap, or status
 documents, and do not create an aggregate `tabilet/memory-bank/status.md`.
@@ -174,7 +188,7 @@ Long-form references live in `docs/`; README is operator-focused.
   commit unit. See that file for status markers and commit rules.
 - Across the active ledger, keep zero or one general row in progress unless an
   authorized goal request explicitly defines safe parallel ownership: in
-  concurrent lease execution under `tabilet/GOAL.md`, each external lease
+  concurrent lease execution under the goal protocol, each external lease
   maintains at most one `[~]` row in its own status file, only the orchestrator
   writes the captured integration branch and shared memory documents
   (`architecture.md`, `product.md`, `tech-stack.md`, `lessons.md`), and integration occurs

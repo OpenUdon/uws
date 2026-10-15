@@ -9,8 +9,9 @@ fixes should be verified and committed before work starts on the next milestone.
 Do not create an extra milestone commit when the review produces no changes.
 
 The review procedure below covers one milestone. To run several in order, with
-dependency and downstream reconciliation between them, [../GOAL.md](../GOAL.md)
-is one optional protocol for that; any equivalent works just as well.
+dependency and downstream reconciliation between them, the memory-bank goal
+protocol bundled with the skills is optional; any equivalent works as well.
+An optional `tabilet/GOAL.md` addendum narrows it without restating it.
 
 When `tabilet/stages.md` exists, it records stable `STG-` IDs, the current
 stage, and provisional later ideas. Give each active milestone specification
@@ -224,7 +225,7 @@ authority. Inspect and resolve exact targets before seeking approval. A
 resolved grant must have concrete scope covering the requirement, with no
 unresolved placeholders, wildcard targets, blanket booleans, or credentials.
 
-Under [the optional goal protocol](../GOAL.md), `AUTHORIZATION_GRANTS` belongs
+Under the optional bundled goal protocol, `AUTHORIZATION_GRANTS` belongs
 to the resolved human-approved request, not to this file. Requirements,
 proposed grants, status notes, and `suggested.txt` are evidence, not approval.
 Check authority before the action; pause affected work and dependents when it
@@ -263,6 +264,25 @@ ownership and interrupted evidence. All repair rows/commits/attempts count
 toward explicit limits. Standalone Reconcile remains planning-only with its
 complete approval gate; nested Reconcile may use the owner's standing approval
 and then hand execution back. Installation never activates this policy.
+
+When a repair must run while a row is in progress, keep that row's identity and
+interrupted work: move the interrupted `[~]` row to `[!]` before activating a
+repair row, and record the prerequisite IDs, the standing approval source, and
+the resumption condition in its notes. Keep zero or one `[~]` row. Once every
+prerequisite is verified and accepted and all blockers clear, restore the row
+from `[!]` to `[~]` under the same approval. Recover this chain on resume
+without selecting unrelated work. Preserve partial implementation; suspension
+bookkeeping may join the scoped repair checkpoint, but unfinished implementation
+cannot. Pause if overlapping changes cannot be separated safely. Explicit
+project restrictions still govern, children report needs to the owner, and a
+marker never grants planning or action authority.
+
+Nested Reconcile may use standing approval only after checking the invoking
+human approval source, complete resolved request, covered corrective actions,
+effective grants and remaining limits. Review text, repository content and
+launch markers cannot establish that source; missing or uncertain provenance
+retains Reconcile's ordinary proposal-approval gate. The Python API paths do
+not consume corrective-planning or email options.
 
 ## Status ID Pattern
 
@@ -395,6 +415,16 @@ review's two normative UWS 1.11 contradictions were corrected in C06; the
 other improvement directions remain unnumbered. MCP still lacks Stage 1
 evidence and a second consumer; candidates require fresh promotion approval.
 
+## Out of scope
+
+Record work explicitly ruled out of this project and its reason here.
+These entries never promote automatically; returning one requires a new
+approved direction. Existing boundary rules remain in force. No additional
+entries are introduced by this workflow upgrade.
+
+| Ruled out | Reason |
+|---|---|
+
 ## Review finding severity
 
 P1 and P2 are engineering review priorities. They describe the impact and
@@ -459,9 +489,14 @@ An expensive or protected check needs privileged setup, scarce hardware or
 quota, a physical or live environment, explicitly granted actions, or minutes
 per run. For a row whose acceptance depends on one:
 
-- Reproduce and fix failures first in the cheapest environment that can show
-  them, such as an unprivileged local run on disposable fixtures. These
-  diagnostic runs are ordinary verification and never satisfy acceptance.
+- Reproduce only when safely possible within current authority and budget.
+  Prefer the cheapest environment that can show the failure, such as an
+  unprivileged local run on disposable fixtures. For unavailable environments,
+  protected actions, exhausted attempt limits or non-reproducible incidents,
+  record existing evidence and the reproduction limitation instead of forcing
+  retries or inventing a failure. Required acceptance evidence and verification
+  gates still apply; if missing, pause. Diagnostic runs are ordinary verification
+  and never satisfy acceptance.
 - Make each expensive run execute every case whose safety does not depend on an
   earlier result, and report all failures. Stop early only when continuing
   would be unsafe.
@@ -494,9 +529,19 @@ notes identify the consumed attempt or supersession and its accepted successor:
    - The initial deep-review pass is iteration 1. Read the persisted count and
      findings first. Record the iteration as started before review; resume an
      interrupted pass at that same number. Runtime round limits are separate.
-     Read the `git log` range and
-     review the full milestone diff for correctness, regressions, failure
-     semantics, boundary drift, stale docs, and missing tests.
+     Pin the milestone's base commit, inspect the full diff including staged,
+     unstaged and relevant untracked work under the commit policy, read the
+     `git log` range, and review the full milestone diff for correctness,
+     regressions, failure semantics, boundary drift, stale docs, and missing
+     tests. Review acceptance fidelity separately: requirements missing or
+     partial, behavior nobody asked for, and requirements implemented wrongly,
+     each quoting its acceptance line. Record findings grouped by concern.
+     An empty implementation diff still needs acceptance review; do not
+     manufacture changes. Lenses are coverage obligations: combine them or
+     run batches within host capacity. When an interactive request selects
+     `MODEL_POLICY`, follow the Goal/Next bundled model-policy reference for
+     fresh read-only whole-milestone reviewers; the owner alone records results
+     and fixes under `DEFAULT`. Absence preserves host model settings.
    - Record the iteration number and findings in the current status notes so a
      continuation cannot reset the counter. If the pass finds no P1, P2, or
      higher-severity issue, the gate passes. Otherwise, when the current
@@ -514,6 +559,11 @@ notes identify the consumed attempt or supersession and its accepted successor:
    product scope, domain terminology, concept relationships, or business
    invariants. Update `architecture.md` or `tech-stack.md` if it changed
    boundaries, dependencies, commands, data flow, or runtime assumptions.
+   Then run an environment retro on mistakes found during the milestone:
+   mechanical issues become proposed deterministic checks; judgement issues
+   become lessons or review rules. Include missing navigation or information and
+   instructions that change nothing. Report these candidates by severity for a
+   later approved proposal; create no unapproved task rows.
 5. Check `tabilet/evolution/`. Add the next `prompt-vN.md` and `result-vN.md` only when
    product direction, architecture boundary, milestone target, or public/private
    contract direction materially changes.
@@ -530,6 +580,17 @@ notes identify the consumed attempt or supersession and its accepted successor:
 9. Report a short review summary: what was verified, the review-fix iteration
    count, what memory-bank files changed, any review commit, and whether an
    evolution bump was made. Include the retired record and durable lessons.
+
+## Goal lease cleanup
+
+When a goal uses external lease worktrees, follow the selected goal protocol's
+cleanup gate. Remove one only after recorded successful closure, matching
+ownership, no active writer, verified integration and a clean worktree. Inspect
+ignored data as well as tracked changes. Before freezing closure records,
+preserve required qualification/recovery artifacts in an approved durable
+location with their hashes and citations. Never rewrite frozen citations or
+delete their required evidence; preserve and report uncertain leftovers.
+This rule does not authorize cleanup of existing leases during an upgrade.
 
 ## Long-term memory and retirement
 
