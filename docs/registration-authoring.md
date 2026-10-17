@@ -1,10 +1,16 @@
 # Registration authoring boundaries
 
-UWS describes reviewed registration recipes: selected flows, symbolic credential
-slots, typed input definitions, steps and success conditions. Discovery is an
-authoring activity. OpenUdon owns its private candidate inventory, coverage
-limitations, owner corrections and review history; Browsertools supplies
-observations. An observed page is a candidate, not proof of a working recipe.
+UWS registration profiles are inert artifacts for governance and review. They
+describe selected flows, symbolic credential slots, typed input definitions,
+steps and success conditions. The supported operating model is human account
+creation in ordinary browsers. Profile validity and a reviewed
+`humanVerification` policy do not guarantee runtime automation capability or
+successful account creation.
+
+Discovery is an authoring activity. OpenUdon owns its private candidate
+inventory, coverage limitations, owner corrections and review history;
+Browsertools supplies observations. An observed page is a candidate, not proof
+of a working recipe.
 
 New authoring tools should export registration profiles without `discovery`.
 Keep coverage (`unknown` or `partial`) separate from owner review (`pending` or
@@ -20,6 +26,9 @@ verification field to downgrade a recipe. See the
 [registration 1.2 profile](https://github.com/OpenUdon/uws/blob/main/versions/browser-registration.1.2.md)
 and [1.2 call supplement](https://github.com/OpenUdon/uws/blob/main/versions/browser-registration-call.1.2.md)
 for the bounded provider, frame, request and submission rules.
+Runtimes that choose registration execution remain bound by the selected
+published profile and call supplement; this guidance changes none of their
+normative obligations.
 
 The published registration 1.1 schema and accepted 1.1 wire contract remain
 unchanged, and existing profiles containing the optional `discovery` member

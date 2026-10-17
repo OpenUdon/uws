@@ -112,6 +112,11 @@ creation mutation and its fixed duplicate, ambiguity, and cleanup controls.
 They do not establish a session, carry credential values, automate human
 verification, retry an ambiguous outcome, or perform cleanup.
 
+Registration profiles are inert artifacts for governance and review. The
+supported operating model is human account creation in ordinary browsers.
+Neither profile validity nor a reviewed `humanVerification` policy guarantees
+automated registration capability or success.
+
 Registration 1.1 adds typed private fields and explicit input checkpoints. Its
 optional discovery metadata remains accepted for compatibility. Discovery
 inventory, coverage limitations and owner review belong in authoring tools
@@ -130,8 +135,9 @@ and validation. Profile/call schema lookup defaults and the unversioned call
 supplement validator retain their 1.0 meanings;
 `ValidateBrowserRegistrationCallBinding` retains its 1.1 default. Select 1.2
 through the explicit versioned APIs.
-The extension defines runtime obligations but does not itself discover pages,
-provide a form UI or add execution support to a downstream browser driver.
+Runtimes that choose registration execution remain bound by the selected
+published profile and call supplement. The extension does not itself discover
+pages, provide a form UI or add execution support to a downstream browser driver.
 
 ## Validation
 

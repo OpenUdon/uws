@@ -26,6 +26,16 @@ the meaning or scope of a published schema or sub-spec is recorded as an
 - This policy clarifies version selection and validator behavior; it does not
   amend the bytes or normative requirements of earlier published artifacts.
 
+## Registration Documentation Clarification (Non-Normative) - 2026-10-17
+
+- Clarified that registration profiles are inert governance and review artifacts,
+  with human account creation in ordinary browsers as the supported operating
+  model. Profile validity and `humanVerification` do not guarantee automated
+  registration capability or success.
+- Published profile and call-supplement obligations for runtimes that choose
+  registration execution are unchanged. This is documentation guidance, not a
+  normative amendment or a schema release.
+
 ## UWS 1.13.0 - 2026-10-06
 
 - Added the separate verified HCL presentation and deprecated Import contract.
