@@ -1,0 +1,79 @@
+{
+  "algorithm": "strict validation + UseNumber + recursive UTF8-byte key order + Go Encoder SetEscapeHTML(false), standard controls/U+2028/U+2029 escaping, strip one trailing newline",
+  "canonical_hex": "7b22636f6e6669726d6174696f6e506f6c696379223a7b227265717569726564223a66616c73657d2c22656d707479223a22222c2265736361706573223a227b7b7b7b6c69746572616c7d7d7d7d222c2268746d6c223a223c3e26222c226c696e65223a22415c753230323842222c22736368656d61223a7b2270726f70657274696573223a7b22666c6167223a7b22636f6e7374223a66616c73657d2c227a65726f223a7b22636f6e7374223a307d7d2c2274797065223a226f626a656374222c22782d6b656570223a7b2277696465223a393232333337323033363835343737353830377d7d2c2273657175656e6365223a5b5d2c227a223a312e30307d",
+  "canonical_utf8": "{\"confirmationPolicy\":{\"required\":false},\"empty\":\"\",\"escapes\":\"{{{{literal}}}}\",\"html\":\"\u003c\u003e\u0026\",\"line\":\"A\\u2028B\",\"schema\":{\"properties\":{\"flag\":{\"const\":false},\"zero\":{\"const\":0}},\"type\":\"object\",\"x-keep\":{\"wide\":9223372036854775807}},\"sequence\":[],\"z\":1.00}",
+  "config_canonical_utf8": "{\"admitted_deadline\":\"2026-10-09T00:05:00Z\",\"agent_id\":\"fixture-agent\",\"approval_sha256\":\"9199053d035c6d04c5f5e70a2aa5c2f17b9bab8230aae05b64fc808805401a08\",\"approved_calls\":[{\"credential_slots\":[],\"effects\":[\"establishes_session\",\"sends_mfa_challenge\"],\"invocation_id\":\"browser-1\",\"kind\":\"authentication\",\"operation_id\":\"browser-op-1\",\"origins\":[\"http://127.0.0.1:46051\"],\"outer_protocol\":\"udon.browser-driver.v3\",\"profile_version\":\"uws.browser-authentication.1.1\",\"reuse_allowed\":false,\"save_allowed\":true,\"selected_sha256\":\"7ad13ae1c3df665d538d4c7335ac74044963d388a3708d0f2c130dcafc64649d\",\"selector\":{\"key\":\"fixture-login\",\"kind\":\"id\",\"value\":\"fixture-login\"},\"session_name\":\"fixture-member\",\"source_id\":\"fixture-authentication\",\"source_sha256\":\"6268637f2f68b0c85b3ab1dd98faf722b60cd84b6562daa57322b52fa58276d8\",\"step_id\":\"browser-1\"}],\"containment_lease_id\":\"fixture-containment\",\"credential_revisions\":[],\"driver_closure_sha256\":\"07b688540d5351323908096ef0cbd9bcc4f583c46ccae916d0c3c654c19dfe69\",\"handoff_sha256\":\"24271490f2609c014d3a2c6a8101145ee8bf5a17b79b51a8423258236d73326d\",\"host_fact_refs\":[\"fixture-host:joined-durable-session-save\"],\"inputs_sha256\":\"18e5cb6128c044dc99968256e3adc52f6d80f44e25b5a86f12162156769e5480\",\"launch_nonce\":\"fixture-launch\",\"origins\":[\"http://127.0.0.1:46051\"],\"owner_id\":\"fixture-owner\",\"package_sha256\":\"620fa28a6a97969cd19cb10d915b3d95ee0d073979151973548c210f5f01c6d7\",\"plan_sha256\":\"899d7e86a5f4d239d9697fbef7dc716df10634aa1f2a0d1ec7b53d8b0b983a3b\",\"run_id\":\"fixture-run\",\"session\":{\"binding_sha256\":\"ceed10f71d31934d298e63b182cdbbf1e15838732e08785685c9ef51b65b7177\",\"created_at\":\"2026-10-09T00:00:00Z\",\"expires_at\":\"2026-10-16T00:00:00Z\",\"generation\":3,\"name\":\"fixture-member\",\"reuse_allowed\":false,\"save_allowed\":true},\"supplement_sha256\":\"4346280a1f8f760b9718751f7e55515f3e143b2ec8fbba9b4d170d3320d2e39a\",\"version\":\"openudon.browser-config.v1\",\"worker\":{\"binary_sha256\":\"49e907719fa53f1b00e43d8721620f42979c31117ed46daa3fadf320aef94b4e\",\"closure_sha256\":\"c783dc28a2bad6176c3d7b3715716e49aae56c6f29fe7971a9582aca25a43c08\",\"profile\":\"kinet.exec.browser.v1\",\"runtime_revision\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"},\"workflow_sha256\":\"2e8d4428174655924630d4133ba93cedc744dd520e94f3a29b725ec6449d6648\"}",
+  "config_input": {
+    "admitted_deadline": "2026-10-09T00:05:00Z",
+    "agent_id": "fixture-agent",
+    "approval_sha256": "9199053d035c6d04c5f5e70a2aa5c2f17b9bab8230aae05b64fc808805401a08",
+    "approved_calls": [
+      {
+        "credential_slots": [],
+        "effects": [
+          "establishes_session",
+          "sends_mfa_challenge"
+        ],
+        "invocation_id": "browser-1",
+        "kind": "authentication",
+        "operation_id": "browser-op-1",
+        "origins": [
+          "http://127.0.0.1:46051"
+        ],
+        "outer_protocol": "udon.browser-driver.v3",
+        "profile_version": "uws.browser-authentication.1.1",
+        "reuse_allowed": false,
+        "save_allowed": true,
+        "selected_sha256": "7ad13ae1c3df665d538d4c7335ac74044963d388a3708d0f2c130dcafc64649d",
+        "selector": {
+          "key": "fixture-login",
+          "kind": "id",
+          "value": "fixture-login"
+        },
+        "session_name": "fixture-member",
+        "source_id": "fixture-authentication",
+        "source_sha256": "6268637f2f68b0c85b3ab1dd98faf722b60cd84b6562daa57322b52fa58276d8",
+        "step_id": "browser-1"
+      }
+    ],
+    "containment_lease_id": "fixture-containment",
+    "credential_revisions": [],
+    "driver_closure_sha256": "07b688540d5351323908096ef0cbd9bcc4f583c46ccae916d0c3c654c19dfe69",
+    "handoff_sha256": "24271490f2609c014d3a2c6a8101145ee8bf5a17b79b51a8423258236d73326d",
+    "host_fact_refs": [
+      "fixture-host:joined-durable-session-save"
+    ],
+    "inputs_sha256": "18e5cb6128c044dc99968256e3adc52f6d80f44e25b5a86f12162156769e5480",
+    "launch_nonce": "fixture-launch",
+    "origins": [
+      "http://127.0.0.1:46051"
+    ],
+    "owner_id": "fixture-owner",
+    "package_sha256": "620fa28a6a97969cd19cb10d915b3d95ee0d073979151973548c210f5f01c6d7",
+    "plan_sha256": "899d7e86a5f4d239d9697fbef7dc716df10634aa1f2a0d1ec7b53d8b0b983a3b",
+    "run_id": "fixture-run",
+    "session": {
+      "binding_sha256": "ceed10f71d31934d298e63b182cdbbf1e15838732e08785685c9ef51b65b7177",
+      "created_at": "2026-10-09T00:00:00Z",
+      "expires_at": "2026-10-16T00:00:00Z",
+      "generation": 3,
+      "name": "fixture-member",
+      "reuse_allowed": false,
+      "save_allowed": true
+    },
+    "supplement_sha256": "4346280a1f8f760b9718751f7e55515f3e143b2ec8fbba9b4d170d3320d2e39a",
+    "version": "openudon.browser-config.v1",
+    "worker": {
+      "binary_sha256": "49e907719fa53f1b00e43d8721620f42979c31117ed46daa3fadf320aef94b4e",
+      "closure_sha256": "c783dc28a2bad6176c3d7b3715716e49aae56c6f29fe7971a9582aca25a43c08",
+      "profile": "kinet.exec.browser.v1",
+      "runtime_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "workflow_sha256": "2e8d4428174655924630d4133ba93cedc744dd520e94f3a29b725ec6449d6648"
+  },
+  "config_sha256": "e07f285f90587350d0c9bc27bf3476d4931f8d28723db60ea05aab6b11ef72f8",
+  "fixture_only": true,
+  "input_json": "{\"z\":1.00,\"empty\":\"\",\"schema\":{\"type\":\"object\",\"properties\":{\"zero\":{\"const\":0},\"flag\":{\"const\":false}},\"x-keep\":{\"wide\":9223372036854775807}},\"sequence\":[],\"confirmationPolicy\":{\"required\":false},\"line\":\"A\\u2028B\",\"html\":\"\u003c\u003e\u0026\",\"escapes\":\"{{{{literal}}}}\"}",
+  "sha256": "ff58ebb81070db77a2e12d26b00fece0bb6e936488b257306d3b9d0a23d15a6a",
+  "version": "kinet.m51-canonical-golden.v1"
+}

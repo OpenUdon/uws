@@ -1,0 +1,195 @@
+{
+  "version": "kinet.m51-public-browser-contract.v1",
+  "state": "frozen-reviewed",
+  "digests": "64 lowercase hexadecimal characters; exact source bytes and lossless closed canonical selected values",
+  "shape_table": {
+    "version": "uws.shape-table.v1",
+    "unchanged_non_browser_bytes": true,
+    "source_kind": "browser-profile",
+    "selector": {
+      "kind": "id",
+      "value_and_key": "native action key or selected flow key"
+    },
+    "protocol": "browser",
+    "http_fields": "absent: no invented method/path/server",
+    "optional_operation_browser": {
+      "profile_version": "native discriminator",
+      "call_kind": "action|authentication|registration",
+      "selected_sha256": "closed lossless selected source subset digest",
+      "origins": "sorted unique native canonical strings; default ports omitted",
+      "effects": "exact native effects metadata",
+      "confirmation_policy": "exact optional native metadata; omission remains absent",
+      "authentication_required": "native metadata",
+      "credential_slots": [
+        {
+          "name": "symbolic slot",
+          "kind": "native slot kind",
+          "required": "boolean"
+        }
+      ],
+      "registration_input_slots": "metadata only, complete native conditional schema"
+    },
+    "action_mapping": {
+      "request_body": "sole selected actions[key].parameters complete native schema",
+      "request_parameters": "each named parameter at body",
+      "response_body": "output name and complete native type/schema, including presence/count/extraction metadata"
+    },
+    "authentication_mapping": "selected flow, credentials/effects/origins/named-session metadata only",
+    "registration_mapping": "selected flow/input slots/conditional/inputBinding/effects/controls; symbolic only",
+    "knownness": "complete/schema-known independent from runtime support",
+    "preservation": "reject duplicate/unsupported execution fields; no float roundtrip; preserve numeric lexemes, JSON Schema extensions, false, zero, empty strings and brace escapes",
+    "selected_subtree": "COMPLETE actions[key]/flows[key], all fields/empty/schema/extensions; full source hash binds shared contexts"
+  },
+  "supplement": {
+    "version": "openudon.browser-supplement.v1",
+    "artifact": "expected/browser.json",
+    "fields": [
+      "version",
+      "workflow_sha256",
+      "sources",
+      "calls",
+      "review_artifacts"
+    ],
+    "sources": {
+      "fields": [
+        "id",
+        "artifact",
+        "profile_version"
+      ],
+      "artifact_fields": [
+        "path",
+        "sha256"
+      ]
+    },
+    "calls": {
+      "ordered_complete_inventory": true,
+      "required_fields": [
+        "step_id",
+        "operation_id",
+        "invocation_id",
+        "kind",
+        "source_id",
+        "source_sha256",
+        "profile_version",
+        "selector",
+        "selected_sha256",
+        "outer_protocol",
+        "origins",
+        "effects",
+        "credential_slots",
+        "reuse_allowed",
+        "save_allowed"
+      ],
+      "optional_fields": [
+        "inner_protocol",
+        "confirmation_policy_sha256",
+        "authentication_source_id",
+        "session_name",
+        "registration_input_binding"
+      ],
+      "inner_protocol": "action only",
+      "credential_slots": [
+        {
+          "slot": "symbolic profile slot",
+          "name": "host credential binding name"
+        }
+      ],
+      "registration_input_binding": "declaration only; no private snapshot/value/identity/hash"
+    },
+    "review_artifacts": {
+      "fields": [
+        "path",
+        "sha256"
+      ]
+    },
+    "digest_admission": "ManifestInputArtifacts/InputDigest include supplement, referenced profiles and reviews; supplement has no package/input self digest",
+    "absent_browser": "no supplement; every prior non-browser identity remains byte-identical"
+  },
+  "browser_config": {
+    "version": "openudon.browser-config.v1",
+    "run_evidence_version": "openudon.browser-run-evidence.v1",
+    "authority_version": "openudon.browser-authority.v1",
+    "required_fields": [
+      "version",
+      "owner_id",
+      "agent_id",
+      "run_id",
+      "package_sha256",
+      "handoff_sha256",
+      "inputs_sha256",
+      "approval_sha256",
+      "plan_sha256",
+      "workflow_sha256",
+      "supplement_sha256",
+      "worker",
+      "driver_closure_sha256",
+      "launch_nonce",
+      "containment_lease_id",
+      "admitted_deadline",
+      "origins",
+      "approved_calls",
+      "credential_revisions",
+      "host_fact_refs"
+    ],
+    "worker_fields": [
+      "profile",
+      "binary_sha256",
+      "closure_sha256",
+      "runtime_revision"
+    ],
+    "optional_session_fields": [
+      "name",
+      "binding_sha256",
+      "generation",
+      "created_at",
+      "expires_at",
+      "reuse_allowed",
+      "save_allowed"
+    ],
+    "host_fact_refs": "opaque independently supplied trusted host witness references, not a self-reported trace",
+    "excluded_fields": [
+      "driver_path",
+      "driver_args",
+      "environment_names",
+      "credential_values",
+      "display",
+      "staging_paths",
+      "engine_sockets",
+      "registration_snapshot",
+      "registration_input_identity",
+      "private_value_hashes"
+    ],
+    "verification_inputs": "expected browser plan/attempt and trusted host witnesses supplied independently from submitted report/evidence",
+    "driver_closure": "full source/lock/binary and exact Node/Playwright/Chromium bytes/version/revision",
+    "compatibility": "existing runevidence versions, legacy BrowserConfig and report-v5 bytes remain unchanged",
+    "run_evidence_required_fields": [
+      "version",
+      "run_id",
+      "created_at",
+      "scope",
+      "tier",
+      "dry_run",
+      "approval_state",
+      "browser",
+      "executor"
+    ],
+    "run_evidence_optional_fields": [
+      "step_execution"
+    ],
+    "executor_fields": [
+      "invoked",
+      "mode",
+      "report_sha256?",
+      "report_size?"
+    ],
+    "authority_fields": [
+      "version",
+      "config_sha256",
+      "config"
+    ],
+    "single_durable_session": "at most one binding/access lease, other fresh in-memory named sessions allowed; per-call reuse/save only matching bound named context; <=1candidate-producing auth permission",
+    "construction_order": "independently finalized human receipt without containing authority/config hash -> independent host facts without self hash -> COMPLETE Config -> canonical ConfigSHA256 -> Authority; acyclic"
+  },
+  "exact_go_declarations": "docs/stage12-browser-public.go.txt",
+  "canonical_encoding": "strict duplicate/Unicode validation; UseNumber; preserve numeric lexemes; UTF8-byte sorted keys, array order; Go Encoder SetEscapeHTML(false), standard controls plus escaped U+2028/U+2029; no indent/BOM/trailing newline; golden bytes/hash"
+}

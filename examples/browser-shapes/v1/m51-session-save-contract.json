@@ -1,0 +1,89 @@
+{
+  "version": "kinet.m51-session-save-contract.v1",
+  "producer": "Browserdriver:M16",
+  "state": "frozen-reviewed",
+  "mechanism": "host-private immutable launch-side plan; no v12",
+  "options": [
+    "--session-save-plan <absolute owner-only regular file>",
+    "--session-save-root <absolute fresh owner-only candidate directory>"
+  ],
+  "options_rule": "both or neither; absent means exact old behavior/no extra IO/new protocol fields/saves",
+  "constructor": "sessionSavePlan + sessionCandidateStore; PersistentBrowserDriverOptions.sessionSave={plan,planSHA256,candidates}",
+  "plan": {
+    "version": "browserdriver.session-save-plan.v1",
+    "fields": {
+      "version": "literal above",
+      "launchNonce": "bounded ASCII ID",
+      "admittedDeadline": "canonical UTC timestamp/current",
+      "permissions": "ordered SessionSavePermission[]; at most100"
+    },
+    "permission_fields": {
+      "permissionId": "bounded ASCII ID",
+      "authenticate": {
+        "version": "full udon.browser-driver.v2/v3/v10/v11",
+        "operationId": "exact existing native operation ID",
+        "sourceDigest": "sha256:64 lowercase hex",
+        "flow": "exact flow",
+        "session": "exact named session",
+        "sessionBinding": "exact existing string or null"
+      },
+      "authenticationRequestSHA256": "host-private request digest, 64 lowercase hex",
+      "saveBinding": "opaque private string",
+      "bindingSHA256": "64 lowercase hex",
+      "generation": "positive safe integer",
+      "createdAt": "canonical UTC/not future",
+      "expiresAt": "createdAt+maxAgeSeconds; current",
+      "maxAgeSeconds": "1..2592000; default604800; reuse retains original creation/expiry/binding"
+    },
+    "strict_validation": "at most256KiB, no duplicate JSON keys/unknown fields/invalid Unicode; null only for sessionBinding; validate/deep-freeze once before browser launch; permissionIds, authenticate tuples and saveBindings must each be unique",
+    "request_digest": "remove only requestId from the complete closed parsed AuthenticateMessage; recursively sort keys by UTF8 bytes, preserve array order, no whitespace, JSON.stringify string escaping, UTF8 output, SHA256 unprefixed lowercase; no private credential values in auth maps; hash never public evidence",
+    "custody": "file regular0600 singlelink owned by current user under owner-only stable real path; no symlink; candidate root0700 fresh owned stable; disjoint from old load-only --session-store; unavailable safety refuses"
+  },
+  "candidate": {
+    "version": "browserdriver.session-candidate.v1",
+    "fields": {
+      "version": "literal above",
+      "launchNonce": "plan launchNonce",
+      "permissionId": "consumed permission ID",
+      "planSHA256": "exact immutable plan hash",
+      "bindingSHA256": "permission binding hash",
+      "generation": "permission generation",
+      "createdAt": "original creation",
+      "expiresAt": "original expiry",
+      "capturedAt": "canonical UTC/current",
+      "storageState": "private complete Playwright object"
+    },
+    "file_name": "SHA256(UTF8(saveBinding))+'.candidate.json'",
+    "publication": "entire candidate at most1MiB; exclusive random0600 temporary regular file in pinned root, fsync, bounds/owner/singlelink verify, refuse existing target, atomic rename+directory fsync, recheck original deadline/expiry before publish; one writer/fresh root",
+    "constructor_store": "SessionCandidateStore.write(permission:Readonly<SessionSavePermission>,planSHA256:string,capturedAt:string,storageState:object):Promise<void>",
+    "not_a_load_file": "host reuse decrypts/revalidates durable state and stages ONLY raw storageState as old '.json'; never feed candidate envelope to FileSessionStateStore"
+  },
+  "order": [
+    "normal native authentication validation",
+    "match exact existing tuple and host-private full request digest",
+    "consume matching one-use save permission before authentication; mismatch/exhausted/no entry/actions/registration never save and retain old request behavior",
+    "existing authentication success with named context",
+    "emit existing success bytes unchanged",
+    "while context is alive synchronously await exactly one snapshot and candidate write; process no next message; recheck deadline/expiry before snapshot/publication",
+    "save failure leaves absent/unaccepted candidate and fixed private diagnostic, no stdout additions or success relabel",
+    "close/Join transport/driver/Chromium/callbacks",
+    "host SessionSave validates candidate/permission/binding/current generation under custody and encrypts; revocation/archive/deletion wins; no driver IO after Join",
+    "SessionRelease erases plaintext only after joined ownership"
+  ],
+  "required_vectors": [
+    "option absent",
+    "partial option pair",
+    "malformed/duplicate/oversize/foreign/symlink plan",
+    "matching one-use auth",
+    "mismatch/exhausted auth",
+    "registration/action never save",
+    "save failure preserves auth success bytes",
+    "deadline during snapshot",
+    "late candidate after revoke",
+    "joined encrypted acceptance",
+    "unjoined candidate quarantined",
+    "reuse original expiry without renewal",
+    "candidate envelope never loaded as old raw storage state"
+  ],
+  "selected_kinet_profile": "at most one durable binding/access lease and at most one candidate-producing auth permission; other fresh in-memory named contexts allowed; generic parser maximum100 remains"
+}
