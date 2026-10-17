@@ -3,14 +3,13 @@
 ## Approved registration documentation amendment — 2026-10-17
 
 R67 adds required C12 before the existing conditional C11 in dispatch priority.
-C12 clarifies inert registration governance and capability limits; implementation
-is pending. Humans create accounts in ordinary browsers under Kinet's selected
+C12 is accepted/retired after task review1 and whole review1: inert registration governance and capability limits are documented. Humans create accounts in ordinary browsers under Kinet's selected
 policy. Existing UWS published execution contracts remain normative and unchanged;
 this is no universal ban on other runtimes or promise of automated success.
 C12 is local documentation acceptance only: no module adoption, source publication
 or pin change is required. Conditional C11 remains pending with its trigger absent.
 Audit stays disabled; the earlier dated C10/Stage12 checkpoints retain their
-historical context. See the [C12 specification](#c12--registration-governance-and-capability-guidance).
+historical context. C12 evidence resolves through the existing history index.
 
 
 Each milestone section is a review unit: after no `[ ]`, `[~]`, or `[!]` rows
@@ -807,53 +806,7 @@ independently published sibling prerequisites before adoption. Default checks ar
 
 | ID | Milestone | Status | Depends on |
 |---|---|---|---|
-| C12 | [Registration governance and capability guidance](status-C12.md) | Pending; required | Accepted immutable registration contracts/C10; no module-adoption edge |
 | C11 | [HCL input removal version (conditional)](status-C11.md) | Pending; conditional | Clean Kinet:M54; accepted Udon:M54; OpenUdon:A32 |
-
-### C12 — Registration governance and capability guidance
-
-- **Stage/owner:** STG-12; UWS. Required, one task row; whole review0/10.
-- **Provenance:** BRP human-only registration / Stage12 scope reconciliation,
-  2026-10-17, sources `brp-uws.md`, `brp-kinet-stage12.md` and conversational
-  assessment. Source priority not supplied; source baselinea66a6b2 matches
-  full revalidationa66a6b279619eab5e06e1bd7f2faedc15f00597c, clean before
-  planning. F04 confirmed Lower is an immutable-contract constraint; F05
-  partially confirmed Lower is required by the user's selected docs work.
-  Current guidance already says observations are not proof of a working recipe;
-  it needs a clearer operational/capability distinction, not a semantic rewrite.
-- **Scope:** In one coherent documentation commit, update README.md,
-  docs/registration-authoring.md and versions/CHANGELOG.md. Describe inert review
-  and governance artifacts, human account creation as the supported operating
-  model, no automation-capability guarantee from validity/humanVerification,
-  and unchanged published obligations for runtimes that choose execution.
-  The changelog entry is a non-normative documentation clarification, not an
-  amendment to normative published requirements or a new schema release.
-- **Acceptance:** Exact published JSON/specification bytes, version defaults,
-  Go/runtime/validation code, embedded archive, manifests, pins and private input
-  envelopes unchanged. No new registration-record schema or executable behavior.
-  Current-truth documentation must not claim Kinet's pending refusal is delivered.
-- **Verification:** Read/link/whitespace consistency; existing
-  TestPublishedVersionDocumentsAreImmutable in ./schemas, offline -count=1
-  -timeout=2m. Complete required root closure checks once at an unchanged
-  candidate, reusing applicable evidence; no codec/race/browser qualification
-  solely for prose. Normal task review plus fresh Sol xhigh whole-milestone review
-  under the selected goal, preserving counters and the iteration10 stop.
-- **Depends on:** Accepted immutable registration contracts/C10; no Kinet runtime
-  implementation prerequisite and no C11/PhaseC trigger.
-- **Downstream impacts:** Kinet R67 documentation consistency only; no code/module
-  adoption edge, no publication prerequisite, no producer pin refresh. Other
-  consumer/runtime acceptance stays unchanged.
-- **Write set:** The three documentation files; coordinator-owned status/current
-  knowledge updates and normal retirement at closure. No versioned specification
-  or schema other than mutable versions/CHANGELOG.md may change.
-- **Contracts read:** Immutable UWS versions at the revalidation revision and the
-  approved frozen R67 direction; never read a changing Kinet checkout as producer
-  evidence. **Parallel-safe: yes**, only with disjoint writes, frozen inputs and
-  the existing explicit concurrent-goal gates. This does not make M53 parallel-safe.
-- **Publication/authority:** Local docs acceptance only; no push, tag, release,
-  browser, sudo, SSH, download, deployment or audit activation. Execution is separate
-  from this approved planning application.
-- **Tasks:** `status-C12.md`. One pending C12.1 row.
 
 ### C11 — HCL input removal version (conditional)
 

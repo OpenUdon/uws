@@ -532,3 +532,16 @@ No row has started. Specifications are in
 the shared contract is the [coordinator](../../../kinet/docs/stage12.md). Planning
 grants no implementation, commit, publication or live authority.
 ``````
+
+## 2026-10-17 — C12 registration operational guidance
+
+**Source.** docs/registration-authoring.md, opening explanation.
+**Reason.** Clarified human account creation and capability limits while preserving published execution obligations. Original wording remains evidence; replacement: [current guide](../../../docs/registration-authoring.md). Evidence: 9135a58bfc54d4377f9c7c875c39dfa660422eb6 and accepted C12 review1.
+
+````markdown
+UWS describes reviewed registration recipes: selected flows, symbolic credential
+slots, typed input definitions, steps and success conditions. Discovery is an
+authoring activity. OpenUdon owns its private candidate inventory, coverage
+limitations, owner corrections and review history; Browsertools supplies
+observations. An observed page is a candidate, not proof of a working recipe.
+````

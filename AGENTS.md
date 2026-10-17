@@ -12,7 +12,7 @@ f01a2542410c583d0ea909dadd8f17527cc0d27d and its exact ordinary module proof
 are in [qualification](docs/c10-publication.md). Browser shapes and body-only
 advisory binding/flow/portability are available; native source production and
 actual consumer/runtime adoption remain separate. Immutable profiles, HCL and
-actual pins are unchanged. After the approved 2026-10-17 R67 amendment, required C12 documentation work is pending alongside conditional C11 (trigger absent). C12 changes no immutable contract or runtime; local docs acceptance requires no publication or module adoption. Audit is disabled.
+actual pins are unchanged. After the approved 2026-10-17 R67 amendment, C12 documentation is accepted/retired after task review1 and fresh whole review1; conditional C11 remains pending (trigger absent). C12 changes no immutable contract or runtime; local docs acceptance requires no publication or module adoption. Audit is disabled.
 
 ## Stage 12 concurrent goal ownership
 

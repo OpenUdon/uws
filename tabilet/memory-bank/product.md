@@ -1,5 +1,9 @@
 # Product
 
+## Registration governance guidance — accepted C12
+
+Registration profiles support inert governance and review. Human account creation in ordinary browsers is the supported operating model; schema validity and humanVerification do not guarantee automated capability or success. Optional executing runtimes remain bound by unchanged published profile/call contracts. This documentation-only clarification changes no schema, validator, runtime or consumer pin. Kinet refusal is owned separately by M53.19.
+
 ## Accepted C10 browser-profile shapes
 
 C10 is accepted after whole review1 at implementation
