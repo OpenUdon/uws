@@ -1,3 +1,87 @@
+## Approved Stage 13 planning — 2026-10-25
+
+The owner approved the revised **8-milestone / 34-pending-task** STG-13 plan after
+the Kinet Stage 13 plan review (`kinet-stage13.md`). Owner-approved full rescope on 2026-10-25 (approval: “I aapaprove”), following the earlier whole-stage approval. Planning only; no execution, commit or grant activation.
+Seven former cleanup milestones / 24 rows remain withdrawn history; HCL removal
+and legacy-wrapper retirement are separate unnumbered candidates.
+[Coordinator and acceptance](../../../kinet/docs/stage13.md); [stage overview](../../../kinet/tabilet/stages.md#stg-13).
+
+**Current UWS Stage 13 horizon.** None; this package supplies retained compatible contracts only. One serial execution owner; parallel-safe no. The Kinet launch reference includes only the eight active milestones. This current section governs over earlier dated checkpoints.
+
+Preserve supported Ramen/Udon HCL input/output and supporting UWS codecs;
+Ramen remains YAML-first. Stage 12 stays closed. Withdrawn Kinet:M54/M55,
+Udon:M54, UWS:C11 and APItools:M86, accepted/retired evidence, all historical
+UNKNOWNs and consumed grants remain unchanged. Stage 14 stays unscheduled;
+audit stays disabled. No old permission, budget or trigger is reactivated.
+
+| ID | Status file | State | Dependencies |
+|---|---|---|---|
+| C13 | [status-C13.md](status-C13.md) | Withdrawn; 4 rows `[X]`; undelivered; review 0/10 | None active; original dependencies retained in the withdrawn record. |
+
+<a id="stg13-c13"></a>
+
+### C13 — Versioned HCL-input retirement and replacement projection
+
+**State.** Withdrawn by the owner on 2026-10-25; 4 untouched rows are `[X]`, review 0/10 unchanged. Withdrawn by the owner-approved 2026-10-25 rescope: retain supported HCL in Ramen/Udon and the supporting UWS codecs. This obligation is undelivered, not accepted. HCL removal and legacy-wrapper retirement move to separate unnumbered Candidate Directions; no replacement is scheduled and no active milestone depends on this row.
+**Active dependencies/downstream.** None. M61 now owns product integration without this cleanup; it does not deliver the withdrawn removal outcome.
+**Disposition and preserved task text.** [status-C13.md](status-C13.md). See the [unnumbered candidates](../../../kinet/tabilet/memory-bank/milestone.md#candidate-directions).
+
+The following original specification is frozen planning history. Its dependency,
+verification, execution-policy and authorization declarations are non-effective.
+
+<details>
+<summary>Original withdrawn specification (undelivered)</summary>
+
+````text
+### C13 — Versioned HCL-input retirement and replacement projection
+
+**Stage/owner.** Kinet STG-13; UWS. **State.** Approved planning; 4 pending rows; review 0/10.
+**Depends on.** [Kinet:M60](../../../kinet/tabilet/memory-bank/status-M60.md)
+**Downstream.** [APItools:M92](../../../apitools/tabilet/memory-bank/status-M92.md), [Udon:M56](../../../udon/tabilet/memory-bank/status-M56.md), [OpenUdon:P15](../../../openudon/tabilet/memory-bank/status-P15.md), [Browsertools:M35](../../../browsertools/tabilet/memory-bank/status-M35.md), [Ramen:M137](../../../ramen/tabilet/memory-bank/status-M137.md)
+**Outcome.** A separately versioned UWS compatibility change removes UWS HCL input and deprecated expression wrappers, retaining JSON/YAML and an independent HCL presentation module.
+
+**Write set.** UWS root public parser/model/compatibility contract, replacement canonical JSON projection, versioned tests/docs and separate hcl presentation adapter only as necessary. Package-local documentation and status follow the owning change. Other repositories have their own owners. **Parallel-safe: no.**
+
+**Lineage.** Fresh successor to withdrawn UWS:C11, under Kinet STG-13; no old inventory/deployment triggers or publication grants are reactivated.
+
+**Acceptance.**
+
+- Compatibility/version choice follows the current published implementation and UWS retirement rules; frozen versions, schemas and old fixtures remain immutable.
+- UWS core no longer accepts HCL or legacy wrappers and has no HCL module/compiled dependency. Bounded context-aware JSON/YAML projection replaces hcl.Import for complete-value comparison.
+- Preserve large integers, decimal/exponent spelling, signed zero and extension fields. HCL display remains separate; no global HCL-free claim covers native executors or Terraform.
+
+**Verification.** Focused JSON/YAML ingestion/refusal and complete-value projection tests, numeric lexemes/extensions, separate HCL Render/Verify tests, standalone root and hcl-module tests/vet plus module/compiled-dependency inspection. Preserve existing package verification standards, attempt limits and review gates. Use focused checks during coherent changes and required closure checks; reuse valid evidence, rerun affected checks after fixes and distinguish executed, mocked, compile-only and deferred proof. No implementation tests have run under this plan.
+
+**Execution policy.** Future launch proposes workspace-contained local work, task commits, corrective-planning auto and option-ignore. Planning activates no grants. No live model/provider/browser, sudo, SSH, deployment or real user-ledger access is implicit. Substantial necessary discoveries use amendments; external testing-tool repair remains optional. No old budget, authority or historical UNKNOWN is reset.
+
+```yaml
+AUTHORIZATION_REQUIREMENTS:
+  git.commit:
+    via: goal-policy
+    executor: coordinator
+  cli.local:
+    via: goal-policy
+    executor: coordinator
+    scope:
+      repository: /home/peter/Workspace/uws
+      task: declared-implementation-and-verification
+  git.push:
+    via: explicit
+    executor: coordinator
+    scope:
+      repository: /home/peter/Workspace/uws
+      remote: git@github.com-tabilet:OpenUdon/uws.git
+      ref: refs/heads/main
+      mode: fast-forward
+```
+
+**Task/review owner.** [status-C13.md](status-C13.md) owns the 4 rows and persisted review; [the coordinator](../../../kinet/docs/stage13.md) owns cross-package acceptance and order.
+````
+
+</details>
+
+**Owner-approved Stage 12 closure and Phase C deferral — 2026-10-25.** The owner approved the recommendation to defer Phase C and close Stage 12 after required work was accepted. All five untouched conditional units (Kinet:M54/M55, Udon:M54, UWS:C11 and APItools:M86), nineteen rows total, are withdrawn together as `[X]`; none is implemented or accepted by this disposition. Their original IDs, task text, contracts and review counters are retained. Deferred HCL-removal intent belongs to Kinet STG-13 provisional context only, without executable successors. Future work requires a fresh approved plan/IDs and fresh concrete authority; old triggers cannot reactivate withdrawn rows. Original dependency edges below are historical, with no active dependents left in this family. No deployment or inventory is required to close Stage 12. HCL input removal is UNDELIVERED; existing behavior stays. W8M remains the only Stage 12 website qualification target. All accepted evidence, historical UNKNOWNs, counters, denials and disabled audit persist. No execution, publication, inventory or deployment is authorized.
+
 # Milestones
 
 ## Approved registration documentation amendment — 2026-10-17
@@ -62,7 +146,7 @@ require exact acceptance and independently verified publication. Publication
 authority requires explicit human approval; planning grants no implementation.
 
 Kinet R65 approved STG-12, browser profiles and legacy cleanup, as planning on
-2026-10-09. UWS originally owned two units; only conditional C11 remains active:
+2026-10-09. UWS originally owned two units; only the subsequently withdrawn conditional C11 remained:
 
 C10 is accepted/retired; see [its complete record](../docs/history/status-C10.md).
 
@@ -70,7 +154,7 @@ C10 is accepted/retired; see [its complete record](../docs/history/status-C10.md
   only by a clean, authorized live inventory (Kinet:M54) and an accepted
   Udon:M54.
 
-C10 is accepted; C11 remains pending with its conditional trigger absent. Specifications are in
+C10 is accepted; C11 is now withdrawn `[X]` by the 2026-10-25 Stage 12 rescope, with no dispatch. Specifications are in
 [Stage 12 browser profiles and legacy cleanup](#stage-12-browser-profiles-and-legacy-cleanup);
 the shared contract is the [coordinator](../../../kinet/docs/stage12.md). Planning
 grants no implementation, commit, publication or live authority.
@@ -888,9 +972,11 @@ independently published sibling prerequisites before adoption. Default checks ar
 
 | ID | Milestone | Status | Depends on |
 |---|---|---|---|
-| C11 | [HCL input removal version (conditional)](status-C11.md) | Pending; conditional | Clean Kinet:M54; accepted Udon:M54; OpenUdon:A32 |
+| C11 | [HCL input removal version (conditional)](status-C11.md) | Withdrawn `[X]`; deferred intent STG-13; not delivered | Historical only; no dispatch: Clean Kinet:M54; accepted Udon:M54; OpenUdon:A32 |
 
 ### C11 — HCL input removal version (conditional)
+
+**Disposition.** Withdrawn from Stage 12 by owner approval on 2026-10-25; all original rows `[X]`, review 0/10 unchanged. Deferred intent: Kinet STG-13, not an executable successor. Original scope/acceptance/dependencies below are preserved historical requirements, not dispatch instructions.
 
 **A32 reconciliation.** Source `d339d6879eee21b82e31d39e88ed27dd89299a04` and normal
 closure `c8ae90b0a802f4c8c57d7dcd226f45ca9a7739a5` are accepted/published and
