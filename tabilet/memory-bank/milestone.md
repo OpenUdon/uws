@@ -185,6 +185,65 @@ package's own ledger. Existing candidates remain deferred, including broader
 interoperability formats and optional expression portability tooling. Ordinary
 UWS validation continues accepting implementation-specific expressions.
 
+## Milestone families
+
+Keep the agreed delivery outcome stable. Small directly related fixes stay in
+the current task. Substantial required repairs use flat amendment children;
+optional features, broader coverage and environment conveniences use option
+children. An amendment must name the original unmet requirement, its evidence,
+and why a simpler implementation or verification route cannot satisfy it.
+External testing-tool repair is optional unless the owner explicitly promotes
+it, even under `CORRECTIVE_PLANNING: auto`. A failed test method alone proves
+no product defect. Mocks cannot prove unexecuted real acceptance; an unmet
+original requirement needs repair or an explicit owner disposition.
+
+Each child owns its specification, task table and review in one file under
+`tabilet/memory-bank/`, using the names in [Status ID Pattern](#status-id-pattern).
+Its heading has the form `## <root-ID>-<NN> - <title>`, with exactly one
+unfenced `Parent: <root-ID>` line. Ordinary Markdown bold and trailing whitespace
+are accepted. Keep concise links in the parent and index instead of duplicate
+specifications. An initial option may be a short finding without rows; required
+amendments and selected options need full scope, acceptance, tasks and ordinary
+review. Reclassification needs an explicit planning decision, preserved lineage
+and a fresh ID through supersession, never a silent filename change.
+
+Finish independent parent work, then required amendments, then resume deferred
+parent acceptance and final review. Affected parent rows remain `[!]`, naming
+the amendment and resumption condition; completed rows and valid evidence stay
+complete. Each child has its own review, which cannot replace parent acceptance
+or reset its persisted counter. `Parent:` records a relationship, not a dependency
+on a completed parent; never add that circular edge. Keep detailed state in the
+owning records and Git history, not dated task-progress paragraphs in `AGENTS.md`.
+
+`OPTION_POLICY` is `confirm` by default, or `ignore`. During parent execution,
+record optional discoveries briefly without detailed planning, repeated inspection
+or implementation. Under `confirm`, after parent closure consolidate useful
+options into one proposed batch, remove duplication and obsolete items, recommend
+the remaining useful batch and wait for the owner's actual decision. Independent
+main work may continue. Under `ignore`, omit option refinement, prompts and
+execution throughout the current goal; preserve the backlog for later. Options
+never block parent closure or activate when the goal completes. Approved options
+enter a newly approved horizon through existing planning and do not reopen the
+parent. An explicit selection can override `ignore` for that named work.
+
+For multi-milestone family sequencing and readiness, follow the selected goal
+protocol. Root-only orders retain their semantics. Preserve ordinary dependencies,
+write ownership, parallel-safety checks, grants, denials, consumed attempts and
+review counters. Neither option policy nor launch refresh grants new actions,
+budgets or scope. An in-progress option still counts toward active-row ownership,
+even when an unscoped runner cannot select it; resume its approved owner.
+
+Retire children under their original filenames and permanent IDs, preserving
+`Parent:` and the complete source in the ordinary literal envelope. Source status
+and Source specification both name the original child file. Preserve all earlier
+rows and specification prose when closing the final row. Required amendment
+acceptance and reviews must pass before parent retirement; deferred options may
+remain linked to a retired parent. A declined rowless option may retire as
+cancelled or explicitly superseded with the owner's Disposition, Review
+`not applicable` and Review iterations `0`; this narrow withdrawal exception needs
+no invented implementation rows and proves no product delivery. Supersession
+names its successor, which must preserve retained obligations.
+
 ## Authorization requirements
 
 Each milestone specification may contain `AUTHORIZATION_REQUIREMENTS`. It
@@ -241,8 +300,13 @@ Under the optional bundled goal protocol, `AUTHORIZATION_GRANTS` belongs
 to the resolved human-approved request, not to this file. Requirements,
 proposed grants, status notes, and `suggested.txt` are evidence, not approval.
 Check authority before the action; pause affected work and dependents when it
-is missing. Independent authorized work may continue under the governing
-order and ownership rules. Required unperformed task or acceptance actions
+is missing. A changed input to a protected action is a changed scope unless
+an effective grant's standing revision envelope in the selected goal protocol
+covers it. That optional envelope covers only bounded unprivileged workspace-local
+verification; it never covers `sudo`, `ssh`, live browser actions or push grants.
+Its revisions, isolation, recovery and attempt limits require human approval;
+upgrade approval activates no grant. Independent authorized work may continue
+under the governing order and ownership rules. Required unperformed task or acceptance actions
 prevent closure; listing an action here alone does not require its performance.
 Outside a goal, use the current scoped human request and applicable project
 rules. Missing fields preserve legacy behavior without new authority or
@@ -260,8 +324,11 @@ own review cannot replace its next full review or bypass iteration 10.
 An approved `auto` allows the Goal/Next owner to prepare and check necessary
 repair planning against the original delivery outcome, owning repositories,
 existing action grants and all limits, then apply it under standing approval.
-Prefer a matching open milestone when its scope and dependency position fit;
-otherwise create a new repair milestone with permanent identity and lineage.
+Prefer a matching open milestone when its scope and dependency position fit.
+Substantial unmet original acceptance in an open parent uses its required
+amendment under [milestone families](#milestone-families); other repair outcomes
+use a new root remediation milestone with permanent identity and lineage.
+Optional improvements remain outside standing repair authority.
 Preserve completed/frozen history, row outcomes and review counters. New
 features, scope or permission expansion, higher limits, collisions and unknown
 checksum drift still require human direction. Children only report needed work.
@@ -297,6 +364,12 @@ retains Reconcile's ordinary proposal-approval gate. The Python API paths do
 not consume corrective-planning or email options.
 
 ## Status ID Pattern
+
+Root records retain `status-<LANE><NN>.md`. Flat children use
+`amend-<root-ID>-<NN>.md` or `option-<root-ID>-<NN>.md`; the filename determines
+the kind. Both child kinds share one permanent 01-99 sequence under each root,
+reserved across active and retired records. There are no recursive families,
+reused IDs or silent renames. Archive IDs keep their independent namespace.
 
 Status files are named `tabilet/memory-bank/status-<LANE><NN>.md`. `<LANE>` is a single
 uppercase letter that classifies the work, and `<NN>` is a zero-padded number
@@ -526,7 +599,11 @@ per run. For a row whose acceptance depends on one:
 - Each expensive run is one attempt. Persist the row's attempt count in its
   status notes; a session change does not reset it. Stop after three
   consecutive failed attempts at the same stage (or the limit the milestone
-  sets), or when the failing stage lies outside the behavior the milestone owns.
+  or a human-approved goal budget sets), or when the failing stage lies outside
+  the behavior the milestone owns. Before each counted attempt, run a fast
+  readiness preflight of the required fixtures, schemas and launcher, and check
+  necessary capabilities and authority. Preflight diagnostics never replace
+  required acceptance evidence or reset consumed attempts.
   Mark the row `[!]` with a short diagnosis and options, such as a correction, a
   rescope or an environment change, and ask the user. Approval to continue sets
   a new explicit limit. Never repeat an unchanged failed attempt.
@@ -652,13 +729,18 @@ baseline rule must not force commits or interrupt a no-commit goal.
 
 ### Retire a closed milestone
 
-1. Require a passed review within the persisted 10-iteration limit, recorded
-   verification, consolidated knowledge, and reconciled downstream work. No
+1. Except for the authorized rowless-option withdrawal in
+   [milestone families](#milestone-families), require a passed review within the
+   persisted 10-iteration limit, recorded verification, consolidated knowledge,
+   and reconciled downstream work. No
    `[ ]`, `[~]`, or `[!]` row may remain. Every `[-]` row names its accepted
    successor. A cancelled or superseded milestone also needs an authorized
    disposition; it must not be described as delivered acceptance.
-2. Create `tabilet/docs/history/status-<LANE><NN>.md` using the envelope below. Keep the
-   full final specification and status document in separate literal markdown
+2. Create `tabilet/docs/history/status-<LANE><NN>.md` for a root, or retain a
+   child's original amendment/option filename under `tabilet/docs/history/`.
+   Apply the child source-path rules in [milestone families](#milestone-families).
+   Use the envelope below and keep the full final specification and status
+   document in separate literal markdown
    fences, including all task text, notes, acceptance, and review evidence.
    Choose fences longer than any fence in the source. Original relative paths
    inside these literal documents retain their source-document meaning.

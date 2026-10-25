@@ -158,12 +158,15 @@ Long-form references live in `docs/`; README is operator-focused.
   removing or superseding knowledge, preserve its old wording and replacement
   reference in `tabilet/docs/history/knowledge.md` under the milestone retirement rules.
   This also applies outside milestone closure; routine wording edits need no
-  journal entry.
+  journal entry. Before recording a lesson about a mistake, consider whether a
+  deterministic check can catch it: propose that check for mechanical errors,
+  and keep lessons for decisions that need judgement.
 - Keep verified archive files frozen. Later implementation updates current
   `product.md` and `architecture.md` plus its status history, not the archive.
-- Keep one `tabilet/memory-bank/status-<LANE><NN>.md` file for each active milestone listed in
+- Keep one `tabilet/memory-bank/status-<LANE><NN>.md` file for each active root milestone listed in
   [tabilet/memory-bank/milestone.md](tabilet/memory-bank/milestone.md), named by the status ID
-  pattern defined there.
+  pattern defined there. Flat amendment and option children follow
+  [milestone families](tabilet/memory-bank/milestone.md#milestone-families).
 - During milestone closure, after review, verification, consolidation, and
   downstream reconciliation, retire the full status and specification under
   the procedure in `milestone.md`. Completed rows remain active until the whole
@@ -204,6 +207,12 @@ Long-form references live in `docs/`; README is operator-focused.
   review unit. See that file for milestone review rules.
 - After the last task in a milestone is complete, run a deep code review of the
   milestone before closing it.
+- For substantial discoveries, follow
+  [milestone families](tabilet/memory-bank/milestone.md#milestone-families).
+  Required amendments preserve original acceptance; optional work waits until
+  parent closure or remains deferred under `OPTION_POLICY: ignore`.
+- Prefer Go's standard library before adding dependencies or local helpers.
+  Keep trivial comparisons and transformations inline when that is clearer.
 - `CORRECTIVE_PLANNING` defaults to `confirm`. With human-approved `auto`, the
   Goal/Next owner may prepare and check necessary corrective plans within the
   original delivery outcome, owning repositories, existing grants and limits,
