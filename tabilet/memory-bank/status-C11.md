@@ -123,7 +123,7 @@ disposable stores/caches/browser profiles and unique output directories.
 
 - Kinet:M54 (clean).
 - Udon:M54.
-- [OpenUdon:A32](../../../openudon/tabilet/memory-bank/status-A32.md), which
+- [OpenUdon:A32](../../../openudon/tabilet/docs/history/status-A32.md), which
   proves no OpenUdon HCL-input use remains.
 
 **Downstream.**
@@ -134,13 +134,22 @@ disposable stores/caches/browser profiles and unique output directories.
 Ramen stays on its pinned UWS; older published versions stay immutable and
 fetchable.
 
+**A32 reconciliation.** Source `d339d6879eee21b82e31d39e88ed27dd89299a04` and normal
+closure `c8ae90b0a802f4c8c57d7dcd226f45ca9a7739a5` are accepted/published and
+independently verified. A32 removes the private/CLI and owned HCL-input closure while preserving public APIs
+and history readers. C11.3 checks the retained public SDK through its existing
+adapted disposable fixture. A32 qualification does not qualify C11: clean
+Kinet:M54, accepted/published Udon:M54 and verified A32 normal closure
+publication remain dispatch gates. Rows stay pending and review0; no trigger,
+ordinary adoption or global HCL-free claim is added.
+
 ## Tasks
 
 | Item | State | Notes |
 |---|---|---|
 | C11.1 — Versioned legacy core codec removal | `[ ]` | Under UWS 1.13 §12.1 choose/document the compatibility version and remove every UWS core HCL input entrypoint: `convert.HCLToJSON`, `HCLToJSONIndent`, `HCLToYAML`, `UnmarshalHCL`, all `uws1` UnmarshalHCL hooks and deprecated `hcl.Import`. Remove the complete legacy core codec including `uws1.Document.MarshalHCL`, core `convert.MarshalHCL`/`JSONToHCL`/`YAMLToHCL` and Horizon-backed helpers. Preserve historical published versions and independent `uws/hcl` Render/Verify (`uws.hcl-view.v1`). |
 | C11.2 — HCL-free core and bounded JSON/YAML projection | `[ ]` | Remove HashiCorp/Horizon HCL from UWS core selected/compiled module closures. Supply a bounded, context-cancellable `CanonicalJSON(context.Context, Source)` API accepting JSON/YAML only, preserving complete values, numeric lexemes (large integers, decimal/exponent spellings, signed zero) and extensions without lossy typed-model projection. Define limits/refusals and independent Render/Verify comparison tests. Keep the renderer in its separate module; this does not remove native Udon dependencies. |
-| C11.3 — Pre-publication migration fixtures | `[ ]` | Build explicitly adapted disposable consumer fixtures at recorded source/patch identities for APItools, Udon after M54, OpenUdon after A32, Browsertools and Kinet workers. Exercise removal and replacement projection/output APIs without changing ordinary consumer worktrees or claiming their adoption. Record Kinet:M54 live inventory as separate readiness evidence. These pre-publication proofs precede C11 publication; APItools:M86 and Kinet:M55 own actual ordinary published adoption afterward. |
+| C11.3 — Pre-publication migration fixtures | `[ ]` | Build explicitly adapted disposable consumer fixtures at recorded source/patch identities for APItools, Udon after M54, OpenUdon’s retained public SDK after A32 (no retired CLI/internal fixture), Browsertools and Kinet workers. Exercise removal and replacement projection/output APIs without changing ordinary consumer worktrees or claiming their adoption. Record Kinet:M54 live inventory as separate readiness evidence. These pre-publication proofs precede C11 publication; APItools:M86 and Kinet:M55 own actual ordinary published adoption afterward. |
 | C11.4 — Qualify and publish | `[ ]` | Docs, changelog, version records, immutability of earlier versions, and an exact publication handoff under named authority. |
 
 ## Acceptance and verification

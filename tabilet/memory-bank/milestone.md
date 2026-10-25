@@ -810,6 +810,15 @@ independently published sibling prerequisites before adoption. Default checks ar
 
 ### C11 — HCL input removal version (conditional)
 
+**A32 reconciliation.** Source `d339d6879eee21b82e31d39e88ed27dd89299a04` and normal
+closure `c8ae90b0a802f4c8c57d7dcd226f45ca9a7739a5` are accepted/published and
+independently verified. A32 removes the private/CLI and owned HCL-input closure while preserving public APIs
+and history readers. C11.3 checks the retained public SDK through its existing
+adapted disposable fixture. A32 qualification does not qualify C11: clean
+Kinet:M54, accepted/published Udon:M54 and verified A32 normal closure
+publication remain dispatch gates. Rows stay pending and review0; no trigger,
+ordinary adoption or global HCL-free claim is added.
+
 **Stage/owner.** STG-12 Phase C; UWS. Dispatch priority position 17/19.
 
 **Trigger.** A clean Kinet:M54 and an accepted, published Udon:M54.
