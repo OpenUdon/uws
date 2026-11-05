@@ -404,7 +404,8 @@ Standing `auto` cannot weaken acceptance, required evidence, verification gates
 or severity rules, cancel unmet obligations, or erase them through supersession.
 A named successor preserves all obligations. Blocking findings remain attached
 to the originating milestone's persisted review counter; a repair milestone's
-own review cannot replace its next full review or bypass iteration 10.
+own review cannot replace the originating gate's next iteration, scoped as the
+review gate defines, or bypass the project's 10-iteration ceiling.
 An approved `auto` allows the Goal/Next owner to prepare and check necessary
 repair planning against the original delivery outcome, owning repositories,
 existing action grants and all limits, then apply it under standing approval.
@@ -456,8 +457,8 @@ reserved across active and retired records. There are no recursive families,
 reused IDs or silent renames. Archive IDs keep their independent namespace.
 
 Status files are named `tabilet/memory-bank/status-<LANE><NN>.md`. `<LANE>` is a single
-uppercase letter that classifies the work, and `<NN>` is a zero-padded number
-within that lane:
+uppercase letter that classifies the work, and `<NN>` is a positive number
+with at least two digits within that lane:
 
 ```text
 M01, M02, M03, ... M09, M10, M11, ...    Default lane
@@ -476,10 +477,10 @@ Lane meanings:
 
 Rules:
 
-- Always use the zero-padded two-digit form (`C01`, not `C1`). It keeps file
-  names and tables sorting naturally after a lane reaches `10`.
-- A lane holds at most 99 status files, `01` through `99`. When a lane fills up,
-  stop that lane and open a new letter instead of adding a third digit.
+- Use at least two digits (`C01`, not `C1`); after `C99`, continue with
+  `C100`, `C101`, and so on. Do not add leading zeros beyond the minimum.
+  Sort numeric IDs numerically when chronological order matters; lexical order
+  puts `C100` before `C99`. Child suffixes remain two digits (`01`–`99`).
 - Do not reuse an ID after its status file exists, including after retirement.
   Search both active files and the history index before allocating an ID.
   Context archive IDs use an independent namespace; a matching archive ID is
@@ -532,9 +533,11 @@ only what the repository establishes as fact. Planning does not implement or
 accept the requested behavior. Use `memory-bank-propose` where installed, or
 follow this procedure directly with another agent.
 
-**Expensive checks.** Some acceptance depends on a check that is expensive or
-protected; see the [verification-attempt gate](#verification-attempt-gate).
-For such a milestone:
+**Real-effect checks.** Some acceptance depends on a class R check that has a
+real external effect or is protected; see the
+[test policy](test-policy.md) and the
+[verification-attempt gate](#verification-attempt-gate). Without a test policy,
+the gate covers every expensive or protected check. For such a milestone:
 
 - Limit acceptance to behavior the milestone owns, proved with the smallest
   workload. Put actual pairing with real producers or consumers in the
@@ -542,8 +545,8 @@ For such a milestone:
 - When the check needs host capabilities (privileges, operating-system or
   kernel features, devices, browsers, or external accounts), make a cheap
   readiness probe its first row.
-- Name the uncounted local diagnostic loop, and order cases so that an
-  unrelated failure cannot hide the milestone's own cases.
+- Name the uncounted local diagnostic loop (the class O loop), and order cases
+  so that an unrelated failure cannot hide the milestone's own cases.
 
 To defer already approved work through a stage rescope, present the exact
 untouched pending rows and affected downstream work for approval. After
@@ -555,6 +558,40 @@ new approved identity and names its cancelled lineage. Preserve `[~]`, `[!]`,
 dependents or keep their prerequisites in the active horizon; an unresolved
 dependency cannot be deferred by changing a stage label. An entirely cancelled
 milestone remains active until its normal closure and retirement disposition.
+
+## Open review findings
+
+Non-blocking review findings carried past their milestone's review gate. This
+register is approved planning state, never retired with a milestone, and not a
+review copy: one line per finding.
+
+Last used ID: none
+
+| ID | Finding | Severity | Origin | Fix owner | Disposition |
+|---|---|---|---|---|---|
+
+- IDs are `FND-01`, `FND-02`, ...: permanent, never reused, separate from status,
+  archive and stage IDs. Origin is the milestone and review iteration.
+- Fix owner is the first later active task that touches the code, or
+  `unassigned`. That row's notes say "fixes FND-03", and its review records
+  fixed, obsolete or still open. A finding follows its code. The originating
+  review notes say "carried as FND-03"; that milestone may close and retire.
+- Disposition: `open`, `fixed in <commit or task row>`, `obsolete: <evidence>`,
+  or `deferred by human: <approval source>`; never the last without that
+  approval.
+- A `capacity limit` row is Lower. It keeps fix owner `unassigned` unless later work
+  builds on it, and then the fix-now and fix-owner rules for non-blocking findings
+  apply as usual. It never turns blocking when examined and needs no corrective
+  row. A human may defer it or plan a row that fixes it at any review, and must
+  at horizon closure.
+- In concurrent leases, children return register updates; only the goal owner
+  writes them.
+- Horizon closure (the last active milestone of the current stage, or of the
+  project without stages) requires every row fixed, obsolete or deferred.
+  Before then, give every unowned open P2 a corrective row under the
+  corrective planning policy. After closure, remove fixed and obsolete rows
+  (lineage stays in the fixing task's status record); keep deferred rows and
+  the last used ID.
 
 ## Candidate Directions
 
@@ -613,13 +650,38 @@ these defaults:
 
 | Priority | Context | Typical examples | Gate effect |
 |---|---|---|---|
-| P1 | The milestone is unsafe or invalid to close because a severe defect threatens acceptance, correctness, security/privacy, data integrity, or a public compatibility contract. | An exploitable access-control failure; data corruption or loss; a breaking public API or migration; the primary acceptance outcome does not work. | Blocking. Fix and review again. |
-| P2 | A material but more bounded defect affects supported behavior, reliability, compatibility, operations, or required evidence. | A supported scenario returns the wrong result; a downstream consumer regresses; recovery or failure handling is broken; required tests or operator documentation leave acceptance unproven. | Blocking. Fix and review again. |
-| Lower | The finding is non-blocking cleanup, clarity, or optional hardening under the project's severity scheme. | Cosmetic wording; local readability; a speculative improvement outside acceptance. | May be carried only with a named owner and explicit rationale. |
+| P1 | The milestone is unsafe or invalid to close because a severe defect threatens acceptance, correctness, security/privacy, data integrity, or a public compatibility contract. | An exploitable access-control failure; data corruption or loss; a breaking public API or migration; the primary acceptance outcome does not work; required tests or operator documentation leave an acceptance line unproven. | Blocking. Fix and review again. |
+| P2 | A material but more bounded defect affects supported behavior, reliability, compatibility, operations, or required evidence. | A supported scenario returns the wrong result; a downstream consumer regresses; recovery or failure handling is broken; operator documentation is materially incomplete. | Not blocking under the adopted gate: fix now when cheap or built upon; otherwise carry in [Open review findings](#open-review-findings). |
+| Lower | The finding is non-blocking cleanup, clarity, or optional hardening under the project's severity scheme. | Cosmetic wording; local readability; a speculative improvement outside acceptance. | Fix, carry or decline with rationale. |
 
-Any project-defined severity more urgent than P1 also blocks. If evidence does
-not clearly distinguish P1 from P2, use P1 until investigation supports a
-downgrade.
+Any project-defined severity more urgent than P1 also blocks, so **blocking**
+means P1 and any project severity above it. An unmet or unproven acceptance line
+is P1. A security, privacy or data-loss finding is P1 unless evidence clearly
+shows otherwise. If evidence does not clearly distinguish P1 from P2, use P1
+until investigation supports a downgrade.
+
+**Safe capacity refusals.** A case at extreme size or capacity is Lower, not P1 or
+P2, when all of these hold: no acceptance line, public contract or previously
+supported behavior promises that size; a test shows the refusal is deterministic
+and clear, with nothing leaked, corrupted, lost or rewritten; the stored data
+stays reachable through a supported path and no required flow dead-ends; and the
+limit is documented. Otherwise classify it normally. Carry it in the register
+labelled `capacity limit` in the Finding column, citing the test
+and the documentation that show each condition; without that evidence it keeps
+its ordinary severity. A project whose own severity definitions differ keeps
+them. If a promise covers that size, narrowing it needs explicit
+human approval, and the finding stays P1 until then.
+
+When the project's own severity definitions make P2 blocking, or it has no open
+review findings register, that stricter gate applies (P2 blocks and every
+iteration reviews the whole milestone) until the project explicitly adopts this
+one.
+
+The optional `tabilet` controller applies its own deterministic gate: it runs
+its own full milestone review, and any P0/P1/P2 finding reported in that review
+blocks retirement and starts another full review. An interactive review pass
+does not replace it, and the controller does not read the open review findings
+register, so milestones it runs keep P2 blocking.
 
 ## New review intake
 
@@ -649,21 +711,29 @@ Before implementing any newly reviewed finding:
 6. Reconcile affected pending specifications and the remaining order. Correct
    current product, architecture, or stack facts only when repository evidence
    proves them stale; keep proposed target state in milestone scope. Apply the
-   expensive-check limits above, and do not move downstream pairing evidence
-   into a milestone whose acceptance depends on an expensive check.
+   real-effect check limits above, and do not move downstream pairing evidence
+   into a milestone whose acceptance depends on a real-effect check.
 
-Do not create a persistent review copy or ledger. Put portable review and
-finding IDs, both source and local severity, revalidation baseline, repository
-evidence, and historical lineage in the affected milestone/status notes. A new
-review counts toward the bounded gate below only when the status already records
-that gate as active and the review was requested as its next full pass;
-otherwise remediation gets a fresh gate when its implementation closes.
+Do not create a persistent review copy or ledger. The
+[open review findings](#open-review-findings) register is approved planning
+state, not a review copy or ledger. Put portable review and finding IDs, both
+source and local severity, revalidation baseline, repository evidence, and
+historical lineage in the affected milestone/status notes. A new review
+counts toward the bounded gate below only when the status already records that
+gate as active and the review was requested as its next pass; otherwise
+remediation gets a fresh gate when its implementation closes.
 
 ## Verification-attempt gate
 
-An expensive or protected check needs privileged setup, scarce hardware or
-quota, a physical or live environment, explicitly granted actions, or minutes
-per run. For a row whose acceptance depends on one:
+This gate covers a class R check under the [test policy](test-policy.md) or,
+when no test policy applies, any expensive or protected check. A class O check
+never uses this gate. When it needs an explicit grant, the grant's reservations,
+budget and stop conditions bind (the goal protocol's standing revision
+envelope); exhausting them pauses for human direction.
+
+A real-effect, expensive or protected check needs privileged setup, scarce
+hardware or quota, a physical or live environment, explicitly granted actions,
+or minutes per run. For a row whose acceptance depends on one:
 
 - Reproduce only when safely possible within current authority and budget.
   Prefer the cheapest environment that can show the failure, such as an
@@ -711,10 +781,11 @@ notes identify the consumed attempt or supersession and its accepted successor:
      interrupted pass at that same number. Runtime round limits are separate.
      Pin the milestone's base commit, inspect the full diff including staged,
      unstaged and relevant untracked work under the commit policy, read the
-     `git log` range, and review the full milestone diff for correctness,
-     regressions, failure semantics, boundary drift, stale docs, and missing
-     tests. Review acceptance fidelity separately: requirements missing or
-     partial, behavior nobody asked for, and requirements implemented wrongly,
+     `git log` range, and in iteration 1 review the full milestone diff for
+     correctness, regressions, failure semantics, boundary drift, stale docs,
+     missing tests and test-policy compliance. Review acceptance fidelity
+     separately: requirements missing or partial, behavior nobody asked for,
+     and requirements implemented wrongly,
      each quoting its acceptance line. Record findings grouped by concern.
      An empty implementation diff still needs acceptance review; do not
      manufacture changes. Lenses are coverage obligations: combine them or
@@ -723,18 +794,60 @@ notes identify the consumed attempt or supersession and its accepted successor:
      fresh read-only whole-milestone reviewers; the owner alone records results
      and fixes under `DEFAULT`. Absence preserves host model settings.
    - Record the iteration number and findings in the current status notes so a
-     continuation cannot reset the counter. If the pass finds no P1, P2, or
-     higher-severity issue, the gate passes. Otherwise, when the current
-     iteration is below 10, fix every such finding in the current milestone,
-     rerun affected verification, and review the whole milestone again,
-     including the fixes.
-   - Run at most 10 iterations; a session or reviewer change does not reset the
-     counter. If iteration 10 still finds a blocking issue, add `[!]` review
-     rows recording the remaining findings and iteration-limit blocker. Do not
-     start another automatic fix-review cycle or move downstream; stop and ask
-     for user direction.
-   - Carry a lower-severity finding forward only with a named pending owner and
-     explicit rationale.
+     continuation cannot reset the counter. The gate passes only under the pass
+     condition below. When blocking findings exist and the current iteration is
+     below the approved review limit, fix every blocking finding in the current
+     milestone, rerun affected verification, and begin the next iteration.
+   - Iteration 2 and later review only each blocking finding of the previous
+     iteration (is it fixed?), every change since the state the previous
+     iteration reviewed, including non-blocking fixes, and the direct
+     consumers of that changed code. Do not sweep the whole milestone again.
+     Fresh reviewers receive the earlier findings and this narrowed scope.
+     Record each iteration's reviewed state: the full `HEAD` commit ID and, when
+     uncommitted work is in scope, a saved copy of the reviewed diff and its
+     hash in ignored scratch. If that state cannot be reconstructed, review the
+     full milestone diff instead. This holds under every commit policy.
+   - A task review covers that task's diff (its own commit when commits are per
+     task) and passes with no blocking finding.
+   - P2 and Lower findings never block on their own. For each one, choose to
+     fix now when the fix is local, cheap and in scope, or when later work
+     builds on the defect (a contract or interface, a persisted format such as
+     a schema, ledger or wire format, a public API, or tests encoding the
+     behavior); to carry it in [Open review findings](#open-review-findings); or,
+     for Lower only, to decline with a one-line rationale.
+   - Any change made in response to a review, blocking or not, is verified and
+     reviewed by a later iteration before closure. Recording findings,
+     dispositions, review counters, reviewed state, register rows and owner
+     notes is not a review change; code, test, configuration and substantive
+     documentation changes are. An iteration with only non-blocking findings
+     ends one of two ways: (a) carry or decline them without changing code, and
+     the gate passes; or (b) apply fix-now changes, rerun affected verification
+     and run the next iteration over those changes, which counts toward the
+     limit.
+   - The gate passes with no blocking finding in scope, every earlier blocking
+     finding fixed, and no unreviewed review change.
+   - A carried P2 still unfixed when its fix owner's review, or a later
+     iteration, examines it becomes blocking.
+   - Resolve `REVIEW_MAX_ITERATIONS` from the human-approved interactive request,
+     default 10, independently of commit policy. It must be a positive integer.
+     Project caps use `REVIEW_MAX_ITERATIONS` in `tech-stack.md` verification
+     standards; milestone caps use that field in the owning specification.
+     Use the minimum applicable cap. Legacy fixed-cap prose remains binding
+     until explicit human adoption; surface conflicts before dispatch. Persist
+     the effective limit, approval source and counter; resumes, repairs and
+     policy changes never reset them. Only explicit human approval
+     can raise the ceiling; an extension preserves iterations already consumed.
+     Python API execution retains its existing limit of 10.
+   - Run at most `REVIEW_MAX_ITERATIONS` iterations (default 10); a session or
+     reviewer change does not reset the counter. On the final allowed iteration
+     make no further review change;
+     carry every non-blocking finding, and one that later work builds on names
+     that work as its fix owner, which fixes it before building on it. If a
+     blocking finding remains, add `[!]` review rows recording the remaining
+     findings and iteration-limit blocker. Do not start another automatic
+     fix-review cycle or move downstream; stop and ask for user direction.
+   - Carry a non-blocking finding forward only in the open review findings
+     register, with its fix owner and rationale.
 4. Reconcile the memory bank. Update `product.md` if the milestone changed
    product scope, domain terminology, concept relationships, or business
    invariants. Update `architecture.md` or `tech-stack.md` if it changed
@@ -754,8 +867,13 @@ notes identify the consumed attempt or supersession and its accepted successor:
    acceptance against the delivered outcome. Then consolidate and retire under
    the procedure below. During an ordered goal, the goal protocol finishes its
    downstream reconciliation before performing this retirement step.
-8. Run required verification again, including the retirement links and record,
-   then commit substantive closure changes under the governing commit policy.
+8. Check the retirement links and record, and run required verification again.
+   Under a test policy, a class O gate may reuse its result when nothing it
+   reads has changed since it passed; if that is unclear, rerun it. Class R checks
+   follow their own authority. State a reuse in the retired record's
+   `**Verification.**` when writing it; report a rerun made after freezing in the
+   step 9 summary, never in the frozen record. Then commit substantive closure
+   changes under the governing commit policy.
    Do not create an extra milestone commit when the review changes nothing.
 9. Report a short review summary: what was verified, the review-fix iteration
    count, what memory-bank files changed, any review commit, and whether an
@@ -815,8 +933,8 @@ baseline rule must not force commits or interrupt a no-commit goal.
 
 1. Except for the authorized rowless-option withdrawal in
    [milestone families](#milestone-families), require a passed review within the
-   persisted 10-iteration limit, recorded verification, consolidated knowledge,
-   and reconciled downstream work. No
+   persisted approved review limit (within the project cap of 10), recorded
+   verification, consolidated knowledge, and reconciled downstream work. No
    `[ ]`, `[~]`, or `[!]` row may remain. Every `[-]` row names its accepted
    successor. A cancelled or superseded milestone also needs an authorized
    disposition; it must not be described as delivered acceptance.
@@ -866,7 +984,7 @@ Closure metadata precedes the two sections and uses one line per field.
 **Evidence.** <full commit or unversioned>
 **Worktree.** <clean, includes uncommitted changes, or unversioned>
 **Review.** passed
-**Review iterations.** <1 through 10>
+**Review iterations.** <positive count within the effective limit, at most 10>
 **Verification.** <commands, results, and supporting evidence>
 **Consolidated into.** <current-document and lesson links, or no current-truth change>
 
@@ -898,6 +1016,12 @@ the literal status record. `**Verification.**` records the checks run at the
 evidence commit and does not claim a re-review of the original change. Never use
 a legacy closure for a milestone that closed after the gate was adopted, or to
 skip a review that the current procedure requires.
+
+A status file that holds several milestones under one ID, such as `M1` to `M5`
+in `status-M01.md`, is not retired as one record. The envelope takes exactly one
+specification section named by the record's ID, so stop and report the combined
+file; the owner splits it under separate IDs or decides otherwise. A combined
+record that already exists is frozen.
 
 Retired milestone records are frozen. Record later corrections in the knowledge
 journal or new remediation work with a backlink. Preserve previous history

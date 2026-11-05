@@ -15,6 +15,25 @@
 
 **Review provenance.** Kinet Stage 13 plan review (`kinet-stage13.md`), 2026-10-25; source commit baseline not supplied. H2/H3 (High/local P1): current Ramen/Udon readers and writers depend on UWS HCL. The owner selected preservation. Original task wording and review counters are retained below.
 
+## Status rules
+
+Verification follows [test-policy.md](test-policy.md) and the row checks and
+required gates in [tech-stack.md](tech-stack.md#verification-commands).
+
+A row whose acceptance depends on a class R check, or on an explicit grant
+budget, records its attempt count here under the
+[verification-attempt gate](milestone.md#verification-attempt-gate). A class O
+gate under the [test policy](test-policy.md) records the command, the full source
+revision plus a saved diff/hash for uncommitted work (and artifact identity when
+one is qualified), PASS or FAIL, and one log link in ignored scratch; a reused
+result says its inputs are unchanged. A row's focused verification is recorded
+the same way, and says so when its result came from the toolchain's cache.
+A row that fixes a carried review finding says "fixes FND-nn" in its notes (see
+[Open review findings](milestone.md#open-review-findings)). Task and milestone
+reviews follow the [review procedure](milestone.md#milestone-review-procedure)
+and the project 10-iteration ceiling; preserve existing counters and reviewed
+state. This preamble changes no withdrawn disposition or task authority.
+
 ## Tasks
 
 | Item | State | Notes |

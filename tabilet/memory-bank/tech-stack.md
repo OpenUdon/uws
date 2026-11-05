@@ -131,15 +131,74 @@ python -m pip install -r docs/requirements.txt
 
 ## Verification Commands
 
+Every test, check and qualification follows [test-policy.md](test-policy.md).
+Verification standard: `standard`; this upgrade adds no duration budgets or
+instrumentation exclusions. Existing package limits and exact-artifact
+qualification requirements remain binding.
+
+`REVIEW_MAX_ITERATIONS: 10` is the project review ceiling. Resolve each run's
+positive limit independently of commit policy and use the minimum of the
+human-approved request, this project cap and any milestone cap. Raising this
+project ceiling needs a separate explicit human-approved rule change; an
+upgrade, repair or resume never resets consumed iterations.
+
+**Row checks.** Before completing a row or starting its task review or re-review,
+run `GOWORK=off GOPROXY=off GOTOOLCHAIN=local go build ./...` and
+`GOWORK=off GOPROXY=off GOTOOLCHAIN=local go vet ./...` separately from the root
+and `hcl/`, then run Go tests for the affected whole packages in their owning
+module. Add direct consumers for changes to public contracts, persisted formats
+or relied-upon behavior. Add the strict documentation build for documentation
+site changes. Add race checks on changed concurrent units and consumers of a
+changed concurrency contract. Earlier narrow edit-loop checks do not replace
+this row check. Toolchain test-cache results are permitted when the cache sees
+all inputs; record cached results as cached. Record the command, full source
+revision plus a saved diff/hash for uncommitted work, PASS or FAIL, and one log
+link in ignored scratch, including qualified artifact identity where applicable.
+
+**Required gates.** Run the following Go commands separately from the repository
+root and `hcl/`; root `./...` does not discover the nested module. Use the
+installed local toolchain and cached dependencies; missing inputs stop the
+affected check rather than triggering a download.
+
 ```bash
-go test ./...
-go test -race ./...
-go vet ./...
+GOWORK=off GOPROXY=off GOTOOLCHAIN=local go build ./...
+GOWORK=off GOPROXY=off GOTOOLCHAIN=local go vet ./...
+GOWORK=off GOPROXY=off GOTOOLCHAIN=local go test -count=1 ./...
+GOWORK=off GOPROXY=off GOTOOLCHAIN=local go test -race -count=1 ./...
+```
+
+Also run these repository-root gates:
+
+```bash
 mkdocs build --strict
 git diff --check
 ```
 
-Focused commands include:
+Run gates cheapest first, immediately before the whole-milestone review.
+`-count=1` bypasses Go's test-result cache for every gate run, including reruns;
+compiler and dependency caches stay. Before later review iterations or closure,
+reuse a passed class O result only when nothing the gate reads has changed;
+otherwise rerun it. Record the command, full source revision plus saved diff/hash
+for uncommitted work, artifact identity where qualified, PASS or FAIL and one
+ignored-scratch log link; a reused result states its inputs are unchanged.
+Race checks keep full project-code instrumentation. Run heavy instrumented
+targets serially on a shared host under the stock capacity recommendation;
+measured changes to concurrency or instrumentation scope are recorded here.
+
+**Stage qualification.** None scheduled for UWS: its retained C11 and C13 rows
+are withdrawn. Existing accepted exact-artifact and standalone-module proofs
+remain evidence at their recorded contexts. A future approved stage requiring
+end-to-end qualification assigns that required gate to its final milestone,
+which depends on the other stage milestones and uses real pinned artifacts.
+
+**Class R checks.** None scheduled. A later named real-effect check requires
+separate human authority, scope and supervision; this policy grants none.
+
+**Existing other-language tooling.** The Python-based MkDocs documentation build
+retains its documented role. No other-language Go test runner or test-evidence
+generator is approved.
+
+Focused edit-loop commands include:
 
 ```bash
 go test ./uws1 -run TestSchemaConformance
@@ -147,8 +206,10 @@ go test ./convert -run TestRoundtrip
 go test ./schemas -run TestPublishedVersionDocumentsAreImmutable
 ```
 
-The main CI workflow runs root and nested full tests, race tests, vet, and the root diff check. Pull
-requests also run the strict documentation build.
+These narrow checks do not replace row checks or required gates. The existing
+CI workflow runs root and nested full tests, race tests, vet and the root diff
+check; pull requests also run the strict documentation build. The commands above
+specify local gate freshness without changing CI configuration.
 
 ## Change Discipline
 

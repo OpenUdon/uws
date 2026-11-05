@@ -74,7 +74,8 @@ Module path: `github.com/OpenUdon/uws` (Go 1.25.4).
 
 Before substantial work, read this file, then
 `tabilet/memory-bank/product.md`, `tabilet/memory-bank/architecture.md`,
-`tabilet/memory-bank/tech-stack.md`, and
+`tabilet/memory-bank/tech-stack.md`,
+[`tabilet/memory-bank/test-policy.md`](tabilet/memory-bank/test-policy.md), and
 `tabilet/memory-bank/milestone.md`. Read the active milestone's linked status
 file and only the relevant topics in `tabilet/memory-bank/lessons.md`.
 
@@ -213,6 +214,10 @@ Long-form references live in `docs/`; README is operator-focused.
   parent closure or remains deferred under `OPTION_POLICY: ignore`.
 - Prefer Go's standard library before adding dependencies or local helpers.
   Keep trivial comparisons and transformations inline when that is clearer.
+- Every test, check and qualification follows
+  [the test policy](tabilet/memory-bank/test-policy.md); it grants no authority.
+  Row checks and required gates are defined in
+  [verification commands](tabilet/memory-bank/tech-stack.md#verification-commands).
 - `CORRECTIVE_PLANNING` defaults to `confirm`. With human-approved `auto`, the
   Goal/Next owner may prepare and check necessary corrective plans within the
   original delivery outcome, owning repositories, existing grants and limits,
@@ -223,9 +228,10 @@ Long-form references live in `docs/`; README is operator-focused.
   Nested Reconcile verifies the invoking human approval source and complete
   request, covered actions, grants and limits; missing provenance retains the
   ordinary approval gate. Never weaken acceptance or cancel unmet obligations.
-  Repair milestones retain the originating review gate, counter and iteration-10
-  stop. Suspend `[~]` as `[!]` with prerequisite IDs and resumption conditions
-  before repair execution; resume `[~]` only after acceptance and all blockers
+  Repair milestones retain the originating review gate, counter, scoped next
+  review iteration and project 10-iteration ceiling. Suspend `[~]` as `[!]` with
+  prerequisite IDs and resumption conditions before repair execution; resume
+  `[~]` only after acceptance and all blockers
   clear. Preserve partial work and pause if changes cannot be separated safely.
 - Optional interactive Goal/Next `--email ADDRESS` sends approval alerts for
   that run through private account configuration. No flag means no email for a
